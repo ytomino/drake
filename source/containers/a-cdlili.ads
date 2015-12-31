@@ -173,7 +173,8 @@ package Ada.Containers.Doubly_Linked_Lists is
    function Find (
       Container : List;
       Item : Element_Type;
-      Position : Cursor) return Cursor;
+      Position : Cursor)
+      return Cursor;
 
    --  modified
 --  function Reverse_Find (
@@ -219,12 +220,21 @@ package Ada.Containers.Doubly_Linked_Lists is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
+
       function Is_Sorted (Container : List) return Boolean;
+
       procedure Sort (Container : in out List);
+
       procedure Merge (Target : in out List; Source : in out List);
+
    end Generic_Sorting;
 
 --  diff (Equivalents)
+--
+--
+--
+--
+--
 --
 --
 --

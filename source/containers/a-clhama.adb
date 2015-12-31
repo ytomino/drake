@@ -198,7 +198,38 @@ package body Ada.Containers.Limited_Hashed_Maps is
 
    --  implementation
 
---  diff (Assign)
+   function Empty_Map return Map is
+   begin
+      return (Finalization.Limited_Controlled with Table => null, Length => 0);
+   end Empty_Map;
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= null;
+   end Has_Element;
+
+--  diff ("=")
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -216,12 +247,90 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
    end Capacity;
 
+   procedure Reserve_Capacity (
+      Container : in out Map;
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Length (Container));
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+      Hash_Tables.Rebuild (
+         Container.Table,
+         New_Capacity);
+   end Reserve_Capacity;
+
+   function Length (Container : Map) return Count_Type is
+   begin
+      return Container.Length;
+--  diff
+--  diff
+--  diff
+--  diff
+   end Length;
+
+   function Is_Empty (Container : Map) return Boolean is
+   begin
+      return Container.Length = 0;
+--  diff
+   end Is_Empty;
+
    procedure Clear (Container : in out Map) is
    begin
       Free_Data (Container);
 --  diff
 --  diff
    end Clear;
+
+   function Key (Position : Cursor) return Key_Reference_Type is
+   begin
+      return (Element => Position.Key.all'Access);
+   end Key;
+
+--  diff (Element)
+--
+--
+--
+
+--  diff (Replace_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : Element_Type)) is
+   begin
+      Process (Position.Key.all, Position.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out Map'Class;
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : in out Element_Type)) is
+   begin
+      Process (
+         Position.Key.all,
+         Container.Reference (Position).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased Map;
@@ -233,6 +342,16 @@ package body Ada.Containers.Limited_Hashed_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
+   function Reference (
+      Container : aliased in out Map;
+      Position : Cursor)
+      return Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
@@ -243,10 +362,24 @@ package body Ada.Containers.Limited_Hashed_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   function Reference (
+      Container : aliased in out Map;
+      Key : Key_Type)
+      return Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container, Key);
    begin
-      return Find (Container, Key) /= null;
-   end Contains;
+--  diff
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+--  diff (Assign)
+--
+--
+--
+--
+--
+--
 
 --  diff (Copy)
 --
@@ -259,116 +392,14 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 
-   procedure Delete (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
+   procedure Move (Target : in out Map; Source : in out Map) is
    begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Map; Position : in out Cursor) is
-   begin
---  diff
-      Hash_Tables.Remove (
-         Container.Table,
-         Container.Length,
-         Upcast (Position));
-      Free (Position);
-   end Delete;
-
---  diff (Element)
---
---
---
---
---
---
-
---  diff (Element)
---
---
---
-
-   function Empty_Map return Map is
-   begin
-      return (Finalization.Limited_Controlled with Table => null, Length => 0);
-   end Empty_Map;
-
-   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
-   begin
-      return Equivalent_Keys (Left.Key.all, Right.Key.all);
-   end Equivalent_Keys;
-
-   function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
-   begin
-      return Equivalent_Keys (Left.Key.all, Right);
-   end Equivalent_Keys;
-
-   procedure Exclude (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
-   begin
-      if Position /= null then
-         Delete (Container, Position);
-      end if;
-   end Exclude;
-
-   function Find (Container : Map; Key : Key_Type) return Cursor is
-   begin
-      return Find (Container, Hash (Key), Key);
-   end Find;
-
-   function First (Container : Map) return Cursor is
-   begin
-      return Downcast (Hash_Tables.First (Container.Table));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end First;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= null;
-   end Has_Element;
-
---  diff (Include)
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+      Clear (Target);
+      Target.Table := Source.Table;
+      Target.Length := Source.Length;
+      Source.Table := null;
+      Source.Length := 0;
+   end Move;
 
    procedure Insert (
       Container : in out Map;
@@ -411,6 +442,30 @@ package body Ada.Containers.Limited_Hashed_Maps is
       end if;
    end Insert;
 
+--  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Insert (
       Container : in out Map;
       Key : not null access function return Key_Type;
@@ -425,11 +480,100 @@ package body Ada.Containers.Limited_Hashed_Maps is
       end if;
    end Insert;
 
-   function Is_Empty (Container : Map) return Boolean is
+--  diff (Include)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Replace)
+--
+--
+--
+--
+--
+--
+
+   procedure Exclude (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
    begin
-      return Container.Length = 0;
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Map; Position : in out Cursor) is
+   begin
 --  diff
-   end Is_Empty;
+      Hash_Tables.Remove (
+         Container.Table,
+         Container.Length,
+         Upcast (Position));
+      Free (Position);
+   end Delete;
+
+   function First (Container : Map) return Cursor is
+   begin
+      return Downcast (Hash_Tables.First (Container.Table));
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end First;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Find (Container : Map; Key : Key_Type) return Cursor is
+   begin
+      return Find (Container, Hash (Key), Key);
+   end Find;
+
+--  diff (Element)
+--
+--
+--
+--
+--
+--
+
+   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   begin
+      return Find (Container, Key) /= null;
+   end Contains;
+
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key.all, Right.Key.all);
+   end Equivalent_Keys;
+
+   function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key.all, Right);
+   end Equivalent_Keys;
 
    procedure Iterate (
       Container : Map'Class;
@@ -452,150 +596,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       return Map_Iterator'(First => First (Container));
    end Iterate;
-
-   function Key (Position : Cursor) return Key_Reference_Type is
-   begin
-      return (Element => Position.Key.all'Access);
-   end Key;
-
-   function Length (Container : Map) return Count_Type is
-   begin
-      return Container.Length;
---  diff
---  diff
---  diff
---  diff
-   end Length;
-
-   procedure Move (Target : in out Map; Source : in out Map) is
-   begin
-      Clear (Target);
-      Target.Table := Source.Table;
-      Target.Length := Source.Length;
-      Source.Table := null;
-      Source.Length := 0;
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : Element_Type)) is
-   begin
-      Process (Position.Key.all, Position.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
-      return Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
-   begin
---  diff
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
---  diff (Replace)
---
---
---
---
---
---
-
---  diff (Replace_Element)
---
---
---
---
---
---
---
---
-
-   procedure Reserve_Capacity (
-      Container : in out Map;
-      Capacity : Count_Type)
-   is
-      New_Capacity : constant Count_Type :=
-         Count_Type'Max (Capacity, Length (Container));
-   begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      Hash_Tables.Rebuild (
-         Container.Table,
-         New_Capacity);
-   end Reserve_Capacity;
-
-   procedure Update_Element (
-      Container : in out Map'Class;
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : in out Element_Type)) is
-   begin
-      Process (
-         Position.Key.all,
-         Container.Reference (Position).Element.all);
-   end Update_Element;
-
---  diff ("=")
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 
 --  diff (Adjust)
 --

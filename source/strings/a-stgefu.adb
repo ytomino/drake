@@ -1350,8 +1350,7 @@ package body Ada.Strings.Generic_Functions is
             raise Pattern_Error;
          else
             for Current in reverse
-               Source'First + Pattern'Length - 1 ..
-               Source'Last
+               Source'First + Pattern'Length - 1 .. Source'Last
             loop
                declare
                   J, P : Natural;

@@ -53,6 +53,11 @@ package Ada.Containers.Limited_Vectors is
 --  diff (To_Vector)
 --
 
+--  diff (Generic_Array_To_Vector)
+--
+--
+--
+
 --  diff ("&")
 
 --  diff ("&")
@@ -336,12 +341,43 @@ package Ada.Containers.Limited_Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
+--  diff (Element_Array, Slicing, Constant_Reference, Reference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
+
       function Is_Sorted (Container : Vector) return Boolean;
+
       procedure Sort (Container : in out Vector);
+
       procedure Merge (Target : in out Vector; Source : in out Vector);
+
    end Generic_Sorting;
 
    --  extended
@@ -349,13 +385,18 @@ package Ada.Containers.Limited_Vectors is
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is
       function "=" (Left, Right : Vector) return Boolean;
-      function Find (Container : Vector; Item : Element_Type) return Cursor;
+      function Find (
+         Container : Vector;
+         Item : Element_Type)
+         return Cursor;
       function Find (
          Container : Vector;
          Item : Element_Type;
          Position : Cursor)
          return Cursor;
-      function Reverse_Find (Container : Vector; Item : Element_Type)
+      function Reverse_Find (
+         Container : Vector;
+         Item : Element_Type)
          return Cursor;
       function Reverse_Find (
          Container : Vector;
@@ -365,13 +406,6 @@ package Ada.Containers.Limited_Vectors is
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean;
    end Equivalents;
---  diff
---  diff
-
---  diff (Generic_Array_To_Vector)
---
---
---
 
 private
 
@@ -418,6 +452,21 @@ private
    overriding function Last (Object : Vector_Iterator) return Cursor;
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
+
+   --  non-overloaded subprograms
+--  diff (Constant_Indexing)
+--
+--
+--
+--
+--  diff (Indexing)
+--
+--
+--
+--
+
+--  diff (pragma Inline_Always)
+--  diff (pragma Inline_Always)
 
    package Streaming is
 
@@ -481,20 +530,5 @@ private
    for Vector_Iterator'Input use Streaming.Missing_Input;
    for Vector_Iterator'Write use Streaming.Missing_Write;
    for Vector_Iterator'Output use Streaming.Missing_Write;
-
-   --  non-overloaded subprograms
---  diff (Constant_Indexing)
---
---
---
---
---  diff (Indexing)
---
---
---
---
-
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
 
 end Ada.Containers.Limited_Vectors;

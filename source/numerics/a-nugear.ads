@@ -130,8 +130,8 @@ private package Ada.Numerics.Generic_Arrays is
 
    generic
       type Left_Type is private;
-      type Left_Matrix is array (
-         Integer range <>, Integer range <>) of Left_Type;
+      type Left_Matrix is
+         array (Integer range <>, Integer range <>) of Left_Type;
       type Right_Type is private;
       type Right_Matrix is
          array (Integer range <>, Integer range <>) of Right_Type;

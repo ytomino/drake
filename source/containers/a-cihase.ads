@@ -42,6 +42,12 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 
    function To_Set (New_Item : Element_Type) return Set;
 
+--  diff (Generic_Array_To_Set)
+--
+--
+--
+--
+
    function Capacity (Container : Set) return Count_Type;
 
    procedure Reserve_Capacity (
@@ -230,7 +236,8 @@ package Ada.Containers.Indefinite_Hashed_Sets is
 
    end Generic_Keys;
 
---  diff (Generic_Array_To_Set/Equivalents)
+--  diff (Equivalents)
+--
 --
 --
 --

@@ -187,7 +187,43 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    --  implementation
 
---  diff (Assign)
+   function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
+   begin
+      return not (Left < Right) and then not (Right < Left);
+   end Equivalent_Keys;
+
+   function Empty_Map return Map is
+   begin
+      return (Finalization.Limited_Controlled with Root => null, Length => 0);
+   end Empty_Map;
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= No_Element;
+   end Has_Element;
+
+--  diff ("=")
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -195,23 +231,20 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 
-   function Ceiling (Container : Map; Key : Key_Type) return Cursor is
+   function Length (Container : Map) return Count_Type is
    begin
+      return Container.Length;
 --  diff
 --  diff
 --  diff
 --  diff
-         declare
-            Context : Context_Type := (Left => Key'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Ceiling,
-               Context'Address,
-               Compare => Compare_Key'Access));
-         end;
+   end Length;
+
+   function Is_Empty (Container : Map) return Boolean is
+   begin
+      return Container.Root = null;
 --  diff
-   end Ceiling;
+   end Is_Empty;
 
    procedure Clear (Container : in out Map) is
    begin
@@ -219,6 +252,47 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
 --  diff
    end Clear;
+
+   function Key (Position : Cursor) return Key_Reference_Type is
+   begin
+      return (Element => Position.Key.all'Access);
+   end Key;
+
+--  diff (Element)
+--
+--
+--
+
+--  diff (Replace_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : Element_Type)) is
+   begin
+      Process (Position.Key.all, Position.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out Map'Class;
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : in out Element_Type)) is
+   begin
+      Process (
+         Position.Key.all,
+         Container.Reference (Position).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased Map;
@@ -230,6 +304,16 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
+   function Reference (
+      Container : aliased in out Map;
+      Position : Cursor)
+      return Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
@@ -240,10 +324,24 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   function Reference (
+      Container : aliased in out Map;
+      Key : Key_Type)
+      return Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container, Key);
    begin
-      return Find (Container, Key) /= null;
-   end Contains;
+--  diff
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+--  diff (Assign)
+--
+--
+--
+--
+--
+--
 
 --  diff (Copy)
 --
@@ -256,146 +354,16 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 
-   procedure Delete (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
+   procedure Move (Target : in out Map; Source : in out Map) is
    begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Map; Position : in out Cursor) is
-      Position_2 : Binary_Trees.Node_Access := Upcast (Position);
-   begin
---  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
-      Free_Node (Position_2);
-      Position := null;
-   end Delete;
-
---  diff (Element)
---
---
---
-
---  diff (Element)
---
---
---
---
---
---
-
-   function Empty_Map return Map is
-   begin
-      return (Finalization.Limited_Controlled with Root => null, Length => 0);
-   end Empty_Map;
-
-   function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
-   begin
-      return not (Left < Right) and then not (Right < Left);
-   end Equivalent_Keys;
-
-   procedure Exclude (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
-   begin
-      if Position /= null then
-         Delete (Container, Position);
+      if Target.Root /= Source.Root then
+         Clear (Target);
+         Target.Root := Source.Root;
+         Target.Length := Source.Length;
+         Source.Root := null;
+         Source.Length := 0;
       end if;
-   end Exclude;
-
-   function Find (Container : Map; Key : Key_Type) return Cursor is
-   begin
---  diff
---  diff
---  diff
---  diff
-         declare
-            Context : Context_Type := (Left => Key'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Just,
-               Context'Address,
-               Compare => Compare_Key'Access));
-         end;
---  diff
-   end Find;
-
-   function First (Container : Map) return Cursor is
-   begin
---  diff
---  diff
---  diff
---  diff
-      return Downcast (Binary_Trees.First (
-         Container.Root));
---  diff
-   end First;
-
-   function Floor (Container : Map; Key : Key_Type) return Cursor is
-   begin
---  diff
---  diff
---  diff
---  diff
-         declare
-            Context : Context_Type := (Left => Key'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Floor,
-               Context'Address,
-               Compare => Compare_Key'Access));
-         end;
---  diff
-   end Floor;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= No_Element;
-   end Has_Element;
-
---  diff (Include)
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   end Move;
 
    procedure Insert (
       Container : in out Map;
@@ -438,6 +406,32 @@ package body Ada.Containers.Limited_Ordered_Maps is
       end if;
    end Insert;
 
+--  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Insert (
       Container : in out Map;
       Key : not null access function return Key_Type;
@@ -452,11 +446,172 @@ package body Ada.Containers.Limited_Ordered_Maps is
       end if;
    end Insert;
 
-   function Is_Empty (Container : Map) return Boolean is
+--  diff (Include)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Replace)
+--
+--
+--
+--
+--
+--
+
+   procedure Exclude (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
    begin
-      return Container.Root = null;
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Map; Position : in out Cursor) is
+      Position_2 : Binary_Trees.Node_Access := Upcast (Position);
+   begin
 --  diff
-   end Is_Empty;
+      Base.Remove (
+         Container.Root,
+         Container.Length,
+         Position_2);
+      Free_Node (Position_2);
+      Position := null;
+   end Delete;
+
+   function First (Container : Map) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+      return Downcast (Binary_Trees.First (
+         Container.Root));
+--  diff
+   end First;
+
+   function Last (Container : Map) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Last (Container.Root));
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Last;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Next (Upcast (Position)));
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Binary_Trees.Next (Upcast (Position)));
+   end Next;
+
+   function Previous (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   procedure Previous (Position : in out Cursor) is
+   begin
+      Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   function Find (Container : Map; Key : Key_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Just,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
+--  diff
+   end Find;
+
+--  diff (Element)
+--
+--
+--
+--
+--
+--
+
+   function Floor (Container : Map; Key : Key_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Floor,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
+--  diff
+   end Floor;
+
+   function Ceiling (Container : Map; Key : Key_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Key'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Ceiling,
+               Context'Address,
+               Compare => Compare_Key'Access));
+         end;
+--  diff
+   end Ceiling;
+
+   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   begin
+      return Find (Container, Key) /= null;
+   end Contains;
+
+   function "<" (Left, Right : Cursor) return Boolean is
+   begin
+      return Left.Key.all < Right.Key.all;
+   end "<";
+
+   function "<" (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Left.Key.all < Right;
+   end "<";
 
    procedure Iterate (
       Container : Map'Class;
@@ -473,6 +628,22 @@ package body Ada.Containers.Limited_Ordered_Maps is
          Cast (Process));
 --  diff
    end Iterate;
+
+   procedure Reverse_Iterate (
+      Container : Map'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+--  diff
+--  diff
+      Binary_Trees.Reverse_Iterate (
+         Container.Root,
+         Cast (Process));
+--  diff
+   end Reverse_Iterate;
 
    function Iterate (Container : Map)
       return Map_Iterator_Interfaces.Reversible_Iterator'Class is
@@ -495,177 +666,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
       end if;
       return Map_Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
-
-   function Key (Position : Cursor) return Key_Reference_Type is
-   begin
-      return (Element => Position.Key.all'Access);
-   end Key;
-
-   function Last (Container : Map) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Last (Container.Root));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Last;
-
-   function Length (Container : Map) return Count_Type is
-   begin
-      return Container.Length;
---  diff
---  diff
---  diff
---  diff
-   end Length;
-
-   procedure Move (Target : in out Map; Source : in out Map) is
-   begin
-      if Target.Root /= Source.Root then
-         Clear (Target);
-         Target.Root := Source.Root;
-         Target.Length := Source.Length;
-         Source.Root := null;
-         Source.Length := 0;
-      end if;
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Next (Upcast (Position)));
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Binary_Trees.Next (Upcast (Position)));
-   end Next;
-
-   function Previous (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   procedure Previous (Position : in out Cursor) is
-   begin
-      Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : Element_Type)) is
-   begin
-      Process (Position.Key.all, Position.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
-      return Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
-   begin
---  diff
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
---  diff (Replace)
---
---
---
---
---
---
-
---  diff (Replace_Element)
---
---
---
---
---
---
---
---
-
-   procedure Reverse_Iterate (
-      Container : Map'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Binary_Trees.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
---  diff
---  diff
-      Binary_Trees.Reverse_Iterate (
-         Container.Root,
-         Cast (Process));
---  diff
-   end Reverse_Iterate;
-
-   procedure Update_Element (
-      Container : in out Map'Class;
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : in out Element_Type)) is
-   begin
-      Process (
-         Position.Key.all,
-         Container.Reference (Position).Element.all);
-   end Update_Element;
-
---  diff ("=")
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
-   function "<" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left.Key.all < Right.Key.all;
-   end "<";
-
-   function "<" (Left : Cursor; Right : Key_Type) return Boolean is
-   begin
-      return Left.Key.all < Right;
-   end "<";
 
 --  diff (Adjust)
 --

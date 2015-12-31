@@ -23,14 +23,12 @@ package body Ada.Strings.Generic_Bounded is
          case Drop is
             when Right =>
                Target.Length := Target.Capacity;
-               Target.Element := Source (
-                  Source'First ..
-                  Source'First + Target.Capacity - 1);
+               Target.Element :=
+                  Source (Source'First .. Source'First + Target.Capacity - 1);
             when Left =>
                Target.Length := Target.Capacity;
-               Target.Element := Source (
-                  Source'Last - Target.Capacity + 1 ..
-                  Source'Last);
+               Target.Element :=
+                  Source (Source'Last - Target.Capacity + 1 .. Source'Last);
             when Error =>
                raise Length_Error;
          end case;
@@ -458,9 +456,7 @@ package body Ada.Strings.Generic_Bounded is
                      end loop;
                      if First > 1 then
                         Result.Element (1 .. First - 1) :=
-                           Item (
-                              Item'Last - (First - 1) + 1 ..
-                              Item'Last);
+                           Item (Item'Last - (First - 1) + 1 .. Item'Last);
                      end if;
                   end;
             end case;

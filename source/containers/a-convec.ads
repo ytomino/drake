@@ -53,6 +53,11 @@ package Ada.Containers.Vectors is
    function To_Vector (New_Item : Element_Type; Length : Count_Type)
       return Vector;
 
+   --  extended
+   generic
+      type Element_Array is array (Index_Type range <>) of Element_Type;
+   function Generic_Array_To_Vector (S : Element_Array) return Vector;
+
    function "&" (Left, Right : Vector) return Vector;
 
    function "&" (Left : Vector; Right : Element_Type) return Vector;
@@ -336,15 +341,8 @@ package Ada.Containers.Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
-   generic
-      with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   package Generic_Sorting is
-      function Is_Sorted (Container : Vector) return Boolean;
-      procedure Sort (Container : in out Vector);
-      procedure Merge (Target : in out Vector; Source : in out Vector);
-   end Generic_Sorting;
-
    --  extended from here
+   --  These functions provides a convenient way to directly access.
 
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
 
@@ -368,10 +366,46 @@ package Ada.Containers.Vectors is
       Last_Index : Extended_Index)
       return Slicing.Reference_Type;
 
-   --  extended
+   --  to here
+
    generic
-      type Element_Array is array (Index_Type range <>) of Element_Type;
-   function Generic_Array_To_Vector (S : Element_Array) return Vector;
+      with function "<" (Left, Right : Element_Type) return Boolean is <>;
+   package Generic_Sorting is
+
+      function Is_Sorted (Container : Vector) return Boolean;
+
+      procedure Sort (Container : in out Vector);
+
+      procedure Merge (Target : in out Vector; Source : in out Vector);
+
+   end Generic_Sorting;
+
+--  diff (Equivalents)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
 private
 
@@ -418,6 +452,21 @@ private
    overriding function Last (Object : Vector_Iterator) return Cursor;
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
+
+   --  non-overloaded subprograms
+   function Constant_Indexing (
+      Container : aliased Vector'Class;
+      Index : Index_Type)
+      return Constant_Reference_Type
+      with Convention => Intrinsic;
+   function Indexing (
+      Container : aliased in out Vector'Class;
+      Index : Index_Type)
+      return Reference_Type
+      with Convention => Intrinsic;
+
+   pragma Inline_Always (Constant_Indexing);
+   pragma Inline_Always (Indexing);
 
    package Streaming is
 
@@ -481,20 +530,5 @@ private
    for Vector_Iterator'Input use Streaming.Missing_Input;
    for Vector_Iterator'Write use Streaming.Missing_Write;
    for Vector_Iterator'Output use Streaming.Missing_Write;
-
-   --  non-overloaded subprograms
-   function Constant_Indexing (
-      Container : aliased Vector'Class;
-      Index : Index_Type)
-      return Constant_Reference_Type
-      with Convention => Intrinsic;
-   function Indexing (
-      Container : aliased in out Vector'Class;
-      Index : Index_Type)
-      return Reference_Type
-      with Convention => Intrinsic;
-
-   pragma Inline_Always (Constant_Indexing);
-   pragma Inline_Always (Indexing);
 
 end Ada.Containers.Vectors;

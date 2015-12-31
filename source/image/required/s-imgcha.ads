@@ -14,9 +14,8 @@ package System.Img_Char is
    subtype String_3 is String (1 .. 3);
    function Length (Item : String_3) return Natural;
    pragma Inline (Length);
-   Image_00_1F : constant array (
-      Character'Val (0) ..
-      Character'Val (16#1F#)) of String_3 := (
+   Image_00_1F : constant
+      array (Character'Val (0) .. Character'Val (16#1F#)) of String_3 := (
          "NUL",
          "SOH",
          "STX",

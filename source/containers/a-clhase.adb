@@ -197,135 +197,40 @@ package body Ada.Containers.Limited_Hashed_Sets is
 
    --  implementation
 
---  diff (Assign)
---
---
---
---
---
---
-
-   function Capacity (Container : Set) return Count_Type is
-   begin
-      return Hash_Tables.Capacity (Container.Table);
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Capacity;
-
-   procedure Clear (Container : in out Set) is
-   begin
-      Free_Data (Container);
---  diff
---  diff
-   end Clear;
-
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Constant_Reference;
-
-   function Contains (Container : Set; Item : Element_Type) return Boolean is
-   begin
-      return Find (Container, Item) /= null;
-   end Contains;
-
---  diff (Copy)
---
---
---
---
---
---
---
---
---
-
-   procedure Delete (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
-   begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Set; Position : in out Cursor) is
-   begin
---  diff
-      Hash_Tables.Remove (
-         Container.Table,
-         Container.Length,
-         Upcast (Position));
-      Free (Position);
-   end Delete;
-
-   procedure Difference (Target : in out Set; Source : Set) is
-   begin
---  diff
---  diff
-      Hash_Tables.Merge (
-         Target.Table,
-         Target.Length,
-         Source.Table,
-         Source.Length,
-         In_Only_Left => True,
-         In_Only_Right => False,
-         In_Both => False,
-         Equivalent => Equivalent_Node'Access,
-         Copy => null,
-         Free => Free_Node'Access);
---  diff
-   end Difference;
-
---  diff (Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Element)
---
---
---
-
    function Empty_Set return Set is
    begin
       return (Finalization.Limited_Controlled with Table => null, Length => 0);
    end Empty_Set;
 
-   function Equivalent_Elements (Left, Right : Cursor)
-      return Boolean is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Equivalent_Elements (Left.Element.all, Right.Element.all);
-   end Equivalent_Elements;
+      return Position /= null;
+   end Has_Element;
 
-   function Equivalent_Elements (Left : Cursor; Right : Element_Type)
-      return Boolean is
-   begin
-      return Equivalent_Elements (Left.Element.all, Right);
-   end Equivalent_Elements;
+--  diff ("=")
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
@@ -345,29 +250,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
    end Equivalent_Sets;
 
-   procedure Exclude (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
-   begin
-      if Position /= null then
-         Delete (Container, Position);
-      end if;
-   end Exclude;
-
-   function Find (Container : Set; Item : Element_Type) return Cursor is
-   begin
-      return Find (Container, Hash (Item), Item);
-   end Find;
-
-   function First (Container : Set) return Cursor is
-   begin
-      return Downcast (Hash_Tables.First (Container.Table));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end First;
+--  diff (To_Set)
+--
+--
+--
+--
+--
 
 --  diff (Generic_Array_To_Set)
 --
@@ -379,12 +267,66 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
-   function Has_Element (Position : Cursor) return Boolean is
+   function Capacity (Container : Set) return Count_Type is
    begin
-      return Position /= null;
-   end Has_Element;
+      return Hash_Tables.Capacity (Container.Table);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Capacity;
 
---  diff (Include)
+   procedure Reserve_Capacity (
+      Container : in out Set;
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Length (Container));
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+      Hash_Tables.Rebuild (
+         Container.Table,
+         New_Capacity);
+   end Reserve_Capacity;
+
+   function Length (Container : Set) return Count_Type is
+   begin
+--  diff
+--  diff
+--  diff
+      return Container.Length;
+--  diff
+   end Length;
+
+   function Is_Empty (Container : Set) return Boolean is
+   begin
+      return Container.Length = 0;
+--  diff
+   end Is_Empty;
+
+   procedure Clear (Container : in out Set) is
+   begin
+      Free_Data (Container);
+--  diff
+--  diff
+   end Clear;
+
+--  diff (Element)
+--
+--
+--
+
+--  diff (Replace_Element)
 --
 --
 --
@@ -393,6 +335,51 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Position.Element.all);
+   end Query_Element;
+
+   function Constant_Reference (
+      Container : aliased Set;
+      Position : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Constant_Reference;
+
+--  diff (Assign)
+--
+--
+--
+--
+--
+--
+
+--  diff (Copy)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Move (Target : in out Set; Source : in out Set) is
+   begin
+      Clear (Target);
+      Target.Table := Source.Table;
+      Target.Length := Source.Length;
+      Source.Table := null;
+      Source.Length := 0;
+   end Move;
 
    procedure Insert (
       Container : in out Set;
@@ -440,6 +427,88 @@ package body Ada.Containers.Limited_Hashed_Sets is
       end if;
    end Insert;
 
+--  diff (Include)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Replace)
+--
+--
+--
+
+   procedure Exclude (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
+   begin
+--  diff
+      Hash_Tables.Remove (
+         Container.Table,
+         Container.Length,
+         Upcast (Position));
+      Free (Position);
+   end Delete;
+
+--  diff (Union)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Union)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
 --  diff
@@ -483,11 +552,101 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
-   function Is_Empty (Container : Set) return Boolean is
+   procedure Difference (Target : in out Set; Source : Set) is
    begin
-      return Container.Length = 0;
 --  diff
-   end Is_Empty;
+--  diff
+      Hash_Tables.Merge (
+         Target.Table,
+         Target.Length,
+         Source.Table,
+         Source.Length,
+         In_Only_Left => True,
+         In_Only_Right => False,
+         In_Both => False,
+         Equivalent => Equivalent_Node'Access,
+         Copy => null,
+         Free => Free_Node'Access);
+--  diff
+   end Difference;
+
+--  diff (Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+   function Overlap (Left, Right : Set) return Boolean is
+   begin
+--  diff
+--  diff
+--  diff
+      return Hash_Tables.Overlap (
+         Left.Table,
+         Right.Table,
+         Equivalent => Equivalent_Node'Access);
+--  diff
+   end Overlap;
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
@@ -502,6 +661,49 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Equivalent => Equivalent_Node'Access);
 --  diff
    end Is_Subset;
+
+   function First (Container : Set) return Cursor is
+   begin
+      return Downcast (Hash_Tables.First (Container.Table));
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end First;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Find (Container : Set; Item : Element_Type) return Cursor is
+   begin
+      return Find (Container, Hash (Item), Item);
+   end Find;
+
+   function Contains (Container : Set; Item : Element_Type) return Boolean is
+   begin
+      return Find (Container, Item) /= null;
+   end Contains;
+
+   function Equivalent_Elements (Left, Right : Cursor)
+      return Boolean is
+   begin
+      return Equivalent_Elements (Left.Element.all, Right.Element.all);
+   end Equivalent_Elements;
+
+   function Equivalent_Elements (Left : Cursor; Right : Element_Type)
+      return Boolean is
+   begin
+      return Equivalent_Elements (Left.Element.all, Right);
+   end Equivalent_Elements;
 
    procedure Iterate (
       Container : Set'Class;
@@ -524,208 +726,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
    begin
       return Set_Iterator'(First => First (Container));
    end Iterate;
-
-   function Length (Container : Set) return Count_Type is
-   begin
---  diff
---  diff
---  diff
-      return Container.Length;
---  diff
-   end Length;
-
-   procedure Move (Target : in out Set; Source : in out Set) is
-   begin
-      Clear (Target);
-      Target.Table := Source.Table;
-      Target.Length := Source.Length;
-      Source.Table := null;
-      Source.Length := 0;
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
-
-   function Overlap (Left, Right : Set) return Boolean is
-   begin
---  diff
---  diff
---  diff
-      return Hash_Tables.Overlap (
-         Left.Table,
-         Right.Table,
-         Equivalent => Equivalent_Node'Access);
---  diff
-   end Overlap;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Position.Element.all);
-   end Query_Element;
-
---  diff (Replace)
---
---
---
-
---  diff (Replace_Element)
---
---
---
---
---
---
---
---
-
-   procedure Reserve_Capacity (
-      Container : in out Set;
-      Capacity : Count_Type)
-   is
-      New_Capacity : constant Count_Type :=
-         Count_Type'Max (Capacity, Length (Container));
-   begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      Hash_Tables.Rebuild (
-         Container.Table,
-         New_Capacity);
-   end Reserve_Capacity;
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (To_Set)
---
---
---
---
---
-
---  diff (Union)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Union)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff ("=")
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 
 --  diff (Adjust)
 --
@@ -769,20 +769,20 @@ package body Ada.Containers.Limited_Hashed_Sets is
             Key (Downcast (Position).Element.all));
       end Equivalent_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
-         return Constant_Reference_Type is
+      function Key (Position : Cursor) return Key_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Constant_Reference;
-
-      function Contains (Container : Set; Key : Key_Type) return Boolean is
-      begin
-         return Find (Container, Key) /= null;
-      end Contains;
+         return Key (Position.Element.all);
+      end Key;
 
 --  diff (Element)
+--
+--
+--
+
+--  diff (Replace)
+--
+--
+--
 --
 --
 --
@@ -794,6 +794,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
             Delete (Container, Position);
          end if;
       end Exclude;
+
+      procedure Delete (Container : in out Set; Key : Key_Type) is
+         Position : Cursor := Find (Container, Key);
+      begin
+         Delete (Container, Position);
+      end Delete;
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
       begin
@@ -813,43 +819,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
          end if;
       end Find;
 
-      procedure Delete (Container : in out Set; Key : Key_Type) is
-         Position : Cursor := Find (Container, Key);
+      function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
-         Delete (Container, Position);
-      end Delete;
-
-      function Key (Position : Cursor) return Key_Type is
-      begin
-         return Key (Position.Element.all);
-      end Key;
-
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Position : Cursor)
-         return Reference_Type
-      is
-         pragma Unreferenced (Container);
-      begin
-         return (Element => Position.Element.all'Access);
-      end Reference_Preserving_Key;
-
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Key : Key_Type)
-         return Reference_Type is
-      begin
---  diff
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Reference_Preserving_Key;
-
---  diff (Replace)
---
---
---
---
---
---
+         return Find (Container, Key) /= null;
+      end Contains;
 
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
@@ -862,6 +835,33 @@ package body Ada.Containers.Limited_Hashed_Sets is
                Container,
                Position).Element.all);
       end Update_Element_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Position : Cursor)
+         return Reference_Type
+      is
+         pragma Unreferenced (Container);
+      begin
+         return (Element => Position.Element.all'Access);
+      end Reference_Preserving_Key;
+
+      function Constant_Reference (
+         Container : aliased Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Constant_Reference;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+--  diff
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Reference_Preserving_Key;
 
    end Generic_Keys;
 

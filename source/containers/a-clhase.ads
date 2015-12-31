@@ -42,6 +42,12 @@ package Ada.Containers.Limited_Hashed_Sets is
 
 --  diff (To_Set)
 
+--  diff (Generic_Array_To_Set)
+--
+--
+--
+--
+
    function Capacity (Container : Set) return Count_Type;
 
    procedure Reserve_Capacity (
@@ -230,6 +236,7 @@ package Ada.Containers.Limited_Hashed_Sets is
 
    end Generic_Keys;
 
+   --  extended
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is

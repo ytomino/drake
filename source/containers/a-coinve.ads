@@ -53,6 +53,11 @@ package Ada.Containers.Indefinite_Vectors is
    function To_Vector (New_Item : Element_Type; Length : Count_Type)
       return Vector;
 
+--  diff (Generic_Array_To_Vector)
+--
+--
+--
+
    function "&" (Left, Right : Vector) return Vector;
 
    function "&" (Left : Vector; Right : Element_Type) return Vector;
@@ -336,14 +341,6 @@ package Ada.Containers.Indefinite_Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
-   generic
-      with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   package Generic_Sorting is
-      function Is_Sorted (Container : Vector) return Boolean;
-      procedure Sort (Container : in out Vector);
-      procedure Merge (Target : in out Vector; Source : in out Vector);
-   end Generic_Sorting;
-
 --  diff (Element_Array, Slicing, Constant_Reference, Reference)
 --
 --
@@ -367,8 +364,45 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+--
+--
+--
 
---  diff (Generic_Array_To_Vector)
+   generic
+      with function "<" (Left, Right : Element_Type) return Boolean is <>;
+   package Generic_Sorting is
+
+      function Is_Sorted (Container : Vector) return Boolean;
+
+      procedure Sort (Container : in out Vector);
+
+      procedure Merge (Target : in out Vector; Source : in out Vector);
+
+   end Generic_Sorting;
+
+--  diff (Equivalents)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -418,6 +452,21 @@ private
    overriding function Last (Object : Vector_Iterator) return Cursor;
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
+
+   --  non-overloaded subprograms
+--  diff (Constant_Indexing)
+--
+--
+--
+--
+--  diff (Indexing)
+--
+--
+--
+--
+
+--  diff (pragma Inline_Always)
+--  diff (pragma Inline_Always)
 
    package Streaming is
 
@@ -481,20 +530,5 @@ private
    for Vector_Iterator'Input use Streaming.Missing_Input;
    for Vector_Iterator'Write use Streaming.Missing_Write;
    for Vector_Iterator'Output use Streaming.Missing_Write;
-
-   --  non-overloaded subprograms
---  diff (Constant_Indexing)
---
---
---
---
---  diff (Indexing)
---
---
---
---
-
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
 
 end Ada.Containers.Indefinite_Vectors;

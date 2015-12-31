@@ -197,135 +197,40 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    --  implementation
 
-   procedure Assign (Target : in out Set; Source : Set) is
-   begin
-      Copy_On_Write.Assign (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-   end Assign;
-
-   function Capacity (Container : Set) return Count_Type is
-   begin
-      if Container.Super.Data = null then
-         return 0;
-      else
-         return Hash_Tables.Capacity (
-            Downcast (Container.Super.Data).Table);
-      end if;
-   end Capacity;
-
-   procedure Clear (Container : in out Set) is
-   begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
-   end Clear;
-
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Constant_Reference;
-
-   function Contains (Container : Set; Item : Element_Type) return Boolean is
-   begin
-      return Find (Container, Item) /= null;
-   end Contains;
-
-   function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
-   begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
-            Source.Super'Access,
-            0, -- Length is unused
-            Count_Type'Max (Capacity, Length (Source)),
-            Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
-   end Copy;
-
-   procedure Delete (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
-   begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Set; Position : in out Cursor) is
-   begin
-      Unique (Container, True);
-      Hash_Tables.Remove (
-         Downcast (Container.Super.Data).Table,
-         Downcast (Container.Super.Data).Length,
-         Upcast (Position));
-      Free (Position);
-   end Delete;
-
-   procedure Difference (Target : in out Set; Source : Set) is
-   begin
-      if not Is_Empty (Target) and then not Is_Empty (Source) then
-         Unique (Target, True);
-         Hash_Tables.Merge (
-            Downcast (Target.Super.Data).Table,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Table,
-            Downcast (Source.Super.Data).Length,
-            In_Only_Left => True,
-            In_Only_Right => False,
-            In_Both => False,
-            Equivalent => Equivalent_Node'Access,
-            Copy => Copy_Node'Access,
-            Free => Free_Node'Access);
-      end if;
-   end Difference;
-
-   function Difference (Left, Right : Set) return Set is
-   begin
-      return Result : Set do
-         if Is_Empty (Left) or else Is_Empty (Right) then
-            Assign (Result, Left);
-         else
-            Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => False,
-               In_Both => False,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
-         end if;
-      end return;
-   end Difference;
-
-   function Element (Position : Cursor) return Element_Type is
-   begin
-      return Position.Element.all;
-   end Element;
-
    function Empty_Set return Set is
    begin
       return (Finalization.Controlled with Super => (null, null));
    end Empty_Set;
 
-   function Equivalent_Elements (Left, Right : Cursor)
-      return Boolean is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Equivalent_Elements (Left.Element.all, Right.Element.all);
-   end Equivalent_Elements;
+      return Position /= null;
+   end Has_Element;
 
-   function Equivalent_Elements (Left : Cursor; Right : Element_Type)
-      return Boolean is
+   overriding function "=" (Left, Right : Set) return Boolean is
+      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean;
+      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean is
+      begin
+         return Downcast (Left).Element.all = Downcast (Right).Element.all;
+      end Equivalent;
    begin
-      return Equivalent_Elements (Left.Element.all, Right);
-   end Equivalent_Elements;
+      if Is_Empty (Left) then
+         return Is_Empty (Right);
+      elsif Is_Empty (Right) then
+         return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
+      else
+         return Hash_Tables.Equivalent (
+            Downcast (Left.Super.Data).Table,
+            Downcast (Left.Super.Data).Length,
+            Downcast (Right.Super.Data).Table,
+            Downcast (Right.Super.Data).Length,
+            Equivalent => Equivalent'Access);
+      end if;
+   end "=";
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
@@ -345,29 +250,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end if;
    end Equivalent_Sets;
 
-   procedure Exclude (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
+   function To_Set (New_Item : Element_Type) return Set is
    begin
-      if Position /= null then
-         Delete (Container, Position);
-      end if;
-   end Exclude;
-
-   function Find (Container : Set; Item : Element_Type) return Cursor is
-   begin
-      return Find (Container, Hash (Item), Item);
-   end Find;
-
-   function First (Container : Set) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Hash_Tables.First (
-            Downcast (Container.Super.Data).Table));
-      end if;
-   end First;
+      return Result : Set do
+         Insert (Result, New_Item);
+      end return;
+   end To_Set;
 
 --  diff (Generic_Array_To_Set)
 --
@@ -379,20 +267,119 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 --
 --
 
-   function Has_Element (Position : Cursor) return Boolean is
+   function Capacity (Container : Set) return Count_Type is
    begin
-      return Position /= null;
-   end Has_Element;
-
-   procedure Include (Container : in out Set; New_Item : Element_Type) is
-      Position : Cursor;
-      Inserted : Boolean;
-   begin
-      Insert (Container, New_Item, Position, Inserted);
-      if not Inserted then
-         Replace_Element (Container, Position, New_Item);
+      if Container.Super.Data = null then
+         return 0;
+      else
+         return Hash_Tables.Capacity (
+            Downcast (Container.Super.Data).Table);
       end if;
-   end Include;
+   end Capacity;
+
+   procedure Reserve_Capacity (
+      Container : in out Set;
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Length (Container));
+   begin
+      Copy_On_Write.Unique (
+         Container.Super'Access,
+         0, -- Length is unused
+         Indefinite_Hashed_Sets.Capacity (Container),
+         New_Capacity,
+         True,
+         Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+      Hash_Tables.Rebuild (
+         Downcast (Container.Super.Data).Table,
+         New_Capacity);
+   end Reserve_Capacity;
+
+   function Length (Container : Set) return Count_Type is
+   begin
+      if Container.Super.Data = null then
+         return 0;
+      else
+         return Downcast (Container.Super.Data).Length;
+      end if;
+   end Length;
+
+   function Is_Empty (Container : Set) return Boolean is
+   begin
+      return Container.Super.Data = null
+         or else Downcast (Container.Super.Data).Length = 0;
+   end Is_Empty;
+
+   procedure Clear (Container : in out Set) is
+   begin
+      Copy_On_Write.Clear (
+         Container.Super'Access,
+         Free => Free_Data'Access);
+   end Clear;
+
+   function Element (Position : Cursor) return Element_Type is
+   begin
+      return Position.Element.all;
+   end Element;
+
+   procedure Replace_Element (
+      Container : in out Set;
+      Position : Cursor;
+      New_Item : Element_Type) is
+   begin
+      Unique (Container, True);
+      Free (Position.Element);
+      Allocate_Element (Position.Element, New_Item);
+   end Replace_Element;
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Position.Element.all);
+   end Query_Element;
+
+   function Constant_Reference (
+      Container : aliased Set;
+      Position : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Constant_Reference;
+
+   procedure Assign (Target : in out Set; Source : Set) is
+   begin
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+   end Assign;
+
+   function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
+   begin
+      return (Finalization.Controlled with
+         Super => Copy_On_Write.Copy (
+            Source.Super'Access,
+            0, -- Length is unused
+            Count_Type'Max (Capacity, Length (Source)),
+            Allocate => Allocate_Data'Access,
+            Copy => Copy_Data'Access));
+   end Copy;
+
+   procedure Move (Target : in out Set; Source : in out Set) is
+   begin
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+--  diff
+   end Move;
 
    procedure Insert (
       Container : in out Set;
@@ -440,224 +427,44 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end if;
    end Insert;
 
-   procedure Intersection (Target : in out Set; Source : Set) is
-   begin
-      if Is_Empty (Source) then
-         Clear (Target);
-      else
-         Unique (Target, True);
-         Hash_Tables.Merge (
-            Downcast (Target.Super.Data).Table,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Table,
-            Downcast (Source.Super.Data).Length,
-            In_Only_Left => False,
-            In_Only_Right => False,
-            In_Both => True,
-            Equivalent => Equivalent_Node'Access,
-            Copy => Copy_Node'Access,
-            Free => Free_Node'Access);
-      end if;
-   end Intersection;
-
-   function Intersection (Left, Right : Set) return Set is
-   begin
-      return Result : Set do
-         if Is_Empty (Left) or else Is_Empty (Right) then
-            null; -- Empty_Set;
-         else
-            Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => False,
-               In_Only_Right => False,
-               In_Both => True,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
-         end if;
-      end return;
-   end Intersection;
-
-   function Is_Empty (Container : Set) return Boolean is
-   begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Length = 0;
-   end Is_Empty;
-
-   function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
-   begin
-      if Is_Empty (Subset) then
-         return True;
-      elsif Is_Empty (Of_Set) then
-         return False;
-      else
-         return Hash_Tables.Is_Subset (
-            Downcast (Subset.Super.Data).Table,
-            Downcast (Of_Set.Super.Data).Table,
-            Equivalent => Equivalent_Node'Access);
-      end if;
-   end Is_Subset;
-
-   procedure Iterate (
-      Container : Set'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Hash_Tables.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
-         Hash_Tables.Iterate (
-            Downcast (Container.Super.Data).Table,
-            Cast (Process));
-      end if;
-   end Iterate;
-
-   function Iterate (Container : Set)
-      return Set_Iterator_Interfaces.Forward_Iterator'Class is
-   begin
-      return Set_Iterator'(First => First (Container));
-   end Iterate;
-
-   function Length (Container : Set) return Count_Type is
-   begin
-      if Container.Super.Data = null then
-         return 0;
-      else
-         return Downcast (Container.Super.Data).Length;
-      end if;
-   end Length;
-
-   procedure Move (Target : in out Set; Source : in out Set) is
-   begin
-      Copy_On_Write.Move (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
---  diff
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
-
-   function Overlap (Left, Right : Set) return Boolean is
-   begin
-      if Is_Empty (Left) or else Is_Empty (Right) then
-         return False;
-      else
-         return Hash_Tables.Overlap (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Right.Super.Data).Table,
-            Equivalent => Equivalent_Node'Access);
-      end if;
-   end Overlap;
-
-   procedure Query_Element (
+   procedure Include (Container : in out Set; New_Item : Element_Type) is
       Position : Cursor;
-      Process : not null access procedure (Element : Element_Type)) is
+      Inserted : Boolean;
    begin
-      Process (Position.Element.all);
-   end Query_Element;
+      Insert (Container, New_Item, Position, Inserted);
+      if not Inserted then
+         Replace_Element (Container, Position, New_Item);
+      end if;
+   end Include;
 
    procedure Replace (Container : in out Set; New_Item : Element_Type) is
    begin
       Replace_Element (Container, Find (Container, New_Item), New_Item);
    end Replace;
 
-   procedure Replace_Element (
-      Container : in out Set;
-      Position : Cursor;
-      New_Item : Element_Type) is
+   procedure Exclude (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
    begin
       Unique (Container, True);
-      Free (Position.Element);
-      Allocate_Element (Position.Element, New_Item);
-   end Replace_Element;
-
-   procedure Reserve_Capacity (
-      Container : in out Set;
-      Capacity : Count_Type)
-   is
-      New_Capacity : constant Count_Type :=
-         Count_Type'Max (Capacity, Length (Container));
-   begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Indefinite_Hashed_Sets.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Hash_Tables.Rebuild (
+      Hash_Tables.Remove (
          Downcast (Container.Super.Data).Table,
-         New_Capacity);
-   end Reserve_Capacity;
-
-   procedure Symmetric_Difference (Target : in out Set; Source : Set) is
-   begin
-      if not Is_Empty (Source) then
-         Unique (Target, True);
-         Hash_Tables.Merge (
-            Downcast (Target.Super.Data).Table,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Table,
-            Downcast (Source.Super.Data).Length,
-            In_Only_Left => True,
-            In_Only_Right => True,
-            In_Both => False,
-            Equivalent => Equivalent_Node'Access,
-            Copy => Copy_Node'Access,
-            Free => Free_Node'Access);
-      end if;
-   end Symmetric_Difference;
-
-   function Symmetric_Difference (Left, Right : Set) return Set is
-   begin
-      return Result : Set do
-         if Is_Empty (Left) then
-            Assign (Result, Right);
-         elsif Is_Empty (Right) then
-            Assign (Result, Left);
-         else
-            Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => False,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
-         end if;
-      end return;
-   end Symmetric_Difference;
-
-   function To_Set (New_Item : Element_Type) return Set is
-   begin
-      return Result : Set do
-         Insert (Result, New_Item);
-      end return;
-   end To_Set;
+         Downcast (Container.Super.Data).Length,
+         Upcast (Position));
+      Free (Position);
+   end Delete;
 
    procedure Union (Target : in out Set; Source : Set) is
    begin
@@ -702,30 +509,223 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       end return;
    end Union;
 
-   overriding function "=" (Left, Right : Set) return Boolean is
-      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
-         return Boolean;
-      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
-         return Boolean is
-      begin
-         return Downcast (Left).Element.all = Downcast (Right).Element.all;
-      end Equivalent;
+   procedure Intersection (Target : in out Set; Source : Set) is
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
-         return False;
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
+      if Is_Empty (Source) then
+         Clear (Target);
       else
-         return Hash_Tables.Equivalent (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Left.Super.Data).Length,
-            Downcast (Right.Super.Data).Table,
-            Downcast (Right.Super.Data).Length,
-            Equivalent => Equivalent'Access);
+         Unique (Target, True);
+         Hash_Tables.Merge (
+            Downcast (Target.Super.Data).Table,
+            Downcast (Target.Super.Data).Length,
+            Downcast (Source.Super.Data).Table,
+            Downcast (Source.Super.Data).Length,
+            In_Only_Left => False,
+            In_Only_Right => False,
+            In_Both => True,
+            Equivalent => Equivalent_Node'Access,
+            Copy => Copy_Node'Access,
+            Free => Free_Node'Access);
       end if;
-   end "=";
+   end Intersection;
+
+   function Intersection (Left, Right : Set) return Set is
+   begin
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            null; -- Empty_Set;
+         else
+            Unique (Result, True);
+            Hash_Tables.Merge (
+               Downcast (Result.Super.Data).Table,
+               Downcast (Result.Super.Data).Length,
+               Downcast (Left.Super.Data).Table,
+               Downcast (Left.Super.Data).Length,
+               Downcast (Right.Super.Data).Table,
+               Downcast (Right.Super.Data).Length,
+               In_Only_Left => False,
+               In_Only_Right => False,
+               In_Both => True,
+               Equivalent => Equivalent_Node'Access,
+               Copy => Copy_Node'Access);
+         end if;
+      end return;
+   end Intersection;
+
+   procedure Difference (Target : in out Set; Source : Set) is
+   begin
+      if not Is_Empty (Target) and then not Is_Empty (Source) then
+         Unique (Target, True);
+         Hash_Tables.Merge (
+            Downcast (Target.Super.Data).Table,
+            Downcast (Target.Super.Data).Length,
+            Downcast (Source.Super.Data).Table,
+            Downcast (Source.Super.Data).Length,
+            In_Only_Left => True,
+            In_Only_Right => False,
+            In_Both => False,
+            Equivalent => Equivalent_Node'Access,
+            Copy => Copy_Node'Access,
+            Free => Free_Node'Access);
+      end if;
+   end Difference;
+
+   function Difference (Left, Right : Set) return Set is
+   begin
+      return Result : Set do
+         if Is_Empty (Left) or else Is_Empty (Right) then
+            Assign (Result, Left);
+         else
+            Unique (Result, True);
+            Hash_Tables.Merge (
+               Downcast (Result.Super.Data).Table,
+               Downcast (Result.Super.Data).Length,
+               Downcast (Left.Super.Data).Table,
+               Downcast (Left.Super.Data).Length,
+               Downcast (Right.Super.Data).Table,
+               Downcast (Right.Super.Data).Length,
+               In_Only_Left => True,
+               In_Only_Right => False,
+               In_Both => False,
+               Equivalent => Equivalent_Node'Access,
+               Copy => Copy_Node'Access);
+         end if;
+      end return;
+   end Difference;
+
+   procedure Symmetric_Difference (Target : in out Set; Source : Set) is
+   begin
+      if not Is_Empty (Source) then
+         Unique (Target, True);
+         Hash_Tables.Merge (
+            Downcast (Target.Super.Data).Table,
+            Downcast (Target.Super.Data).Length,
+            Downcast (Source.Super.Data).Table,
+            Downcast (Source.Super.Data).Length,
+            In_Only_Left => True,
+            In_Only_Right => True,
+            In_Both => False,
+            Equivalent => Equivalent_Node'Access,
+            Copy => Copy_Node'Access,
+            Free => Free_Node'Access);
+      end if;
+   end Symmetric_Difference;
+
+   function Symmetric_Difference (Left, Right : Set) return Set is
+   begin
+      return Result : Set do
+         if Is_Empty (Left) then
+            Assign (Result, Right);
+         elsif Is_Empty (Right) then
+            Assign (Result, Left);
+         else
+            Unique (Result, True);
+            Hash_Tables.Merge (
+               Downcast (Result.Super.Data).Table,
+               Downcast (Result.Super.Data).Length,
+               Downcast (Left.Super.Data).Table,
+               Downcast (Left.Super.Data).Length,
+               Downcast (Right.Super.Data).Table,
+               Downcast (Right.Super.Data).Length,
+               In_Only_Left => True,
+               In_Only_Right => True,
+               In_Both => False,
+               Equivalent => Equivalent_Node'Access,
+               Copy => Copy_Node'Access);
+         end if;
+      end return;
+   end Symmetric_Difference;
+
+   function Overlap (Left, Right : Set) return Boolean is
+   begin
+      if Is_Empty (Left) or else Is_Empty (Right) then
+         return False;
+      else
+         return Hash_Tables.Overlap (
+            Downcast (Left.Super.Data).Table,
+            Downcast (Right.Super.Data).Table,
+            Equivalent => Equivalent_Node'Access);
+      end if;
+   end Overlap;
+
+   function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
+   begin
+      if Is_Empty (Subset) then
+         return True;
+      elsif Is_Empty (Of_Set) then
+         return False;
+      else
+         return Hash_Tables.Is_Subset (
+            Downcast (Subset.Super.Data).Table,
+            Downcast (Of_Set.Super.Data).Table,
+            Equivalent => Equivalent_Node'Access);
+      end if;
+   end Is_Subset;
+
+   function First (Container : Set) return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+         Unique (Container'Unrestricted_Access.all, False);
+         return Downcast (Hash_Tables.First (
+            Downcast (Container.Super.Data).Table));
+      end if;
+   end First;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Find (Container : Set; Item : Element_Type) return Cursor is
+   begin
+      return Find (Container, Hash (Item), Item);
+   end Find;
+
+   function Contains (Container : Set; Item : Element_Type) return Boolean is
+   begin
+      return Find (Container, Item) /= null;
+   end Contains;
+
+   function Equivalent_Elements (Left, Right : Cursor)
+      return Boolean is
+   begin
+      return Equivalent_Elements (Left.Element.all, Right.Element.all);
+   end Equivalent_Elements;
+
+   function Equivalent_Elements (Left : Cursor; Right : Element_Type)
+      return Boolean is
+   begin
+      return Equivalent_Elements (Left.Element.all, Right);
+   end Equivalent_Elements;
+
+   procedure Iterate (
+      Container : Set'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Hash_Tables.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+      if not Is_Empty (Container) then
+         Unique (Set (Container'Unrestricted_Access.all), False);
+         Hash_Tables.Iterate (
+            Downcast (Container.Super.Data).Table,
+            Cast (Process));
+      end if;
+   end Iterate;
+
+   function Iterate (Container : Set)
+      return Set_Iterator_Interfaces.Forward_Iterator'Class is
+   begin
+      return Set_Iterator'(First => First (Container));
+   end Iterate;
 
    overriding procedure Adjust (Object : in out Set) is
    begin
@@ -769,23 +769,23 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             Key (Downcast (Position).Element.all));
       end Equivalent_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
-         return Constant_Reference_Type is
+      function Key (Position : Cursor) return Key_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Constant_Reference;
-
-      function Contains (Container : Set; Key : Key_Type) return Boolean is
-      begin
-         return Find (Container, Key) /= null;
-      end Contains;
+         return Key (Position.Element.all);
+      end Key;
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
       begin
          return Find (Container, Key).Element.all;
       end Element;
+
+      procedure Replace (
+         Container : in out Set;
+         Key : Key_Type;
+         New_Item : Element_Type) is
+      begin
+         Replace_Element (Container, Find (Container, Key), New_Item);
+      end Replace;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
          Position : Cursor := Find (Container, Key);
@@ -794,6 +794,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
             Delete (Container, Position);
          end if;
       end Exclude;
+
+      procedure Delete (Container : in out Set; Key : Key_Type) is
+         Position : Cursor := Find (Container, Key);
+      begin
+         Delete (Container, Position);
+      end Delete;
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
       begin
@@ -813,43 +819,10 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          end if;
       end Find;
 
-      procedure Delete (Container : in out Set; Key : Key_Type) is
-         Position : Cursor := Find (Container, Key);
+      function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
-         Delete (Container, Position);
-      end Delete;
-
-      function Key (Position : Cursor) return Key_Type is
-      begin
-         return Key (Position.Element.all);
-      end Key;
-
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Position : Cursor)
-         return Reference_Type is
-      begin
-         Unique (Container, True);
---  diff
-         return (Element => Position.Element.all'Access);
-      end Reference_Preserving_Key;
-
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Key : Key_Type)
-         return Reference_Type is
-      begin
-         Unique (Container, True);
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Reference_Preserving_Key;
-
-      procedure Replace (
-         Container : in out Set;
-         Key : Key_Type;
-         New_Item : Element_Type) is
-      begin
-         Replace_Element (Container, Find (Container, Key), New_Item);
-      end Replace;
+         return Find (Container, Key) /= null;
+      end Contains;
 
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
@@ -862,6 +835,33 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                Container,
                Position).Element.all);
       end Update_Element_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Position : Cursor)
+         return Reference_Type is
+      begin
+         Unique (Container, True);
+--  diff
+         return (Element => Position.Element.all'Access);
+      end Reference_Preserving_Key;
+
+      function Constant_Reference (
+         Container : aliased Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Constant_Reference;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+         Unique (Container, True);
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Reference_Preserving_Key;
 
    end Generic_Keys;
 

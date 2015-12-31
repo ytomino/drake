@@ -196,138 +196,45 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    --  implementation
 
---  diff (Assign)
---
---
---
---
---
---
-
-   function Ceiling (Container : Set; Item : Element_Type) return Cursor is
+   function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
    begin
---  diff
---  diff
---  diff
---  diff
-         declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Ceiling,
-               Context'Address,
-               Compare => Compare_Element'Access));
-         end;
---  diff
-   end Ceiling;
-
-   procedure Clear (Container : in out Set) is
-   begin
-      Free_Data (Container);
---  diff
---  diff
-   end Clear;
-
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
-      return Constant_Reference_Type
-   is
-      pragma Unreferenced (Container);
-   begin
-      return (Element => Position.Element.all'Access);
-   end Constant_Reference;
-
-   function Contains (Container : Set; Item : Element_Type) return Boolean is
-   begin
-      return Find (Container, Item) /= null;
-   end Contains;
-
---  diff (Copy)
---
---
---
---
---
---
---
---
---
-
-   procedure Delete (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
-   begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Set; Position : in out Cursor) is
-      Position_2 : Binary_Trees.Node_Access := Upcast (Position);
-   begin
---  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
-      Free_Node (Position_2);
-      Position := null;
-   end Delete;
-
-   procedure Difference (Target : in out Set; Source : Set) is
-   begin
---  diff
---  diff
-      Binary_Trees.Merge (
-         Target.Root,
-         Target.Length,
-         Source.Root,
-         In_Only_Left => True,
-         In_Only_Right => False,
-         In_Both => False,
-         Compare => Compare_Node'Access,
-         Copy => null,
-         Insert => null,
-         Remove => Base.Remove'Access,
-         Free => Free_Node'Access);
---  diff
-   end Difference;
-
---  diff (Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Element)
---
---
---
+      return not (Left < Right) and then not (Right < Left);
+   end Equivalent_Elements;
 
    function Empty_Set return Set is
    begin
       return (Finalization.Limited_Controlled with Root => null, Length => 0);
    end Empty_Set;
 
-   function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
-   end Equivalent_Elements;
+      return Position /= No_Element;
+   end Has_Element;
+
+--  diff ("=")
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Binary_Trees.Node_Access)
@@ -356,60 +263,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end Equivalent_Sets;
 
-   procedure Exclude (Container : in out Set; Item : Element_Type) is
-      Position : Cursor := Find (Container, Item);
-   begin
-      if Position /= null then
-         Delete (Container, Position);
-      end if;
-   end Exclude;
-
-   function Find (Container : Set; Item : Element_Type) return Cursor is
-   begin
---  diff
---  diff
---  diff
---  diff
-         declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Just,
-               Context'Address,
-               Compare => Compare_Element'Access));
-         end;
---  diff
-   end Find;
-
-   function First (Container : Set) return Cursor is
-   begin
-      return Downcast (Binary_Trees.First (Container.Root));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end First;
-
-   function Floor (Container : Set; Item : Element_Type) return Cursor is
-   begin
---  diff
---  diff
---  diff
---  diff
-         declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
-         begin
-            return Downcast (Binary_Trees.Find (
-               Container.Root,
-               Binary_Trees.Floor,
-               Context'Address,
-               Compare => Compare_Element'Access));
-         end;
---  diff
-   end Floor;
+--  diff (To_Set)
+--
+--
+--
+--
+--
 
 --  diff (Generic_Array_To_Set)
 --
@@ -420,12 +279,34 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
-   function Has_Element (Position : Cursor) return Boolean is
+   function Length (Container : Set) return Count_Type is
    begin
-      return Position /= No_Element;
-   end Has_Element;
+      return Container.Length;
+--  diff
+--  diff
+--  diff
+--  diff
+   end Length;
 
---  diff (Include)
+   function Is_Empty (Container : Set) return Boolean is
+   begin
+      return Container.Root = null;
+--  diff
+   end Is_Empty;
+
+   procedure Clear (Container : in out Set) is
+   begin
+      Free_Data (Container);
+--  diff
+--  diff
+   end Clear;
+
+--  diff (Element)
+--
+--
+--
+
+--  diff (Replace_Element)
 --
 --
 --
@@ -434,6 +315,53 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Position.Element.all);
+   end Query_Element;
+
+   function Constant_Reference (
+      Container : aliased Set;
+      Position : Cursor)
+      return Constant_Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Constant_Reference;
+
+--  diff (Assign)
+--
+--
+--
+--
+--
+--
+
+--  diff (Copy)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Move (Target : in out Set; Source : in out Set) is
+   begin
+      if Target.Root /= Source.Root then
+         Clear (Target);
+         Target.Root := Source.Root;
+         Target.Length := Source.Length;
+         Source.Root := null;
+         Source.Length := 0;
+      end if;
+   end Move;
 
    procedure Insert (
       Container : in out Set;
@@ -481,6 +409,90 @@ package body Ada.Containers.Limited_Ordered_Sets is
       end if;
    end Insert;
 
+--  diff (Include)
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Replace)
+--
+--
+--
+
+   procedure Exclude (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Set; Item : Element_Type) is
+      Position : Cursor := Find (Container, Item);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Set; Position : in out Cursor) is
+      Position_2 : Binary_Trees.Node_Access := Upcast (Position);
+   begin
+--  diff
+      Base.Remove (
+         Container.Root,
+         Container.Length,
+         Position_2);
+      Free_Node (Position_2);
+      Position := null;
+   end Delete;
+
+--  diff (Union)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Union)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
 --  diff
@@ -524,11 +536,101 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
-   function Is_Empty (Container : Set) return Boolean is
+   procedure Difference (Target : in out Set; Source : Set) is
    begin
-      return Container.Root = null;
 --  diff
-   end Is_Empty;
+--  diff
+      Binary_Trees.Merge (
+         Target.Root,
+         Target.Length,
+         Source.Root,
+         In_Only_Left => True,
+         In_Only_Right => False,
+         In_Both => False,
+         Compare => Compare_Node'Access,
+         Copy => null,
+         Insert => null,
+         Remove => Base.Remove'Access,
+         Free => Free_Node'Access);
+--  diff
+   end Difference;
+
+--  diff (Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+   function Overlap (Left, Right : Set) return Boolean is
+   begin
+--  diff
+--  diff
+--  diff
+      return Binary_Trees.Overlap (
+         Left.Root,
+         Right.Root,
+         Compare => Compare_Node'Access);
+--  diff
+   end Overlap;
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
@@ -543,6 +645,117 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Compare => Compare_Node'Access);
 --  diff
    end Is_Subset;
+
+   function First (Container : Set) return Cursor is
+   begin
+      return Downcast (Binary_Trees.First (Container.Root));
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end First;
+
+   function Last (Container : Set) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Last (Container.Root));
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Last;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Next (Upcast (Position)));
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Binary_Trees.Next (Upcast (Position)));
+   end Next;
+
+   function Previous (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   procedure Previous (Position : in out Cursor) is
+   begin
+      Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
+   end Previous;
+
+   function Find (Container : Set; Item : Element_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Just,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
+--  diff
+   end Find;
+
+   function Floor (Container : Set; Item : Element_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Floor,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
+--  diff
+   end Floor;
+
+   function Ceiling (Container : Set; Item : Element_Type) return Cursor is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Binary_Trees.Find (
+               Container.Root,
+               Binary_Trees.Ceiling,
+               Context'Address,
+               Compare => Compare_Element'Access));
+         end;
+--  diff
+   end Ceiling;
+
+   function Contains (Container : Set; Item : Element_Type) return Boolean is
+   begin
+      return Find (Container, Item) /= null;
+   end Contains;
+
+   function "<" (Left, Right : Cursor) return Boolean is
+   begin
+      return Left.Element.all < Right.Element.all;
+   end "<";
+
+   function "<" (Left : Cursor; Right : Element_Type) return Boolean is
+   begin
+      return Left.Element.all < Right;
+   end "<";
 
    procedure Iterate (
       Container : Set'Class;
@@ -559,6 +772,22 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Cast (Process));
 --  diff
    end Iterate;
+
+   procedure Reverse_Iterate (
+      Container : Set'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Binary_Trees.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+--  diff
+--  diff
+      Binary_Trees.Reverse_Iterate (
+         Container.Root,
+         Cast (Process));
+--  diff
+   end Reverse_Iterate;
 
    function Iterate (Container : Set)
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
@@ -581,235 +810,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
       end if;
       return Set_Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
-
-   function Last (Container : Set) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Last (Container.Root));
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Last;
-
-   function Length (Container : Set) return Count_Type is
-   begin
-      return Container.Length;
---  diff
---  diff
---  diff
---  diff
-   end Length;
-
-   procedure Move (Target : in out Set; Source : in out Set) is
-   begin
-      if Target.Root /= Source.Root then
-         Clear (Target);
-         Target.Root := Source.Root;
-         Target.Length := Source.Length;
-         Source.Root := null;
-         Source.Length := 0;
-      end if;
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Next (Upcast (Position)));
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Binary_Trees.Next (Upcast (Position)));
-   end Next;
-
-   function Overlap (Left, Right : Set) return Boolean is
-   begin
---  diff
---  diff
---  diff
-      return Binary_Trees.Overlap (
-         Left.Root,
-         Right.Root,
-         Compare => Compare_Node'Access);
---  diff
-   end Overlap;
-
-   function Previous (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   procedure Previous (Position : in out Cursor) is
-   begin
-      Position := Downcast (Binary_Trees.Previous (Upcast (Position)));
-   end Previous;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Position.Element.all);
-   end Query_Element;
-
---  diff (Replace)
---
---
---
-
---  diff (Replace_Element)
---
---
---
---
---
---
---
---
-
-   procedure Reverse_Iterate (
-      Container : Set'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Binary_Trees.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
---  diff
---  diff
-      Binary_Trees.Reverse_Iterate (
-         Container.Root,
-         Cast (Process));
---  diff
-   end Reverse_Iterate;
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (To_Set)
---
---
---
---
---
-
---  diff (Union)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Union)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff ("=")
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
-   function "<" (Left, Right : Cursor) return Boolean is
-   begin
-      return Left.Element.all < Right.Element.all;
-   end "<";
-
-   function "<" (Left : Cursor; Right : Element_Type) return Boolean is
-   begin
-      return Left.Element.all < Right;
-   end "<";
 
 --  diff (Adjust)
 --
@@ -879,52 +879,28 @@ package body Ada.Containers.Limited_Ordered_Sets is
          end if;
       end Compare_Key;
 
-      function Ceiling (Container : Set; Key : Key_Type) return Cursor is
+      function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
       begin
---  diff
---  diff
---  diff
---  diff
-            declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
-            begin
-               return Downcast (Binary_Trees.Find (
-                  Container.Root,
-                  Binary_Trees.Ceiling,
-                  Context'Address,
-                  Compare => Compare_Key'Access));
-            end;
---  diff
-      end Ceiling;
+         return not (Left < Right) and then not (Right < Left);
+      end Equivalent_Keys;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
-         return Constant_Reference_Type is
+      function Key (Position : Cursor) return Key_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Constant_Reference;
-
-      function Contains (Container : Set; Key : Key_Type) return Boolean is
-      begin
-         return Find (Container, Key) /= null;
-      end Contains;
-
-      procedure Delete (Container : in out Set; Key : Key_Type) is
-         Position : Cursor := Find (Container, Key);
-      begin
-         Delete (Container, Position);
-      end Delete;
+         return Key (Position.Element.all);
+      end Key;
 
 --  diff (Element)
 --
 --
 --
 
-      function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
-      begin
-         return not (Left < Right) and then not (Right < Left);
-      end Equivalent_Keys;
+--  diff (Replace)
+--
+--
+--
+--
+--
+--
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
          Position : Cursor := Find (Container, Key);
@@ -933,6 +909,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
             Delete (Container, Position);
          end if;
       end Exclude;
+
+      procedure Delete (Container : in out Set; Key : Key_Type) is
+         Position : Cursor := Find (Container, Key);
+      begin
+         Delete (Container, Position);
+      end Delete;
 
       function Find (Container : Set; Key : Key_Type) return Cursor is
       begin
@@ -970,37 +952,28 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
       end Floor;
 
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Position : Cursor)
-         return Reference_Type
-      is
-         pragma Unreferenced (Container);
-      begin
-         return (Element => Position.Element.all'Access);
-      end Reference_Preserving_Key;
-
-      function Reference_Preserving_Key (
-         Container : aliased in out Set;
-         Key : Key_Type)
-         return Reference_Type is
+      function Ceiling (Container : Set; Key : Key_Type) return Cursor is
       begin
 --  diff
-         return (Element => Find (Container, Key).Element.all'Access);
-      end Reference_Preserving_Key;
+--  diff
+--  diff
+--  diff
+            declare
+               Context : Context_Type := (Left => Key'Unrestricted_Access);
+            begin
+               return Downcast (Binary_Trees.Find (
+                  Container.Root,
+                  Binary_Trees.Ceiling,
+                  Context'Address,
+                  Compare => Compare_Key'Access));
+            end;
+--  diff
+      end Ceiling;
 
---  diff (Replace)
---
---
---
---
---
---
-
-      function Key (Position : Cursor) return Key_Type is
+      function Contains (Container : Set; Key : Key_Type) return Boolean is
       begin
-         return Key (Position.Element.all);
-      end Key;
+         return Find (Container, Key) /= null;
+      end Contains;
 
       procedure Update_Element_Preserving_Key (
          Container : in out Set;
@@ -1013,6 +986,33 @@ package body Ada.Containers.Limited_Ordered_Sets is
                Container,
                Position).Element.all);
       end Update_Element_Preserving_Key;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Position : Cursor)
+         return Reference_Type
+      is
+         pragma Unreferenced (Container);
+      begin
+         return (Element => Position.Element.all'Access);
+      end Reference_Preserving_Key;
+
+      function Constant_Reference (
+         Container : aliased Set;
+         Key : Key_Type)
+         return Constant_Reference_Type is
+      begin
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Constant_Reference;
+
+      function Reference_Preserving_Key (
+         Container : aliased in out Set;
+         Key : Key_Type)
+         return Reference_Type is
+      begin
+--  diff
+         return (Element => Find (Container, Key).Element.all'Access);
+      end Reference_Preserving_Key;
 
    end Generic_Keys;
 

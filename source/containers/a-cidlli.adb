@@ -167,21 +167,56 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    --  implementation
 
-   procedure Assign (Target : in out List; Source : List) is
+   function Empty_List return List is
    begin
-      Copy_On_Write.Assign (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-   end Assign;
+      return (Finalization.Controlled with Super => (null, null));
+   end Empty_List;
 
-   procedure Append (
-      Container : in out List;
-      New_Item : Element_Type;
-      Count : Count_Type := 1) is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      Insert (Container, null, New_Item, Count);
-   end Append;
+      return Position /= null;
+   end Has_Element;
+
+   overriding function "=" (Left, Right : List) return Boolean is
+      function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
+         return Boolean;
+      function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
+         return Boolean is
+      begin
+         return Downcast (Left).Element.all =
+            Downcast (Right).Element.all;
+      end Equivalent;
+   begin
+      if Is_Empty (Left) then
+         return Is_Empty (Right);
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
+      elsif Length (Left) = Length (Right) then
+         Unique (Left'Unrestricted_Access.all, False);
+         Unique (Right'Unrestricted_Access.all, False);
+         return Linked_Lists.Equivalent (
+            Downcast (Left.Super.Data).Last,
+            Downcast (Right.Super.Data).Last,
+            Equivalent'Access);
+      else
+         return False;
+      end if;
+   end "=";
+
+   function Length (Container : List) return Count_Type is
+   begin
+      if Container.Super.Data = null then
+         return 0;
+      else
+         return Downcast (Container.Super.Data).Length;
+      end if;
+   end Length;
+
+   function Is_Empty (Container : List) return Boolean is
+   begin
+      return Container.Super.Data = null
+         or else Downcast (Container.Super.Data).Last = null;
+   end Is_Empty;
 
    procedure Clear (Container : in out List) is
    begin
@@ -189,6 +224,36 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Container.Super'Access,
          Free => Free_Data'Access);
    end Clear;
+
+   function Element (Position : Cursor) return Element_Type is
+   begin
+      return Position.Element.all;
+   end Element;
+
+   procedure Replace_Element (
+      Container : in out List;
+      Position : Cursor;
+      New_Item : Element_Type) is
+   begin
+      Unique (Container, True);
+      Free (Position.Element);
+      Allocate_Element (Position.Element, New_Item);
+   end Replace_Element;
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Position.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out List'Class;
+      Position : Cursor;
+      Process : not null access procedure (Element : in out Element_Type)) is
+   begin
+      Process (Container.Reference (Position).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased List;
@@ -200,10 +265,23 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Contains (Container : List; Item : Element_Type) return Boolean is
+   function Reference (
+      Container : aliased in out List;
+      Position : Cursor)
+      return Reference_Type is
    begin
-      return Find (Container, Item) /= null;
-   end Contains;
+--  diff
+      Unique (Container, True);
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+   procedure Assign (Target : in out List; Source : List) is
+   begin
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+   end Assign;
 
    function Copy (Source : List) return List is
    begin
@@ -215,6 +293,101 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             Allocate => Allocate_Data'Access,
             Copy => Copy_Data'Access));
    end Copy;
+
+   procedure Move (Target : in out List; Source : in out List) is
+   begin
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Move;
+
+   procedure Insert (
+      Container : in out List;
+      Before : Cursor;
+      New_Item : Element_Type;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor;
+   begin
+      Insert (Container, Before, New_Item, Position, Count);
+   end Insert;
+
+   procedure Insert (
+      Container : in out List;
+      Before : Cursor;
+      New_Item : Element_Type;
+      Position : out Cursor;
+      Count : Count_Type := 1) is
+   begin
+      Unique (Container, True);
+      for I in 1 .. Count loop
+         declare
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+            X : Cursor;
+         begin
+            Allocate_Node (X, New_Item);
+--  diff
+--  diff
+            Base.Insert (
+               Downcast (Container.Super.Data).First,
+               Downcast (Container.Super.Data).Last,
+               Downcast (Container.Super.Data).Length,
+               Before => Upcast (Before),
+               New_Item => Upcast (X));
+            Position := X;
+         end;
+      end loop;
+   end Insert;
+
+--  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Prepend (
+      Container : in out List;
+      New_Item : Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (
+         Container,
+         Downcast (Downcast (Container.Super.Data).First),
+         New_Item,
+         Count);
+   end Prepend;
+
+   procedure Append (
+      Container : in out List;
+      New_Item : Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, null, New_Item, Count);
+   end Append;
 
    procedure Delete (
       Container : in out List;
@@ -257,257 +430,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end loop;
    end Delete_Last;
 
-   function Element (Position : Cursor) return Element_Type is
-   begin
-      return Position.Element.all;
-   end Element;
-
-   function Empty_List return List is
-   begin
-      return (Finalization.Controlled with Super => (null, null));
-   end Empty_List;
-
-   function Find (Container : List; Item : Element_Type) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
-         begin
-            return Downcast (Base.Find (
-               Downcast (Container.Super.Data).First,
-               Context'Address,
-               Equivalent => Equivalent_Element'Access));
-         end;
-      end if;
-   end Find;
-
-   function Find (Container : List; Item : Element_Type; Position : Cursor)
-      return Cursor
-   is
-      pragma Unreferenced (Container);
-      Context : Context_Type := (Left => Item'Unrestricted_Access);
-   begin
-      return Downcast (Base.Find (
-         Upcast (Position),
-         Context'Address,
-         Equivalent => Equivalent_Element'Access));
-   end Find;
-
-   function First (Container : List) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Downcast (Container.Super.Data).First);
-      end if;
-   end First;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= null;
-   end Has_Element;
-
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
-   procedure Insert (
-      Container : in out List;
-      Before : Cursor;
-      New_Item : Element_Type;
-      Position : out Cursor;
-      Count : Count_Type := 1) is
-   begin
-      Unique (Container, True);
-      for I in 1 .. Count loop
-         declare
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-            X : Cursor;
-         begin
-            Allocate_Node (X, New_Item);
---  diff
---  diff
-            Base.Insert (
-               Downcast (Container.Super.Data).First,
-               Downcast (Container.Super.Data).Last,
-               Downcast (Container.Super.Data).Length,
-               Before => Upcast (Before),
-               New_Item => Upcast (X));
-            Position := X;
-         end;
-      end loop;
-   end Insert;
-
-   procedure Insert (
-      Container : in out List;
-      Before : Cursor;
-      New_Item : Element_Type;
-      Count : Count_Type := 1)
-   is
-      Position : Cursor;
-   begin
-      Insert (Container, Before, New_Item, Position, Count);
-   end Insert;
-
-   function Is_Empty (Container : List) return Boolean is
-   begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Last = null;
-   end Is_Empty;
-
-   procedure Iterate (
-      Container : List'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Linked_Lists.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
-         Base.Iterate (
-            Downcast (Container.Super.Data).First,
-            Cast (Process));
-      end if;
-   end Iterate;
-
-   function Iterate (Container : List)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class is
-   begin
-      return List_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
-   end Iterate;
-
-   function Iterate (Container : List'Class; First, Last : Cursor)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class
-   is
-      pragma Unreferenced (Container);
-      Actual_First : Cursor := First;
-      Actual_Last : Cursor := Last;
-   begin
-      if Actual_Last < Actual_First then
-         Actual_First := No_Element;
-         Actual_Last := No_Element;
-      end if;
-      return List_Iterator'(First => Actual_First, Last => Actual_Last);
-   end Iterate;
-
-   function Last (Container : List) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Downcast (Container.Super.Data).Last);
-      end if;
-   end Last;
-
-   function Length (Container : List) return Count_Type is
-   begin
-      if Container.Super.Data = null then
-         return 0;
-      else
-         return Downcast (Container.Super.Data).Length;
-      end if;
-   end Length;
-
-   procedure Move (Target : in out List; Source : in out List) is
-   begin
-      Copy_On_Write.Move (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Prepend (
-      Container : in out List;
-      New_Item : Element_Type;
-      Count : Count_Type := 1) is
-   begin
-      Insert (
-         Container,
-         Downcast (Downcast (Container.Super.Data).First),
-         New_Item,
-         Count);
-   end Prepend;
-
-   function Previous (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   procedure Previous (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Position.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out List;
-      Position : Cursor)
-      return Reference_Type is
-   begin
---  diff
-      Unique (Container, True);
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
-   procedure Replace_Element (
-      Container : in out List;
-      Position : Cursor;
-      New_Item : Element_Type) is
-   begin
-      Unique (Container, True);
-      Free (Position.Element);
-      Allocate_Element (Position.Element, New_Item);
-   end Replace_Element;
-
    procedure Reverse_Elements (Container : in out List) is
    begin
       if not Is_Empty (Container) then
@@ -521,53 +443,26 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
    end Reverse_Elements;
 
-   function Reverse_Find (Container : List; Item : Element_Type)
-      return Cursor is
+   procedure Swap (Container : in out List; I, J : Cursor) is
    begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
-         begin
-            return Downcast (Linked_Lists.Reverse_Find (
-               Downcast (Container.Super.Data).Last,
-               Context'Address,
-               Equivalent => Equivalent_Element'Access));
-         end;
-      end if;
-   end Reverse_Find;
+      Unique (Container, True);
+      declare
+         Temp : constant Element_Access := I.Element;
+      begin
+         I.Element := J.Element;
+         J.Element := Temp;
+      end;
+   end Swap;
 
-   function Reverse_Find (
-      Container : List;
-      Item : Element_Type;
-      Position : Cursor) return Cursor
-   is
-      pragma Unreferenced (Container);
-      Context : Context_Type := (Left => Item'Unrestricted_Access);
+   procedure Swap_Links (Container : in out List; I, J : Cursor) is
    begin
-      return Downcast (Linked_Lists.Reverse_Find (
-         Upcast (Position),
-         Context'Address,
-         Equivalent => Equivalent_Element'Access));
-   end Reverse_Find;
-
-   procedure Reverse_Iterate (
-      Container : List'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Linked_Lists.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
-         Linked_Lists.Reverse_Iterate (
-            Downcast (Container.Super.Data).Last,
-            Cast (Process));
-      end if;
-   end Reverse_Iterate;
+      Unique (Container, True);
+      Base.Swap_Links (
+         Downcast (Container.Super.Data).First,
+         Downcast (Container.Super.Data).Last,
+         Upcast (I),
+         Upcast (J));
+   end Swap_Links;
 
    procedure Splice (
       Target : in out List;
@@ -633,65 +528,179 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Upcast (Position));
    end Splice;
 
-   procedure Swap (Container : in out List; I, J : Cursor) is
+   function First (Container : List) return Cursor is
    begin
-      Unique (Container, True);
-      declare
-         Temp : constant Element_Access := I.Element;
-      begin
-         I.Element := J.Element;
-         J.Element := Temp;
-      end;
-   end Swap;
-
-   procedure Swap_Links (Container : in out List; I, J : Cursor) is
-   begin
-      Unique (Container, True);
-      Base.Swap_Links (
-         Downcast (Container.Super.Data).First,
-         Downcast (Container.Super.Data).Last,
-         Upcast (I),
-         Upcast (J));
-   end Swap_Links;
-
-   procedure Update_Element (
-      Container : in out List'Class;
-      Position : Cursor;
-      Process : not null access procedure (Element : in out Element_Type)) is
-   begin
-      Process (Container.Reference (Position).Element.all);
-   end Update_Element;
-
-   overriding function "=" (Left, Right : List) return Boolean is
-      function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
-         return Boolean;
-      function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
-         return Boolean is
-      begin
-         return Downcast (Left).Element.all =
-            Downcast (Right).Element.all;
-      end Equivalent;
-   begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
-      elsif Length (Left) = Length (Right) then
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
-         return Linked_Lists.Equivalent (
-            Downcast (Left.Super.Data).Last,
-            Downcast (Right.Super.Data).Last,
-            Equivalent'Access);
+      if Is_Empty (Container) then
+         return null;
       else
-         return False;
+         Unique (Container'Unrestricted_Access.all, False);
+         return Downcast (Downcast (Container.Super.Data).First);
       end if;
-   end "=";
+   end First;
+
+   function Last (Container : List) return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+         Unique (Container'Unrestricted_Access.all, False);
+         return Downcast (Downcast (Container.Super.Data).Last);
+      end if;
+   end Last;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   function Previous (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Super.Previous);
+   end Previous;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Previous (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Super.Previous);
+   end Previous;
+
+   function Find (
+      Container : List;
+      Item : Element_Type)
+      return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+         Unique (Container'Unrestricted_Access.all, False);
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Base.Find (
+               Downcast (Container.Super.Data).First,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
+      end if;
+   end Find;
+
+   function Find (
+      Container : List;
+      Item : Element_Type;
+      Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Container);
+      Context : Context_Type := (Left => Item'Unrestricted_Access);
+   begin
+      return Downcast (Base.Find (
+         Upcast (Position),
+         Context'Address,
+         Equivalent => Equivalent_Element'Access));
+   end Find;
+
+   function Reverse_Find (
+      Container : List;
+      Item : Element_Type)
+      return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+         Unique (Container'Unrestricted_Access.all, False);
+         declare
+            Context : Context_Type := (Left => Item'Unrestricted_Access);
+         begin
+            return Downcast (Linked_Lists.Reverse_Find (
+               Downcast (Container.Super.Data).Last,
+               Context'Address,
+               Equivalent => Equivalent_Element'Access));
+         end;
+      end if;
+   end Reverse_Find;
+
+   function Reverse_Find (
+      Container : List;
+      Item : Element_Type;
+      Position : Cursor)
+      return Cursor
+   is
+      pragma Unreferenced (Container);
+      Context : Context_Type := (Left => Item'Unrestricted_Access);
+   begin
+      return Downcast (Linked_Lists.Reverse_Find (
+         Upcast (Position),
+         Context'Address,
+         Equivalent => Equivalent_Element'Access));
+   end Reverse_Find;
+
+   function Contains (Container : List; Item : Element_Type) return Boolean is
+   begin
+      return Find (Container, Item) /= null;
+   end Contains;
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+   procedure Iterate (
+      Container : List'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+      if not Is_Empty (Container) then
+         Unique (List (Container'Unrestricted_Access.all), False);
+         Base.Iterate (
+            Downcast (Container.Super.Data).First,
+            Cast (Process));
+      end if;
+   end Iterate;
+
+   procedure Reverse_Iterate (
+      Container : List'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+      if not Is_Empty (Container) then
+         Unique (List (Container'Unrestricted_Access.all), False);
+         Linked_Lists.Reverse_Iterate (
+            Downcast (Container.Super.Data).Last,
+            Cast (Process));
+      end if;
+   end Reverse_Iterate;
+
+   function Iterate (Container : List)
+      return List_Iterator_Interfaces.Reversible_Iterator'Class is
+   begin
+      return List_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
+   end Iterate;
+
+   function Iterate (Container : List'Class; First, Last : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
+   begin
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
+      end if;
+      return List_Iterator'(First => Actual_First, Last => Actual_Last);
+   end Iterate;
 
    overriding procedure Adjust (Object : in out List) is
    begin

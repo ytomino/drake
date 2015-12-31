@@ -174,6 +174,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
 
 --  diff (Reverse_Find)
 --
@@ -219,26 +220,35 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
+
       function Is_Sorted (Container : List) return Boolean;
+
       procedure Sort (Container : in out List);
+
       procedure Merge (Target : in out List; Source : in out List);
+
    end Generic_Sorting;
 
+   --  extended
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is
       function "=" (Left, Right : List) return Boolean;
-      function Find (Container : List; Item : Element_Type) return Cursor;
+      function Find (Container : List; Item : Element_Type)
+         return Cursor;
       function Find (Container : List; Item : Element_Type; Position : Cursor)
          return Cursor;
-      function Reverse_Find (Container : List; Item : Element_Type)
+      function Reverse_Find (
+         Container : List;
+         Item : Element_Type)
          return Cursor;
       function Reverse_Find (
          Container : List;
          Item : Element_Type;
          Position : Cursor)
          return Cursor;
-      function Contains (Container : List; Item : Element_Type) return Boolean;
+      function Contains (Container : List; Item : Element_Type)
+         return Boolean;
    end Equivalents;
 
 private

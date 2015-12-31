@@ -42,6 +42,12 @@ package Ada.Containers.Hashed_Sets is
 
    function To_Set (New_Item : Element_Type) return Set;
 
+   --  extended
+   generic
+      type Index_Type is (<>);
+      type Element_Array is array (Index_Type range <>) of Element_Type;
+   function Generic_Array_To_Set (S : Element_Array) return Set;
+
    function Capacity (Container : Set) return Count_Type;
 
    procedure Reserve_Capacity (
@@ -230,11 +236,12 @@ package Ada.Containers.Hashed_Sets is
 
    end Generic_Keys;
 
-   --  extended
-   generic
-      type Index_Type is (<>);
-      type Element_Array is array (Index_Type range <>) of Element_Type;
-   function Generic_Array_To_Set (S : Element_Array) return Set;
+--  diff (Equivalents)
+--
+--
+--
+--
+--
 
 private
 

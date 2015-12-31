@@ -43,6 +43,12 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function To_Set (New_Item : Element_Type) return Set;
 
+--  diff (Generic_Array_To_Set)
+--
+--
+--
+--
+
    function Length (Container : Set) return Count_Type;
 
    function Is_Empty (Container : Set) return Boolean;
@@ -261,7 +267,8 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    end Generic_Keys;
 
---  diff (Generic_Array_To_Set)
+--  diff (Equivalents)
+--
 --
 --
 --

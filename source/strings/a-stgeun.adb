@@ -687,7 +687,7 @@ package body Ada.Strings.Generic_Unbounded is
                         Low,
                         High,
                         By,
-                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target => Result.Data.Items.all,
                         Target_Last => Dummy_Last);
                   end;
                end if;
@@ -729,7 +729,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Unique (Source); -- for overwriting
                   New_Length := Old_Length;
                   Fixed_Functions.Replace_Slice (
-                     Source.Data.Items (1 .. Old_Length),
+                     Source.Data.Items.all, -- (1 .. Source.Length)
                      New_Length,
                      Low,
                      High,
@@ -762,7 +762,7 @@ package body Ada.Strings.Generic_Unbounded is
                         Source.Data.Items (1 .. Source.Length),
                         Before,
                         New_Item,
-                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target => Result.Data.Items.all,
                         Target_Last => Dummy_Last);
                   end;
                end if;
@@ -794,7 +794,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Unique (Source); -- for overwriting
                   New_Length := Old_Length;
                   Fixed_Functions.Insert (
-                     Source.Data.Items (1 .. Old_Length),
+                     Source.Data.Items.all, -- (1 .. Source.Length)
                      New_Length,
                      Before,
                      New_Item);
@@ -857,7 +857,7 @@ package body Ada.Strings.Generic_Unbounded is
                         Source.Data.Items (1 .. Source.Length),
                         From,
                         Through,
-                        Target => Result.Data.Items (1 .. Result.Length),
+                        Target => Result.Data.Items.all,
                         Target_Last => Dummy_Last);
                   end;
                end if;
@@ -885,7 +885,7 @@ package body Ada.Strings.Generic_Unbounded is
                   New_Length := Old_Length;
                   Unique (Source); -- for overwriting
                   Fixed_Functions.Delete (
-                     Source.Data.Items (1 .. Old_Length),
+                     Source.Data.Items.all, -- (1 .. Old_Length)
                      New_Length,
                      From,
                      Through);
@@ -950,7 +950,7 @@ package body Ada.Strings.Generic_Unbounded is
                      Source.Data.Items (1 .. Source.Length),
                      Count,
                      Pad,
-                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target => Result.Data.Items.all,
                      Target_Last => Dummy_Last);
                end;
             else
@@ -973,7 +973,7 @@ package body Ada.Strings.Generic_Unbounded is
             begin
                Set_Length (Source, Count);
                Fixed_Functions.Head (
-                  Source.Data.Items (1 .. Source.Length),
+                  Source.Data.Items.all, -- (1 .. Count)
                   New_Last,
                   Count,
                   Pad);
@@ -1001,7 +1001,7 @@ package body Ada.Strings.Generic_Unbounded is
                      Source.Data.Items (1 .. Source.Length),
                      Count,
                      Pad,
-                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target => Result.Data.Items.all,
                      Target_Last => Dummy_Last);
                end;
             else
@@ -1023,11 +1023,12 @@ package body Ada.Strings.Generic_Unbounded is
                Dummy_Last : Natural;
             begin
                Set_Length (Source, Integer'Max (Count, Old_Length));
+               Unique (Source); -- for overwriting
                Fixed_Functions.Tail (
                   Source.Data.Items (1 .. Old_Length),
                   Count,
                   Pad,
-                  Target => Source.Data.Items (1 .. Source.Length), -- copying
+                  Target => Source.Data.Items.all, -- copying
                   Target_Last => Dummy_Last);
                Set_Length (Source, Count);
             end;
@@ -1322,7 +1323,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Fixed_Maps.Translate (
                      Source.Data.Items (1 .. Source.Length),
                      Mapping,
-                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target => Result.Data.Items.all,
                      Target_Last => New_Length);
                   Set_Length (Result, New_Length);
                end;
@@ -1353,7 +1354,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Fixed_Maps.Translate (
                      Source.Data.Items (1 .. Source.Length),
                      Mapping,
-                     Target => Result.Data.Items (1 .. Result.Length),
+                     Target => Result.Data.Items.all,
                      Target_Last => New_Length);
                   Set_Length (Result, New_Length);
                end;

@@ -48,8 +48,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    end Elementary_Functions;
 
-   function Minor is
-      new Generic_Arrays.Minor (Real'Base, Real_Matrix);
+   function Minor is new Generic_Arrays.Minor (Real'Base, Real_Matrix);
       --  for Inverse and Determinant
 
    --  implementation

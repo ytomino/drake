@@ -186,68 +186,92 @@ package body Ada.Containers.Vectors is
 
    --  implementation
 
-   procedure Assign (Target : in out Vector; Source : Vector) is
+   function Empty_Vector return Vector is
    begin
-      Copy_On_Write.Assign (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-      Target.Length := Source.Length;
-   end Assign;
+      return (Finalization.Controlled with
+         Super => <>,
+         Length => 0);
+   end Empty_Vector;
 
-   procedure Append (Container : in out Vector; New_Item : Vector) is
+   function Has_Element (Position : Cursor) return Boolean is
    begin
-      if New_Item.Length > 0 then
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-         begin
-            if Old_Length = 0 then
-               Assign (Container, New_Item);
-            else
-               Set_Length (Container, Old_Length + New_Item.Length);
-               declare
-                  subtype R1 is
-                     Index_Type range
-                        Index_Type'First + Index_Type'Base (Old_Length) ..
-                        Last_Index (Container);
-                  subtype R2 is
-                     Index_Type range
-                        Index_Type'First ..
-                        Last_Index (New_Item);
-               begin
-                  Downcast (Container.Super.Data).Items (R1) :=
-                     Downcast (New_Item.Super.Data).Items (R2);
-               end;
---  diff
---  diff
---  diff
---  diff
+      return Position > No_Index;
+   end Has_Element;
+
+   overriding function "=" (Left, Right : Vector) return Boolean is
+   begin
+      if Left.Length /= Right.Length then
+         return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
+      else
+         for I in Index_Type'First .. Last_Index (Left) loop
+            if Downcast (Left.Super.Data).Items (I) /=
+               Downcast (Right.Super.Data).Items (I)
+            then
+               return False;
             end if;
-         end;
-      end if;
-   end Append;
-
-   procedure Append (
-      Container : in out Vector;
-      New_Item : Element_Type;
-      Count : Count_Type := 1)
-   is
-      Old_Length : constant Count_Type := Container.Length;
-   begin
-      Set_Length (Container, Old_Length + Count);
-      for I in
-         Index_Type'First + Index_Type'Base (Old_Length) ..
-         Last_Index (Container)
-      loop
-         declare
-            E : Element_Type
-               renames Downcast (Container.Super.Data).Items (I);
-         begin
 --  diff
-            E := New_Item;
-         end;
-      end loop;
-   end Append;
+--  diff
+--  diff
+--  diff
+--  diff
+         end loop;
+         return True;
+      end if;
+   end "=";
+
+   function To_Vector (Length : Count_Type) return Vector is
+   begin
+      return Result : Vector do
+         Insert_Space (Result, Index_Type'First, Length);
+      end return;
+   end To_Vector;
+
+   function To_Vector (New_Item : Element_Type; Length : Count_Type)
+      return Vector is
+   begin
+      return Result : Vector do
+         Append (Result, New_Item, Length);
+      end return;
+   end To_Vector;
+
+   function Generic_Array_To_Vector (S : Element_Array) return Vector is
+   begin
+      return Array_To_Vector (Vectors.Element_Array (S), 0);
+   end Generic_Array_To_Vector;
+
+   function "&" (Left, Right : Vector) return Vector is
+   begin
+      return Result : Vector := Left do
+         Append (Result, Right);
+      end return;
+   end "&";
+
+   function "&" (Left : Vector; Right : Element_Type) return Vector is
+   begin
+      return Result : Vector := Left do
+         Append (Result, Right);
+      end return;
+   end "&";
+
+   function "&" (Left : Element_Type; Right : Vector) return Vector is
+   begin
+      return Result : Vector do
+         Reserve_Capacity (Result, 1 + Right.Length);
+         Append (Result, Left);
+         Append (Result, Right);
+      end return;
+   end "&";
+
+   function "&" (Left, Right : Element_Type) return Vector is
+   begin
+      return Result : Vector do
+         Reserve_Capacity (Result, 2);
+         Append (Result, Left);
+         Append (Result, Right);
+      end return;
+   end "&";
 
    function Capacity (Container : Vector) return Count_Type is
    begin
@@ -258,6 +282,57 @@ package body Ada.Containers.Vectors is
       end if;
    end Capacity;
 
+   procedure Reserve_Capacity (
+      Container : in out Vector;
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Container.Length);
+   begin
+      Copy_On_Write.Unique (
+         Container.Super'Access,
+         Container.Length,
+         Vectors.Capacity (Container),
+         New_Capacity,
+         True,
+         Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Reserve_Capacity;
+
+   function Length (Container : Vector) return Count_Type is
+   begin
+      return Container.Length;
+   end Length;
+
+   procedure Set_Length (Container : in out Vector; Length : Count_Type) is
+   begin
+      Copy_On_Write.Set_Length (
+         Container.Super'Access,
+         Container.Length,
+         Capacity (Container),
+         Length,
+         Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+      Container.Length := Length;
+   end Set_Length;
+
+   function Is_Empty (Container : Vector) return Boolean is
+   begin
+      return Container.Length = 0;
+   end Is_Empty;
+
    procedure Clear (Container : in out Vector) is
    begin
       Copy_On_Write.Clear (
@@ -266,13 +341,52 @@ package body Ada.Containers.Vectors is
       Container.Length := 0;
    end Clear;
 
-   function Constant_Indexing (
-      Container : aliased Vector'Class;
-      Index : Index_Type)
-      return Constant_Reference_Type is
+   function To_Cursor (Container : Vector; Index : Extended_Index)
+      return Cursor
+   is
+      pragma Unreferenced (Container);
    begin
-      return Constant_Reference (Container, Index);
-   end Constant_Indexing;
+      return Cursor (Index);
+   end To_Cursor;
+
+   function Element (
+      Container : Vector'Class;
+      Index : Index_Type)
+      return Element_Type is
+   begin
+      return Container.Constant_Reference (Index).Element.all;
+   end Element;
+
+   procedure Replace_Element (
+      Container : in out Vector;
+      Index : Index_Type;
+      New_Item : Element_Type) is
+   begin
+      Unique (Container, True);
+      declare
+         E : Element_Type
+            renames Downcast (Container.Super.Data).Items (Index);
+      begin
+--  diff
+         E := New_Item;
+      end;
+   end Replace_Element;
+
+   procedure Query_Element (
+      Container : Vector'Class;
+      Index : Index_Type;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Container.Constant_Reference (Index).Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out Vector'Class;
+      Index : Index_Type;
+      Process : not null access procedure (Element : in out Element_Type)) is
+   begin
+      Process (Container.Reference (Index).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased Vector;
@@ -287,38 +401,27 @@ package body Ada.Containers.Vectors is
       end;
    end Constant_Reference;
 
-   function Constant_Reference (
-      Container : aliased Vector)
-      return Slicing.Constant_Reference_Type is
+   function Reference (
+      Container : aliased in out Vector;
+      Index : Index_Type)
+      return Reference_Type is
    begin
-      return Constant_Reference (
-         Container,
-         Index_Type'First,
-         Last_Index (Container));
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Container : aliased Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
-      return Slicing.Constant_Reference_Type is
-   begin
-      Unique (Container'Unrestricted_Access.all, False);
+      Unique (Container, True);
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         return Slicing.Constant_Slice (
-            Element_Array_Access'(Data.Items'Unrestricted_Access).all,
-            First_Index,
-            Last_Index);
+         return (Element => Data.Items (Index)'Access);
       end;
-   end Constant_Reference;
+   end Reference;
 
-   function Contains (Container : Vector; Item : Element_Type)
-      return Boolean is
+   procedure Assign (Target : in out Vector; Source : Vector) is
    begin
-      return Find_Index (Container, Item) /= No_Index;
-   end Contains;
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+   end Assign;
 
    function Copy (Source : Vector; Capacity : Count_Type := 0) return Vector is
    begin
@@ -327,132 +430,14 @@ package body Ada.Containers.Vectors is
       end return;
    end Copy;
 
-   procedure Delete (
-      Container : in out Vector;
-      Index : Extended_Index;
-      Count : Count_Type := 1) is
+   procedure Move (Target : in out Vector; Source : in out Vector) is
    begin
-      if Index + Index_Type'Base (Count) =
-         Index_Type'First + Index_Type'Base (Container.Length)
-      then
-         Delete_Last (Container, Count);
-      else
-         Unique (Container, True);
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-            Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length))
-               - (Index + Index_Type'Base (Count))
-               - 1;
-            Before : constant Index_Type := Index + Index_Type'Base (Count);
-            After : constant Index_Type := Index;
-         begin
-            Set_Length (Container, Old_Length - Count);
---  diff
---  diff
---  diff
-            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
-               Downcast (Container.Super.Data).Items
-                  (Before .. Before + Moving);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-         end;
-      end if;
-   end Delete;
-
-   procedure Delete_First (
-      Container : in out Vector;
-      Count : Count_Type := 1) is
-   begin
-      Delete (Container, Index_Type'First, Count => Count);
-   end Delete_First;
-
-   procedure Delete_Last (
-      Container : in out Vector;
-      Count : Count_Type := 1) is
-   begin
-      Set_Length (Container, Container.Length - Count);
-   end Delete_Last;
-
-   function Element (Container : Vector'Class; Index : Index_Type)
-      return Element_Type is
-   begin
-      return Container.Constant_Reference (Index).Element.all;
-   end Element;
-
-   function Empty_Vector return Vector is
-   begin
-      return (Finalization.Controlled with
-         Super => <>,
-         Length => 0);
-   end Empty_Vector;
-
-   function Find (Container : Vector; Item : Element_Type) return Cursor is
-   begin
-      return Find (Container, Item, Index_Type'First);
-   end Find;
-
-   function Find (
-      Container : Vector;
-      Item : Element_Type;
-      Position : Cursor) return Cursor is
-   begin
-      return Find_Index (Container, Item, Position);
-   end Find;
-
-   function Find_Index (
-      Container : Vector;
-      Item : Element_Type;
-      Index : Index_Type := Index_Type'First)
-      return Extended_Index is
-   begin
-      for I in Index .. Last_Index (Container) loop
-         if Downcast (Container.Super.Data).Items (I) = Item then
---  diff
---  diff
---  diff
-            return I;
-         end if;
-      end loop;
-      return No_Index;
-   end Find_Index;
-
-   function First (Container : Vector) return Cursor is
-   begin
-      if Container.Length = 0 then
-         return No_Element;
-      else
-         return Index_Type'First;
-      end if;
-   end First;
-
-   function First_Index (Container : Vector) return Index_Type is
-      pragma Unreferenced (Container);
-   begin
-      return Index_Type'First;
-   end First_Index;
-
-   function Generic_Array_To_Vector (S : Element_Array) return Vector is
-   begin
-      return Array_To_Vector (Vectors.Element_Array (S), 0);
-   end Generic_Array_To_Vector;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position > No_Index;
-   end Has_Element;
-
-   function Indexing (
-      Container : aliased in out Vector'Class;
-      Index : Index_Type)
-      return Reference_Type is
-   begin
-      return Reference (Container, Index);
-   end Indexing;
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+   end Move;
 
    procedure Insert (
       Container : in out Vector;
@@ -523,6 +508,77 @@ package body Ada.Containers.Vectors is
       end loop;
    end Insert;
 
+   procedure Prepend (
+      Container : in out Vector;
+      New_Item : Vector) is
+   begin
+      Insert (Container, Index_Type'First, New_Item);
+   end Prepend;
+
+   procedure Prepend (
+      Container : in out Vector;
+      New_Item : Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, Index_Type'First, New_Item, Count);
+   end Prepend;
+
+   procedure Append (
+      Container : in out Vector;
+      New_Item : Vector) is
+   begin
+      if New_Item.Length > 0 then
+         declare
+            Old_Length : constant Count_Type := Container.Length;
+         begin
+            if Old_Length = 0 then
+               Assign (Container, New_Item);
+            else
+               Set_Length (Container, Old_Length + New_Item.Length);
+               declare
+                  subtype R1 is
+                     Index_Type range
+                        Index_Type'First + Index_Type'Base (Old_Length) ..
+                        Last_Index (Container);
+                  subtype R2 is
+                     Index_Type range
+                        Index_Type'First ..
+                        Last_Index (New_Item);
+               begin
+                  Downcast (Container.Super.Data).Items (R1) :=
+                     Downcast (New_Item.Super.Data).Items (R2);
+               end;
+--  diff
+--  diff
+--  diff
+--  diff
+            end if;
+         end;
+      end if;
+   end Append;
+
+   procedure Append (
+      Container : in out Vector;
+      New_Item : Element_Type;
+      Count : Count_Type := 1)
+   is
+      Old_Length : constant Count_Type := Container.Length;
+   begin
+      Set_Length (Container, Old_Length + Count);
+      for I in
+         Index_Type'First + Index_Type'Base (Old_Length) ..
+         Last_Index (Container)
+      loop
+         declare
+            E : Element_Type
+               renames Downcast (Container.Super.Data).Items (I);
+         begin
+--  diff
+            E := New_Item;
+         end;
+      end loop;
+   end Append;
+
    procedure Insert_Space (
       Container : in out Vector;
       Before : Extended_Index;
@@ -567,10 +623,172 @@ package body Ada.Containers.Vectors is
       end if;
    end Insert_Space;
 
-   function Is_Empty (Container : Vector) return Boolean is
+   procedure Delete (
+      Container : in out Vector;
+      Index : Extended_Index;
+      Count : Count_Type := 1) is
    begin
-      return Container.Length = 0;
-   end Is_Empty;
+      if Index + Index_Type'Base (Count) =
+         Index_Type'First + Index_Type'Base (Container.Length)
+      then
+         Delete_Last (Container, Count);
+      else
+         Unique (Container, True);
+         declare
+            Old_Length : constant Count_Type := Container.Length;
+            Moving : constant Index_Type'Base :=
+               (Index_Type'First + Index_Type'Base (Old_Length))
+               - (Index + Index_Type'Base (Count))
+               - 1;
+            Before : constant Index_Type := Index + Index_Type'Base (Count);
+            After : constant Index_Type := Index;
+         begin
+            Set_Length (Container, Old_Length - Count);
+--  diff
+--  diff
+--  diff
+            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
+               Downcast (Container.Super.Data).Items
+                  (Before .. Before + Moving);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+         end;
+      end if;
+   end Delete;
+
+   procedure Delete_First (
+      Container : in out Vector;
+      Count : Count_Type := 1) is
+   begin
+      Delete (Container, Index_Type'First, Count => Count);
+   end Delete_First;
+
+   procedure Delete_Last (
+      Container : in out Vector;
+      Count : Count_Type := 1) is
+   begin
+      Set_Length (Container, Container.Length - Count);
+   end Delete_Last;
+
+   procedure Reverse_Elements (Container : in out Vector) is
+   begin
+      Unique (Container, True);
+      Array_Sorting.In_Place_Reverse (
+         Index_Type'Pos (Index_Type'First),
+         Index_Type'Pos (Last_Index (Container)),
+         Data_Cast.To_Address (Downcast (Container.Super.Data)),
+         Swap => Swap_Element'Access);
+   end Reverse_Elements;
+
+   procedure Swap (Container : in out Vector; I, J : Index_Type) is
+   begin
+      Unique (Container, True);
+      Swap_Element (
+         Index_Type'Pos (I),
+         Index_Type'Pos (J),
+         Data_Cast.To_Address (Downcast (Container.Super.Data)));
+   end Swap;
+
+   function First_Index (Container : Vector) return Index_Type is
+      pragma Unreferenced (Container);
+   begin
+      return Index_Type'First;
+   end First_Index;
+
+   function First (Container : Vector) return Cursor is
+   begin
+      if Container.Length = 0 then
+         return No_Element;
+      else
+         return Index_Type'First;
+      end if;
+   end First;
+
+   function Last_Index (Container : Vector) return Extended_Index is
+   begin
+      return Index_Type'First - 1 + Index_Type'Base (Container.Length);
+   end Last_Index;
+
+   function Find_Index (
+      Container : Vector;
+      Item : Element_Type;
+      Index : Index_Type := Index_Type'First)
+      return Extended_Index is
+   begin
+      for I in Index .. Last_Index (Container) loop
+         if Downcast (Container.Super.Data).Items (I) = Item then
+--  diff
+--  diff
+--  diff
+            return I;
+         end if;
+      end loop;
+      return No_Index;
+   end Find_Index;
+
+   function Find (
+      Container : Vector;
+      Item : Element_Type)
+      return Cursor is
+   begin
+      return Find (Container, Item, Index_Type'First);
+   end Find;
+
+   function Find (
+      Container : Vector;
+      Item : Element_Type;
+      Position : Cursor)
+      return Cursor is
+   begin
+      return Find_Index (Container, Item, Position);
+   end Find;
+
+   function Reverse_Find_Index (
+      Container : Vector;
+      Item : Element_Type;
+      Index : Index_Type := Index_Type'Last)
+      return Extended_Index
+   is
+      Start : constant Extended_Index :=
+         Extended_Index'Min (Index, Last_Index (Container));
+   begin
+      for I in reverse Index_Type'First .. Start loop
+         if Downcast (Container.Super.Data).Items (I) = Item then
+--  diff
+--  diff
+--  diff
+            return I;
+         end if;
+      end loop;
+      return No_Index;
+   end Reverse_Find_Index;
+
+   function Reverse_Find (
+      Container : Vector;
+      Item : Element_Type)
+      return Cursor is
+   begin
+      return Reverse_Find_Index (Container, Item);
+   end Reverse_Find;
+
+   function Reverse_Find (
+      Container : Vector;
+      Item : Element_Type;
+      Position : Cursor)
+      return Cursor is
+   begin
+      return Reverse_Find_Index (Container, Item, Position);
+   end Reverse_Find;
+
+   function Contains (Container : Vector; Item : Element_Type)
+      return Boolean is
+   begin
+      return Find_Index (Container, Item) /= No_Index;
+   end Contains;
 
    procedure Iterate (
       Container : Vector'Class;
@@ -580,6 +798,15 @@ package body Ada.Containers.Vectors is
          Process (I);
       end loop;
    end Iterate;
+
+   procedure Reverse_Iterate (
+      Container : Vector'Class;
+      Process : not null access procedure (Position : Cursor)) is
+   begin
+      for I in reverse Index_Type'First .. Last_Index (Container) loop
+         Process (I);
+      end loop;
+   end Reverse_Iterate;
 
    function Iterate (Container : Vector)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class is
@@ -603,58 +830,32 @@ package body Ada.Containers.Vectors is
       return Vector_Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
 
-   function Last_Index (Container : Vector) return Extended_Index is
+   function Constant_Reference (
+      Container : aliased Vector)
+      return Slicing.Constant_Reference_Type is
    begin
-      return Index_Type'First - 1 + Index_Type'Base (Container.Length);
-   end Last_Index;
+      return Constant_Reference (
+         Container,
+         Index_Type'First,
+         Last_Index (Container));
+   end Constant_Reference;
 
-   function Length (Container : Vector) return Count_Type is
+   function Constant_Reference (
+      Container : aliased Vector;
+      First_Index : Index_Type;
+      Last_Index : Extended_Index)
+      return Slicing.Constant_Reference_Type is
    begin
-      return Container.Length;
-   end Length;
-
-   procedure Move (Target : in out Vector; Source : in out Vector) is
-   begin
-      Copy_On_Write.Move (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-      Target.Length := Source.Length;
-   end Move;
-
-   procedure Prepend (Container : in out Vector; New_Item : Vector) is
-   begin
-      Insert (Container, Index_Type'First, New_Item);
-   end Prepend;
-
-   procedure Prepend (
-      Container : in out Vector;
-      New_Item : Element_Type;
-      Count : Count_Type := 1) is
-   begin
-      Insert (Container, Index_Type'First, New_Item, Count);
-   end Prepend;
-
-   procedure Query_Element (
-      Container : Vector'Class;
-      Index : Index_Type;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Container.Constant_Reference (Index).Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out Vector;
-      Index : Index_Type)
-      return Reference_Type is
-   begin
-      Unique (Container, True);
+      Unique (Container'Unrestricted_Access.all, False);
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         return (Element => Data.Items (Index)'Access);
+         return Slicing.Constant_Slice (
+            Element_Array_Access'(Data.Items'Unrestricted_Access).all,
+            First_Index,
+            Last_Index);
       end;
-   end Reference;
+   end Constant_Reference;
 
    function Reference (
       Container : aliased in out Vector)
@@ -684,211 +885,6 @@ package body Ada.Containers.Vectors is
             Last_Index);
       end;
    end Reference;
-
-   procedure Replace_Element (
-      Container : in out Vector;
-      Index : Index_Type;
-      New_Item : Element_Type) is
-   begin
-      Unique (Container, True);
-      declare
-         E : Element_Type
-            renames Downcast (Container.Super.Data).Items (Index);
-      begin
---  diff
-         E := New_Item;
-      end;
-   end Replace_Element;
-
-   procedure Reserve_Capacity (
-      Container : in out Vector;
-      Capacity : Count_Type)
-   is
-      New_Capacity : constant Count_Type :=
-         Count_Type'Max (Capacity, Container.Length);
-   begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         Container.Length,
-         Vectors.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Reserve_Capacity;
-
-   procedure Reverse_Elements (Container : in out Vector) is
-   begin
-      Unique (Container, True);
-      Array_Sorting.In_Place_Reverse (
-         Index_Type'Pos (Index_Type'First),
-         Index_Type'Pos (Last_Index (Container)),
-         Data_Cast.To_Address (Downcast (Container.Super.Data)),
-         Swap => Swap_Element'Access);
-   end Reverse_Elements;
-
-   function Reverse_Find (Container : Vector; Item : Element_Type)
-      return Cursor is
-   begin
-      return Reverse_Find_Index (Container, Item);
-   end Reverse_Find;
-
-   function Reverse_Find (
-      Container : Vector;
-      Item : Element_Type;
-      Position : Cursor)
-      return Cursor is
-   begin
-      return Reverse_Find_Index (Container, Item, Position);
-   end Reverse_Find;
-
-   function Reverse_Find_Index (
-      Container : Vector;
-      Item : Element_Type;
-      Index : Index_Type := Index_Type'Last)
-      return Extended_Index
-   is
-      Start : constant Extended_Index :=
-         Extended_Index'Min (Index, Last_Index (Container));
-   begin
-      for I in reverse Index_Type'First .. Start loop
-         if Downcast (Container.Super.Data).Items (I) = Item then
---  diff
---  diff
---  diff
-            return I;
-         end if;
-      end loop;
-      return No_Index;
-   end Reverse_Find_Index;
-
-   procedure Reverse_Iterate (
-      Container : Vector'Class;
-      Process : not null access procedure (Position : Cursor)) is
-   begin
-      for I in reverse Index_Type'First .. Last_Index (Container) loop
-         Process (I);
-      end loop;
-   end Reverse_Iterate;
-
-   procedure Set_Length (Container : in out Vector; Length : Count_Type) is
-   begin
-      Copy_On_Write.Set_Length (
-         Container.Super'Access,
-         Container.Length,
-         Capacity (Container),
-         Length,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Container.Length := Length;
-   end Set_Length;
-
-   procedure Swap (Container : in out Vector; I, J : Index_Type) is
-   begin
-      Unique (Container, True);
-      Swap_Element (
-         Index_Type'Pos (I),
-         Index_Type'Pos (J),
-         Data_Cast.To_Address (Downcast (Container.Super.Data)));
-   end Swap;
-
-   function To_Cursor (Container : Vector; Index : Extended_Index)
-      return Cursor
-   is
-      pragma Unreferenced (Container);
-   begin
-      return Cursor (Index);
-   end To_Cursor;
-
-   function To_Vector (Length : Count_Type) return Vector is
-   begin
-      return Result : Vector do
-         Insert_Space (Result, Index_Type'First, Length);
-      end return;
-   end To_Vector;
-
-   function To_Vector (New_Item : Element_Type; Length : Count_Type)
-      return Vector is
-   begin
-      return Result : Vector do
-         Append (Result, New_Item, Length);
-      end return;
-   end To_Vector;
-
-   procedure Update_Element (
-      Container : in out Vector'Class;
-      Index : Index_Type;
-      Process : not null access procedure (Element : in out Element_Type)) is
-   begin
-      Process (Container.Reference (Index).Element.all);
-   end Update_Element;
-
-   overriding function "=" (Left, Right : Vector) return Boolean is
-   begin
-      if Left.Length /= Right.Length then
-         return False;
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         for I in Index_Type'First .. Last_Index (Left) loop
-            if Downcast (Left.Super.Data).Items (I) /=
-               Downcast (Right.Super.Data).Items (I)
-            then
-               return False;
-            end if;
---  diff
---  diff
---  diff
---  diff
---  diff
-         end loop;
-         return True;
-      end if;
-   end "=";
-
-   function "&" (Left, Right : Vector) return Vector is
-   begin
-      return Result : Vector := Left do
-         Append (Result, Right);
-      end return;
-   end "&";
-
-   function "&" (Left : Vector; Right : Element_Type) return Vector is
-   begin
-      return Result : Vector := Left do
-         Append (Result, Right);
-      end return;
-   end "&";
-
-   function "&" (Left : Element_Type; Right : Vector) return Vector is
-   begin
-      return Result : Vector do
-         Reserve_Capacity (Result, 1 + Right.Length);
-         Append (Result, Left);
-         Append (Result, Right);
-      end return;
-   end "&";
-
-   function "&" (Left, Right : Element_Type) return Vector is
-   begin
-      return Result : Vector do
-         Reserve_Capacity (Result, 2);
-         Append (Result, Left);
-         Append (Result, Right);
-      end return;
-   end "&";
 
    overriding procedure Adjust (Object : in out Vector) is
    begin
@@ -924,6 +920,22 @@ package body Ada.Containers.Vectors is
          return Position - 1;
       end if;
    end Previous;
+
+   function Constant_Indexing (
+      Container : aliased Vector'Class;
+      Index : Index_Type)
+      return Constant_Reference_Type is
+   begin
+      return Constant_Reference (Container, Index);
+   end Constant_Indexing;
+
+   function Indexing (
+      Container : aliased in out Vector'Class;
+      Index : Index_Type)
+      return Reference_Type is
+   begin
+      return Reference (Container, Index);
+   end Indexing;
 
    package body Generic_Sorting is
 
