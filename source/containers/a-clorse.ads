@@ -43,6 +43,12 @@ package Ada.Containers.Limited_Ordered_Sets is
 
 --  diff (To_Set)
 
+--  diff (Generic_Array_To_Set)
+--
+--
+--
+--
+
    function Length (Container : Set) return Count_Type;
 
    function Is_Empty (Container : Set) return Boolean;
@@ -262,6 +268,7 @@ package Ada.Containers.Limited_Ordered_Sets is
 
    end Generic_Keys;
 
+   --  extended
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalents is

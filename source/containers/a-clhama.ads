@@ -175,6 +175,7 @@ package Ada.Containers.Limited_Hashed_Maps is
    function Iterate (Container : Map'Class) -- not primitive
       return Map_Iterator_Interfaces.Forward_Iterator'Class;
 
+   --  extended
    generic
       with function "=" (Left, Right : Element_Type) return Boolean is <>;
    package Equivalent is

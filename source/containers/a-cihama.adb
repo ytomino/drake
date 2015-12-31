@@ -198,13 +198,44 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    --  implementation
 
-   procedure Assign (Target : in out Map; Source : Map) is
+   function Empty_Map return Map is
    begin
-      Copy_On_Write.Assign (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
-   end Assign;
+      return (Finalization.Controlled with Super => (null, null));
+   end Empty_Map;
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= null;
+   end Has_Element;
+
+   overriding function "=" (Left, Right : Map) return Boolean is
+      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean;
+      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean is
+      begin
+         return Equivalent_Keys (
+            Downcast (Left).Key.all,
+            Downcast (Right).Key.all)
+            and then Downcast (Left).Element.all =
+               Downcast (Right).Element.all;
+      end Equivalent;
+   begin
+      if Is_Empty (Left) then
+         return Is_Empty (Right);
+      elsif Is_Empty (Right) then
+         return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
+      else
+         return Hash_Tables.Equivalent (
+            Downcast (Left.Super.Data).Table,
+            Downcast (Left.Super.Data).Length,
+            Downcast (Right.Super.Data).Table,
+            Downcast (Right.Super.Data).Length,
+            Equivalent => Equivalent'Access);
+      end if;
+   end "=";
 
    function Capacity (Container : Map) return Count_Type is
    begin
@@ -216,12 +247,90 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end if;
    end Capacity;
 
+   procedure Reserve_Capacity (
+      Container : in out Map;
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Length (Container));
+   begin
+      Copy_On_Write.Unique (
+         Container.Super'Access,
+         0, -- Length is unused
+         Indefinite_Hashed_Maps.Capacity (Container),
+         New_Capacity,
+         True,
+         Allocate => Allocate_Data'Access,
+         Move => Copy_Data'Access,
+         Copy => Copy_Data'Access,
+         Free => Free_Data'Access);
+      Hash_Tables.Rebuild (
+         Downcast (Container.Super.Data).Table,
+         New_Capacity);
+   end Reserve_Capacity;
+
+   function Length (Container : Map) return Count_Type is
+   begin
+      if Container.Super.Data = null then
+         return 0;
+      else
+         return Downcast (Container.Super.Data).Length;
+      end if;
+   end Length;
+
+   function Is_Empty (Container : Map) return Boolean is
+   begin
+      return Container.Super.Data = null
+         or else Downcast (Container.Super.Data).Length = 0;
+   end Is_Empty;
+
    procedure Clear (Container : in out Map) is
    begin
       Copy_On_Write.Clear (
          Container.Super'Access,
          Free => Free_Data'Access);
    end Clear;
+
+   function Key (Position : Cursor) return Key_Type is
+   begin
+      return Position.Key.all;
+   end Key;
+
+   function Element (Position : Cursor) return Element_Type is
+   begin
+      return Position.Element.all;
+   end Element;
+
+   procedure Replace_Element (
+      Container : in out Map;
+      Position : Cursor;
+      New_Item : Element_Type) is
+   begin
+      Unique (Container, True);
+      Free (Position.Element);
+      Allocate_Element (Position.Element, New_Item);
+   end Replace_Element;
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : Element_Type)) is
+   begin
+      Process (Position.Key.all, Position.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out Map'Class;
+      Position : Cursor;
+      Process : not null access procedure (
+         Key : Key_Type;
+         Element : in out Element_Type)) is
+   begin
+      Process (
+         Position.Key.all,
+         Container.Reference (Position).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased Map;
@@ -233,6 +342,16 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
+   function Reference (
+      Container : aliased in out Map;
+      Position : Cursor)
+      return Reference_Type is
+   begin
+      Unique (Container, True);
+--  diff
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
@@ -243,10 +362,24 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   function Reference (
+      Container : aliased in out Map;
+      Key : Key_Type)
+      return Reference_Type
+   is
+      Position : constant not null Cursor := Find (Container, Key);
    begin
-      return Find (Container, Key) /= null;
-   end Contains;
+      Unique (Container, True);
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+   procedure Assign (Target : in out Map; Source : Map) is
+   begin
+      Copy_On_Write.Assign (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+   end Assign;
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map is
    begin
@@ -259,116 +392,14 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
             Copy => Copy_Data'Access));
    end Copy;
 
-   procedure Delete (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
+   procedure Move (Target : in out Map; Source : in out Map) is
    begin
-      Delete (Container, Position);
-   end Delete;
-
-   procedure Delete (Container : in out Map; Position : in out Cursor) is
-   begin
-      Unique (Container, True);
-      Hash_Tables.Remove (
-         Downcast (Container.Super.Data).Table,
-         Downcast (Container.Super.Data).Length,
-         Upcast (Position));
-      Free (Position);
-   end Delete;
-
-   function Element (
-      Container : Map'Class;
-      Key : Key_Type)
-      return Element_Type is
-   begin
-      return Find (Container, Key).Element.all;
-   end Element;
-
-   function Element (Position : Cursor) return Element_Type is
-   begin
-      return Position.Element.all;
-   end Element;
-
-   function Empty_Map return Map is
-   begin
-      return (Finalization.Controlled with Super => (null, null));
-   end Empty_Map;
-
-   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
-   begin
-      return Equivalent_Keys (Left.Key.all, Right.Key.all);
-   end Equivalent_Keys;
-
-   function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
-   begin
-      return Equivalent_Keys (Left.Key.all, Right);
-   end Equivalent_Keys;
-
-   procedure Exclude (Container : in out Map; Key : Key_Type) is
-      Position : Cursor := Find (Container, Key);
-   begin
-      if Position /= null then
-         Delete (Container, Position);
-      end if;
-   end Exclude;
-
-   function Find (Container : Map; Key : Key_Type) return Cursor is
-   begin
-      return Find (Container, Hash (Key), Key);
-   end Find;
-
-   function First (Container : Map) return Cursor is
-   begin
-      if Is_Empty (Container) then
-         return null;
-      else
-         Unique (Container'Unrestricted_Access.all, False);
-         return Downcast (Hash_Tables.First (
-            Downcast (Container.Super.Data).Table));
-      end if;
-   end First;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= null;
-   end Has_Element;
-
-   procedure Include (
-      Container : in out Map;
-      Key : Key_Type;
-      New_Item : Element_Type)
-   is
-      Position : Cursor;
-      Inserted : Boolean;
-   begin
-      Insert (Container, Key, New_Item, Position, Inserted);
-      if not Inserted then
-         Replace_Element (Container, Position, New_Item);
-      end if;
-   end Include;
-
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+      Copy_On_Write.Move (
+         Target.Super'Access,
+         Source.Super'Access,
+         Free => Free_Data'Access);
+--  diff
+   end Move;
 
    procedure Insert (
       Container : in out Map;
@@ -411,6 +442,30 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end if;
    end Insert;
 
+--  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Insert (
       Container : in out Map;
       Key : Key_Type;
@@ -425,11 +480,100 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       end if;
    end Insert;
 
-   function Is_Empty (Container : Map) return Boolean is
+   procedure Include (
+      Container : in out Map;
+      Key : Key_Type;
+      New_Item : Element_Type)
+   is
+      Position : Cursor;
+      Inserted : Boolean;
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Length = 0;
-   end Is_Empty;
+      Insert (Container, Key, New_Item, Position, Inserted);
+      if not Inserted then
+         Replace_Element (Container, Position, New_Item);
+      end if;
+   end Include;
+
+   procedure Replace (
+      Container : in out Map;
+      Key : Key_Type;
+      New_Item : Element_Type) is
+   begin
+      Replace_Element (Container, Find (Container, Key), New_Item);
+   end Replace;
+
+   procedure Exclude (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
+   begin
+      if Position /= null then
+         Delete (Container, Position);
+      end if;
+   end Exclude;
+
+   procedure Delete (Container : in out Map; Key : Key_Type) is
+      Position : Cursor := Find (Container, Key);
+   begin
+      Delete (Container, Position);
+   end Delete;
+
+   procedure Delete (Container : in out Map; Position : in out Cursor) is
+   begin
+      Unique (Container, True);
+      Hash_Tables.Remove (
+         Downcast (Container.Super.Data).Table,
+         Downcast (Container.Super.Data).Length,
+         Upcast (Position));
+      Free (Position);
+   end Delete;
+
+   function First (Container : Map) return Cursor is
+   begin
+      if Is_Empty (Container) then
+         return null;
+      else
+         Unique (Container'Unrestricted_Access.all, False);
+         return Downcast (Hash_Tables.First (
+            Downcast (Container.Super.Data).Table));
+      end if;
+   end First;
+
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   function Find (Container : Map; Key : Key_Type) return Cursor is
+   begin
+      return Find (Container, Hash (Key), Key);
+   end Find;
+
+   function Element (
+      Container : Map'Class;
+      Key : Key_Type)
+      return Element_Type is
+   begin
+      return Find (Container, Key).Element.all;
+   end Element;
+
+   function Contains (Container : Map; Key : Key_Type) return Boolean is
+   begin
+      return Find (Container, Key) /= null;
+   end Contains;
+
+   function Equivalent_Keys (Left, Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key.all, Right.Key.all);
+   end Equivalent_Keys;
+
+   function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Equivalent_Keys (Left.Key.all, Right);
+   end Equivalent_Keys;
 
    procedure Iterate (
       Container : Map'Class;
@@ -452,150 +596,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    begin
       return Map_Iterator'(First => First (Container));
    end Iterate;
-
-   function Key (Position : Cursor) return Key_Type is
-   begin
-      return Position.Key.all;
-   end Key;
-
-   function Length (Container : Map) return Count_Type is
-   begin
-      if Container.Super.Data = null then
-         return 0;
-      else
-         return Downcast (Container.Super.Data).Length;
-      end if;
-   end Length;
-
-   procedure Move (Target : in out Map; Source : in out Map) is
-   begin
-      Copy_On_Write.Move (
-         Target.Super'Access,
-         Source.Super'Access,
-         Free => Free_Data'Access);
---  diff
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : Element_Type)) is
-   begin
-      Process (Position.Key.all, Position.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
-      return Reference_Type is
-   begin
-      Unique (Container, True);
---  diff
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
-   begin
-      Unique (Container, True);
-      return (Element => Position.Element.all'Access);
-   end Reference;
-
-   procedure Replace (
-      Container : in out Map;
-      Key : Key_Type;
-      New_Item : Element_Type) is
-   begin
-      Replace_Element (Container, Find (Container, Key), New_Item);
-   end Replace;
-
-   procedure Replace_Element (
-      Container : in out Map;
-      Position : Cursor;
-      New_Item : Element_Type) is
-   begin
-      Unique (Container, True);
-      Free (Position.Element);
-      Allocate_Element (Position.Element, New_Item);
-   end Replace_Element;
-
-   procedure Reserve_Capacity (
-      Container : in out Map;
-      Capacity : Count_Type)
-   is
-      New_Capacity : constant Count_Type :=
-         Count_Type'Max (Capacity, Length (Container));
-   begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Indefinite_Hashed_Maps.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Hash_Tables.Rebuild (
-         Downcast (Container.Super.Data).Table,
-         New_Capacity);
-   end Reserve_Capacity;
-
-   procedure Update_Element (
-      Container : in out Map'Class;
-      Position : Cursor;
-      Process : not null access procedure (
-         Key : Key_Type;
-         Element : in out Element_Type)) is
-   begin
-      Process (
-         Position.Key.all,
-         Container.Reference (Position).Element.all);
-   end Update_Element;
-
-   overriding function "=" (Left, Right : Map) return Boolean is
-      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
-         return Boolean;
-      function Equivalent (Left, Right : not null Hash_Tables.Node_Access)
-         return Boolean is
-      begin
-         return Equivalent_Keys (
-            Downcast (Left).Key.all,
-            Downcast (Right).Key.all)
-            and then Downcast (Left).Element.all =
-               Downcast (Right).Element.all;
-      end Equivalent;
-   begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
-         return False;
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         return Hash_Tables.Equivalent (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Left.Super.Data).Length,
-            Downcast (Right.Super.Data).Table,
-            Downcast (Right.Super.Data).Length,
-            Equivalent => Equivalent'Access);
-      end if;
-   end "=";
 
    overriding procedure Adjust (Object : in out Map) is
    begin

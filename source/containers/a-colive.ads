@@ -53,6 +53,11 @@ package Ada.Containers.Limited_Vectors is
 --  diff (To_Vector)
 --
 
+--  diff (Generic_Array_To_Vector)
+--
+--
+--
+
 --  diff ("&")
 
 --  diff ("&")
@@ -337,6 +342,33 @@ package Ada.Containers.Limited_Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
+--  diff (Element_Array, Slicing, Constant_Reference, Reference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
    package Generic_Sorting is
@@ -375,11 +407,6 @@ package Ada.Containers.Limited_Vectors is
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean;
    end Equivalents;
-
---  diff (Generic_Array_To_Vector)
---
---
---
 
 private
 
@@ -427,6 +454,21 @@ private
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
 
+   --  non-overloaded subprograms
+--  diff (Constant_Indexing)
+--
+--
+--
+--
+--  diff (Indexing)
+--
+--
+--
+--
+
+--  diff (pragma Inline_Always)
+--  diff (pragma Inline_Always)
+
    package Streaming is
 
 --  diff (Read)
@@ -468,20 +510,5 @@ private
 
    for Reference_Type'Read use Streaming.Missing_Read;
    for Reference_Type'Write use Streaming.Missing_Write;
-
-   --  non-overloaded subprograms
---  diff (Constant_Indexing)
---
---
---
---
---  diff (Indexing)
---
---
---
---
-
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
 
 end Ada.Containers.Limited_Vectors;

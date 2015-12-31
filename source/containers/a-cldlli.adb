@@ -167,7 +167,35 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
    --  implementation
 
---  diff (Assign)
+   function Empty_List return List is
+   begin
+      return (Finalization.Limited_Controlled with null, null, 0);
+   end Empty_List;
+
+   function Has_Element (Position : Cursor) return Boolean is
+   begin
+      return Position /= null;
+   end Has_Element;
+
+--  diff ("=")
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -175,13 +203,20 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
---  diff (Append)
---
---
---
---
---
---
+   function Length (Container : List) return Count_Type is
+   begin
+      return Container.Length;
+--  diff
+--  diff
+--  diff
+--  diff
+   end Length;
+
+   function Is_Empty (Container : List) return Boolean is
+   begin
+      return Container.Last = null;
+--  diff
+   end Is_Empty;
 
    procedure Clear (Container : in out List) is
    begin
@@ -189,6 +224,36 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
    end Clear;
+
+--  diff (Element)
+--
+--
+--
+
+--  diff (Replace_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Query_Element (
+      Position : Cursor;
+      Process : not null access procedure (Element : Element_Type)) is
+   begin
+      Process (Position.Element.all);
+   end Query_Element;
+
+   procedure Update_Element (
+      Container : in out List'Class;
+      Position : Cursor;
+      Process : not null access procedure (Element : in out Element_Type)) is
+   begin
+      Process (Container.Reference (Position).Element.all);
+   end Update_Element;
 
    function Constant_Reference (
       Container : aliased List;
@@ -200,7 +265,20 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
---  diff (Contains)
+   function Reference (
+      Container : aliased in out List;
+      Position : Cursor)
+      return Reference_Type
+   is
+      pragma Unreferenced (Container);
+   begin
+      return (Element => Position.Element.all'Access);
+   end Reference;
+
+--  diff (Assign)
+--
+--
+--
 --
 --
 --
@@ -216,115 +294,20 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
-   procedure Delete (
-      Container : in out List;
-      Position : in out Cursor;
-      Count : Count_Type := 1)
-   is
-      X : Linked_Lists.Node_Access;
-      Next : Linked_Lists.Node_Access;
+   procedure Move (Target : in out List; Source : in out List) is
    begin
---  diff
-      for I in 1 .. Count loop
-         X := Upcast (Position);
-         Next := Position.Super.Next;
-         Base.Remove (
-            Container.First,
-            Container.Last,
-            Container.Length,
-            Position => X,
-            Next => Next);
-         Free_Node (X);
-         Position := Downcast (Next);
-      end loop;
-   end Delete;
-
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
-   begin
-      for I in 1 .. Count loop
-         Position := Downcast (Container.First);
-         Delete (Container, Position);
-      end loop;
-   end Delete_First;
-
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
-   begin
-      for I in 1 .. Count loop
-         Position := Downcast (Container.Last);
-         Delete (Container, Position);
-      end loop;
-   end Delete_Last;
-
---  diff (Element)
---
---
---
-
-   function Empty_List return List is
-   begin
-      return (Finalization.Limited_Controlled with null, null, 0);
-   end Empty_List;
-
---  diff (Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
-
-   function First (Container : List) return Cursor is
-   begin
-      return Downcast (Container.First);
---  diff
---  diff
---  diff
---  diff
---  diff
-   end First;
-
-   function Has_Element (Position : Cursor) return Boolean is
-   begin
-      return Position /= null;
-   end Has_Element;
+      if Target.First /= Source.First then
+         Clear (Target);
+         Target.First := Source.First;
+         Target.Last := Source.Last;
+         Target.Length := Source.Length;
+         Source.First := null;
+         Source.Last := null;
+         Source.Length := 0;
+      end if;
+   end Move;
 
 --  diff (Insert)
---
---
---
---
---
---
---
 --
 --
 --
@@ -378,92 +361,13 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
-
-   function Is_Empty (Container : List) return Boolean is
-   begin
-      return Container.Last = null;
---  diff
-   end Is_Empty;
-
-   procedure Iterate (
-      Container : List'Class;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Linked_Lists.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
-   begin
---  diff
---  diff
-      Base.Iterate (
-         Container.First,
-         Cast (Process));
---  diff
-   end Iterate;
-
-   function Iterate (Container : List'Class)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class is
-   begin
-      return List_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
-   end Iterate;
-
-   function Iterate (Container : List'Class; First, Last : Cursor)
-      return List_Iterator_Interfaces.Reversible_Iterator'Class
-   is
-      pragma Unreferenced (Container);
-      Actual_First : Cursor := First;
-      Actual_Last : Cursor := Last;
-   begin
-      if Actual_Last < Actual_First then
-         Actual_First := No_Element;
-         Actual_Last := No_Element;
-      end if;
-      return List_Iterator'(First => Actual_First, Last => Actual_Last);
-   end Iterate;
-
-   function Last (Container : List) return Cursor is
-   begin
-      return Downcast (Container.Last);
---  diff
---  diff
---  diff
---  diff
---  diff
-   end Last;
-
-   function Length (Container : List) return Count_Type is
-   begin
-      return Container.Length;
---  diff
---  diff
---  diff
---  diff
-   end Length;
-
-   procedure Move (Target : in out List; Source : in out List) is
-   begin
-      if Target.First /= Source.First then
-         Clear (Target);
-         Target.First := Source.First;
-         Target.Last := Source.Last;
-         Target.Length := Source.Length;
-         Source.First := null;
-         Source.Last := null;
-         Source.Length := 0;
-      end if;
-   end Move;
-
-   function Next (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Next);
-   end Next;
-
-   procedure Next (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Next);
-   end Next;
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Prepend)
 --
@@ -477,42 +381,54 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
-   function Previous (Position : Cursor) return Cursor is
-   begin
-      return Downcast (Position.Super.Super.Previous);
-   end Previous;
+--  diff (Append)
+--
+--
+--
+--
+--
+--
 
-   procedure Previous (Position : in out Cursor) is
-   begin
-      Position := Downcast (Position.Super.Super.Previous);
-   end Previous;
-
-   procedure Query_Element (
-      Position : Cursor;
-      Process : not null access procedure (Element : Element_Type)) is
-   begin
-      Process (Position.Element.all);
-   end Query_Element;
-
-   function Reference (
-      Container : aliased in out List;
-      Position : Cursor)
-      return Reference_Type
+   procedure Delete (
+      Container : in out List;
+      Position : in out Cursor;
+      Count : Count_Type := 1)
    is
-      pragma Unreferenced (Container);
+      X : Linked_Lists.Node_Access;
+      Next : Linked_Lists.Node_Access;
    begin
-      return (Element => Position.Element.all'Access);
-   end Reference;
+--  diff
+      for I in 1 .. Count loop
+         X := Upcast (Position);
+         Next := Position.Super.Next;
+         Base.Remove (
+            Container.First,
+            Container.Last,
+            Container.Length,
+            Position => X,
+            Next => Next);
+         Free_Node (X);
+         Position := Downcast (Next);
+      end loop;
+   end Delete;
 
---  diff (Replace_Element)
---
---
---
---
---
---
---
---
+   procedure Delete_First (Container : in out List; Count : Count_Type := 1) is
+      Position : Cursor;
+   begin
+      for I in 1 .. Count loop
+         Position := Downcast (Container.First);
+         Delete (Container, Position);
+      end loop;
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out List; Count : Count_Type := 1) is
+      Position : Cursor;
+   begin
+      for I in 1 .. Count loop
+         Position := Downcast (Container.Last);
+         Delete (Container, Position);
+      end loop;
+   end Delete_Last;
 
    procedure Reverse_Elements (Container : in out List) is
    begin
@@ -527,56 +443,26 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end Reverse_Elements;
 
---  diff (Reverse_Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Swap (Container : in out List; I, J : Cursor) is
+      pragma Unreferenced (Container);
+--  diff
+--  diff
+      Temp : constant Element_Access := I.Element;
+   begin
+      I.Element := J.Element;
+      J.Element := Temp;
+--  diff
+   end Swap;
 
---  diff (Reverse_Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
-
-   procedure Reverse_Iterate (
-      Container : List;
-      Process : not null access procedure (Position : Cursor))
-   is
-      type P1 is access procedure (Position : Cursor);
-      type P2 is access procedure (Position : Linked_Lists.Node_Access);
-      function Cast is new Unchecked_Conversion (P1, P2);
+   procedure Swap_Links (Container : in out List; I, J : Cursor) is
    begin
 --  diff
---  diff
-      Linked_Lists.Reverse_Iterate (
+      Base.Swap_Links (
+         Container.First,
          Container.Last,
-         Cast (Process));
---  diff
-   end Reverse_Iterate;
+         Upcast (I),
+         Upcast (J));
+   end Swap_Links;
 
    procedure Splice (
       Target : in out List;
@@ -642,36 +528,47 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Upcast (Position));
    end Splice;
 
-   procedure Swap (Container : in out List; I, J : Cursor) is
-      pragma Unreferenced (Container);
---  diff
---  diff
-      Temp : constant Element_Access := I.Element;
+   function First (Container : List) return Cursor is
    begin
-      I.Element := J.Element;
-      J.Element := Temp;
+      return Downcast (Container.First);
 --  diff
-   end Swap;
-
-   procedure Swap_Links (Container : in out List; I, J : Cursor) is
-   begin
 --  diff
-      Base.Swap_Links (
-         Container.First,
-         Container.Last,
-         Upcast (I),
-         Upcast (J));
-   end Swap_Links;
+--  diff
+--  diff
+--  diff
+   end First;
 
-   procedure Update_Element (
-      Container : in out List'Class;
-      Position : Cursor;
-      Process : not null access procedure (Element : in out Element_Type)) is
+   function Last (Container : List) return Cursor is
    begin
-      Process (Container.Reference (Position).Element.all);
-   end Update_Element;
+      return Downcast (Container.Last);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Last;
 
---  diff ("=")
+   function Next (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Next);
+   end Next;
+
+   function Previous (Position : Cursor) return Cursor is
+   begin
+      return Downcast (Position.Super.Super.Previous);
+   end Previous;
+
+   procedure Next (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Next);
+   end Next;
+
+   procedure Previous (Position : in out Cursor) is
+   begin
+      Position := Downcast (Position.Super.Super.Previous);
+   end Previous;
+
+--  diff (Find)
 --
 --
 --
@@ -690,9 +587,58 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+
+--  diff (Find)
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Reverse_Find)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Reverse_Find)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Contains)
 --
 --
 --
@@ -701,6 +647,60 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
       return Base.Is_Before (Upcast (Left), Upcast (Right));
    end "<";
+
+   procedure Iterate (
+      Container : List'Class;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+--  diff
+--  diff
+      Base.Iterate (
+         Container.First,
+         Cast (Process));
+--  diff
+   end Iterate;
+
+   procedure Reverse_Iterate (
+      Container : List;
+      Process : not null access procedure (Position : Cursor))
+   is
+      type P1 is access procedure (Position : Cursor);
+      type P2 is access procedure (Position : Linked_Lists.Node_Access);
+      function Cast is new Unchecked_Conversion (P1, P2);
+   begin
+--  diff
+--  diff
+      Linked_Lists.Reverse_Iterate (
+         Container.Last,
+         Cast (Process));
+--  diff
+   end Reverse_Iterate;
+
+   function Iterate (Container : List'Class)
+      return List_Iterator_Interfaces.Reversible_Iterator'Class is
+   begin
+      return List_Iterator'(
+         First => First (Container),
+         Last => Last (Container));
+   end Iterate;
+
+   function Iterate (Container : List'Class; First, Last : Cursor)
+      return List_Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Unreferenced (Container);
+      Actual_First : Cursor := First;
+      Actual_Last : Cursor := Last;
+   begin
+      if Actual_Last < Actual_First then
+         Actual_First := No_Element;
+         Actual_Last := No_Element;
+      end if;
+      return List_Iterator'(First => Actual_First, Last => Actual_Last);
+   end Iterate;
 
 --  diff (Adjust)
 --
@@ -821,11 +821,22 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          return Context.Left.all = Downcast (Right).Element.all;
       end Equivalent_Element;
 
-      function Contains (Container : List; Item : Element_Type)
-         return Boolean is
+      function "=" (Left, Right : List) return Boolean is
+         function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
+            return Boolean;
+         function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
+            return Boolean is
+         begin
+            return Downcast (Left).Element.all = Downcast (Right).Element.all;
+         end Equivalent;
       begin
-         return Find (Container, Item) /= null;
-      end Contains;
+         return Left.Length = Right.Length
+            and then
+               Linked_Lists.Equivalent (
+                  Left.Last,
+                  Right.Last,
+                  Equivalent'Access);
+      end "=";
 
       function Find (Container : List; Item : Element_Type)
          return Cursor
@@ -878,22 +889,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             Equivalent => Equivalent_Element'Access));
       end Reverse_Find;
 
-      function "=" (Left, Right : List) return Boolean is
-         function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
-            return Boolean;
-         function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
-            return Boolean is
-         begin
-            return Downcast (Left).Element.all = Downcast (Right).Element.all;
-         end Equivalent;
+      function Contains (Container : List; Item : Element_Type)
+         return Boolean is
       begin
-         return Left.Length = Right.Length
-            and then
-               Linked_Lists.Equivalent (
-                  Left.Last,
-                  Right.Last,
-                  Equivalent'Access);
-      end "=";
+         return Find (Container, Item) /= null;
+      end Contains;
 
    end Equivalents;
 
