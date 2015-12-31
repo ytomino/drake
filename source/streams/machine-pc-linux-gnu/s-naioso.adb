@@ -232,6 +232,7 @@ package body System.Native_IO.Sockets is
                Socket_Address'Size / Standard'Storage_Unit;
             Socket_Address_Argument : C.sys.socket.SOCKADDR_ARG;
             R : C.signed_int;
+            errno : C.signed_int;
          begin
             Synchronous_Control.Unlock_Abort;
             Socket_Address_Argument.sockaddr :=
@@ -240,9 +241,10 @@ package body System.Native_IO.Sockets is
                Server,
                Socket_Address_Argument,
                Len'Access);
+            errno := C.errno.errno;
             Synchronous_Control.Lock_Abort;
             if R < 0 then
-               if C.errno.errno /= C.errno.EINTR then
+               if errno /= C.errno.EINTR then
                   Handle := Invalid_Handle; -- Use_Error
                   exit;
                end if;

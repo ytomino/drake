@@ -214,15 +214,17 @@ package body System.Native_IO.Sockets is
             Len : aliased C.sys.socket.socklen_t :=
                Socket_Address'Size / Standard'Storage_Unit;
             R : C.signed_int;
+            errno : C.signed_int;
          begin
             Synchronous_Control.Unlock_Abort;
             R := C.sys.socket.C_accept (
                Server,
                Remote_Address'Unrestricted_Access,
                Len'Access);
+            errno := C.errno.errno;
             Synchronous_Control.Lock_Abort;
             if R < 0 then
-               if C.errno.errno /= C.errno.EINTR then
+               if errno /= C.errno.EINTR then
                   Handle := Invalid_Handle; -- Use_Error
                   exit;
                end if;
