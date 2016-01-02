@@ -155,16 +155,22 @@ package body Ada.Strings.Generic_Unbounded is
       Target := Upcast (Data);
    end Copy_Data;
 
-   procedure Reallocate (Item : in out Unbounded_String; Capacity : Natural);
-   procedure Reallocate (Item : in out Unbounded_String; Capacity : Natural) is
+   procedure Reallocate (
+      Item : in out Unbounded_String;
+      Length : Natural;
+      Capacity : Natural);
+   procedure Reallocate (
+      Item : in out Unbounded_String;
+      Length : Natural;
+      Capacity : Natural) is
    begin
       System.Reference_Counting.Unique (
          Target => Upcast (Item.Data'Unchecked_Access),
          Target_Length => System.Reference_Counting.Length_Type (Item.Length),
          Target_Capacity => System.Reference_Counting.Length_Type (
             Generic_Unbounded.Capacity (Item)),
-         Max_Length => System.Reference_Counting.Length_Type (Item.Length),
-         Capacity => System.Reference_Counting.Length_Type (Capacity),
+         New_Length => System.Reference_Counting.Length_Type (Length),
+         New_Capacity => System.Reference_Counting.Length_Type (Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Reallocate => Reallocate_Data'Access,
          Copy => Copy_Data'Access,
@@ -175,7 +181,7 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Unique (Item : in out Unbounded_String) is
    begin
       if System.Reference_Counting.Shared (Upcast (Item.Data)) then
-         Reallocate (Item, Item.Length); -- shrinking
+         Reallocate (Item, Item.Length, Item.Length); -- shrinking
       end if;
    end Unique;
 
@@ -219,19 +225,31 @@ package body Ada.Strings.Generic_Unbounded is
    end Length;
 
    procedure Set_Length (Source : in out Unbounded_String; Length : Natural) is
+      Old_Capacity : constant Natural := Capacity (Source);
+      Failure : Boolean;
    begin
-      System.Reference_Counting.Set_Length (
+      System.Reference_Counting.In_Place_Set_Length (
          Target => Upcast (Source.Data'Unchecked_Access),
-         Target_Length => System.Reference_Counting.Length_Type (
-            Source.Length),
+         Target_Length =>
+            System.Reference_Counting.Length_Type (Source.Length),
          Target_Max_Length => Source.Data.Max_Length,
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Capacity (Source)),
+         Target_Capacity =>
+            System.Reference_Counting.Length_Type (Old_Capacity),
          New_Length => System.Reference_Counting.Length_Type (Length),
-         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
-         Reallocate => Reallocate_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+         Failure => Failure);
+      if Failure then
+         declare
+            New_Capacity : Natural;
+         begin
+            if Old_Capacity >= Length then
+               --  Old_Capacity is possibly a large value by Generic_Constant
+               New_Capacity := Length; -- shrinking
+            else
+               New_Capacity := Integer'Max (Old_Capacity * 2, Length);
+            end if;
+            Reallocate (Source, Length, New_Capacity);
+         end;
+      end if;
       Source.Length := Length;
    end Set_Length;
 
@@ -246,7 +264,7 @@ package body Ada.Strings.Generic_Unbounded is
    is
       New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
    begin
-      Reallocate (Item, New_Capacity);
+      Reallocate (Item, Item.Length, New_Capacity);
    end Reserve_Capacity;
 
    function To_Unbounded_String (Source : String_Type)
@@ -355,7 +373,7 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String is
    begin
       return Result : Unbounded_String do
-         Reallocate (Result, Left'Length + Right.Length);
+         Reallocate (Result, 0, Left'Length + Right.Length);
          Append (Result, Left);
          Append (Result, Right);
       end return;
@@ -373,7 +391,7 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String is
    begin
       return Result : Unbounded_String do
-         Reallocate (Result, 1 + Right.Length);
+         Reallocate (Result, 0, 1 + Right.Length);
          Append_Element (Result, Left);
          Append (Result, Right);
       end return;

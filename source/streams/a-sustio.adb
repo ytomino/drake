@@ -155,9 +155,11 @@ package body Ada.Streams.Unbounded_Storage_IO is
 
    procedure Reallocate (
       Stream : in out Stream_Type;
+      Length : Stream_Element_Count;
       Size : Stream_Element_Count);
    procedure Reallocate (
       Stream : in out Stream_Type;
+      Length : Stream_Element_Count;
       Size : Stream_Element_Count) is
    begin
       System.Reference_Counting.Unique (
@@ -165,8 +167,8 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
          Target_Capacity => System.Reference_Counting.Length_Type (
             Stream.Data.Capacity),
-         Max_Length => System.Reference_Counting.Length_Type (Stream.Last),
-         Capacity => System.Reference_Counting.Length_Type (Size),
+         New_Length => System.Reference_Counting.Length_Type (Length),
+         New_Capacity => System.Reference_Counting.Length_Type (Size),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
          Reallocate => Reallocate_Data'Access,
          Copy => Copy_Data'Access,
@@ -177,7 +179,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
    procedure Unique (Stream : in out Stream_Type) is
    begin
       if System.Reference_Counting.Shared (Upcast (Stream.Data)) then
-         Reallocate (Stream, Stream.Data.Capacity); -- not shrinking for Write
+         Reallocate (
+            Stream,
+            Stream.Last,
+            Stream.Data.Capacity); -- not shrinking
       end if;
    end Unique;
 
@@ -186,19 +191,32 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Size : Stream_Element_Count);
    procedure Set_Size (
       Stream : in out Stream_Type;
-      Size : Stream_Element_Count) is
+      Size : Stream_Element_Count)
+   is
+      Old_Capacity : constant Stream_Element_Count := Stream.Data.Capacity;
+      Failure : Boolean;
    begin
-      System.Reference_Counting.Set_Length (
+      System.Reference_Counting.In_Place_Set_Length (
          Target => Upcast (Stream.Data'Unchecked_Access),
          Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
          Target_Max_Length => Stream.Data.Max_Length,
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Stream.Data.Capacity),
+         Target_Capacity =>
+            System.Reference_Counting.Length_Type (Old_Capacity),
          New_Length => System.Reference_Counting.Length_Type (Size),
-         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
-         Reallocate => Reallocate_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+         Failure => Failure);
+      if Failure then
+         declare
+            New_Capacity : Stream_Element_Count;
+         begin
+            if Old_Capacity >= Size then
+               New_Capacity := Old_Capacity; -- not shrinking
+            else
+               New_Capacity :=
+                  Stream_Element_Offset'Max (Old_Capacity * 2, Size);
+            end if;
+            Reallocate (Stream, Size, New_Capacity);
+         end;
+      end if;
       Stream.Last := Size;
    end Set_Size;
 
@@ -242,7 +260,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       New_Capacity : constant Stream_Element_Count :=
          Stream_Element_Offset'Max (Capacity, S.Last);
    begin
-      Reallocate (S.all, New_Capacity);
+      Reallocate (S.all, S.Last, New_Capacity);
    end Reserve_Capacity;
 
    function Storage_Address (Object : aliased in out Buffer_Type)
@@ -305,15 +323,8 @@ package body Ada.Streams.Unbounded_Storage_IO is
       New_Last : constant Stream_Element_Offset :=
          Stream_Element_Offset'Max (Stream.Last, Copy_Last);
    begin
-      if Stream.Index > Stream.Last then
-         Set_Size (Stream, New_Last);
-      elsif New_Last > Stream.Data.Capacity then
-         Reallocate (
-            Stream,
-            Stream_Element_Count'Max (
-               New_Last,
-               Stream.Data.Capacity * 2));
-      else
+      Set_Size (Stream, New_Last);
+      if Stream.Index <= Stream.Last then -- overwriting
          Unique (Stream);
       end if;
       declare
