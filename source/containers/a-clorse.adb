@@ -138,9 +138,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
---
 --
 --
 --
@@ -180,6 +182,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Free_Data;
 
 --  diff (Unique)
+--
 --
 --
 --

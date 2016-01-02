@@ -104,11 +104,14 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
@@ -122,14 +125,17 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
@@ -168,11 +174,12 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Indefinite_Hashed_Sets.Capacity (Container),
-         Capacity,
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => 0, -- Length is unused
+         Target_Capacity => Indefinite_Hashed_Sets.Capacity (Container),
+         New_Length => 0,
+         New_Capacity => Capacity,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,

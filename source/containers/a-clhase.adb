@@ -117,8 +117,14 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -162,6 +168,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    procedure Reallocate (Container : in out Set; Capacity : Count_Type) is
    begin
       Hash_Tables.Rebuild (Container.Table, Capacity);
+--  diff
 --  diff
 --  diff
 --  diff

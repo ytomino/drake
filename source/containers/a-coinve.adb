@@ -59,14 +59,16 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       New_Data : constant Data_Access := new Data'(
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Super => <>,
+         Super => (Max_Length => Max_Length, others => <>),
          Items => <>);
    begin
       Target := Upcast (New_Data);
@@ -76,83 +78,81 @@ package body Ada.Containers.Indefinite_Vectors is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
+      Max_Length : Count_Type;
       Capacity : Natural);
    procedure Move_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
-      Capacity : Natural)
-   is
-      S : constant not null Data_Access := Downcast (Source);
-      T : constant not null Data_Access := new Data'(
-         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Super => <>,
-         Items => <>);
-      subtype R is
-         Extended_Index range
-            Index_Type'First ..
-            Index_Type'First - 1 + Index_Type'Base (Length);
+      Max_Length : Count_Type;
+      Capacity : Natural) is
    begin
-      for I in R loop
-         T.Items (I) := S.Items (I);
-         S.Items (I) := null;
-      end loop;
-      T.Super.Max_Length := Length;
-      Target := Upcast (T);
+      Allocate_Data (Target, Max_Length, Capacity);
+      declare
+         subtype R is
+            Extended_Index range
+               Index_Type'First ..
+               Index_Type'First - 1 + Index_Type'Base (Length);
+      begin
+         for I in R loop
+            Downcast (Target).Items (I) := Downcast (Source).Items (I);
+            Downcast (Source).Items (I) := null;
+         end loop;
+      end;
    end Move_Data;
 
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
+      Max_Length : Count_Type;
       Capacity : Natural);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Natural;
-      Capacity : Natural)
-   is
-      S : constant not null Data_Access := Downcast (Source);
-      T : constant not null Data_Access := new Data'(
-         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Super => <>,
-         Items => <>);
-      subtype R is
-         Extended_Index range
-            Index_Type'First ..
-            Index_Type'First - 1 + Index_Type'Base (Length);
+      Max_Length : Count_Type;
+      Capacity : Natural) is
    begin
-      for I in R loop
-         if S.Items (I) /= null then
-            Allocate_Element (T.Items (I), S.Items (I).all);
-         end if;
-      end loop;
-      T.Super.Max_Length := Length;
-      Target := Upcast (T);
+      Allocate_Data (Target, Max_Length, Capacity);
+      declare
+         subtype R is
+            Extended_Index range
+               Index_Type'First ..
+               Index_Type'First - 1 + Index_Type'Base (Length);
+      begin
+         for I in R loop
+            if Downcast (Source).Items (I) /= null then
+               Allocate_Element (
+                  Downcast (Target).Items (I),
+                  Downcast (Source).Items (I).all);
+            end if;
+         end loop;
+      end;
    end Copy_Data;
 
    procedure Reallocate (
       Container : in out Vector;
+      Length : Count_Type;
       Capacity : Count_Type;
       To_Update : Boolean);
    procedure Reallocate (
       Container : in out Vector;
+      Length : Count_Type;
       Capacity : Count_Type;
       To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         Container.Length,
-         Indefinite_Vectors.Capacity (Container),
-         Capacity,
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => Container.Length,
+         Target_Capacity => Indefinite_Vectors.Capacity (Container),
+         New_Length => Length,
+         New_Capacity => Capacity,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Move_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
---  diff
---  diff
---  diff
    end Reallocate;
 
    procedure Unique (Container : in out Vector; To_Update : Boolean);
@@ -161,6 +161,7 @@ package body Ada.Containers.Indefinite_Vectors is
       if Copy_On_Write.Shared (Container.Super.Data) then
          Reallocate (
             Container,
+            Container.Length,
             Capacity (Container), -- not shrinking
             To_Update);
       end if;
@@ -277,7 +278,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function "&" (Left : Element_Type; Right : Vector) return Vector is
    begin
       return Result : Vector do
-         Reallocate (Result, 1 + Right.Length, True);
+         Reallocate (Result, 0, 1 + Right.Length, True);
          Append (Result, Left);
          Append (Result, Right);
       end return;
@@ -286,7 +287,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function "&" (Left, Right : Element_Type) return Vector is
    begin
       return Result : Vector do
-         Reallocate (Result, 2, True);
+         Reallocate (Result, 0, 2, True);
          Append (Result, Left);
          Append (Result, Right);
       end return;
@@ -308,7 +309,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Container.Length);
    begin
-      Reallocate (Container, New_Capacity, True);
+      Reallocate (Container, Container.Length, New_Capacity, True);
    end Reserve_Capacity;
 
    function Length (Container : Vector) return Count_Type is
@@ -317,16 +318,27 @@ package body Ada.Containers.Indefinite_Vectors is
    end Length;
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
+      Old_Capacity : constant Count_Type := Capacity (Container);
+      Failure : Boolean;
    begin
-      Copy_On_Write.Set_Length (
-         Container.Super'Access,
-         Container.Length,
-         Capacity (Container),
-         Length,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.In_Place_Set_Length (
+         Target => Container.Super'Access,
+         Target_Length => Container.Length,
+         Target_Capacity => Old_Capacity,
+         New_Length => Length,
+         Failure => Failure);
+      if Failure then
+         declare
+            New_Capacity : Count_Type;
+         begin
+            if Old_Capacity >= Length then
+               New_Capacity := Old_Capacity; -- not shrinking
+            else
+               New_Capacity := Count_Type'Max (Old_Capacity * 2, Length);
+            end if;
+            Reallocate (Container, Length, New_Capacity, False);
+         end;
+      end if;
       Container.Length := Length;
    end Set_Length;
 

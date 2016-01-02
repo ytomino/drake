@@ -71,10 +71,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Move_Data)
---
---
 --
 --
 --
@@ -156,6 +156,7 @@ package body Ada.Containers.Limited_Vectors is
    end Reallocate;
 
 --  diff (Unique)
+--
 --
 --
 --
@@ -318,12 +319,23 @@ package body Ada.Containers.Limited_Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
+--  diff
    begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       if Length > Old_Capacity then
          declare
             New_Capacity : constant Count_Type :=
                Count_Type'Max (Old_Capacity * 2, Length);
          begin
+--  diff
+--  diff
+--  diff
+--  diff
             Reallocate (Container, New_Capacity);
          end;
       end if;

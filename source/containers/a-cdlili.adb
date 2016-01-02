@@ -91,11 +91,14 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -110,29 +113,27 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         First => null,
-         Last => null,
-         Length => 0);
    begin
+      Allocate_Data (Target, 0, 0);
       Linked_Lists.Copy (
-         New_Data.First,
-         New_Data.Last,
-         New_Data.Length,
+         Downcast (Target).First,
+         Downcast (Target).Last,
+         Downcast (Target).Length,
          Source_Last => Downcast (Source).Last,
          Copy => Copy_Node'Access,
          Insert => Base.Insert'Access);
-      Target := Upcast (New_Data);
    end Copy_Data;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -155,11 +156,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
    begin
       if Copy_On_Write.Shared (Container.Super.Data) then
          Copy_On_Write.Unique (
-            Container.Super'Access,
-            0, -- Length is unused
-            0, -- Capacity is unused
-            0, -- Capacity is unused
-            To_Update,
+            Target => Container.Super'Access,
+            Target_Length => 0, -- Length is unused
+            Target_Capacity => 0, -- Capacity is unused
+            New_Length => 0,
+            New_Capacity => 0,
+            To_Update => To_Update,
             Allocate => Allocate_Data'Access,
             Move => Copy_Data'Access,
             Copy => Copy_Data'Access,

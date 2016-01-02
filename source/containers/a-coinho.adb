@@ -32,11 +32,14 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -49,16 +52,19 @@ package body Ada.Containers.Indefinite_Holders is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type) is
    begin
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      Allocate_Data (Target, 0);
+      Allocate_Data (Target, 0, 0);
       declare
          procedure Finally (X : not null access Copy_On_Write.Data_Access);
          procedure Finally (X : not null access Copy_On_Write.Data_Access) is
@@ -82,11 +88,12 @@ package body Ada.Containers.Indefinite_Holders is
    procedure Reallocate (Container : in out Holder; To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => 0, -- Length is unused
+         Target_Capacity => 0, -- Capacity is unused
+         New_Length => 0,
+         New_Capacity => 0,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,

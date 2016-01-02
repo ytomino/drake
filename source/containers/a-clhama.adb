@@ -118,8 +118,14 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
+--
 
 --  diff (Copy_Data)
+--
+--
+--
 --
 --
 --
@@ -163,6 +169,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    procedure Reallocate (Container : in out Map; Capacity : Count_Type) is
    begin
       Hash_Tables.Rebuild (Container.Table, Capacity);
+--  diff
 --  diff
 --  diff
 --  diff
