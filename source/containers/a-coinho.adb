@@ -78,8 +78,8 @@ package body Ada.Containers.Indefinite_Holders is
       end;
    end Copy_Data;
 
-   procedure Unique (Container : in out Holder; To_Update : Boolean);
-   procedure Unique (Container : in out Holder; To_Update : Boolean) is
+   procedure Reallocate (Container : in out Holder; To_Update : Boolean);
+   procedure Reallocate (Container : in out Holder; To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
@@ -91,6 +91,14 @@ package body Ada.Containers.Indefinite_Holders is
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+   end Reallocate;
+
+   procedure Unique (Container : in out Holder; To_Update : Boolean);
+   procedure Unique (Container : in out Holder; To_Update : Boolean) is
+   begin
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Reallocate (Container, To_Update);
+      end if;
    end Unique;
 
    --  implementation
@@ -142,7 +150,7 @@ package body Ada.Containers.Indefinite_Holders is
       New_Item : Element_Type) is
    begin
       Clear (Container);
-      Unique (Container, True);
+      Reallocate (Container, True);
       Allocate_Element (Downcast (Container.Super.Data).Element, New_Item);
    end Replace_Element;
 
@@ -217,7 +225,7 @@ package body Ada.Containers.Indefinite_Holders is
          Item : out Holder) is
       begin
          Clear (Item);
-         Unique (Item, True);
+         Reallocate (Item, True);
          Allocate_Element (
             Downcast (Item.Super.Data).Element,
             Element_Type'Input (Stream));

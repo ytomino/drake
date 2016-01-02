@@ -131,12 +131,31 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
+   procedure Reallocate (Container : in out Vector; Capacity : Count_Type);
+   procedure Reallocate (Container : in out Vector; Capacity : Count_Type) is
+   begin
+      if Capacity /= Limited_Vectors.Capacity (Container) then
+         declare
+            Old_Data : Data_Access := Container.Data;
+         begin
+            if Capacity = 0 then
+               Container.Data := null;
+            else
+               Container.Data := new Data'(
+                  Capacity_Last =>
+                     Index_Type'First - 1 + Index_Type'Base (Capacity),
+                  Items => <>);
+               for I in Index_Type'First .. Last_Index (Container) loop
+                  Container.Data.Items (I) := Old_Data.Items (I);
+                  Old_Data.Items (I) := null;
+               end loop;
+            end if;
+            Release (Old_Data);
+         end;
+      end if;
+   end Reallocate;
+
 --  diff (Unique)
---
---
---
---
---
 --
 --
 --
@@ -284,29 +303,12 @@ package body Ada.Containers.Limited_Vectors is
 
    procedure Reserve_Capacity (
       Container : in out Vector;
-      Capacity : Count_Type) is
+      Capacity : Count_Type)
+   is
+      New_Capacity : constant Count_Type :=
+         Count_Type'Max (Capacity, Container.Length);
    begin
-      if Capacity /= Limited_Vectors.Capacity (Container) then
-         declare
-            New_Capacity : constant Count_Type := Count_Type'Max (
-               Capacity, Container.Length);
-            Old_Data : Data_Access := Container.Data;
-         begin
-            if New_Capacity = 0 then
-               Container.Data := null;
-            else
-               Container.Data := new Data'(
-                  Capacity_Last =>
-                     Index_Type'First - 1 + Index_Type'Base (New_Capacity),
-                  Items => <>);
-               for I in Index_Type'First .. Last_Index (Container) loop
-                  Container.Data.Items (I) := Old_Data.Items (I);
-                  Old_Data.Items (I) := null;
-               end loop;
-            end if;
-            Release (Old_Data);
-         end;
-      end if;
+      Reallocate (Container, New_Capacity);
    end Reserve_Capacity;
 
    function Length (Container : Vector) return Count_Type is
@@ -322,7 +324,7 @@ package body Ada.Containers.Limited_Vectors is
             New_Capacity : constant Count_Type :=
                Count_Type'Max (Old_Capacity * 2, Length);
          begin
-            Reserve_Capacity (Container, New_Capacity);
+            Reallocate (Container, New_Capacity);
          end;
       end if;
       Container.Length := Length;

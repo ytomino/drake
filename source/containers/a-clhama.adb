@@ -159,12 +159,28 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
    end Free_Data;
 
+   procedure Reallocate (Container : in out Map; Capacity : Count_Type);
+   procedure Reallocate (Container : in out Map; Capacity : Count_Type) is
+   begin
+      Hash_Tables.Rebuild (Container.Table, Capacity);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Reallocate;
+
 --  diff (Unique)
---
---
---
---
---
 --
 --
 --
@@ -254,19 +270,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      Hash_Tables.Rebuild (
-         Container.Table,
-         New_Capacity);
+      Reallocate (Container, New_Capacity);
    end Reserve_Capacity;
 
    function Length (Container : Map) return Count_Type is

@@ -16,7 +16,7 @@ private package Ada.Containers.Copy_On_Write is
 
    type Data_Access is access Data;
 
-   function Shared (Data : not null Data_Access) return Boolean;
+   function Shared (Data : Data_Access) return Boolean;
 
    type Container is record
       Data : Data_Access;

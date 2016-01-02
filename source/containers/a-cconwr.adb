@@ -59,10 +59,16 @@ package body Ada.Containers.Copy_On_Write is
 
    --  implementation
 
-   function Shared (Data : not null Data_Access) return Boolean is
+   function Shared (Data : Data_Access) return Boolean is
+      Result : Boolean;
    begin
-      return Data.Follower /= null
-         and then Data.Follower.Next_Follower /= null;
+      if Data = null then
+         Result := True; -- null as sentinel
+      else
+         pragma Assert (Data.Follower /= null);
+         Result := Data.Follower.Next_Follower /= null;
+      end if;
+      return Result;
    end Shared;
 
    procedure Adjust (
@@ -233,7 +239,8 @@ package body Ada.Containers.Copy_On_Write is
             --  reallocation
             System.Shared_Locking.Enter;
             declare
-               To_Copy : constant Boolean := Shared (Target.Data);
+               To_Copy : constant Boolean :=
+                  Target.Data.Follower.Next_Follower /= null; -- shared
                New_Data : Data_Access;
                To_Free : Data_Access;
             begin
@@ -330,7 +337,7 @@ package body Ada.Containers.Copy_On_Write is
          end if;
       else
          --  decreasing
-         if Target.Data /= null and then not Shared (Target.Data) then
+         if not Shared (Target.Data) then
             Downcast (Target.Data).Max_Length := New_Length;
          end if;
       end if;

@@ -131,20 +131,39 @@ package body Ada.Containers.Indefinite_Vectors is
       Target := Upcast (T);
    end Copy_Data;
 
-   procedure Unique (Container : in out Vector; To_Update : Boolean);
-   procedure Unique (Container : in out Vector; To_Update : Boolean) is
-      Current_Capacity : constant Count_Type := Capacity (Container);
+   procedure Reallocate (
+      Container : in out Vector;
+      Capacity : Count_Type;
+      To_Update : Boolean);
+   procedure Reallocate (
+      Container : in out Vector;
+      Capacity : Count_Type;
+      To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
          Container.Super'Access,
          Container.Length,
-         Current_Capacity,
-         Current_Capacity,
+         Indefinite_Vectors.Capacity (Container),
+         Capacity,
          To_Update,
          Allocate => Allocate_Data'Access,
          Move => Move_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+--  diff
+--  diff
+--  diff
+   end Reallocate;
+
+   procedure Unique (Container : in out Vector; To_Update : Boolean);
+   procedure Unique (Container : in out Vector; To_Update : Boolean) is
+   begin
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Reallocate (
+            Container,
+            Capacity (Container), -- not shrinking
+            To_Update);
+      end if;
    end Unique;
 
 --  diff (Array_To_Vector)
@@ -258,7 +277,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function "&" (Left : Element_Type; Right : Vector) return Vector is
    begin
       return Result : Vector do
-         Reserve_Capacity (Result, 1 + Right.Length);
+         Reallocate (Result, 1 + Right.Length, True);
          Append (Result, Left);
          Append (Result, Right);
       end return;
@@ -267,7 +286,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function "&" (Left, Right : Element_Type) return Vector is
    begin
       return Result : Vector do
-         Reserve_Capacity (Result, 2);
+         Reallocate (Result, 2, True);
          Append (Result, Left);
          Append (Result, Right);
       end return;
@@ -289,24 +308,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Container.Length);
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         Container.Length,
-         Indefinite_Vectors.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Move_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
+      Reallocate (Container, New_Capacity, True);
    end Reserve_Capacity;
 
    function Length (Container : Vector) return Count_Type is

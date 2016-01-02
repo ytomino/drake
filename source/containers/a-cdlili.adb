@@ -153,16 +153,18 @@ package body Ada.Containers.Doubly_Linked_Lists is
    procedure Unique (Container : in out List; To_Update : Boolean);
    procedure Unique (Container : in out List; To_Update : Boolean) is
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Copy_On_Write.Unique (
+            Container.Super'Access,
+            0, -- Length is unused
+            0, -- Capacity is unused
+            0, -- Capacity is unused
+            To_Update,
+            Allocate => Allocate_Data'Access,
+            Move => Copy_Data'Access,
+            Copy => Copy_Data'Access,
+            Free => Free_Data'Access);
+      end if;
    end Unique;
 
    --  implementation
