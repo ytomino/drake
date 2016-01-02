@@ -78,7 +78,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is

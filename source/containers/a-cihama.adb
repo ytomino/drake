@@ -89,7 +89,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Source_Node.Key.all, Source_Node.Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 

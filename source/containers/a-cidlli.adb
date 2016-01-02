@@ -76,7 +76,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Downcast (Source).Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 

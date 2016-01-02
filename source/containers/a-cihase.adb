@@ -89,7 +89,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Downcast (Source).Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -415,8 +414,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
---  diff
---  diff
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,

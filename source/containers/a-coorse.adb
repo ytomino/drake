@@ -83,22 +83,22 @@ package body Ada.Containers.Ordered_Sets is
 --
 --
 
---  diff (Allocate_Node)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   begin
+      Item := new Node'(Super => <>, Element => New_Item);
+--  diff
+--  diff
+--  diff
+   end Allocate_Node;
 
    procedure Copy_Node (
       Target : out Binary_Trees.Node_Access;
@@ -107,10 +107,9 @@ package body Ada.Containers.Ordered_Sets is
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(
-         Super => <>,
-         Element => Downcast (Source).Element);
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Downcast (Source).Element);
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -388,9 +387,7 @@ package body Ada.Containers.Ordered_Sets is
       Inserted := Before = null or else New_Item < Before.Element;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Element => New_Item);
+         Allocate_Node (Position, New_Item);
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,

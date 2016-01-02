@@ -102,7 +102,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is

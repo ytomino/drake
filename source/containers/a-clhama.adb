@@ -91,7 +91,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is

@@ -110,7 +110,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Downcast (Source).Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -389,8 +388,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
---  diff
---  diff
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,

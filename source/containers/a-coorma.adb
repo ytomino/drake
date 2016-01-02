@@ -63,31 +63,31 @@ package body Ada.Containers.Ordered_Maps is
 --
 --
 
---  diff (Allocate_Node)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type);
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type)
+   is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   begin
+      Item := new Node'(Super => <>, Key => Key, Element => New_Item);
+--  diff
+--  diff
+--  diff
+--  diff
+   end Allocate_Node;
 
    procedure Copy_Node (
       Target : out Binary_Trees.Node_Access;
@@ -96,11 +96,10 @@ package body Ada.Containers.Ordered_Maps is
       Target : out Binary_Trees.Node_Access;
       Source : not null Binary_Trees.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(
-         Super => <>,
-         Key => Downcast (Source).Key,
-         Element => Downcast (Source).Element);
+      Source_Node : constant Cursor := Downcast (Source);
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Source_Node.Key, Source_Node.Element);
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -392,10 +391,10 @@ package body Ada.Containers.Ordered_Maps is
       Inserted := Before = null or else Key < Before.Key;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Key => Key,
-            Element => New_Item);
+         Allocate_Node (Position, Key, New_Item);
+--  diff
+--  diff
+--  diff
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,

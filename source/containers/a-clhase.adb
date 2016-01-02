@@ -91,7 +91,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -413,9 +412,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Position := Find (Container, New_Hash, New_Element.all);
       Inserted := Position = null;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Element => New_Element);
+         Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
          Hash_Tables.Insert (
             Container.Table,

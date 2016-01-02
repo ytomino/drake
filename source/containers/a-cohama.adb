@@ -52,31 +52,31 @@ package body Ada.Containers.Hashed_Maps is
 --
 --
 
---  diff (Allocate_Node)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type);
+   procedure Allocate_Node (
+      Item : out Cursor;
+      Key : Key_Type;
+      New_Item : Element_Type) is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   begin
+      Item := new Node'(Super => <>, Key => Key, Element => New_Item);
+--  diff
+--  diff
+--  diff
+--  diff
+   end Allocate_Node;
 
    procedure Copy_Node (
       Target : out Hash_Tables.Node_Access;
@@ -85,11 +85,10 @@ package body Ada.Containers.Hashed_Maps is
       Target : out Hash_Tables.Node_Access;
       Source : not null Hash_Tables.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(
-         Super => <>,
-         Key => Downcast (Source).Key,
-         Element => Downcast (Source).Element);
+      Source_Node : constant Cursor := Downcast (Source);
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Source_Node.Key, Source_Node.Element);
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -436,10 +435,10 @@ package body Ada.Containers.Hashed_Maps is
       Inserted := Position = null;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Key => Key,
-            Element => New_Item);
+         Allocate_Node (Position, Key, New_Item);
+--  diff
+--  diff
+--  diff
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,

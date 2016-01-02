@@ -112,7 +112,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -387,9 +386,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Holder.Assign (New_Element'Access);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Element => New_Element);
+         Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
          Base.Insert (
             Container.Root,
