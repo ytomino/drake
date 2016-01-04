@@ -640,16 +640,17 @@ package body Ada.Containers.Vectors is
    procedure Delete (
       Container : in out Vector;
       Index : Extended_Index;
-      Count : Count_Type := 1) is
+      Count : Count_Type := 1)
+   is
+      Old_Length : constant Count_Type := Container.Length;
    begin
       if Index + Index_Type'Base (Count) =
-         Index_Type'First + Index_Type'Base (Container.Length)
+         Index_Type'First + Index_Type'Base (Old_Length)
       then
-         Delete_Last (Container, Count);
+         Set_Length (Container, Old_Length - Count);
       else
          Unique (Container, True);
          declare
-            Old_Length : constant Count_Type := Container.Length;
             Moving : constant Index_Type'Base :=
                (Index_Type'First + Index_Type'Base (Old_Length))
                - (Index + Index_Type'Base (Count))
@@ -675,14 +676,14 @@ package body Ada.Containers.Vectors is
    end Delete;
 
    procedure Delete_First (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Count : Count_Type := 1) is
    begin
       Delete (Container, Index_Type'First, Count => Count);
    end Delete_First;
 
    procedure Delete_Last (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Count : Count_Type := 1) is
    begin
       Set_Length (Container, Container.Length - Count);

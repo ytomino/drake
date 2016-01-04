@@ -493,6 +493,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position := null;
    end Delete;
 
+   procedure Delete_First (Container : in out Map'Class) is
+      Position : Cursor := First (Container);
+   begin
+      Delete (Container, Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Map'Class) is
+      Position : Cursor := Last (Container);
+   begin
+      Delete (Container, Position);
+   end Delete_Last;
+
    function First (Container : Map) return Cursor is
    begin
       if Is_Empty (Container) then

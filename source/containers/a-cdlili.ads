@@ -118,9 +118,13 @@ package Ada.Containers.Doubly_Linked_Lists is
       Position : in out Cursor;
       Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out List'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out List'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out List);
 

@@ -452,6 +452,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position := null;
    end Delete;
 
+   procedure Delete_First (Container : in out Set'Class) is
+      Position : Cursor := First (Container);
+   begin
+      Delete (Container, Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Set'Class) is
+      Position : Cursor := Last (Container);
+   begin
+      Delete (Container, Position);
+   end Delete_Last;
+
 --  diff (Union)
 --
 --

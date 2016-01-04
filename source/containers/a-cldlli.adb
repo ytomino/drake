@@ -415,21 +415,28 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end loop;
    end Delete;
 
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_First (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := First (Container);
    begin
-      for I in 1 .. Count loop
-         Position := Downcast (Container.First);
-         Delete (Container, Position);
-      end loop;
+      Delete (Container, Position, Count);
    end Delete_First;
 
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_Last (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := Last (Container);
    begin
       for I in 1 .. Count loop
-         Position := Downcast (Container.Last);
-         Delete (Container, Position);
+         declare
+            Previous_Position : constant Cursor := Previous (Position);
+         begin
+            Delete (Container, Position);
+            Position := Previous_Position;
+         end;
       end loop;
    end Delete_Last;
 

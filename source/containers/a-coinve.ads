@@ -244,9 +244,13 @@ package Ada.Containers.Indefinite_Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out Vector);
 
