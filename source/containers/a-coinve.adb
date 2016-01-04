@@ -451,6 +451,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Source.Super'Access,
          Free => Free_Data'Access);
       Target.Length := Source.Length;
+      Source.Length := 0;
    end Move;
 
    procedure Insert (

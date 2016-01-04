@@ -448,8 +448,9 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Release (Target.Data);
       Target.Data := Source.Data;
-      Target.Length := Source.Length;
       Source.Data := null;
+--  diff
+      Target.Length := Source.Length;
       Source.Length := 0;
    end Move;
 
