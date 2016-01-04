@@ -723,10 +723,22 @@ package body Ada.Containers.Limited_Vectors is
       end if;
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
    function Last_Index (Container : Vector) return Extended_Index is
    begin
       return Index_Type'First - 1 + Index_Type'Base (Container.Length);
    end Last_Index;
+
+--  diff (Last_Element)
+--
+--
+--
+--
 
 --  diff (Find_Index)
 --

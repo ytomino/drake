@@ -151,10 +151,12 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    function First (Container : List) return Cursor;
 
 --  diff (First_Element)
+--
 
    function Last (Container : List) return Cursor;
 
 --  diff (Last_Element)
+--
 
    function Next (Position : Cursor) return Cursor;
 

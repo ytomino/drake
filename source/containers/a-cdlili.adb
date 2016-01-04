@@ -548,6 +548,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
    end First;
 
+   function First_Element (Container : List'Class)
+      return Element_Type is
+   begin
+      return Element (First (Container));
+   end First_Element;
+
    function Last (Container : List) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -557,6 +563,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return Downcast (Downcast (Container.Super.Data).Last);
       end if;
    end Last;
+
+   function Last_Element (Container : List'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Container));
+   end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
    begin

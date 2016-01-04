@@ -723,10 +723,22 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
    end First;
 
+   function First_Element (Container : Vector'Class)
+      return Element_Type is
+   begin
+      return Element (Container, Index_Type'First);
+   end First_Element;
+
    function Last_Index (Container : Vector) return Extended_Index is
    begin
       return Index_Type'First - 1 + Index_Type'Base (Container.Length);
    end Last_Index;
+
+   function Last_Element (Container : Vector'Class)
+      return Element_Type is
+   begin
+      return Element (Container, Last_Index (Container));
+   end Last_Element;
 
    function Find_Index (
       Container : Vector;

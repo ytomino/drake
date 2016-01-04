@@ -548,6 +548,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
    function Last (Container : List) return Cursor is
    begin
       return Downcast (Container.Last);
@@ -557,6 +563,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
    end Last;
+
+--  diff (Last_Element)
+--
+--
+--
+--
 
    function Next (Position : Cursor) return Cursor is
    begin

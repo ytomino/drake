@@ -516,6 +516,18 @@ package body Ada.Containers.Ordered_Maps is
       end if;
    end First;
 
+   function First_Element (Container : Map'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Container));
+   end First_Element;
+
+   function First_Key (Container : Map'Class)
+      return Key_Type is
+   begin
+      return Key (Last (Container));
+   end First_Key;
+
    function Last (Container : Map) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -526,6 +538,18 @@ package body Ada.Containers.Ordered_Maps is
             Downcast (Container.Super.Data).Root));
       end if;
    end Last;
+
+   function Last_Element (Container : Map'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Container));
+   end Last_Element;
+
+   function Last_Key (Container : Map'Class)
+      return Key_Type is
+   begin
+      return Key (Last (Container));
+   end Last_Key;
 
    function Next (Position : Cursor) return Cursor is
    begin

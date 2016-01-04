@@ -140,10 +140,12 @@ package Ada.Containers.Limited_Ordered_Sets is
    function First (Container : Set) return Cursor;
 
 --  diff (First_Element)
+--
 
    function Last (Container : Set) return Cursor;
 
 --  diff (Last_Element)
+--
 
    function Next (Position : Cursor) return Cursor;
 

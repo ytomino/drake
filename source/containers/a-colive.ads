@@ -263,6 +263,7 @@ package Ada.Containers.Limited_Vectors is
    function First (Container : Vector) return Cursor;
 
 --  diff (First_Element)
+--
 
    function Last_Index (Container : Vector) return Extended_Index;
 
@@ -270,6 +271,7 @@ package Ada.Containers.Limited_Vectors is
       renames Last_Index;
 
 --  diff (Last_Element)
+--
 
 --  function Next (Position : Cursor) return Cursor;
 

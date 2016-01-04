@@ -671,6 +671,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end First;
 
+   function First_Element (Container : Set'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Container));
+   end First_Element;
+
    function Last (Container : Set) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -681,6 +687,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Downcast (Container.Super.Data).Root));
       end if;
    end Last;
+
+   function Last_Element (Container : Set'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Container));
+   end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
    begin

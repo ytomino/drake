@@ -147,15 +147,19 @@ package Ada.Containers.Ordered_Maps is
 
    function First (Container : Map) return Cursor;
 
---  function First_Element (Container : Map) return Element_Type;
+   function First_Element (Container : Map'Class) -- not primitive
+      return Element_Type;
 
---  function First_Key (Container : Map) return Key_Type;
+   function First_Key (Container : Map'Class) -- not primitive
+      return Key_Type;
 
    function Last (Container : Map) return Cursor;
 
---  function Last_Element (Container : Map) return Element_Type;
+   function Last_Element (Container : Map'Class) -- not primitive
+      return Element_Type;
 
---  function Last_Key (Container : Map) return Key_Type;
+   function Last_Key (Container : Map'Class) -- not primitive
+      return Key_Type;
 
    function Next (Position : Cursor) return Cursor;
 

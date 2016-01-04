@@ -150,11 +150,13 @@ package Ada.Containers.Doubly_Linked_Lists is
 
    function First (Container : List) return Cursor;
 
---  function First_Element (Container : List) return Element_Type;
+   function First_Element (Container : List'Class) -- not primitive
+      return Element_Type;
 
    function Last (Container : List) return Cursor;
 
---  function Last_Element (Container : List) return Element_Type;
+   function Last_Element (Container : List'Class) -- not primitive
+      return Element_Type;
 
    function Next (Position : Cursor) return Cursor;
 

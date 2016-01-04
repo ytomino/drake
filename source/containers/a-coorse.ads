@@ -139,11 +139,13 @@ package Ada.Containers.Ordered_Sets is
 
    function First (Container : Set) return Cursor;
 
---  function First_Element (Container : Set) return Element_Type;
+   function First_Element (Container : Set'Class) -- not primitive
+      return Element_Type;
 
    function Last (Container : Set) return Cursor;
 
---  function Last_Element (Container : Set) return Element_Type;
+   function Last_Element (Container : Set'Class) -- not primitive
+      return Element_Type;
 
    function Next (Position : Cursor) return Cursor;
 

@@ -516,6 +516,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
+--  diff (First_Key)
+--
+--
+--
+--
+
    function Last (Container : Map) return Cursor is
    begin
       return Downcast (Binary_Trees.Last (Container.Root));
@@ -526,6 +538,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
 --  diff
    end Last;
+
+--  diff (Last_Element)
+--
+--
+--
+--
+
+--  diff (Last_Key)
+--
+--
+--
+--
 
    function Next (Position : Cursor) return Cursor is
    begin

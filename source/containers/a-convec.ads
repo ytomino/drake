@@ -262,14 +262,16 @@ package Ada.Containers.Vectors is
 
    function First (Container : Vector) return Cursor;
 
---  function First_Element (Container : Vector) return Element_Type;
+   function First_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
    function Last_Index (Container : Vector) return Extended_Index;
 
    function Last (Container : Vector) return Cursor
       renames Last_Index;
 
---  function Last_Element (Container : Vector) return Element_Type;
+   function Last_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
 --  function Next (Position : Cursor) return Cursor;
 
