@@ -322,7 +322,7 @@ package body Ada.Containers.Vectors is
       Failure : Boolean;
    begin
       Copy_On_Write.In_Place_Set_Length (
-         Target => Container.Super'Access,
+         Target_Data => Container.Super.Data,
          Target_Length => Container.Length,
          Target_Capacity => Old_Capacity,
          New_Length => Length,

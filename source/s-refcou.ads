@@ -63,7 +63,7 @@ package System.Reference_Counting is
       Free : not null access procedure (Object : in out Data_Access));
 
    procedure In_Place_Set_Length (
-      Target : not null access Container;
+      Target_Data : not null Data_Access;
       Target_Length : Length_Type;
       Target_Max_Length : aliased in out Length_Type; -- may be updated
       Target_Capacity : Length_Type;

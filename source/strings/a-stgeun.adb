@@ -229,7 +229,7 @@ package body Ada.Strings.Generic_Unbounded is
       Failure : Boolean;
    begin
       System.Reference_Counting.In_Place_Set_Length (
-         Target => Upcast (Source.Data'Unchecked_Access),
+         Target_Data => Upcast (Source.Data),
          Target_Length =>
             System.Reference_Counting.Length_Type (Source.Length),
          Target_Max_Length => Source.Data.Max_Length,

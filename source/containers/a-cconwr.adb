@@ -292,7 +292,7 @@ package body Ada.Containers.Copy_On_Write is
    end Unique;
 
    procedure In_Place_Set_Length (
-      Target : not null access Container;
+      Target_Data : Data_Access;
       Target_Length : Count_Type;
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
@@ -308,12 +308,12 @@ package body Ada.Containers.Copy_On_Write is
             Failure := True; -- should be reallocated
          else
             --  try to use reserved area
-            pragma Assert (Target.Data /= null); -- Target_Capacity > 0
+            pragma Assert (Target_Data /= null); -- Target_Capacity > 0
             System.Shared_Locking.Enter; -- emulate CAS
-            if Downcast (Target.Data).Max_Length = Target_Length
-               or else Target.Data.Follower.Next_Follower = null -- not shared
+            if Downcast (Target_Data).Max_Length = Target_Length
+               or else Target_Data.Follower.Next_Follower = null -- not shared
             then
-               Downcast (Target.Data).Max_Length := New_Length;
+               Downcast (Target_Data).Max_Length := New_Length;
                Failure := False; -- success
             else
                Failure := True; -- should be copied
@@ -322,8 +322,8 @@ package body Ada.Containers.Copy_On_Write is
          end if;
       else
          --  decreasing
-         if not Shared (Target.Data) then
-            Downcast (Target.Data).Max_Length := New_Length;
+         if not Shared (Target_Data) then
+            Downcast (Target_Data).Max_Length := New_Length;
          end if;
          Failure := False; -- success
       end if;

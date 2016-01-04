@@ -140,7 +140,7 @@ package body System.Reference_Counting is
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
-      if Target.all.all > 1 then -- shared
+      if Shared (Target.all) then
          if New_Capacity /= Target_Capacity or else Target.all /= Sentinel then
             declare
                Old : aliased Container := Target.all;
@@ -175,7 +175,7 @@ package body System.Reference_Counting is
    end Unique;
 
    procedure In_Place_Set_Length (
-      Target : not null access Container;
+      Target_Data : not null Data_Access;
       Target_Length : Length_Type;
       Target_Max_Length : aliased in out Length_Type;
       Target_Capacity : Length_Type;
@@ -195,7 +195,7 @@ package body System.Reference_Counting is
                New_Length)
             then
                Failure := False; -- success
-            elsif Target.all.all > 1 then
+            elsif Shared (Target_Data) then
                Failure := True; -- should be copied
             else -- reference count = 1
                Target_Max_Length := New_Length;
@@ -204,7 +204,7 @@ package body System.Reference_Counting is
          end if;
       else
          --  decreasing
-         if Target.all.all = 1 then
+         if not Shared (Target_Data) then
             Target_Max_Length := New_Length;
          end if;
          Failure := False; -- success

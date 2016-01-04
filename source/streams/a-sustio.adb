@@ -197,7 +197,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Failure : Boolean;
    begin
       System.Reference_Counting.In_Place_Set_Length (
-         Target => Upcast (Stream.Data'Unchecked_Access),
+         Target_Data => Upcast (Stream.Data),
          Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
          Target_Max_Length => Stream.Data.Max_Length,
          Target_Capacity =>

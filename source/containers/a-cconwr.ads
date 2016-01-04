@@ -100,7 +100,7 @@ private package Ada.Containers.Copy_On_Write is
    type Data_Ex_Access is access Data_Ex;
 
    procedure In_Place_Set_Length (
-      Target : not null access Container; -- accessing Max_length
+      Target_Data : Data_Access; -- accessing Max_length
       Target_Length : Count_Type;
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
