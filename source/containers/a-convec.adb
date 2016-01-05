@@ -356,7 +356,11 @@ package body Ada.Containers.Vectors is
    end Clear;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
-      return Cursor is
+      return Cursor
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if Index = Index_Type'First + Index_Type'Base (Container.Length) then
          return No_Element; -- Last_Index (Container) + 1
@@ -370,13 +374,19 @@ package body Ada.Containers.Vectors is
       Index : Index_Type)
       return Element_Type is
    begin
-      return Constant_Reference (Container, Index).Element.all;
+      return Constant_Reference (
+         Container,
+         Index).Element.all; -- checking Constraint_Error
    end Element;
 
    procedure Replace_Element (
       Container : in out Vector;
       Index : Index_Type;
-      New_Item : Element_Type) is
+      New_Item : Element_Type)
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container)
+            or else raise Constraint_Error);
    begin
       Unique (Container, True);
       declare
@@ -393,7 +403,10 @@ package body Ada.Containers.Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Constant_Reference (Container, Index).Element.all);
+      Process (
+         Constant_Reference (
+            Container,
+            Index).Element.all); -- checking Constraint_Error
    end Query_Element;
 
    procedure Update_Element (
@@ -401,13 +414,20 @@ package body Ada.Containers.Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container, Index).Element.all);
+      Process (
+         Reference (
+            Container,
+            Index).Element.all); -- checking Constraint_Error
    end Update_Element;
 
    function Constant_Reference (
       Container : aliased Vector;
       Index : Index_Type)
-      return Constant_Reference_Type is
+      return Constant_Reference_Type
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container)
+            or else raise Constraint_Error);
    begin
       Unique (Container'Unrestricted_Access.all, False);
       declare
@@ -420,7 +440,11 @@ package body Ada.Containers.Vectors is
    function Reference (
       Container : aliased in out Vector;
       Index : Index_Type)
-      return Reference_Type is
+      return Reference_Type
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container)
+            or else raise Constraint_Error);
    begin
       Unique (Container, True);
       declare
@@ -463,14 +487,22 @@ package body Ada.Containers.Vectors is
    is
       Position : Cursor;
    begin
-      Insert (Container, Before, New_Item, Position);
+      Insert (
+         Container,
+         Before, -- checking Constraint_Error
+         New_Item,
+         Position);
    end Insert;
 
    procedure Insert (
       Container : in out Vector;
       Before : Cursor;
       New_Item : Vector;
-      Position : out Cursor) is
+      Position : out Cursor)
+   is
+      pragma Check (Pre,
+         Check => Before <= Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if Container.Length = 0 then
          Position := Index_Type'First;
@@ -503,7 +535,12 @@ package body Ada.Containers.Vectors is
    is
       Position : Cursor;
    begin
-      Insert (Container, Before, New_Item, Position, Count);
+      Insert (
+         Container,
+         Before, -- checking Constraint_Error
+         New_Item,
+         Position,
+         Count);
    end Insert;
 
    procedure Insert (
@@ -513,7 +550,11 @@ package body Ada.Containers.Vectors is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
-      Insert_Space (Container, Before, Position, Count);
+      Insert_Space (
+         Container,
+         Before, -- checking Constraint_Error
+         Position,
+         Count);
       for I in Position .. Position + Index_Type'Base (Count) - 1 loop
          declare
             E : Element_Type
@@ -603,7 +644,11 @@ package body Ada.Containers.Vectors is
    is
       Position : Cursor;
    begin
-      Insert_Space (Container, Before, Position, Count);
+      Insert_Space (
+         Container,
+         Before, -- checking Constraint_Error
+         Position,
+         Count);
    end Insert_Space;
 
    procedure Insert_Space (
@@ -612,6 +657,9 @@ package body Ada.Containers.Vectors is
       Position : out Cursor;
       Count : Count_Type := 1)
    is
+      pragma Check (Pre,
+         Check => Before <= Last_Index (Container) + 1
+            or else raise Constraint_Error);
       After_Last : constant Index_Type'Base :=
          Index_Type'First + Index_Type'Base (Container.Length);
    begin
@@ -651,6 +699,12 @@ package body Ada.Containers.Vectors is
       Index : Extended_Index;
       Count : Count_Type := 1)
    is
+      pragma Check (Pre,
+         Check =>
+            Index in
+               Index_Type'First ..
+               Last_Index (Container) - Index_Type'Base (Count) + 1
+            or else raise Constraint_Error);
       Old_Length : constant Count_Type := Container.Length;
    begin
       if Index + Index_Type'Base (Count) =
@@ -709,6 +763,10 @@ package body Ada.Containers.Vectors is
    end Reverse_Elements;
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
+      pragma Check (Pre,
+         Check =>
+            (I <= Last_Index (Container) and then J <= Last_Index (Container))
+            or else raise Constraint_Error);
    begin
       Unique (Container, True);
       Swap_Element (
@@ -755,7 +813,10 @@ package body Ada.Containers.Vectors is
       Index : Index_Type := Index_Type'First)
       return Extended_Index is
    begin
-      return Find (Container, Item, Index);
+      return Find (
+         Container,
+         Item,
+         Index); -- checking Constraint_Error
    end Find_Index;
 
    function Find (
@@ -770,7 +831,13 @@ package body Ada.Containers.Vectors is
       Container : Vector;
       Item : Element_Type;
       Position : Cursor)
-      return Cursor is
+      return Cursor
+   is
+      pragma Check (Pre,
+         Check =>
+            (Position in Index_Type'First .. Last_Index (Container))
+            or else (Is_Empty (Container) and then Position = Index_Type'First)
+            or else raise Constraint_Error);
    begin
       for I in Position .. Last_Index (Container) loop
          if Downcast (Container.Super.Data).Items (I) = Item then
@@ -792,7 +859,10 @@ package body Ada.Containers.Vectors is
       Start : constant Extended_Index :=
          Extended_Index'Min (Index, Last_Index (Container));
    begin
-      return Reverse_Find (Container, Item, Start);
+      return Reverse_Find (
+         Container,
+         Item,
+         Start); -- checking Constraint_Error
    end Reverse_Find_Index;
 
    function Reverse_Find (
@@ -807,7 +877,13 @@ package body Ada.Containers.Vectors is
       Container : Vector;
       Item : Element_Type;
       Position : Cursor)
-      return Cursor is
+      return Cursor
+   is
+      pragma Check (Pre,
+         Check =>
+            (Position in Index_Type'First .. Last_Index (Container))
+            or else (Is_Empty (Container) and then Position = No_Element)
+            or else raise Constraint_Error);
    begin
       for I in reverse Index_Type'First .. Position loop
          if Downcast (Container.Super.Data).Items (I) = Item then
@@ -855,7 +931,11 @@ package body Ada.Containers.Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      pragma Unreferenced (Container);
+      pragma Check (Pre,
+         (First in Index_Type'First .. Last_Index (Container) + 1
+            and then Last <= Last_Index (Container))
+         or else (First = No_Element and then Last = No_Element)
+         or else raise Constraint_Error);
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin

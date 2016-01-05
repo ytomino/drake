@@ -356,7 +356,11 @@ package body Ada.Containers.Limited_Vectors is
    end Clear;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
-      return Cursor is
+      return Cursor
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if Index = Index_Type'First + Index_Type'Base (Container.Length) then
          return No_Element; -- Last_Index (Container) + 1
@@ -366,6 +370,8 @@ package body Ada.Containers.Limited_Vectors is
    end To_Cursor;
 
 --  diff (Element)
+--
+--
 --
 --
 --
@@ -387,13 +393,20 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
 
    procedure Query_Element (
       Container : Vector'Class;
       Index : Index_Type;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Constant_Reference (Container, Index).Element.all);
+      Process (
+         Constant_Reference (
+            Container,
+            Index).Element.all); -- checking Constraint_Error
    end Query_Element;
 
    procedure Update_Element (
@@ -401,13 +414,20 @@ package body Ada.Containers.Limited_Vectors is
       Index : Index_Type;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container, Index).Element.all);
+      Process (
+         Reference (
+            Container,
+            Index).Element.all); -- checking Constraint_Error
    end Update_Element;
 
    function Constant_Reference (
       Container : aliased Vector;
       Index : Index_Type)
-      return Constant_Reference_Type is
+      return Constant_Reference_Type
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container)
+            or else raise Constraint_Error);
    begin
 --  diff
       declare
@@ -420,7 +440,11 @@ package body Ada.Containers.Limited_Vectors is
    function Reference (
       Container : aliased in out Vector;
       Index : Index_Type)
-      return Reference_Type is
+      return Reference_Type
+   is
+      pragma Check (Pre,
+         Check => Index <= Last_Index (Container)
+            or else raise Constraint_Error);
    begin
 --  diff
       declare
@@ -465,6 +489,43 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+
+--  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Insert)
 --
@@ -472,30 +533,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
---  diff (Insert)
 --
 --
 --
@@ -513,7 +550,11 @@ package body Ada.Containers.Limited_Vectors is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
-      Insert_Space (Container, Before, Position, Count);
+      Insert_Space (
+         Container,
+         Before, -- checking Constraint_Error
+         Position,
+         Count);
       for I in Position .. Position + Index_Type'Base (Count) - 1 loop
          declare
             E : Element_Access
@@ -603,7 +644,11 @@ package body Ada.Containers.Limited_Vectors is
    is
       Position : Cursor;
    begin
-      Insert_Space (Container, Before, Position, Count);
+      Insert_Space (
+         Container,
+         Before, -- checking Constraint_Error
+         Position,
+         Count);
    end Insert_Space;
 
    procedure Insert_Space (
@@ -612,6 +657,9 @@ package body Ada.Containers.Limited_Vectors is
       Position : out Cursor;
       Count : Count_Type := 1)
    is
+      pragma Check (Pre,
+         Check => Before <= Last_Index (Container) + 1
+            or else raise Constraint_Error);
       After_Last : constant Index_Type'Base :=
          Index_Type'First + Index_Type'Base (Container.Length);
    begin
@@ -651,6 +699,12 @@ package body Ada.Containers.Limited_Vectors is
       Index : Extended_Index;
       Count : Count_Type := 1)
    is
+      pragma Check (Pre,
+         Check =>
+            Index in
+               Index_Type'First ..
+               Last_Index (Container) - Index_Type'Base (Count) + 1
+            or else raise Constraint_Error);
       Old_Length : constant Count_Type := Container.Length;
    begin
       if Index + Index_Type'Base (Count) =
@@ -709,6 +763,10 @@ package body Ada.Containers.Limited_Vectors is
    end Reverse_Elements;
 
    procedure Swap (Container : in out Vector; I, J : Index_Type) is
+      pragma Check (Pre,
+         Check =>
+            (I <= Last_Index (Container) and then J <= Last_Index (Container))
+            or else raise Constraint_Error);
    begin
 --  diff
       Swap_Element (
@@ -757,6 +815,17 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+
+--  diff (Find)
+--
+--
+--
+--
+--
+--
 
 --  diff (Find)
 --
@@ -765,8 +834,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
-
---  diff (Find)
 --
 --
 --
@@ -794,6 +861,17 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+
+--  diff (Reverse_Find)
+--
+--
+--
+--
+--
+--
 
 --  diff (Reverse_Find)
 --
@@ -802,8 +880,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
-
---  diff (Reverse_Find)
 --
 --
 --
@@ -855,7 +931,11 @@ package body Ada.Containers.Limited_Vectors is
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
-      pragma Unreferenced (Container);
+      pragma Check (Pre,
+         (First in Index_Type'First .. Last_Index (Container) + 1
+            and then Last <= Last_Index (Container))
+         or else (First = No_Element and then Last = No_Element)
+         or else raise Constraint_Error);
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
@@ -1055,7 +1135,14 @@ package body Ada.Containers.Limited_Vectors is
       function Find (
          Container : Vector;
          Item : Element_Type;
-         Position : Cursor) return Cursor is
+         Position : Cursor) return Cursor
+      is
+         pragma Check (Pre,
+            Check =>
+               (Position in Index_Type'First .. Last_Index (Container))
+               or else (Is_Empty (Container)
+                  and then Position = Index_Type'First)
+               or else raise Constraint_Error);
       begin
          for I in Position .. Last_Index (Container) loop
             if Equivalent_Element (Container.Data.Items (I), Item) then
@@ -1077,7 +1164,13 @@ package body Ada.Containers.Limited_Vectors is
          Container : Vector;
          Item : Element_Type;
          Position : Cursor)
-         return Cursor is
+         return Cursor
+      is
+         pragma Check (Pre,
+            Check =>
+               (Position in Index_Type'First .. Last_Index (Container))
+               or else (Is_Empty (Container) and then Position = No_Element)
+               or else raise Constraint_Error);
       begin
          for I in reverse Index_Type'First .. Position loop
             if Equivalent_Element (Container.Data.Items (I), Item) then
