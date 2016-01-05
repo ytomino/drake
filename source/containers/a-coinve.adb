@@ -215,7 +215,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position > No_Index;
+      return Position /= No_Element;
    end Has_Element;
 
    overriding function "=" (Left, Right : Vector) return Boolean is
@@ -356,11 +356,13 @@ package body Ada.Containers.Indefinite_Vectors is
    end Clear;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
-      return Cursor
-   is
-      pragma Unreferenced (Container);
+      return Cursor is
    begin
-      return Cursor (Index);
+      if Index = Index_Type'First + Index_Type'Base (Container.Length) then
+         return No_Element; -- Last_Index (Container) + 1
+      else
+         return Index;
+      end if;
    end To_Cursor;
 
    function Element (
@@ -608,10 +610,16 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : in out Vector;
       Before : Cursor;
       Position : out Cursor;
-      Count : Count_Type := 1) is
+      Count : Count_Type := 1)
+   is
+      After_Last : constant Index_Type'Base :=
+         Index_Type'First + Index_Type'Base (Container.Length);
    begin
       Position := Before;
-      if Position = Index_Type'First + Index_Type'Base (Container.Length) then
+      if Position = No_Element then
+         Position := After_Last;
+      end if;
+      if Position = After_Last then -- Last_Index (Container) + 1
          Set_Length (Container, Container.Length + Count);
       else
          declare
@@ -747,15 +755,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Index : Index_Type := Index_Type'First)
       return Extended_Index is
    begin
-      for I in Index .. Last_Index (Container) loop
-         if Equivalent_Element (
-            Downcast (Container.Super.Data).Items (I),
-            Item)
-         then
-            return I;
-         end if;
-      end loop;
-      return No_Index;
+      return Find (Container, Item, Index);
    end Find_Index;
 
    function Find (
@@ -772,7 +772,15 @@ package body Ada.Containers.Indefinite_Vectors is
       Position : Cursor)
       return Cursor is
    begin
-      return Find_Index (Container, Item, Position);
+      for I in Position .. Last_Index (Container) loop
+         if Equivalent_Element (
+            Downcast (Container.Super.Data).Items (I),
+            Item)
+         then
+            return I;
+         end if;
+      end loop;
+      return No_Element;
    end Find;
 
    function Reverse_Find_Index (
@@ -784,15 +792,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Start : constant Extended_Index :=
          Extended_Index'Min (Index, Last_Index (Container));
    begin
-      for I in reverse Index_Type'First .. Start loop
-         if Equivalent_Element (
-            Downcast (Container.Super.Data).Items (I),
-            Item)
-         then
-            return I;
-         end if;
-      end loop;
-      return No_Index;
+      return Reverse_Find (Container, Item, Start);
    end Reverse_Find_Index;
 
    function Reverse_Find (
@@ -800,7 +800,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Item : Element_Type)
       return Cursor is
    begin
-      return Reverse_Find_Index (Container, Item);
+      return Reverse_Find (Container, Item, Last_Index (Container));
    end Reverse_Find;
 
    function Reverse_Find (
@@ -809,13 +809,21 @@ package body Ada.Containers.Indefinite_Vectors is
       Position : Cursor)
       return Cursor is
    begin
-      return Reverse_Find_Index (Container, Item, Position);
+      for I in reverse Index_Type'First .. Position loop
+         if Equivalent_Element (
+            Downcast (Container.Super.Data).Items (I),
+            Item)
+         then
+            return I;
+         end if;
+      end loop;
+      return No_Element;
    end Reverse_Find;
 
    function Contains (Container : Vector; Item : Element_Type)
       return Boolean is
    begin
-      return Find_Index (Container, Item) /= No_Index;
+      return Find (Container, Item) /= No_Element;
    end Contains;
 
    procedure Iterate (

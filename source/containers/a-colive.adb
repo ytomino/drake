@@ -215,7 +215,7 @@ package body Ada.Containers.Limited_Vectors is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Position > No_Index;
+      return Position /= No_Element;
    end Has_Element;
 
 --  diff ("=")
@@ -356,11 +356,13 @@ package body Ada.Containers.Limited_Vectors is
    end Clear;
 
    function To_Cursor (Container : Vector; Index : Extended_Index)
-      return Cursor
-   is
-      pragma Unreferenced (Container);
+      return Cursor is
    begin
-      return Cursor (Index);
+      if Index = Index_Type'First + Index_Type'Base (Container.Length) then
+         return No_Element; -- Last_Index (Container) + 1
+      else
+         return Index;
+      end if;
    end To_Cursor;
 
 --  diff (Element)
@@ -608,10 +610,16 @@ package body Ada.Containers.Limited_Vectors is
       Container : in out Vector;
       Before : Cursor;
       Position : out Cursor;
-      Count : Count_Type := 1) is
+      Count : Count_Type := 1)
+   is
+      After_Last : constant Index_Type'Base :=
+         Index_Type'First + Index_Type'Base (Container.Length);
    begin
       Position := Before;
-      if Position = Index_Type'First + Index_Type'Base (Container.Length) then
+      if Position = No_Element then
+         Position := After_Last;
+      end if;
+      if Position = After_Last then -- Last_Index (Container) + 1
          Set_Length (Container, Container.Length + Count);
       else
          declare
@@ -749,14 +757,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
---
---
---
---
---
---
 
 --  diff (Find)
 --
@@ -767,6 +767,14 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Find)
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -786,14 +794,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
---
---
---
---
---
---
 
 --  diff (Reverse_Find)
 --
@@ -804,6 +804,14 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Reverse_Find)
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -1007,18 +1015,27 @@ package body Ada.Containers.Limited_Vectors is
 
    package body Equivalents is
 
+      function Equivalent_Element (Left : Element_Access; Right : Element_Type)
+         return Boolean;
+      function Equivalent_Element (Left : Element_Access; Right : Element_Type)
+         return Boolean is
+      begin
+         return Left /= null and then Left.all = Right;
+      end Equivalent_Element;
+
       function "=" (Left, Right : Vector) return Boolean is
       begin
          if Left.Length /= Right.Length then
             return False;
          else
             for I in Index_Type'First .. Last_Index (Left) loop
-               if (Left.Data.Items (I) /= null) /=
-                  (Right.Data.Items (I) /= null)
-               then
-                  return False;
-               elsif Left.Data.Items (I) /= null
-                  and then Left.Data.Items (I).all /= Right.Data.Items (I).all
+               if Left.Data.Items (I) = null then
+                  if Right.Data.Items (I) /= null then
+                     return False;
+                  end if;
+               elsif not Equivalent_Element (
+                  Right.Data.Items (I),
+                  Left.Data.Items (I).all)
                then
                   return False;
                end if;
@@ -1041,9 +1058,7 @@ package body Ada.Containers.Limited_Vectors is
          Position : Cursor) return Cursor is
       begin
          for I in Position .. Last_Index (Container) loop
-            if Container.Data.Items (I) /= null
-               and then Container.Data.Items (I).all = Item
-            then
+            if Equivalent_Element (Container.Data.Items (I), Item) then
                return I;
             end if;
          end loop;
@@ -1065,9 +1080,7 @@ package body Ada.Containers.Limited_Vectors is
          return Cursor is
       begin
          for I in reverse Index_Type'First .. Position loop
-            if Container.Data.Items (I) /= null
-               and then Container.Data.Items (I).all = Item
-            then
+            if Equivalent_Element (Container.Data.Items (I), Item) then
                return I;
             end if;
          end loop;
@@ -1077,7 +1090,7 @@ package body Ada.Containers.Limited_Vectors is
       function Contains (Container : Vector; Item : Element_Type)
          return Boolean is
       begin
-         return Reverse_Find (Container, Item) >= Index_Type'First;
+         return Reverse_Find (Container, Item) /= No_Element;
       end Contains;
 
    end Equivalents;
