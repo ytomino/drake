@@ -83,7 +83,7 @@ begin
 		pragma Assert (R = "234");
 		pragma Assert (Ada.Strings.Fixed.Overwrite (T, 13, "DEF") = "012DEF6789");
 		pragma Assert (Ada.Strings.Fixed.Delete (T, 13, 16) = "012789");
-		pragma Assert (Ada.Strings.Fixed.Delete (T, 30, 0) = T);
+		pragma Assert (Ada.Strings.Fixed.Delete (T, T'Last + 1, 0) = T);
 		pragma Assert (Ada.Strings.Fixed.Delete (T, T'First, T'Last) = "");
 		pragma Assert (Ada.Strings.Fixed."*" (2, "ABC") = "ABCABC");
 		pragma Assert (Ada.Strings.Fixed.Head (T, 5) = "01234");

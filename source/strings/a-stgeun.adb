@@ -409,6 +409,7 @@ package body Ada.Strings.Generic_Unbounded is
    function Element (Source : Unbounded_String; Index : Positive)
       return Character_Type
    is
+      pragma Check (Pre, Index <= Source.Length or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
       return Source.Data.Items (Index);
@@ -419,6 +420,7 @@ package body Ada.Strings.Generic_Unbounded is
       Index : Positive;
       By : Character_Type)
    is
+      pragma Check (Pre, Index <= Source.Length or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
       Unique (Source);
@@ -431,6 +433,9 @@ package body Ada.Strings.Generic_Unbounded is
       High : Natural)
       return String_Type
    is
+      pragma Check (Pre,
+         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+            or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
       return Source.Data.Items (Low .. High);
@@ -443,7 +448,7 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String is
    begin
       return Result : Unbounded_String do
-         Unbounded_Slice (Source, Result, Low, High);
+         Unbounded_Slice (Source, Result, Low, High); -- checking Index_Error
       end return;
    end Unbounded_Slice;
 
@@ -453,6 +458,9 @@ package body Ada.Strings.Generic_Unbounded is
       Low : Positive;
       High : Natural)
    is
+      pragma Check (Pre,
+         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+            or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
       if Low = 1 then
@@ -676,6 +684,9 @@ package body Ada.Strings.Generic_Unbounded is
          By : String_Type)
          return Unbounded_String
       is
+         pragma Check (Pre,
+            Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+               or else raise Index_Error);
          pragma Suppress (Access_Check);
       begin
          return Result : Unbounded_String do
@@ -717,9 +728,7 @@ package body Ada.Strings.Generic_Unbounded is
          By : String_Type)
       is
          pragma Check (Pre,
-            Check =>
-               (Low in 1 .. Source.Length + 1
-                  and then High in 0 .. Source.Length)
+            Check => (Low <= Source.Length + 1 and then High <= Source.Length)
                or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
@@ -759,6 +768,8 @@ package body Ada.Strings.Generic_Unbounded is
          New_Item : String_Type)
          return Unbounded_String
       is
+         pragma Check (Pre,
+            Check => Before <= Source.Length + 1 or else raise Index_Error);
          pragma Suppress (Access_Check);
       begin
          return Result : Unbounded_String do
@@ -791,7 +802,7 @@ package body Ada.Strings.Generic_Unbounded is
          New_Item : String_Type)
       is
          pragma Check (Pre,
-            Check => Before in 1 .. Source.Length + 1
+            Check => Before <= Source.Length + 1
                or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
@@ -825,7 +836,7 @@ package body Ada.Strings.Generic_Unbounded is
       begin
          return Replace_Slice (
             Source,
-            Position,
+            Position, -- checking Index_Error
             Integer'Min (Position + New_Item'Length - 1, Source.Length),
             New_Item);
       end Overwrite;
@@ -833,15 +844,11 @@ package body Ada.Strings.Generic_Unbounded is
       procedure Overwrite (
          Source : in out Unbounded_String;
          Position : Positive;
-         New_Item : String_Type)
-      is
-         pragma Check (Pre,
-            Check => Position in 1 .. Source.Length + 1
-               or else raise Index_Error); -- CXA4032
+         New_Item : String_Type) is
       begin
          Replace_Slice (
             Source,
-            Position,
+            Position, -- checking Index_Error, CXA4032
             Integer'Min (Position + New_Item'Length - 1, Source.Length),
             New_Item);
       end Overwrite;
@@ -852,6 +859,10 @@ package body Ada.Strings.Generic_Unbounded is
          Through : Natural)
          return Unbounded_String
       is
+         pragma Check (Pre,
+            Check =>
+               (From <= Source.Length + 1 and then Through <= Source.Length)
+               or else raise Index_Error);
          pragma Suppress (Access_Check);
       begin
          return Result : Unbounded_String do
@@ -885,6 +896,10 @@ package body Ada.Strings.Generic_Unbounded is
          From : Positive;
          Through : Natural)
       is
+         pragma Check (Pre,
+            Check =>
+               (From <= Source.Length + 1 and then Through <= Source.Length)
+               or else raise Index_Error);
          pragma Suppress (Access_Check);
       begin
          if From <= Through then
