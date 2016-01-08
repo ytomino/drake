@@ -89,7 +89,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Source_Node.Key.all, Source_Node.Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -105,17 +104,20 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
-      pragma Unreferenced (Capacity);
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
          Length => 0);
    begin
+      Hash_Tables.Rebuild (New_Data.Table, Capacity);
       Target := Upcast (New_Data);
    end Allocate_Data;
 
@@ -123,14 +125,17 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
@@ -159,20 +164,37 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Data := null;
    end Free_Data;
 
-   procedure Unique (Container : in out Map; To_Update : Boolean);
-   procedure Unique (Container : in out Map; To_Update : Boolean) is
-      Current_Capacity : constant Count_Type := Capacity (Container);
+   procedure Reallocate (
+      Container : in out Map;
+      Capacity : Count_Type;
+      To_Update : Boolean);
+   procedure Reallocate (
+      Container : in out Map;
+      Capacity : Count_Type;
+      To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Current_Capacity,
-         Current_Capacity,
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => 0, -- Length is unused
+         Target_Capacity => Indefinite_Hashed_Maps.Capacity (Container),
+         New_Length => 0,
+         New_Capacity => Capacity,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+   end Reallocate;
+
+   procedure Unique (Container : in out Map; To_Update : Boolean);
+   procedure Unique (Container : in out Map; To_Update : Boolean) is
+   begin
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Reallocate (
+            Container,
+            Capacity (Container), -- not shrinking
+            To_Update);
+      end if;
    end Unique;
 
    function Find (Container : Map; Hash : Hash_Type; Key : Key_Type)
@@ -254,19 +276,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Indefinite_Hashed_Maps.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Hash_Tables.Rebuild (
-         Downcast (Container.Super.Data).Table,
-         New_Capacity);
+      Reallocate (Container, New_Capacity, True);
    end Reserve_Capacity;
 
    function Length (Container : Map) return Count_Type is
@@ -329,7 +339,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Container.Reference (Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -355,22 +365,17 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element.all'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
-      Unique (Container, True);
-      return (Element => Position.Element.all'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
    procedure Assign (Target : in out Map; Source : Map) is
@@ -557,7 +562,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Key : Key_Type)
       return Element_Type is
    begin
-      return Find (Container, Key).Element.all;
+      return Element (Find (Map (Container), Key));
    end Element;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -583,8 +588,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       type P2 is access procedure (Position : Hash_Tables.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));

@@ -244,9 +244,13 @@ package Ada.Containers.Indefinite_Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out Vector);
 
@@ -258,14 +262,16 @@ package Ada.Containers.Indefinite_Vectors is
 
    function First (Container : Vector) return Cursor;
 
---  function First_Element (Container : Vector) return Element_Type;
+   function First_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
    function Last_Index (Container : Vector) return Extended_Index;
 
    function Last (Container : Vector) return Cursor
       renames Last_Index;
 
---  function Last_Element (Container : Vector) return Element_Type;
+   function Last_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
 --  function Next (Position : Cursor) return Cursor;
 
@@ -342,16 +348,6 @@ package Ada.Containers.Indefinite_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  diff (Element_Array, Slicing, Constant_Reference, Reference)
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
@@ -458,15 +454,13 @@ private
 --
 --
 --
---
 --  diff (Indexing)
 --
 --
 --
---
 
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
+--  diff (pragma Inline)
+--  diff (pragma Inline)
 
    package Streaming is
 

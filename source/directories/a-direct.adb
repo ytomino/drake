@@ -421,7 +421,7 @@ package body Ada.Directories is
          pragma Unmodified (Result); -- modified via Reference
          declare
             Source_Reference : constant Constant_Reference_Type :=
-               Constant_Reference (Container, Position);
+               Constant_Reference (Search_Type (Container), Position);
             --  checking the predicate and Position in Constant_Reference
             Target_NC_Directory_Entry : constant
                not null access Non_Controlled_Directory_Entry_Type :=
@@ -460,7 +460,8 @@ package body Ada.Directories is
       return Search_Iterator_Interfaces.Forward_Iterator'Class
    is
       pragma Check (Dynamic_Predicate,
-         Check => Is_Open (Container) or else raise Status_Error);
+         Check => Is_Open (Container)
+            or else raise Status_Error);
    begin
       return Search_Iterator'(Search => Container'Unrestricted_Access);
    end Iterate;

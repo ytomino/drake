@@ -118,9 +118,13 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position : in out Cursor;
       Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out List'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out List'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out List);
 
@@ -146,11 +150,13 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    function First (Container : List) return Cursor;
 
---  function First_Element (Container : List) return Element_Type;
+   function First_Element (Container : List'Class) -- not primitive
+      return Element_Type;
 
    function Last (Container : List) return Cursor;
 
---  function Last_Element (Container : List) return Element_Type;
+   function Last_Element (Container : List'Class) -- not primitive
+      return Element_Type;
 
    function Next (Position : Cursor) return Cursor;
 

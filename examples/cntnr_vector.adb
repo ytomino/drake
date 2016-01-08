@@ -119,14 +119,15 @@ procedure cntnr_Vector is
 		use Vectors;
 		X : aliased Vectors.Vector;
 	begin
+		pragma Assert (X.Constant_Reference.Element.all = "");
 		for I in Character'('A') .. 'Z' loop
 			Append (X, I);
 		end loop;
 		-- accessor
 		-- ada.debug.put (string(X.Reference (1, 26).Element.all));
 		pragma Assert (X.Reference.Element.all = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		pragma Assert (X.Reference (1, 26).Element.all = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-		pragma Assert (X.Reference (2, 3).Element.all = "BC");
+		pragma Assert (X.Reference.Element (1 .. 26) = "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+		pragma Assert (X.Reference.Element (2 .. 3) = "BC");
 		-- forward iteration
 		declare
 			Ite : Vector_Iterator_Interfaces.Reversible_Iterator'Class := X.Iterate;

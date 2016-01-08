@@ -69,7 +69,7 @@ package body Ada.Containers.Access_Holders is
 
    function Element (Container : Holder'Class) return Name is
    begin
-      return Constant_Reference (Container);
+      return Constant_Reference (Holder (Container));
    end Element;
 
    procedure Replace_Element (Target : in out Holder; Source : Name) is

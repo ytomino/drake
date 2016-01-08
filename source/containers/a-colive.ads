@@ -244,9 +244,13 @@ package Ada.Containers.Limited_Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out Vector);
 
@@ -259,6 +263,7 @@ package Ada.Containers.Limited_Vectors is
    function First (Container : Vector) return Cursor;
 
 --  diff (First_Element)
+--
 
    function Last_Index (Container : Vector) return Extended_Index;
 
@@ -266,6 +271,7 @@ package Ada.Containers.Limited_Vectors is
       renames Last_Index;
 
 --  diff (Last_Element)
+--
 
 --  function Next (Position : Cursor) return Cursor;
 
@@ -342,16 +348,6 @@ package Ada.Containers.Limited_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
 --  diff (Element_Array, Slicing, Constant_Reference, Reference)
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
@@ -458,15 +454,13 @@ private
 --
 --
 --
---
 --  diff (Indexing)
 --
 --
 --
---
 
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
+--  diff (pragma Inline)
+--  diff (pragma Inline)
 
    package Streaming is
 

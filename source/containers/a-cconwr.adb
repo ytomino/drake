@@ -59,10 +59,16 @@ package body Ada.Containers.Copy_On_Write is
 
    --  implementation
 
-   function Shared (Data : not null Data_Access) return Boolean is
+   function Shared (Data : Data_Access) return Boolean is
+      Result : Boolean;
    begin
-      return Data.Follower /= null
-         and then Data.Follower.Next_Follower /= null;
+      if Data = null then
+         Result := True; -- null as sentinel
+      else
+         pragma Assert (Data.Follower /= null);
+         Result := Data.Follower.Next_Follower /= null;
+      end if;
+      return Result;
    end Shared;
 
    procedure Adjust (
@@ -118,14 +124,16 @@ package body Ada.Containers.Copy_On_Write is
    function Copy (
       Source : not null access constant Container;
       Length : Count_Type;
-      Capacity : Count_Type;
+      New_Capacity : Count_Type;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
+         Max_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
+         Max_Length : Count_Type;
          Capacity : Count_Type))
       return Container is
    begin
@@ -134,14 +142,14 @@ package body Ada.Containers.Copy_On_Write is
             declare
                New_Data : Data_Access;
             begin
-               Copy (New_Data, Source.Data, Length, Capacity);
+               Copy (New_Data, Source.Data, Length, Length, New_Capacity);
                Follow (Result'Unrestricted_Access, New_Data); -- no sync
             end;
-         elsif Capacity > 0 then
+         elsif New_Capacity > 0 then
             declare
                New_Data : Data_Access;
             begin
-               Allocate (New_Data, Capacity);
+               Allocate (New_Data, Length, New_Capacity);
                Follow (Result'Unrestricted_Access, New_Data); -- no sync
             end;
          end if;
@@ -179,26 +187,30 @@ package body Ada.Containers.Copy_On_Write is
       Target : not null access Container;
       Target_Length : Count_Type;
       Target_Capacity : Count_Type;
-      Capacity : Count_Type;
+      New_Length : Count_Type;
+      New_Capacity : Count_Type;
       To_Update : Boolean;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
+         Max_Length : Count_Type;
          Capacity : Count_Type);
       Move : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
+         Max_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type;
+         Max_Length : Count_Type;
          Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
       if Target.Data /= null then
          if Target.Data.Follower = Target
-            and then Capacity = Target_Capacity
+            and then New_Capacity = Target_Capacity
          then
             if To_Update then
                System.Shared_Locking.Enter;
@@ -208,7 +220,12 @@ package body Ada.Containers.Copy_On_Write is
                      New_Data : Data_Access;
                   begin
                      System.Shared_Locking.Leave; -- *B*
-                     Copy (New_Data, Target.Data, Target_Length, Capacity);
+                     Copy (
+                        New_Data,
+                        Target.Data,
+                        Target_Length,
+                        New_Length,
+                        New_Capacity);
                      System.Shared_Locking.Enter;
                      --  target uses old data, other followers use new data
                      if Target.Next_Follower = null then
@@ -233,15 +250,26 @@ package body Ada.Containers.Copy_On_Write is
             --  reallocation
             System.Shared_Locking.Enter;
             declare
-               To_Copy : constant Boolean := Shared (Target.Data);
+               To_Copy : constant Boolean :=
+                  Target.Data.Follower.Next_Follower /= null; -- shared
                New_Data : Data_Access;
                To_Free : Data_Access;
             begin
-               System.Shared_Locking.Leave;
+               System.Shared_Locking.Leave; -- *A*
                if To_Copy then
-                  Copy (New_Data, Target.Data, Target_Length, Capacity); -- *A*
+                  Copy (
+                     New_Data,
+                     Target.Data,
+                     Target_Length,
+                     New_Length,
+                     New_Capacity);
                else
-                  Move (New_Data, Target.Data, Target_Length, Capacity);
+                  Move (
+                     New_Data,
+                     Target.Data,
+                     Target_Length,
+                     New_Length,
+                     New_Capacity);
                end if;
                System.Shared_Locking.Enter;
                Unfollow (Target, To_Free);
@@ -257,31 +285,18 @@ package body Ada.Containers.Copy_On_Write is
          declare
             New_Data : Data_Access;
          begin
-            Allocate (New_Data, Capacity);
+            Allocate (New_Data, New_Length, New_Capacity);
             Follow (Target, New_Data); -- no sync
          end;
       end if;
    end Unique;
 
-   procedure Set_Length (
-      Target : not null access Container;
+   procedure In_Place_Set_Length (
+      Target_Data : Data_Access;
       Target_Length : Count_Type;
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
-      Allocate : not null access procedure (
-         Target : out not null Data_Access;
-         Capacity : Count_Type);
-      Move : not null access procedure (
-         Target : out not null Data_Access;
-         Source : not null Data_Access;
-         Length : Count_Type;
-         Capacity : Count_Type);
-      Copy : not null access procedure (
-         Target : out not null Data_Access;
-         Source : not null Data_Access;
-         Length : Count_Type;
-         Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access))
+      Failure : out Boolean)
    is
       function Downcast is
          new Unchecked_Conversion (Data_Access, Data_Ex_Access);
@@ -290,50 +305,28 @@ package body Ada.Containers.Copy_On_Write is
          --  inscreasing
          if New_Length > Target_Capacity then
             --  expanding
-            declare
-               New_Capacity : constant Count_Type :=
-                  Count_Type'Max (Target_Capacity * 2, New_Length);
-            begin
-               Unique (
-                  Target,
-                  Target_Length,
-                  Target_Capacity,
-                  New_Capacity,
-                  False,
-                  Allocate => Allocate,
-                  Move => Move,
-                  Copy => Copy,
-                  Free => Free);
-            end;
-            Downcast (Target.Data).Max_Length := New_Length;
+            Failure := True; -- should be reallocated
          else
             --  try to use reserved area
-            pragma Assert (Target.Data /= null); -- Target_Capacity > 0
+            pragma Assert (Target_Data /= null); -- Target_Capacity > 0
             System.Shared_Locking.Enter; -- emulate CAS
-            if Downcast (Target.Data).Max_Length = Target_Length then
-               Downcast (Target.Data).Max_Length := New_Length;
-               System.Shared_Locking.Leave;
+            if Downcast (Target_Data).Max_Length = Target_Length
+               or else Target_Data.Follower.Next_Follower = null -- not shared
+            then
+               Downcast (Target_Data).Max_Length := New_Length;
+               Failure := False; -- success
             else
-               System.Shared_Locking.Leave;
-               Unique (
-                  Target,
-                  Target_Length,
-                  Target_Capacity,
-                  Target_Capacity,
-                  False,
-                  Allocate => Allocate,
-                  Move => Move,
-                  Copy => Copy,
-                  Free => Free);
-               Downcast (Target.Data).Max_Length := New_Length;
+               Failure := True; -- should be copied
             end if;
+            System.Shared_Locking.Leave;
          end if;
       else
          --  decreasing
-         if Target.Data /= null and then not Shared (Target.Data) then
-            Downcast (Target.Data).Max_Length := New_Length;
+         if not Shared (Target_Data) then
+            Downcast (Target_Data).Max_Length := New_Length;
          end if;
+         Failure := False; -- success
       end if;
-   end Set_Length;
+   end In_Place_Set_Length;
 
 end Ada.Containers.Copy_On_Write;

@@ -141,21 +141,25 @@ package Ada.Containers.Limited_Ordered_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor);
 
---  procedure Delete_First (Container : in out Map);
+   procedure Delete_First (Container : in out Map'Class); -- not primitive
 
---  procedure Delete_Last (Container : in out Map);
+   procedure Delete_Last (Container : in out Map'Class); -- not primitive
 
    function First (Container : Map) return Cursor;
 
---  function First_Element (Container : Map) return Element_Type;
+--  diff (First_Element)
+--
 
---  function First_Key (Container : Map) return Key_Type;
+--  diff (First_Key)
+--
 
    function Last (Container : Map) return Cursor;
 
---  function Last_Element (Container : Map) return Element_Type;
+--  diff (Last_Element)
+--
 
---  function Last_Key (Container : Map) return Key_Type;
+--  diff (Last_Key)
+--
 
    function Next (Position : Cursor) return Cursor;
 

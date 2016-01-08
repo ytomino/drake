@@ -89,7 +89,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Downcast (Source).Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -104,17 +103,20 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
-      pragma Unreferenced (Capacity);
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
          Length => 0);
    begin
+      Hash_Tables.Rebuild (New_Data.Table, Capacity);
       Target := Upcast (New_Data);
    end Allocate_Data;
 
@@ -122,14 +124,17 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
          Table => null,
@@ -158,20 +163,37 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Data := null;
    end Free_Data;
 
-   procedure Unique (Container : in out Set; To_Update : Boolean);
-   procedure Unique (Container : in out Set; To_Update : Boolean) is
-      Current_Capacity : constant Count_Type := Capacity (Container);
+   procedure Reallocate (
+      Container : in out Set;
+      Capacity : Count_Type;
+      To_Update : Boolean);
+   procedure Reallocate (
+      Container : in out Set;
+      Capacity : Count_Type;
+      To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Current_Capacity,
-         Current_Capacity,
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => 0, -- Length is unused
+         Target_Capacity => Indefinite_Hashed_Sets.Capacity (Container),
+         New_Length => 0,
+         New_Capacity => Capacity,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+   end Reallocate;
+
+   procedure Unique (Container : in out Set; To_Update : Boolean);
+   procedure Unique (Container : in out Set; To_Update : Boolean) is
+   begin
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Reallocate (
+            Container,
+            Capacity (Container), -- not shrinking
+            To_Update);
+      end if;
    end Unique;
 
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
@@ -284,19 +306,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         Indefinite_Hashed_Sets.Capacity (Container),
-         New_Capacity,
-         True,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
-      Hash_Tables.Rebuild (
-         Downcast (Container.Super.Data).Table,
-         New_Capacity);
+      Reallocate (Container, New_Capacity, True);
    end Reserve_Capacity;
 
    function Length (Container : Set) return Count_Type is
@@ -404,8 +414,6 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
---  diff
---  diff
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,
@@ -713,8 +721,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       type P2 is access procedure (Position : Hash_Tables.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));
@@ -776,7 +784,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
       begin
-         return Find (Container, Key).Element.all;
+         return Element (Find (Container, Key));
       end Element;
 
       procedure Replace (
@@ -851,7 +859,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -859,8 +867,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
-         Unique (Container, True);
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

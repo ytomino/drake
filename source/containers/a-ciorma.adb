@@ -100,7 +100,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Source_Node.Key.all, Source_Node.Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -116,11 +115,14 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -134,26 +136,25 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
    begin
+      Allocate_Data (Target, 0, 0);
       Base.Copy (
-         New_Data.Root,
-         New_Data.Length,
+         Downcast (Target).Root,
+         Downcast (Target).Length,
          Source => Downcast (Source).Root,
          Copy => Copy_Node'Access);
-      Target := Upcast (New_Data);
    end Copy_Data;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -173,16 +174,19 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Unique (Container : in out Map; To_Update : Boolean);
    procedure Unique (Container : in out Map; To_Update : Boolean) is
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Copy_On_Write.Unique (
+            Target => Container.Super'Access,
+            Target_Length => 0, -- Length is unused
+            Target_Capacity => 0, -- Capacity is unused
+            New_Length => 0,
+            New_Capacity => 0,
+            To_Update => To_Update,
+            Allocate => Allocate_Data'Access,
+            Move => Copy_Data'Access,
+            Copy => Copy_Data'Access,
+            Free => Free_Data'Access);
+      end if;
    end Unique;
 
    --  implementation
@@ -291,7 +295,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Container.Reference (Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -317,22 +321,17 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element.all'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
-      Unique (Container, True);
-      return (Element => Position.Element.all'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
    procedure Assign (Target : in out Map; Source : Map) is
@@ -494,6 +493,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position := null;
    end Delete;
 
+   procedure Delete_First (Container : in out Map'Class) is
+      Position : Cursor := First (Map (Container));
+   begin
+      Delete (Map (Container), Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Map'Class) is
+      Position : Cursor := Last (Map (Container));
+   begin
+      Delete (Map (Container), Position);
+   end Delete_Last;
+
    function First (Container : Map) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -505,6 +516,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       end if;
    end First;
 
+   function First_Element (Container : Map'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Map (Container)));
+   end First_Element;
+
+   function First_Key (Container : Map'Class)
+      return Key_Type is
+   begin
+      return Key (Last (Map (Container)));
+   end First_Key;
+
    function Last (Container : Map) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -515,6 +538,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
             Downcast (Container.Super.Data).Root));
       end if;
    end Last;
+
+   function Last_Element (Container : Map'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Map (Container)));
+   end Last_Element;
+
+   function Last_Key (Container : Map'Class)
+      return Key_Type is
+   begin
+      return Key (Last (Map (Container)));
+   end Last_Key;
 
    function Next (Position : Cursor) return Cursor is
    begin
@@ -559,7 +594,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Key : Key_Type)
       return Element_Type is
    begin
-      return Find (Container, Key).Element.all;
+      return Element (Find (Map (Container), Key));
    end Element;
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
@@ -621,8 +656,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -637,8 +672,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));

@@ -32,11 +32,14 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -49,16 +52,19 @@ package body Ada.Containers.Indefinite_Holders is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type) is
    begin
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      Allocate_Data (Target, 0);
+      Allocate_Data (Target, 0, 0);
       declare
          procedure Finally (X : not null access Copy_On_Write.Data_Access);
          procedure Finally (X : not null access Copy_On_Write.Data_Access) is
@@ -78,19 +84,28 @@ package body Ada.Containers.Indefinite_Holders is
       end;
    end Copy_Data;
 
-   procedure Unique (Container : in out Holder; To_Update : Boolean);
-   procedure Unique (Container : in out Holder; To_Update : Boolean) is
+   procedure Reallocate (Container : in out Holder; To_Update : Boolean);
+   procedure Reallocate (Container : in out Holder; To_Update : Boolean) is
    begin
       Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
+         Target => Container.Super'Access,
+         Target_Length => 0, -- Length is unused
+         Target_Capacity => 0, -- Capacity is unused
+         New_Length => 0,
+         New_Capacity => 0,
+         To_Update => To_Update,
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+   end Reallocate;
+
+   procedure Unique (Container : in out Holder; To_Update : Boolean);
+   procedure Unique (Container : in out Holder; To_Update : Boolean) is
+   begin
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Reallocate (Container, To_Update);
+      end if;
    end Unique;
 
    --  implementation
@@ -134,7 +149,7 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Element (Container : Holder'Class) return Element_Type is
    begin
-      return Container.Constant_Reference.Element.all;
+      return Constant_Reference (Holder (Container)).Element.all;
    end Element;
 
    procedure Replace_Element (
@@ -142,7 +157,7 @@ package body Ada.Containers.Indefinite_Holders is
       New_Item : Element_Type) is
    begin
       Clear (Container);
-      Unique (Container, True);
+      Reallocate (Container, True);
       Allocate_Element (Downcast (Container.Super.Data).Element, New_Item);
    end Replace_Element;
 
@@ -150,14 +165,14 @@ package body Ada.Containers.Indefinite_Holders is
       Container : Holder'Class;
       Process : not null access procedure (Element : Element_Type)) is
    begin
-      Process (Container.Constant_Reference.Element.all);
+      Process (Constant_Reference (Holder (Container)).Element.all);
    end Query_Element;
 
    procedure Update_Element (
       Container : in out Holder'Class;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference.Element.all);
+      Process (Reference (Holder (Container)).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -217,7 +232,7 @@ package body Ada.Containers.Indefinite_Holders is
          Item : out Holder) is
       begin
          Clear (Item);
-         Unique (Item, True);
+         Reallocate (Item, True);
          Allocate_Element (
             Downcast (Item.Super.Data).Element,
             Element_Type'Input (Stream));

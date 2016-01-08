@@ -98,7 +98,9 @@ package body Ada.Strings.Generic_Bounded is
    function Element (
       Source : Bounded_String;
       Index : Positive)
-      return Character_Type is
+      return Character_Type
+   is
+      pragma Check (Pre, Index <= Source.Length or else raise Index_Error);
    begin
       return Source.Element (Index);
    end Element;
@@ -106,7 +108,9 @@ package body Ada.Strings.Generic_Bounded is
    procedure Replace_Element (
       Source : in out Bounded_String;
       Index : Positive;
-      By : Character_Type) is
+      By : Character_Type)
+   is
+      pragma Check (Pre, Index <= Source.Length or else raise Index_Error);
    begin
       Source.Element (Index) := By;
    end Replace_Element;
@@ -118,9 +122,7 @@ package body Ada.Strings.Generic_Bounded is
       return String_Type
    is
       pragma Check (Pre,
-         Check =>
-            (Low in 1 .. Source.Length + 1
-               and then High in 0 .. Source.Length)
+         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
             or else raise Index_Error); -- CXA4034
    begin
       return Source.Element (Low .. High);
@@ -130,7 +132,11 @@ package body Ada.Strings.Generic_Bounded is
       Source : Bounded_String;
       Target : out Bounded_String;
       Low : Positive;
-      High : Natural) is
+      High : Natural)
+   is
+      pragma Check (Pre,
+         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+            or else raise Index_Error);
    begin
       Set_Bounded_String (Target, Source.Element (Low .. High));
    end Bounded_Slice;
@@ -216,38 +222,20 @@ package body Ada.Strings.Generic_Bounded is
       Source : aliased Bounded_String)
       return Slicing.Constant_Reference_Type is
    begin
-      return Constant_Reference (Source, 1, Source.Length);
-   end Constant_Reference;
-
-   function Constant_Reference (
-      Source : aliased Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Constant_Reference_Type is
-   begin
       return Slicing.Constant_Slice (
          String_Access'(Source.Element'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Constant_Reference;
 
    function Reference (
       Source : aliased in out Bounded_String)
       return Slicing.Reference_Type is
    begin
-      return Reference (Source, 1, Source.Length);
-   end Reference;
-
-   function Reference (
-      Source : aliased in out Bounded_String;
-      First_Index : Positive;
-      Last_Index : Natural)
-      return Slicing.Reference_Type is
-   begin
       return Slicing.Slice (
          String_Access'(Source.Element'Unrestricted_Access).all,
-         First_Index,
-         Last_Index);
+         1,
+         Source.Length);
    end Reference;
 
    package body Generic_Bounded_Length is
@@ -368,7 +356,7 @@ package body Ada.Strings.Generic_Bounded is
          return Bounded_String is
       begin
          return Result : Bounded_String do
-            Bounded_Slice (Source, Result, Low, High);
+            Bounded_Slice (Source, Result, Low, High); -- checking Index_Error
          end return;
       end Bounded_Slice;
 
@@ -623,7 +611,12 @@ package body Ada.Strings.Generic_Bounded is
             High : Natural;
             By : String_Type;
             Drop : Truncation := Error)
-            return Bounded.Bounded_String is
+            return Bounded.Bounded_String
+         is
+            pragma Check (Pre,
+               Check =>
+                  (Low <= Source.Length + 1 and then High <= Source.Length)
+                  or else raise Index_Error);
          begin
             return Result : Bounded.Bounded_String do
                declare
@@ -670,8 +663,7 @@ package body Ada.Strings.Generic_Bounded is
          is
             pragma Check (Pre,
                Check =>
-                  (Low in 1 .. Source.Length + 1
-                     and then High in 0 .. Source.Length)
+                  (Low <= Source.Length + 1 and then High <= Source.Length)
                   or else raise Index_Error); -- CXA4019
             New_Length : constant Natural := Source.Length
                + By'Length
@@ -706,7 +698,10 @@ package body Ada.Strings.Generic_Bounded is
             Before : Positive;
             New_Item : String_Type;
             Drop : Truncation := Error)
-            return Bounded.Bounded_String is
+            return Bounded.Bounded_String
+         is
+            pragma Check (Pre,
+               Check => Before <= Source.Length + 1 or else raise Index_Error);
          begin
             return Result : Bounded.Bounded_String do
                declare
@@ -747,6 +742,8 @@ package body Ada.Strings.Generic_Bounded is
             New_Item : String_Type;
             Drop : Truncation := Error)
          is
+            pragma Check (Pre,
+               Check => Before <= Source.Length + 1 or else raise Index_Error);
             New_Length : constant Natural := Source.Length + New_Item'Length;
          begin
             if New_Length > Bounded.Max then
@@ -780,7 +777,7 @@ package body Ada.Strings.Generic_Bounded is
          begin
             return Replace_Slice (
                Source,
-               Position,
+               Position, -- checking Index_Error
                Integer'Min (Position + New_Item'Length - 1, Source.Length),
                New_Item,
                Drop);
@@ -794,7 +791,7 @@ package body Ada.Strings.Generic_Bounded is
          begin
             Replace_Slice (
                Source,
-               Position,
+               Position, -- checking Index_Error
                Integer'Min (Position + New_Item'Length - 1, Source.Length),
                New_Item,
                Drop);
@@ -804,7 +801,12 @@ package body Ada.Strings.Generic_Bounded is
             Source : Bounded.Bounded_String;
             From : Positive;
             Through : Natural)
-            return Bounded.Bounded_String is
+            return Bounded.Bounded_String
+         is
+            pragma Check (Pre,
+               Check =>
+                  (From <= Source.Length + 1 and then Through <= Source.Length)
+                  or else raise Index_Error);
          begin
             return Result : Bounded.Bounded_String do
                Fixed_Functions.Delete (
@@ -819,7 +821,12 @@ package body Ada.Strings.Generic_Bounded is
          procedure Delete (
             Source : in out Bounded.Bounded_String;
             From : Positive;
-            Through : Natural) is
+            Through : Natural)
+         is
+            pragma Check (Pre,
+               Check =>
+                  (From <= Source.Length + 1 and then Through <= Source.Length)
+                  or else raise Index_Error);
          begin
             Fixed_Functions.Delete (
                Source.Element,

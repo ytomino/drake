@@ -110,7 +110,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       New_Node : Cursor;
    begin
       Allocate_Node (New_Node, Downcast (Source).Element.all);
---  diff
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -125,11 +124,14 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -143,26 +145,25 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
    begin
+      Allocate_Data (Target, 0, 0);
       Base.Copy (
-         New_Data.Root,
-         New_Data.Length,
+         Downcast (Target).Root,
+         Downcast (Target).Length,
          Source => Downcast (Source).Root,
          Copy => Copy_Node'Access);
-      Target := Upcast (New_Data);
    end Copy_Data;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -182,16 +183,19 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Unique (Container : in out Set; To_Update : Boolean);
    procedure Unique (Container : in out Set; To_Update : Boolean) is
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Copy_On_Write.Unique (
+            Target => Container.Super'Access,
+            Target_Length => 0, -- Length is unused
+            Target_Capacity => 0, -- Capacity is unused
+            New_Length => 0,
+            New_Capacity => 0,
+            To_Update => To_Update,
+            Allocate => Allocate_Data'Access,
+            Move => Copy_Data'Access,
+            Copy => Copy_Data'Access,
+            Free => Free_Data'Access);
+      end if;
    end Unique;
 
    --  implementation
@@ -384,8 +388,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
---  diff
---  diff
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,
@@ -449,6 +451,18 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Free_Node (Position_2);
       Position := null;
    end Delete;
+
+   procedure Delete_First (Container : in out Set'Class) is
+      Position : Cursor := First (Set (Container));
+   begin
+      Delete (Set (Container), Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Set'Class) is
+      Position : Cursor := Last (Set (Container));
+   begin
+      Delete (Set (Container), Position);
+   end Delete_Last;
 
    procedure Union (Target : in out Set; Source : Set) is
    begin
@@ -657,6 +671,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
    end First;
 
+   function First_Element (Container : Set'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Set (Container)));
+   end First_Element;
+
    function Last (Container : Set) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -667,6 +687,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Downcast (Container.Super.Data).Root));
       end if;
    end Last;
+
+   function Last_Element (Container : Set'Class)
+      return Element_Type is
+   begin
+      return Element (Last (Set (Container)));
+   end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
    begin
@@ -765,8 +791,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -781,8 +807,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -891,7 +917,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
       begin
-         return Find (Container, Key).Element.all;
+         return Element (Find (Container, Key));
       end Element;
 
       procedure Replace (
@@ -899,7 +925,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Key : Key_Type;
          New_Item : Element_Type) is
       begin
-         Find (Container, Key).Element.all := New_Item;
+         Replace_Element (Container, Find (Container, Key), New_Item);
       end Replace;
 
       procedure Exclude (Container : in out Set; Key : Key_Type) is
@@ -1002,7 +1028,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -1010,8 +1036,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
-         Unique (Container, True);
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

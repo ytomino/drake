@@ -49,22 +49,22 @@ package body Ada.Containers.Doubly_Linked_Lists is
 --
 --
 
---  diff (Allocate_Node)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
+   procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   begin
+      Item := new Node'(Super => <>, Element => New_Item);
+--  diff
+--  diff
+--  diff
+   end Allocate_Node;
 
    procedure Copy_Node (
       Target : out Linked_Lists.Node_Access;
@@ -73,10 +73,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Target : out Linked_Lists.Node_Access;
       Source : not null Linked_Lists.Node_Access)
    is
-      New_Node : constant Cursor := new Node'(
-         Super => <>,
-         Element => Downcast (Source).Element);
+      New_Node : Cursor;
    begin
+      Allocate_Node (New_Node, Downcast (Source).Element);
       Target := Upcast (New_Node);
    end Copy_Node;
 
@@ -91,11 +90,14 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access := new Data'(
          Super => <>,
@@ -110,29 +112,27 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
+      Max_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
+      pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         First => null,
-         Last => null,
-         Length => 0);
    begin
+      Allocate_Data (Target, 0, 0);
       Linked_Lists.Copy (
-         New_Data.First,
-         New_Data.Last,
-         New_Data.Length,
+         Downcast (Target).First,
+         Downcast (Target).Last,
+         Downcast (Target).Length,
          Source_Last => Downcast (Source).Last,
          Copy => Copy_Node'Access,
          Insert => Base.Insert'Access);
-      Target := Upcast (New_Data);
    end Copy_Data;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -153,16 +153,19 @@ package body Ada.Containers.Doubly_Linked_Lists is
    procedure Unique (Container : in out List; To_Update : Boolean);
    procedure Unique (Container : in out List; To_Update : Boolean) is
    begin
-      Copy_On_Write.Unique (
-         Container.Super'Access,
-         0, -- Length is unused
-         0, -- Capacity is unused
-         0, -- Capacity is unused
-         To_Update,
-         Allocate => Allocate_Data'Access,
-         Move => Copy_Data'Access,
-         Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+      if Copy_On_Write.Shared (Container.Super.Data) then
+         Copy_On_Write.Unique (
+            Target => Container.Super'Access,
+            Target_Length => 0, -- Length is unused
+            Target_Capacity => 0, -- Capacity is unused
+            New_Length => 0,
+            New_Capacity => 0,
+            To_Update => To_Update,
+            Allocate => Allocate_Data'Access,
+            Move => Copy_Data'Access,
+            Copy => Copy_Data'Access,
+            Free => Free_Data'Access);
+      end if;
    end Unique;
 
    --  implementation
@@ -252,7 +255,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference (Position).Element.all);
+      Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -335,10 +338,10 @@ package body Ada.Containers.Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-            X : constant Cursor := new Node'(
-               Super => <>,
-               Element => New_Item);
+            X : Cursor;
          begin
+            Allocate_Node (X, New_Item);
+--  diff
 --  diff
             Base.Insert (
                Downcast (Container.Super.Data).First,
@@ -412,21 +415,28 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end loop;
    end Delete;
 
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_First (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := First (List (Container));
    begin
-      for I in 1 .. Count loop
-         Position := Downcast (Downcast (Container.Super.Data).First);
-         Delete (Container, Position);
-      end loop;
+      Delete (List (Container), Position, Count);
    end Delete_First;
 
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_Last (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := Last (List (Container));
    begin
       for I in 1 .. Count loop
-         Position := Downcast (Downcast (Container.Super.Data).Last);
-         Delete (Container, Position);
+         declare
+            Previous_Position : constant Cursor := Previous (Position);
+         begin
+            Delete (List (Container), Position);
+            Position := Previous_Position;
+         end;
       end loop;
    end Delete_Last;
 
@@ -538,6 +548,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end if;
    end First;
 
+   function First_Element (Container : List'Class)
+      return Element_Type is
+   begin
+      return Element (First (List (Container)));
+   end First_Element;
+
    function Last (Container : List) return Cursor is
    begin
       if Is_Empty (Container) then
@@ -547,6 +563,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return Downcast (Downcast (Container.Super.Data).Last);
       end if;
    end Last;
+
+   function Last_Element (Container : List'Class)
+      return Element_Type is
+   begin
+      return Element (Last (List (Container)));
+   end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
    begin
@@ -656,8 +678,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       type P2 is access procedure (Position : Linked_Lists.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (List (Container)) then
+         Unique (List (Container)'Unrestricted_Access.all, False);
          Base.Iterate (
             Downcast (Container.Super.Data).First,
             Cast (Process));
@@ -672,8 +694,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       type P2 is access procedure (Position : Linked_Lists.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (List (Container)) then
+         Unique (List (Container)'Unrestricted_Access.all, False);
          Linked_Lists.Reverse_Iterate (
             Downcast (Container.Super.Data).Last,
             Cast (Process));

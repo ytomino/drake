@@ -20,7 +20,7 @@ package body Ada.Text_IO.Iterators is
    function Element (Container : Lines_Type'Class; Position : Line_Cursor)
       return String is
    begin
-      return Constant_Reference (Container, Position).Element.all;
+      return Constant_Reference (Lines_Type (Container), Position).Element.all;
    end Element;
 
    function Constant_Reference (

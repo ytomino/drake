@@ -78,14 +78,17 @@ begin
 		for I in Table.Iterate loop
 			declare
 				The_Set : Unit_Sets.Set renames Table.Reference (I);
+				J : Unit_Sets.Cursor := The_Set.First;
 			begin
-				for J in The_Set.Iterate loop
+				while Unit_Sets.Has_Element (J) loop
 					declare
+						Next : constant Unit_Sets.Cursor := Unit_Sets.Next (J);
 						Dep_Name : constant String := The_Set.Constant_Reference (J);
 					begin
 						if not Unit_To_Unit_Sets_Maps.Contains (Table, Dep_Name) then
-							Unit_Sets.Delete (The_Set, Dep_Name);
+							Unit_Sets.Delete (The_Set, J);
 						end if;
+						J := Next;
 					end;
 				end loop;
 			end;

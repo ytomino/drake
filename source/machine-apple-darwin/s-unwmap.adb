@@ -89,10 +89,7 @@ package body System.Unwind.Mapping is
       Dummy : C.signed_int;
    begin
       act.sa_flags := C.signed_int (
-         C.unsigned_int'(
-            C.signal.SA_NODEFER
-            or C.signal.SA_RESTART
-            or C.signal.SA_SIGINFO));
+         C.unsigned_int'(C.signal.SA_NODEFER or C.signal.SA_SIGINFO));
       Dummy := C.signal.sigemptyset (act.sa_mask'Access);
       --  illegal instruction
       Dummy := C.signal.sigaction (C.signal.SIGILL, act'Access, null);

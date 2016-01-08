@@ -91,7 +91,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -104,6 +103,9 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Free_Node;
 
 --  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -144,6 +146,9 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
+--
 
 --  diff (Free)
 
@@ -159,12 +164,29 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --  diff
    end Free_Data;
 
+   procedure Reallocate (Container : in out Map; Capacity : Count_Type);
+   procedure Reallocate (Container : in out Map; Capacity : Count_Type) is
+   begin
+      Hash_Tables.Rebuild (Container.Table, Capacity);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Reallocate;
+
 --  diff (Unique)
---
---
---
---
---
 --
 --
 --
@@ -254,19 +276,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      Hash_Tables.Rebuild (
-         Container.Table,
-         New_Capacity);
+      Reallocate (Container, New_Capacity);
    end Reserve_Capacity;
 
    function Length (Container : Map) return Count_Type is
@@ -329,7 +339,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Container.Reference (Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -355,22 +365,17 @@ package body Ada.Containers.Limited_Hashed_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element.all'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
---  diff
-      return (Element => Position.Element.all'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
 --  diff (Assign)

@@ -359,7 +359,13 @@ package body Ada.Strings.Generic_Functions is
       Low : Positive;
       High : Natural;
       By : String_Type)
-      return String_Type is
+      return String_Type
+   is
+      pragma Check (Pre,
+         Check =>
+            (Low in Source'First .. Source'Last + 1
+               and then High in Source'First - 1 .. Source'Last)
+            or else raise Index_Error);
    begin
       return Result : String_Type (
          1 ..
@@ -470,7 +476,11 @@ package body Ada.Strings.Generic_Functions is
       Source : in out String_Type;
       Before : Positive;
       New_Item : String_Type;
-      Drop : Truncation := Error) is
+      Drop : Truncation := Error)
+   is
+      pragma Check (Pre,
+         Check => Before in Source'First .. Source'Last + 1
+            or else raise Index_Error);
    begin
       if New_Item'Length > 0 then -- growing
          declare
@@ -527,7 +537,7 @@ package body Ada.Strings.Generic_Functions is
    begin
       return Replace_Slice (
          Source,
-         Position,
+         Position, -- checking Index_Error
          Integer'Min (Position + New_Item'Length - 1, Source'Last),
          New_Item);
    end Overwrite;
@@ -540,7 +550,7 @@ package body Ada.Strings.Generic_Functions is
    begin
       Replace_Slice (
          Source,
-         Position,
+         Position, -- checking Index_Error
          Integer'Min (Position + New_Item'Length - 1, Source'Last),
          New_Item,
          Drop);
@@ -550,7 +560,11 @@ package body Ada.Strings.Generic_Functions is
       Source : String_Type;
       From : Positive;
       Through : Natural)
-      return String_Type is
+      return String_Type
+   is
+      pragma Check (Pre,
+         Check => (From <= Source'Last + 1 and then Through <= Source'Last)
+            or else raise Index_Error);
    begin
       return Result : String_Type (
          1 .. Source'Length - Integer'Max (0, Through - From + 1))
@@ -570,6 +584,9 @@ package body Ada.Strings.Generic_Functions is
       Justify : Alignment := Left;
       Pad : Character_Type := Space)
    is
+      pragma Check (Pre,
+         Check => (From <= Source'Last + 1 and then Through <= Source'Last)
+            or else raise Index_Error);
       Last : Natural := Source'Last;
    begin
       Delete (Source, Last, From, Through);

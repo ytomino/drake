@@ -112,7 +112,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -124,6 +123,9 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Free_Node;
 
 --  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -163,7 +165,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
 
 --  diff (Free)
 
@@ -180,6 +181,9 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Free_Data;
 
 --  diff (Unique)
+--
+--
+--
 --
 --
 --
@@ -382,9 +386,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Holder.Assign (New_Element'Access);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Element => New_Element);
+         Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
          Base.Insert (
             Container.Root,
@@ -449,6 +451,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Free_Node (Position_2);
       Position := null;
    end Delete;
+
+   procedure Delete_First (Container : in out Set'Class) is
+      Position : Cursor := First (Set (Container));
+   begin
+      Delete (Set (Container), Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Set'Class) is
+      Position : Cursor := Last (Set (Container));
+   begin
+      Delete (Set (Container), Position);
+   end Delete_Last;
 
 --  diff (Union)
 --
@@ -657,6 +671,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
    function Last (Container : Set) return Cursor is
    begin
       return Downcast (Binary_Trees.Last (Container.Root));
@@ -667,6 +687,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
    end Last;
+
+--  diff (Last_Element)
+--
+--
+--
+--
 
    function Next (Position : Cursor) return Cursor is
    begin
@@ -1002,7 +1028,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -1010,8 +1036,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
---  diff
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

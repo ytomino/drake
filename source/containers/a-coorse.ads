@@ -101,9 +101,9 @@ package Ada.Containers.Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor);
 
---  procedure Delete_First (Container : in out Set);
+   procedure Delete_First (Container : in out Set'Class); -- not primitive
 
---  procedure Delete_Last (Container : in out Set);
+   procedure Delete_Last (Container : in out Set'Class); -- not primitive
 
    procedure Union (Target : in out Set; Source : Set);
 
@@ -139,11 +139,13 @@ package Ada.Containers.Ordered_Sets is
 
    function First (Container : Set) return Cursor;
 
---  function First_Element (Container : Set) return Element_Type;
+   function First_Element (Container : Set'Class) -- not primitive
+      return Element_Type;
 
    function Last (Container : Set) return Cursor;
 
---  function Last_Element (Container : Set) return Element_Type;
+   function Last_Element (Container : Set'Class) -- not primitive
+      return Element_Type;
 
    function Next (Position : Cursor) return Cursor;
 

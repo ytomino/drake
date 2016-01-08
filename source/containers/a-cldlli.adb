@@ -78,7 +78,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Linked_Lists.Node_Access);
    procedure Free_Node (Object : in out Linked_Lists.Node_Access) is
@@ -90,6 +89,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Free_Node;
 
 --  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -132,8 +134,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
 
 --  diff (Free)
 
@@ -151,6 +151,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    end Free_Data;
 
 --  diff (Unique)
+--
+--
+--
 --
 --
 --
@@ -252,7 +255,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Container.Reference (Position).Element.all);
+      Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -412,21 +415,28 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end loop;
    end Delete;
 
-   procedure Delete_First (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_First (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := First (List (Container));
    begin
-      for I in 1 .. Count loop
-         Position := Downcast (Container.First);
-         Delete (Container, Position);
-      end loop;
+      Delete (List (Container), Position, Count);
    end Delete_First;
 
-   procedure Delete_Last (Container : in out List; Count : Count_Type := 1) is
-      Position : Cursor;
+   procedure Delete_Last (
+      Container : in out List'Class;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor := Last (List (Container));
    begin
       for I in 1 .. Count loop
-         Position := Downcast (Container.Last);
-         Delete (Container, Position);
+         declare
+            Previous_Position : constant Cursor := Previous (Position);
+         begin
+            Delete (List (Container), Position);
+            Position := Previous_Position;
+         end;
       end loop;
    end Delete_Last;
 
@@ -538,6 +548,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
    function Last (Container : List) return Cursor is
    begin
       return Downcast (Container.Last);
@@ -547,6 +563,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
    end Last;
+
+--  diff (Last_Element)
+--
+--
+--
+--
 
    function Next (Position : Cursor) return Cursor is
    begin

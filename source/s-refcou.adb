@@ -124,8 +124,8 @@ package body System.Reference_Counting is
       Target : not null access Container;
       Target_Length : Length_Type;
       Target_Capacity : Length_Type;
-      Max_Length : Length_Type;
-      Capacity : Length_Type;
+      New_Length : Length_Type;
+      New_Capacity : Length_Type;
       Sentinel : not null Data_Access;
       Reallocate : not null access procedure (
          Target : aliased in out not null Data_Access;
@@ -140,72 +140,53 @@ package body System.Reference_Counting is
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
-      if Target.all.all > 1 then -- shared
-         if Capacity /= Target_Capacity or else Target.all /= Sentinel then
+      if Shared (Target.all) then
+         if New_Capacity /= Target_Capacity or else Target.all /= Sentinel then
             declare
                Old : aliased Container := Target.all;
             begin
-               if Capacity = 0 then
+               if New_Capacity = 0 then
                   Target.all := Sentinel;
                else
-                  Copy (Target.all, Old, Target_Length, Max_Length, Capacity);
+                  Copy (
+                     Target.all,
+                     Old,
+                     Target_Length,
+                     New_Length,
+                     New_Capacity);
                end if;
                Clear (Old'Access, Free => Free);
             end;
          end if;
       else -- not shared
-         if Capacity /= Target_Capacity then
-            if Capacity = 0 then
+         if New_Capacity /= Target_Capacity then
+            if New_Capacity = 0 then
                Free (Target.all);
                Target.all := Sentinel;
             else
-               Reallocate (Target.all, Target_Length, Max_Length, Capacity);
+               Reallocate (
+                  Target.all,
+                  Target_Length,
+                  New_Length,
+                  New_Capacity);
             end if;
          end if;
       end if;
    end Unique;
 
-   procedure Set_Length (
-      Target : not null access Container;
+   procedure In_Place_Set_Length (
+      Target_Data : not null Data_Access;
       Target_Length : Length_Type;
       Target_Max_Length : aliased in out Length_Type;
       Target_Capacity : Length_Type;
       New_Length : Length_Type;
-      Sentinel : not null Data_Access;
-      Reallocate : not null access procedure (
-         Target : aliased in out not null Data_Access;
-         Length : Length_Type;
-         Max_Length : Length_Type;
-         Capacity : Length_Type);
-      Copy : not null access procedure (
-         Target : out not null Data_Access;
-         Source : not null Data_Access;
-         Length : Length_Type;
-         Max_Length : Length_Type;
-         Capacity : Length_Type);
-      Free : not null access procedure (Object : in out Data_Access)) is
+      Failure : out Boolean) is
    begin
       if New_Length > Target_Length then
          --  inscreasing
          if New_Length > Target_Capacity then
             --  expanding
-            declare
-               New_Capacity : constant Length_Type :=
-                  Storage_Elements.Storage_Offset'Max (
-                     Target_Capacity * 2,
-                     New_Length);
-            begin
-               Unique (
-                  Target => Target,
-                  Target_Length => Target_Length,
-                  Target_Capacity => Target_Capacity,
-                  Max_Length => New_Length,
-                  Capacity => New_Capacity,
-                  Sentinel => Sentinel,
-                  Reallocate => Reallocate,
-                  Copy => Copy, -- Copy should set Max_Length
-                  Free => Free);
-            end;
+            Failure := True; -- should be reallocated
          else
             --  try to use reserved area
             if sync_bool_compare_and_swap (
@@ -213,33 +194,21 @@ package body System.Reference_Counting is
                Target_Length,
                New_Length)
             then
-               null;
-            elsif Target.all.all > 1 then
-               declare
-                  --  Target_Capacity is possibly a large value
-                  New_Capacity : constant Length_Type := New_Length;
-               begin
-                  Unique (
-                     Target => Target,
-                     Target_Length => Target_Length,
-                     Target_Capacity => Target_Capacity,
-                     Max_Length => New_Length,
-                     Capacity => New_Capacity,
-                     Sentinel => Sentinel,
-                     Reallocate => Reallocate,
-                     Copy => Copy, -- Copy should set Max_Length
-                     Free => Free);
-               end;
+               Failure := False; -- success
+            elsif Shared (Target_Data) then
+               Failure := True; -- should be copied
             else -- reference count = 1
                Target_Max_Length := New_Length;
+               Failure := False; -- success
             end if;
          end if;
       else
          --  decreasing
-         if Target.all.all = 1 then
+         if not Shared (Target_Data) then
             Target_Max_Length := New_Length;
          end if;
+         Failure := False; -- success
       end if;
-   end Set_Length;
+   end In_Place_Set_Length;
 
 end System.Reference_Counting;

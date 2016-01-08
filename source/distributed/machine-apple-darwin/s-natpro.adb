@@ -234,30 +234,34 @@ package body System.Native_Processes is
 
    procedure Do_Wait (
       Child : in out Process;
-      Status : out Ada.Command_Line.Exit_Status)
-   is
-      R : C.sys.types.pid_t;
-      Code : aliased C.signed_int;
+      Status : out Ada.Command_Line.Exit_Status) is
    begin
       loop
-         Synchronous_Control.Unlock_Abort;
-         R := C.sys.wait.waitpid (Child.Id, Code'Access, 0);
-         Synchronous_Control.Lock_Abort; -- raise if aborted
-         if R < 0 then
-            if C.errno.errno /= C.errno.EINTR then
-               Raise_Exception (Use_Error'Identity);
-            end if;
-            --  interrupted and the signal is not "abort", then retry
-         else
-            Child.Id := -1; -- terminated or error
-            --  status code
-            if WIFEXITED (Code) then
-               Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
+         declare
+            Code : aliased C.signed_int;
+            R : C.sys.types.pid_t;
+            errno : C.signed_int;
+         begin
+            Synchronous_Control.Unlock_Abort;
+            R := C.sys.wait.waitpid (Child.Id, Code'Access, 0);
+            errno := C.errno.errno;
+            Synchronous_Control.Lock_Abort; -- raise if aborted
+            if R < 0 then
+               if errno /= C.errno.EINTR then
+                  Raise_Exception (Use_Error'Identity);
+               end if;
+               --  interrupted and the signal is not "abort", then retry
             else
-               Status := -1;
+               Child.Id := -1; -- terminated or error
+               --  status code
+               if WIFEXITED (Code) then
+                  Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
+               else
+                  Status := -1;
+               end if;
+               exit;
             end if;
-            exit;
-         end if;
+         end;
       end loop;
    end Do_Wait;
 

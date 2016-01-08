@@ -101,9 +101,9 @@ package Ada.Containers.Limited_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor);
 
---  procedure Delete_First (Container : in out Set);
+   procedure Delete_First (Container : in out Set'Class); -- not primitive
 
---  procedure Delete_Last (Container : in out Set);
+   procedure Delete_Last (Container : in out Set'Class); -- not primitive
 
 --  diff (Union)
 
@@ -140,10 +140,12 @@ package Ada.Containers.Limited_Ordered_Sets is
    function First (Container : Set) return Cursor;
 
 --  diff (First_Element)
+--
 
    function Last (Container : Set) return Cursor;
 
 --  diff (Last_Element)
+--
 
    function Next (Position : Cursor) return Cursor;
 

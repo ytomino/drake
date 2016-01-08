@@ -46,8 +46,8 @@ package System.Reference_Counting is
       Target : not null access Container;
       Target_Length : Length_Type;
       Target_Capacity : Length_Type;
-      Max_Length : Length_Type;
-      Capacity : Length_Type;
+      New_Length : Length_Type;
+      New_Capacity : Length_Type;
       Sentinel : not null Data_Access;
       Reallocate : not null access procedure (
          Target : aliased in out not null Data_Access;
@@ -62,26 +62,14 @@ package System.Reference_Counting is
          Capacity : Length_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
-   procedure Set_Length (
-      Target : not null access Container;
+   procedure In_Place_Set_Length (
+      Target_Data : not null Data_Access;
       Target_Length : Length_Type;
-      Target_Max_Length : aliased in out Length_Type;
+      Target_Max_Length : aliased in out Length_Type; -- may be updated
       Target_Capacity : Length_Type;
       New_Length : Length_Type;
-      Sentinel : not null Data_Access;
-      Reallocate : not null access procedure (
-         Target : aliased in out not null Data_Access;
-         Length : Length_Type; -- copying length
-         Max_Length : Length_Type; -- new length
-         Capacity : Length_Type);
-      Copy : not null access procedure (
-         Target : out not null Data_Access;
-         Source : not null Data_Access;
-         Length : Length_Type; -- copying length
-         Max_Length : Length_Type; -- new length
-         Capacity : Length_Type);
-      Free : not null access procedure (Object : in out Data_Access))
+      Failure : out Boolean) -- reallocation is needed
       with Convention => Intrinsic;
-   pragma Inline_Always (Set_Length);
+   pragma Inline_Always (In_Place_Set_Length);
 
 end System.Reference_Counting;

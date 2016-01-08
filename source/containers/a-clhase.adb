@@ -91,7 +91,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Hash_Tables.Node_Access);
    procedure Free_Node (Object : in out Hash_Tables.Node_Access) is
@@ -103,6 +102,9 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Free_Node;
 
 --  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -143,6 +145,9 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
 
 --  diff (Free)
 
@@ -158,12 +163,29 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
    end Free_Data;
 
+   procedure Reallocate (Container : in out Set; Capacity : Count_Type);
+   procedure Reallocate (Container : in out Set; Capacity : Count_Type) is
+   begin
+      Hash_Tables.Rebuild (Container.Table, Capacity);
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+   end Reallocate;
+
 --  diff (Unique)
---
---
---
---
---
 --
 --
 --
@@ -284,19 +306,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
       New_Capacity : constant Count_Type :=
          Count_Type'Max (Capacity, Length (Container));
    begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      Hash_Tables.Rebuild (
-         Container.Table,
-         New_Capacity);
+      Reallocate (Container, New_Capacity);
    end Reserve_Capacity;
 
    function Length (Container : Set) return Count_Type is
@@ -402,9 +412,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Position := Find (Container, New_Hash, New_Element.all);
       Inserted := Position = null;
       if Inserted then
-         Position := new Node'(
-            Super => <>,
-            Element => New_Element);
+         Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
          Hash_Tables.Insert (
             Container.Table,
@@ -851,7 +859,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Key : Key_Type)
          return Constant_Reference_Type is
       begin
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Constant_Reference (Container, Find (Container, Key));
       end Constant_Reference;
 
       function Reference_Preserving_Key (
@@ -859,8 +867,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Key : Key_Type)
          return Reference_Type is
       begin
---  diff
-         return (Element => Find (Container, Key).Element.all'Access);
+         return Reference_Preserving_Key (Container, Find (Container, Key));
       end Reference_Preserving_Key;
 
    end Generic_Keys;

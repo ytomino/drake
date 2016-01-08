@@ -244,9 +244,13 @@ package Ada.Containers.Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
-   procedure Delete_First (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_First (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
-   procedure Delete_Last (Container : in out Vector; Count : Count_Type := 1);
+   procedure Delete_Last (
+      Container : in out Vector'Class; -- not primitive
+      Count : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out Vector);
 
@@ -258,14 +262,16 @@ package Ada.Containers.Vectors is
 
    function First (Container : Vector) return Cursor;
 
---  function First_Element (Container : Vector) return Element_Type;
+   function First_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
    function Last_Index (Container : Vector) return Extended_Index;
 
    function Last (Container : Vector) return Cursor
       renames Last_Index;
 
---  function Last_Element (Container : Vector) return Element_Type;
+   function Last_Element (Container : Vector'Class) -- not primitive
+      return Element_Type;
 
 --  function Next (Position : Cursor) return Cursor;
 
@@ -352,18 +358,8 @@ package Ada.Containers.Vectors is
    function Constant_Reference (
       Container : aliased Vector)
       return Slicing.Constant_Reference_Type;
-   function Constant_Reference (
-      Container : aliased Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
-      return Slicing.Constant_Reference_Type;
    function Reference (
       Container : aliased in out Vector)
-      return Slicing.Reference_Type;
-   function Reference (
-      Container : aliased in out Vector;
-      First_Index : Index_Type;
-      Last_Index : Extended_Index)
       return Slicing.Reference_Type;
 
    --  to here
@@ -457,16 +453,14 @@ private
    function Constant_Indexing (
       Container : aliased Vector'Class;
       Index : Index_Type)
-      return Constant_Reference_Type
-      with Convention => Intrinsic;
+      return Constant_Reference_Type;
    function Indexing (
       Container : aliased in out Vector'Class;
       Index : Index_Type)
-      return Reference_Type
-      with Convention => Intrinsic;
+      return Reference_Type;
 
-   pragma Inline_Always (Constant_Indexing);
-   pragma Inline_Always (Indexing);
+   pragma Inline (Constant_Indexing);
+   pragma Inline (Indexing);
 
    package Streaming is
 

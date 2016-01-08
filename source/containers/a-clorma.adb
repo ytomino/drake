@@ -102,7 +102,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
---
 
    procedure Free_Node (Object : in out Binary_Trees.Node_Access);
    procedure Free_Node (Object : in out Binary_Trees.Node_Access) is
@@ -115,6 +114,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Free_Node;
 
 --  diff (Allocate_Data)
+--
+--
+--
 --
 --
 --
@@ -154,7 +156,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
---
 
 --  diff (Free)
 
@@ -171,6 +172,9 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Free_Data;
 
 --  diff (Unique)
+--
+--
+--
 --
 --
 --
@@ -291,7 +295,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Container.Reference (Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -317,22 +321,17 @@ package body Ada.Containers.Limited_Ordered_Maps is
    function Constant_Reference (
       Container : aliased Map;
       Key : Key_Type)
-      return Constant_Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Constant_Reference_Type is
    begin
-      return (Element => Position.Element.all'Access);
+      return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
    function Reference (
       Container : aliased in out Map;
       Key : Key_Type)
-      return Reference_Type
-   is
-      Position : constant not null Cursor := Find (Container, Key);
+      return Reference_Type is
    begin
---  diff
-      return (Element => Position.Element.all'Access);
+      return Reference (Container, Find (Container, Key));
    end Reference;
 
 --  diff (Assign)
@@ -494,6 +493,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position := null;
    end Delete;
 
+   procedure Delete_First (Container : in out Map'Class) is
+      Position : Cursor := First (Map (Container));
+   begin
+      Delete (Map (Container), Position);
+   end Delete_First;
+
+   procedure Delete_Last (Container : in out Map'Class) is
+      Position : Cursor := Last (Map (Container));
+   begin
+      Delete (Map (Container), Position);
+   end Delete_Last;
+
    function First (Container : Map) return Cursor is
    begin
 --  diff
@@ -505,6 +516,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
    end First;
 
+--  diff (First_Element)
+--
+--
+--
+--
+
+--  diff (First_Key)
+--
+--
+--
+--
+
    function Last (Container : Map) return Cursor is
    begin
       return Downcast (Binary_Trees.Last (Container.Root));
@@ -515,6 +538,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --  diff
 --  diff
    end Last;
+
+--  diff (Last_Element)
+--
+--
+--
+--
+
+--  diff (Last_Key)
+--
+--
+--
+--
 
    function Next (Position : Cursor) return Cursor is
    begin
