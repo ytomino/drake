@@ -68,17 +68,12 @@ package body Ada.Containers.Indefinite_Holders is
    begin
       Allocate_Data (Aliased_Target, 0, 0);
       declare
-         procedure Finally (X : not null access Copy_On_Write.Data_Access);
-         procedure Finally (X : not null access Copy_On_Write.Data_Access) is
-         begin
-            Free_Data (X.all);
-         end Finally;
          package Holder is
             new Exceptions.Finally.Scoped_Holder (
                Copy_On_Write.Data_Access,
-               Finally);
+               Free_Data);
       begin
-         Holder.Assign (Aliased_Target'Access);
+         Holder.Assign (Aliased_Target);
          Allocate_Element (
             Downcast (Aliased_Target).Element,
             Downcast (Source).Element.all);

@@ -1,5 +1,5 @@
 with Ada.Finalization;
-with Ada.Unchecked_Conversion;
+with System;
 package body Ada.Exceptions.Finally is
    pragma Suppress (All_Checks);
    use type System.Address;
@@ -8,16 +8,15 @@ package body Ada.Exceptions.Finally is
 
    type Finalizer is limited new Finalization.Limited_Controlled with record
       Params : System.Address;
-      Handler : System.Address;
+      Handler : Handler_Type;
    end record;
    pragma Discard_Names (Finalizer);
 
    overriding procedure Finalize (Object : in out Finalizer);
    overriding procedure Finalize (Object : in out Finalizer) is
-      function Cast is new Unchecked_Conversion (System.Address, Handler_Type);
    begin
       if Object.Params /= System.Null_Address then
-         Cast (Object.Handler).all (Object.Params);
+         Object.Handler (Object.Params);
       end if;
    end Finalize;
 
@@ -25,17 +24,23 @@ package body Ada.Exceptions.Finally is
 
    package body Scoped_Holder is
 
+      procedure Finally (Params : System.Address);
+      procedure Finally (Params : System.Address) is
+         function To_Pointer (Value : System.Address) return access Parameters
+            with Import, Convention => Intrinsic;
+      begin
+         Handler (To_Pointer (Params).all);
+      end Finally;
+
       Object : Finalizer := (
          Finalization.Limited_Controlled with
          Params => System.Null_Address,
-         Handler => Handler'Code_Address);
+         Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
 
-      procedure Assign (Item : access Parameters) is
-         function To_Address (Value : access Parameters) return System.Address
-            with Import, Convention => Intrinsic;
+      procedure Assign (Params : aliased in out Parameters) is
       begin
-         Object.Params := To_Address (Item);
+         Object.Params := Params'Address;
       end Assign;
 
       procedure Clear is
@@ -46,28 +51,42 @@ package body Ada.Exceptions.Finally is
    end Scoped_Holder;
 
    procedure Try_Finally (
-      Params : System.Address;
-      Process : not null access procedure (Params : System.Address);
-      Handler : not null access procedure (Params : System.Address))
+      Params : aliased in out Parameters;
+      Process : not null access procedure (Params : in out Parameters);
+      Handler : not null access procedure (Params : in out Parameters))
    is
+      procedure Finally (Params : System.Address);
+      procedure Finally (Params : System.Address) is
+         function To_Pointer (Value : System.Address) return access Parameters
+            with Import, Convention => Intrinsic;
+      begin
+         Handler (To_Pointer (Params).all);
+      end Finally;
       Object : Finalizer := (
          Finalization.Limited_Controlled with
-         Params => Params,
-         Handler => Handler.all'Address);
+         Params => Params'Address,
+         Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
    begin
       Process.all (Params);
    end Try_Finally;
 
    procedure Try_When_All (
-      Params : System.Address;
-      Process : not null access procedure (Params : System.Address);
-      Handler : not null access procedure (Params : System.Address))
+      Params : aliased in out Parameters;
+      Process : not null access procedure (Params : in out Parameters);
+      Handler : not null access procedure (Params : in out Parameters))
    is
+      procedure Finally (Params : System.Address);
+      procedure Finally (Params : System.Address) is
+         function To_Pointer (Value : System.Address) return access Parameters
+            with Import, Convention => Intrinsic;
+      begin
+         Handler (To_Pointer (Params).all);
+      end Finally;
       Object : Finalizer := (
          Finalization.Limited_Controlled with
-         Params => Params,
-         Handler => Handler.all'Address);
+         Params => Params'Address,
+         Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
    begin
       Process.all (Params);

@@ -61,17 +61,17 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Key : Key_Type;
       New_Item : Element_Type)
    is
-      procedure Finally (X : not null access Cursor);
-      procedure Finally (X : not null access Cursor) is
+      procedure Finally (X : in out Cursor);
+      procedure Finally (X : in out Cursor) is
       begin
-         Free (X.all.Key);
-         Free (X.all);
+         Free (X.Key);
+         Free (X);
       end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
       X : aliased Cursor := new Node;
    begin
-      Holder.Assign (X'Access);
+      Holder.Assign (X);
       X.Key := new Key_Type'(Key);
       Allocate_Element (X.Element, New_Item);
       Holder.Clear;

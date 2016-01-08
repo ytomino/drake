@@ -170,12 +170,6 @@ package body Ada.Naked_Text_IO is
    procedure Free is
       new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
 
-   procedure Finally (X : not null access Non_Controlled_File_Type);
-   procedure Finally (X : not null access Non_Controlled_File_Type) is
-   begin
-      Free (X.all);
-   end Finally;
-
    type Open_Access is not null access procedure (
       File : in out Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
@@ -204,11 +198,9 @@ package body Ada.Naked_Text_IO is
          Name => "",
          others => <>);
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            Non_Controlled_File_Type,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (Non_Controlled_File_Type, Free);
    begin
-      Holder.Assign (New_File'Access);
+      Holder.Assign (New_File);
       --  open
       Open_Proc (
          File => New_File.File,
@@ -427,8 +419,8 @@ package body Ada.Naked_Text_IO is
          Old_Settings : aliased System.Native_Text_IO.Setting;
       end record;
       pragma Suppress_Initialization (Restore_Type);
-      procedure Finally (X : not null access Restore_Type);
-      procedure Finally (X : not null access Restore_Type) is
+      procedure Finally (X : in out Restore_Type);
+      procedure Finally (X : in out Restore_Type) is
       begin
          System.Native_Text_IO.Restore (X.Handle, X.Old_Settings);
       end Finally;
@@ -442,7 +434,7 @@ package body Ada.Naked_Text_IO is
             X.Handle,
             Wait, -- only POSIX
             X.Old_Settings);
-         Holder.Assign (X'Access);
+         Holder.Assign (X);
       end if;
       Reading : loop
          Read_Buffer (File, Wait => Wait);
@@ -804,9 +796,9 @@ package body Ada.Naked_Text_IO is
          package Holder is
             new Exceptions.Finally.Scoped_Holder (
                Non_Controlled_File_Type,
-               Finally);
+               Free);
       begin
-         Holder.Assign (File'Access);
+         Holder.Assign (File);
          Streams.Naked_Stream_IO.Reset (File.File, Mode);
          Holder.Clear;
       end;

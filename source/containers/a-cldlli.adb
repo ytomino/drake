@@ -60,11 +60,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
---
---
---
 
 --  diff (Copy_Node)
 --
@@ -331,16 +326,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
       for I in 1 .. Count loop
          declare
-            procedure Finally (X : not null access Cursor);
-            procedure Finally (X : not null access Cursor) is
-            begin
-               Free (X.all);
-            end Finally;
             package Holder is
-               new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+               new Exceptions.Finally.Scoped_Holder (Cursor, Free);
             X : aliased Cursor := new Node;
          begin
-            Holder.Assign (X'Access);
+            Holder.Assign (X);
             X.Element := new Element_Type'(New_Item.all);
             Holder.Clear;
             Base.Insert (

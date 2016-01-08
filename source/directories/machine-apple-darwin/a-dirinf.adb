@@ -322,10 +322,10 @@ package body Ada.Directories.Information is
    function Read_Symbolic_Link (Name : String) return String is
       package Conv is
          new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
-      procedure Finally (X : not null access C.char_ptr);
-      procedure Finally (X : not null access C.char_ptr) is
+      procedure Finally (X : in out C.char_ptr);
+      procedure Finally (X : in out C.char_ptr) is
       begin
-         System.Standard_Allocators.Free (Conv.To_Address (X.all));
+         System.Standard_Allocators.Free (Conv.To_Address (X));
       end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
@@ -337,7 +337,7 @@ package body Ada.Directories.Information is
          System.Standard_Allocators.Allocate (
             System.Storage_Elements.Storage_Count (Buffer_Length)));
    begin
-      Holder.Assign (Buffer'Access);
+      Holder.Assign (Buffer);
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       loop
          declare

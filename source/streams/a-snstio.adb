@@ -128,12 +128,6 @@ package body Ada.Streams.Naked_Stream_IO is
 
    --  non-controlled
 
-   procedure Finally (X : not null access System.Native_IO.Name_Pointer);
-   procedure Finally (X : not null access System.Native_IO.Name_Pointer) is
-   begin
-      System.Native_IO.Free (X.all);
-   end Finally;
-
    function Allocate (
       Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
@@ -196,8 +190,8 @@ package body Ada.Streams.Naked_Stream_IO is
    end record;
    pragma Suppress_Initialization (Scoped_Handle_And_File_And_Name);
 
-   procedure Finally (X : not null access Scoped_Handle_And_File_And_Name);
-   procedure Finally (X : not null access Scoped_Handle_And_File_And_Name) is
+   procedure Finally (X : in out Scoped_Handle_And_File_And_Name);
+   procedure Finally (X : in out Scoped_Handle_And_File_And_Name) is
       use type System.Native_IO.Handle_Type;
    begin
       if X.Handle /= System.Native_IO.Invalid_Handle then
@@ -207,7 +201,7 @@ package body Ada.Streams.Naked_Stream_IO is
       if X.File /= null then
          Free (X.File);
       elsif X.Name /= null then
-         Finally (X.Name'Access);
+         System.Native_IO.Free (X.Name);
       end if;
    end Finally;
 
@@ -263,7 +257,7 @@ package body Ada.Streams.Naked_Stream_IO is
          (System.Native_IO.Invalid_Handle, null, null, null);
       Kind : Stream_Kind;
    begin
-      Holder.Assign (Scoped'Access);
+      Holder.Assign (Scoped);
       if Name /= "" then
          Kind := Ordinary;
       else
@@ -489,7 +483,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Freeing_File : constant Non_Controlled_File_Type := File;
       Kind : constant Stream_Kind := File.all.Kind;
    begin
-      Holder.Assign (Scoped'Access);
+      Holder.Assign (Scoped);
       case Kind is
          when Ordinary | Temporary | External | External_No_Close =>
             Scoped.File := Freeing_File;
@@ -594,7 +588,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Scoped : aliased Scoped_Handle_And_File_And_Name :=
          (System.Native_IO.Invalid_Handle, null, null, File.Closer);
    begin
-      Holder.Assign (Scoped'Access);
+      Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
             Scoped.Handle := File.Handle;
@@ -919,7 +913,7 @@ package body Ada.Streams.Naked_Stream_IO is
          (System.Native_IO.Invalid_Handle, null, null, File.Closer);
       Current : Stream_Element_Positive_Count;
    begin
-      Holder.Assign (Scoped'Access);
+      Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
             Scoped.Handle := File.Handle;
@@ -985,7 +979,7 @@ package body Ada.Streams.Naked_Stream_IO is
       package Name_Holder is
          new Exceptions.Finally.Scoped_Holder (
             System.Native_IO.Name_Pointer,
-            Finally);
+            System.Native_IO.Free);
       Kind : Stream_Kind;
       Closer : Close_Handler;
       Full_Name : aliased System.Native_IO.Name_Pointer;
@@ -998,7 +992,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Kind := External_No_Close;
          Closer := null;
       end if;
-      Name_Holder.Assign (Full_Name'Access);
+      Name_Holder.Assign (Full_Name);
       System.Native_IO.New_External_Name (
          Name,
          Full_Name, -- '*' & Name & NUL

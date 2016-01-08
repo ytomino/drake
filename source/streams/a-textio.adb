@@ -53,24 +53,6 @@ package body Ada.Text_IO is
          Wide_Wide_String,
          Wide_Wide_String_Access);
 
-   procedure Finally (X : not null access String_Access);
-   procedure Finally (X : not null access String_Access) is
-   begin
-      Free (X.all);
-   end Finally;
-
-   procedure Finally (X : not null access Wide_String_Access);
-   procedure Finally (X : not null access Wide_String_Access) is
-   begin
-      Free (X.all);
-   end Finally;
-
-   procedure Finally (X : not null access Wide_Wide_String_Access);
-   procedure Finally (X : not null access Wide_Wide_String_Access) is
-   begin
-      Free (X.all);
-   end Finally;
-
    procedure Raw_Get_Line (
       File : File_Type; -- Input_File_Type
       Item : aliased out String_Access;
@@ -1275,11 +1257,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
@@ -1293,11 +1273,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased Wide_String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            Wide_String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (Wide_String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
@@ -1311,11 +1289,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased Wide_Wide_String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            Wide_Wide_String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (Wide_Wide_String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       Reallocate (Aliased_Item, 1, Last);
       Holder.Clear;
@@ -1329,11 +1305,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
@@ -1345,11 +1319,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased Wide_String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            Wide_String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (Wide_String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;
@@ -1361,11 +1333,9 @@ package body Ada.Text_IO is
       Aliased_Item : aliased Wide_Wide_String_Access;
       Last : Natural;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            Wide_Wide_String_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (Wide_Wide_String_Access, Free);
    begin
-      Holder.Assign (Aliased_Item'Access);
+      Holder.Assign (Aliased_Item);
       Raw_Get_Line (File, Aliased_Item, Last); -- checking the predicate
       return Aliased_Item (Aliased_Item'First .. Last);
    end Overloaded_Get_Line;

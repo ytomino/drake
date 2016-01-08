@@ -4,12 +4,6 @@ with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
 
-   procedure Finally (X : not null access String_Access);
-   procedure Finally (X : not null access String_Access) is
-   begin
-      Free (X.all);
-   end Finally;
-
    procedure Skip_Spaces (
       File : File_Type); -- Input_File_Type
    procedure Skip_Spaces (
@@ -279,9 +273,9 @@ package body Ada.Text_IO.Formatting is
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
          package Holder is
-            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Holder.Assign (Buffer'Access);
+         Holder.Assign (Buffer);
          declare
             Prev_Last : Natural;
             Mark : Character;
@@ -386,9 +380,9 @@ package body Ada.Text_IO.Formatting is
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
          package Holder is
-            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Holder.Assign (Buffer'Access);
+         Holder.Assign (Buffer);
          declare
             Item : Character;
             End_Of_Line : Boolean;

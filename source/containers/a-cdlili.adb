@@ -54,11 +54,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
---  diff
---  diff
    begin
       Item := new Node'(Super => <>, Element => New_Item);
 --  diff
@@ -331,11 +326,6 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Unique (Container, True);
       for I in 1 .. Count loop
          declare
---  diff
---  diff
---  diff
---  diff
---  diff
 --  diff
 --  diff
             X : Cursor;

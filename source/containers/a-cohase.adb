@@ -67,11 +67,6 @@ package body Ada.Containers.Hashed_Sets is
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
---  diff
---  diff
    begin
       Item := new Node'(Super => <>, Element => New_Item);
 --  diff
@@ -397,11 +392,6 @@ package body Ada.Containers.Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
---  diff
---  diff
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff

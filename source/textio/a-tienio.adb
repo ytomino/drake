@@ -41,9 +41,9 @@ package body Ada.Text_IO.Enumeration_IO is
       Item : out Enum)
    is
       procedure Finally (
-         TLS : not null access System.Runtime_Context.Task_Local_Storage);
+         TLS : in out System.Runtime_Context.Task_Local_Storage);
       procedure Finally (
-         TLS : not null access System.Runtime_Context.Task_Local_Storage) is
+         TLS : in out System.Runtime_Context.Task_Local_Storage) is
       begin
          TLS.No_Discrete_Value_Failure_Propagation := False;
       end Finally;
@@ -56,7 +56,7 @@ package body Ada.Text_IO.Enumeration_IO is
          System.Runtime_Context.Get_Task_Local_Storage;
       B : Enum'Base;
    begin
-      Holder.Assign (TLS);
+      Holder.Assign (TLS.all);
       TLS.No_Discrete_Value_Failure_Propagation := True;
       TLS.Discrete_Value_Failure := False;
       --  dispatching

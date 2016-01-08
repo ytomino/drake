@@ -46,19 +46,14 @@ package body Ada.Command_Line.Generic_Parsing is
       while Has_Element (Next_Index) loop
          pragma Check (Trace, Debug.Put ("allocate"));
          declare
-            procedure Finally (X : not null access Argument_Context_Access);
-            procedure Finally (X : not null access Argument_Context_Access) is
-            begin
-               Release (X.all);
-            end Finally;
             package Holder is
                new Exceptions.Finally.Scoped_Holder (
                   Argument_Context_Access,
-                  Finally);
+                  Release);
             Context : aliased Argument_Context_Access;
             Subindex : Argument_Parsing.Cursor;
          begin
-            Holder.Assign (Context'Access);
+            Holder.Assign (Context);
             Context := new Argument_Context'(
                Reference_Count => 1,
                Index => Next_Index,

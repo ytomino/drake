@@ -56,14 +56,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       pragma Check (Dynamic_Predicate,
          Check => Is_Assigned (Peer) or else raise Status_Error);
       use type System.Native_IO.Handle_Type;
-      procedure Finally (X : not null access System.Native_IO.Handle_Type);
-      procedure Finally (X : not null access System.Native_IO.Handle_Type) is
+      procedure Finally (X : in out System.Native_IO.Handle_Type);
+      procedure Finally (X : in out System.Native_IO.Handle_Type) is
          Empty_Name : aliased System.Native_IO.Name_String :=
             (0 => System.Native_IO.Name_Character'Val (0));
       begin
-         if X.all /= System.Native_IO.Invalid_Handle then
+         if X /= System.Native_IO.Invalid_Handle then
             System.Native_IO.Close_Ordinary (
-               X.all,
+               X,
                Empty_Name (0)'Unchecked_Access,
                Raise_On_Error => False);
          end if;
@@ -75,7 +75,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       Handle : aliased System.Native_IO.Handle_Type :=
          System.Native_IO.Invalid_Handle;
    begin
-      Holder.Assign (Handle'Access);
+      Holder.Assign (Handle);
       System.Native_IO.Sockets.Connect (Handle, Reference (Peer).all);
       if Handle = System.Native_IO.Invalid_Handle then
          Raise_Exception (Use_Error'Identity);
@@ -175,14 +175,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Server) or else raise Status_Error);
       use type System.Native_IO.Handle_Type;
-      procedure Finally (X : not null access System.Native_IO.Handle_Type);
-      procedure Finally (X : not null access System.Native_IO.Handle_Type) is
+      procedure Finally (X : in out System.Native_IO.Handle_Type);
+      procedure Finally (X : in out System.Native_IO.Handle_Type) is
          Empty_Name : aliased System.Native_IO.Name_String :=
             (0 => System.Native_IO.Name_Character'Val (0));
       begin
-         if X.all /= System.Native_IO.Invalid_Handle then
+         if X /= System.Native_IO.Invalid_Handle then
             System.Native_IO.Close_Ordinary (
-               X.all,
+               X,
                Empty_Name (0)'Unchecked_Access,
                Raise_On_Error => False);
          end if;
@@ -194,7 +194,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       Handle : aliased System.Native_IO.Handle_Type :=
          System.Native_IO.Invalid_Handle;
    begin
-      Holder.Assign (Handle'Access);
+      Holder.Assign (Handle);
       System.Native_IO.Sockets.Accept_Socket (
          Reference (Server).all,
          Handle,
