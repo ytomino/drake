@@ -59,12 +59,14 @@ package body Ada.Containers.Indefinite_Holders is
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
       Max_Length : Count_Type;
-      Capacity : Count_Type) is
-   begin
+      Capacity : Count_Type)
+   is
       pragma Unreferenced (Length);
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      Allocate_Data (Target, 0, 0);
+      Aliased_Target : aliased Copy_On_Write.Data_Access;
+   begin
+      Allocate_Data (Aliased_Target, 0, 0);
       declare
          procedure Finally (X : not null access Copy_On_Write.Data_Access);
          procedure Finally (X : not null access Copy_On_Write.Data_Access) is
@@ -76,10 +78,11 @@ package body Ada.Containers.Indefinite_Holders is
                Copy_On_Write.Data_Access,
                Finally);
       begin
-         Holder.Assign (Target'Unrestricted_Access);
+         Holder.Assign (Aliased_Target'Access);
          Allocate_Element (
-            Downcast (Target).Element,
+            Downcast (Aliased_Target).Element,
             Downcast (Source).Element.all);
+         Target := Aliased_Target;
          Holder.Clear;
       end;
    end Copy_Data;
