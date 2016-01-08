@@ -255,7 +255,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container, Position).Element.all);
+      Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -419,22 +419,22 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Container : in out List'Class;
       Count : Count_Type := 1)
    is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (List (Container));
    begin
-      Delete (Container, Position, Count);
+      Delete (List (Container), Position, Count);
    end Delete_First;
 
    procedure Delete_Last (
       Container : in out List'Class;
       Count : Count_Type := 1)
    is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (List (Container));
    begin
       for I in 1 .. Count loop
          declare
             Previous_Position : constant Cursor := Previous (Position);
          begin
-            Delete (Container, Position);
+            Delete (List (Container), Position);
             Position := Previous_Position;
          end;
       end loop;
@@ -551,7 +551,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
    function First_Element (Container : List'Class)
       return Element_Type is
    begin
-      return Element (First (Container));
+      return Element (First (List (Container)));
    end First_Element;
 
    function Last (Container : List) return Cursor is
@@ -567,7 +567,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
    function Last_Element (Container : List'Class)
       return Element_Type is
    begin
-      return Element (Last (Container));
+      return Element (Last (List (Container)));
    end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
@@ -678,8 +678,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       type P2 is access procedure (Position : Linked_Lists.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (List (Container)) then
+         Unique (List (Container)'Unrestricted_Access.all, False);
          Base.Iterate (
             Downcast (Container.Super.Data).First,
             Cast (Process));
@@ -694,8 +694,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       type P2 is access procedure (Position : Linked_Lists.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (List (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (List (Container)) then
+         Unique (List (Container)'Unrestricted_Access.all, False);
          Linked_Lists.Reverse_Iterate (
             Downcast (Container.Super.Data).Last,
             Cast (Process));
@@ -706,8 +706,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
       return List_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return List_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (List (Container)),
+         Last => Last (List (Container)));
    end Iterate;
 
    function Iterate (Container : List'Class; First, Last : Cursor)

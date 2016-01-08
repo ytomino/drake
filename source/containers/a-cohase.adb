@@ -721,8 +721,8 @@ package body Ada.Containers.Hashed_Sets is
       type P2 is access procedure (Position : Hash_Tables.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));
@@ -732,7 +732,7 @@ package body Ada.Containers.Hashed_Sets is
    function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Set_Iterator'(First => First (Container));
+      return Set_Iterator'(First => First (Set (Container)));
    end Iterate;
 
    overriding procedure Adjust (Object : in out Set) is

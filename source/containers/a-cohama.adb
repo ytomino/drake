@@ -339,7 +339,7 @@ package body Ada.Containers.Hashed_Maps is
    begin
       Process (
          Position.Key,
-         Reference (Container, Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -562,7 +562,7 @@ package body Ada.Containers.Hashed_Maps is
       Key : Key_Type)
       return Element_Type is
    begin
-      return Element (Find (Container, Key));
+      return Element (Find (Map (Container), Key));
    end Element;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean is
@@ -588,8 +588,8 @@ package body Ada.Containers.Hashed_Maps is
       type P2 is access procedure (Position : Hash_Tables.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Hash_Tables.Iterate (
             Downcast (Container.Super.Data).Table,
             Cast (Process));
@@ -599,7 +599,7 @@ package body Ada.Containers.Hashed_Maps is
    function Iterate (Container : Map'Class)
       return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Map_Iterator'(First => First (Container));
+      return Map_Iterator'(First => First (Map (Container)));
    end Iterate;
 
    overriding procedure Adjust (Object : in out Map) is

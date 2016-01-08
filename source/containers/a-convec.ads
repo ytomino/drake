@@ -454,16 +454,14 @@ private
    function Constant_Indexing (
       Container : aliased Vector'Class;
       Index : Index_Type)
-      return Constant_Reference_Type
-      with Convention => Intrinsic;
+      return Constant_Reference_Type;
    function Indexing (
       Container : aliased in out Vector'Class;
       Index : Index_Type)
-      return Reference_Type
-      with Convention => Intrinsic;
+      return Reference_Type;
 
-   pragma Inline_Always (Constant_Indexing);
-   pragma Inline_Always (Indexing);
+   pragma Inline (Constant_Indexing);
+   pragma Inline (Indexing);
 
    package Streaming is
 

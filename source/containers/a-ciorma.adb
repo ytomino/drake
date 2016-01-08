@@ -295,7 +295,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container, Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -494,15 +494,15 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    end Delete;
 
    procedure Delete_First (Container : in out Map'Class) is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (Map (Container));
    begin
-      Delete (Container, Position);
+      Delete (Map (Container), Position);
    end Delete_First;
 
    procedure Delete_Last (Container : in out Map'Class) is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (Map (Container));
    begin
-      Delete (Container, Position);
+      Delete (Map (Container), Position);
    end Delete_Last;
 
    function First (Container : Map) return Cursor is
@@ -519,13 +519,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function First_Element (Container : Map'Class)
       return Element_Type is
    begin
-      return Element (Last (Container));
+      return Element (Last (Map (Container)));
    end First_Element;
 
    function First_Key (Container : Map'Class)
       return Key_Type is
    begin
-      return Key (Last (Container));
+      return Key (Last (Map (Container)));
    end First_Key;
 
    function Last (Container : Map) return Cursor is
@@ -542,13 +542,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function Last_Element (Container : Map'Class)
       return Element_Type is
    begin
-      return Element (Last (Container));
+      return Element (Last (Map (Container)));
    end Last_Element;
 
    function Last_Key (Container : Map'Class)
       return Key_Type is
    begin
-      return Key (Last (Container));
+      return Key (Last (Map (Container)));
    end Last_Key;
 
    function Next (Position : Cursor) return Cursor is
@@ -594,7 +594,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Key : Key_Type)
       return Element_Type is
    begin
-      return Element (Find (Container, Key));
+      return Element (Find (Map (Container), Key));
    end Element;
 
    function Floor (Container : Map; Key : Key_Type) return Cursor is
@@ -656,8 +656,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -672,8 +672,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Map (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Map (Container)) then
+         Unique (Map (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -684,8 +684,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return Map_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Map_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (Map (Container)),
+         Last => Last (Map (Container)));
    end Iterate;
 
    function Iterate (Container : Map'Class; First, Last : Cursor)

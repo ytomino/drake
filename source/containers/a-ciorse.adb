@@ -453,15 +453,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    end Delete;
 
    procedure Delete_First (Container : in out Set'Class) is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (Set (Container));
    begin
-      Delete (Container, Position);
+      Delete (Set (Container), Position);
    end Delete_First;
 
    procedure Delete_Last (Container : in out Set'Class) is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (Set (Container));
    begin
-      Delete (Container, Position);
+      Delete (Set (Container), Position);
    end Delete_Last;
 
    procedure Union (Target : in out Set; Source : Set) is
@@ -674,7 +674,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function First_Element (Container : Set'Class)
       return Element_Type is
    begin
-      return Element (Last (Container));
+      return Element (Last (Set (Container)));
    end First_Element;
 
    function Last (Container : Set) return Cursor is
@@ -691,7 +691,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function Last_Element (Container : Set'Class)
       return Element_Type is
    begin
-      return Element (Last (Container));
+      return Element (Last (Set (Container)));
    end Last_Element;
 
    function Next (Position : Cursor) return Cursor is
@@ -791,8 +791,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -807,8 +807,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       type P2 is access procedure (Position : Binary_Trees.Node_Access);
       function Cast is new Unchecked_Conversion (P1, P2);
    begin
-      if not Is_Empty (Container) then
-         Unique (Set (Container'Unrestricted_Access.all), False);
+      if not Is_Empty (Set (Container)) then
+         Unique (Set (Container)'Unrestricted_Access.all, False);
          Binary_Trees.Reverse_Iterate (
             Downcast (Container.Super.Data).Root,
             Cast (Process));
@@ -819,8 +819,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Set_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (Set (Container)),
+         Last => Last (Set (Container)));
    end Iterate;
 
    function Iterate (Container : Set'Class; First, Last : Cursor)

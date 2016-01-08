@@ -455,15 +455,13 @@ private
 --
 --
 --
---
 --  diff (Indexing)
 --
 --
 --
---
 
---  diff (pragma Inline_Always)
---  diff (pragma Inline_Always)
+--  diff (pragma Inline)
+--  diff (pragma Inline)
 
    package Streaming is
 

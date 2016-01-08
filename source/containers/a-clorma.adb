@@ -295,7 +295,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container, Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -494,15 +494,15 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Delete;
 
    procedure Delete_First (Container : in out Map'Class) is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (Map (Container));
    begin
-      Delete (Container, Position);
+      Delete (Map (Container), Position);
    end Delete_First;
 
    procedure Delete_Last (Container : in out Map'Class) is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (Map (Container));
    begin
-      Delete (Container, Position);
+      Delete (Map (Container), Position);
    end Delete_Last;
 
    function First (Container : Map) return Cursor is
@@ -684,8 +684,8 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return Map_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Map_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (Map (Container)),
+         Last => Last (Map (Container)));
    end Iterate;
 
    function Iterate (Container : Map'Class; First, Last : Cursor)

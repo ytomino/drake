@@ -732,7 +732,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    function Iterate (Container : Set'Class)
       return Set_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Set_Iterator'(First => First (Container));
+      return Set_Iterator'(First => First (Set (Container)));
    end Iterate;
 
 --  diff (Adjust)

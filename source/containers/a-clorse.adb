@@ -453,15 +453,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Delete;
 
    procedure Delete_First (Container : in out Set'Class) is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (Set (Container));
    begin
-      Delete (Container, Position);
+      Delete (Set (Container), Position);
    end Delete_First;
 
    procedure Delete_Last (Container : in out Set'Class) is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (Set (Container));
    begin
-      Delete (Container, Position);
+      Delete (Set (Container), Position);
    end Delete_Last;
 
 --  diff (Union)
@@ -819,8 +819,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
       return Set_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Set_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (Set (Container)),
+         Last => Last (Set (Container)));
    end Iterate;
 
    function Iterate (Container : Set'Class; First, Last : Cursor)

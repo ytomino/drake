@@ -375,7 +375,7 @@ package body Ada.Containers.Indefinite_Vectors is
       return Element_Type is
    begin
       return Constant_Reference (
-         Container,
+         Vector (Container),
          Index).Element.all; -- checking Constraint_Error
    end Element;
 
@@ -405,7 +405,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       Process (
          Constant_Reference (
-            Container,
+            Vector (Container),
             Index).Element.all); -- checking Constraint_Error
    end Query_Element;
 
@@ -416,7 +416,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       Process (
          Reference (
-            Container,
+            Vector (Container),
             Index).Element.all); -- checking Constraint_Error
    end Update_Element;
 
@@ -742,14 +742,14 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : in out Vector'Class;
       Count : Count_Type := 1) is
    begin
-      Delete (Container, Index_Type'First, Count => Count);
+      Delete (Vector (Container), Index_Type'First, Count => Count);
    end Delete_First;
 
    procedure Delete_Last (
       Container : in out Vector'Class;
       Count : Count_Type := 1) is
    begin
-      Set_Length (Container, Container.Length - Count);
+      Set_Length (Vector (Container), Container.Length - Count);
    end Delete_Last;
 
    procedure Reverse_Elements (Container : in out Vector) is
@@ -804,7 +804,7 @@ package body Ada.Containers.Indefinite_Vectors is
    function Last_Element (Container : Vector'Class)
       return Element_Type is
    begin
-      return Element (Container, Last_Index (Container));
+      return Element (Container, Last_Index (Vector (Container)));
    end Last_Element;
 
    function Find_Index (
@@ -906,7 +906,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : Vector'Class;
       Process : not null access procedure (Position : Cursor)) is
    begin
-      for I in Index_Type'First .. Last_Index (Container) loop
+      for I in Index_Type'First .. Last_Index (Vector (Container)) loop
          Process (I);
       end loop;
    end Iterate;
@@ -915,7 +915,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Container : Vector'Class;
       Process : not null access procedure (Position : Cursor)) is
    begin
-      for I in reverse Index_Type'First .. Last_Index (Container) loop
+      for I in reverse Index_Type'First .. Last_Index (Vector (Container)) loop
          Process (I);
       end loop;
    end Reverse_Iterate;
@@ -924,16 +924,16 @@ package body Ada.Containers.Indefinite_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return Vector_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (Vector (Container)),
+         Last => Last (Vector (Container)));
    end Iterate;
 
    function Iterate (Container : Vector'Class; First, Last : Cursor)
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Check (Pre,
-         (First in Index_Type'First .. Last_Index (Container) + 1
-            and then Last <= Last_Index (Container))
+         (First in Index_Type'First .. Last_Index (Vector (Container)) + 1
+            and then Last <= Last_Index (Vector (Container)))
          or else (First = No_Element and then Last = No_Element)
          or else raise Constraint_Error);
       Actual_First : Cursor := First;

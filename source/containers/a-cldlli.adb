@@ -255,7 +255,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
-      Process (Reference (Container, Position).Element.all);
+      Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -419,22 +419,22 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Container : in out List'Class;
       Count : Count_Type := 1)
    is
-      Position : Cursor := First (Container);
+      Position : Cursor := First (List (Container));
    begin
-      Delete (Container, Position, Count);
+      Delete (List (Container), Position, Count);
    end Delete_First;
 
    procedure Delete_Last (
       Container : in out List'Class;
       Count : Count_Type := 1)
    is
-      Position : Cursor := Last (Container);
+      Position : Cursor := Last (List (Container));
    begin
       for I in 1 .. Count loop
          declare
             Previous_Position : constant Cursor := Previous (Position);
          begin
-            Delete (Container, Position);
+            Delete (List (Container), Position);
             Position := Previous_Position;
          end;
       end loop;
@@ -706,8 +706,8 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       return List_Iterator_Interfaces.Reversible_Iterator'Class is
    begin
       return List_Iterator'(
-         First => First (Container),
-         Last => Last (Container));
+         First => First (List (Container)),
+         Last => Last (List (Container)));
    end Iterate;
 
    function Iterate (Container : List'Class; First, Last : Cursor)

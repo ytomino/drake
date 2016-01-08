@@ -339,7 +339,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Process (
          Position.Key.all,
-         Reference (Container, Position).Element.all);
+         Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
    function Constant_Reference (
@@ -599,7 +599,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    function Iterate (Container : Map'Class)
       return Map_Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Map_Iterator'(First => First (Container));
+      return Map_Iterator'(First => First (Map (Container)));
    end Iterate;
 
 --  diff (Adjust)
