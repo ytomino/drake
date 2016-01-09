@@ -472,6 +472,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Union)
 --
@@ -503,6 +507,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
       Binary_Trees.Merge (
          Target.Root,
          Target.Length,
@@ -515,6 +520,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Insert => null,
          Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Intersection;
 
@@ -582,6 +588,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --

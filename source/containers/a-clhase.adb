@@ -481,6 +481,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Union)
 --
@@ -513,6 +517,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
       Hash_Tables.Merge (
          Target.Table,
          Target.Length,
@@ -524,6 +529,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Intersection;
 
@@ -592,6 +598,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --
