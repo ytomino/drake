@@ -82,7 +82,11 @@ package body Ada.Containers.Generic_Arrays is
    procedure Insert (
       Container : in out Array_Access;
       Before : Extended_Index;
-      New_Item : Array_Type) is
+      New_Item : Array_Type)
+   is
+      pragma Check (Pre,
+         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if New_Item'Length > 0 then
          if Container = null then
@@ -112,7 +116,11 @@ package body Ada.Containers.Generic_Arrays is
    procedure Insert (
       Container : in out Array_Access;
       Before : Extended_Index;
-      New_Item : Array_Access) is
+      New_Item : Array_Access)
+   is
+      pragma Check (Pre,
+         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if New_Item /= null then
          Insert (Container, Before, New_Item.all);
@@ -125,7 +133,10 @@ package body Ada.Containers.Generic_Arrays is
       New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
-      Insert (Container, Before, Count);
+      Insert (
+         Container,
+         Before, -- checking Constraint_Error
+         Count);
       for I in Before .. Before + Index_Type'Base (Count) - 1 loop
          Container (I) := New_Item;
       end loop;
@@ -134,7 +145,11 @@ package body Ada.Containers.Generic_Arrays is
    procedure Insert (
       Container : in out Array_Access;
       Before : Extended_Index;
-      Count : Count_Type := 1) is
+      Count : Count_Type := 1)
+   is
+      pragma Check (Pre,
+         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+            or else raise Constraint_Error);
    begin
       if Count > 0 then
          if Container = null then
@@ -217,7 +232,14 @@ package body Ada.Containers.Generic_Arrays is
    procedure Delete (
       Container : in out Array_Access;
       Index : Extended_Index;
-      Count : Count_Type := 1) is
+      Count : Count_Type := 1)
+   is
+      pragma Check (Pre,
+         Check =>
+            (Index >= Index_Type'First
+               and then Index + Index_Type'Base (Count) - 1 <=
+                  Last_Index (Container))
+            or else raise Constraint_Error);
    begin
       if Count > 0 then
          if Index = Container'First and then Count = Container'Length then
@@ -253,6 +275,11 @@ package body Ada.Containers.Generic_Arrays is
    end Delete_Last;
 
    procedure Swap (Container : in out Array_Access; I, J : Index_Type) is
+      pragma Check (Pre,
+         Check =>
+            (I in Index_Type'First .. Last_Index (Container)
+               and then J in Index_Type'First .. Last_Index (Container))
+            or else raise Constraint_Error);
       pragma Unmodified (Container);
    begin
       if I /= J then
@@ -431,6 +458,9 @@ package body Ada.Containers.Generic_Arrays is
          Container : in out Array_Access;
          Before : Extended_Index)
       is
+         pragma Check (Pre,
+            Check => Before in Index_Type'First .. Last_Index (Container) + 1
+               or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
@@ -446,6 +476,9 @@ package body Ada.Containers.Generic_Arrays is
          Container : in out Array_Access;
          Before : Extended_Index)
       is
+         pragma Check (Pre,
+            Check => Before in Index_Type'First .. Last_Index (Container) + 1
+               or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin

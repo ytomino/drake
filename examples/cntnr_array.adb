@@ -90,5 +90,21 @@ begin
 		pragma Assert (X.all = "IJ");
 		Free (X);
 	end Test_04;
+	Test_05 : declare
+		package Reversing is new Arrays.Generic_Reversing;
+		Data : String_Access := new String'("12345");
+	begin
+		Reversing.Reverse_Elements (Data);
+		pragma Assert (Data.all = "54321");
+		Reversing.Reverse_Rotate_Elements (Data, 3);
+		pragma Assert (Data.all = "32154");
+		Reversing.Juggling_Rotate_Elements (Data, 3);
+		pragma Assert (Data.all = "15432");
+		Reversing.Reverse_Rotate_Elements (Data, Arrays.First_Index (Data));
+		Reversing.Reverse_Rotate_Elements (Data, Arrays.Last_Index (Data) + 1);
+		Reversing.Juggling_Rotate_Elements (Data, Arrays.First_Index (Data));
+		Reversing.Juggling_Rotate_Elements (Data, Arrays.Last_Index (Data) + 1);
+		pragma Assert (Data.all = "15432");
+	end Test_05;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end cntnr_Array;
