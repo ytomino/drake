@@ -88,6 +88,9 @@ package Ada.Containers.Generic_Arrays is
 
    procedure Swap (Container : in out Array_Access; I, J : Index_Type);
 
+   function First_Index (Container : Array_Access) return Index_Type;
+   function Last_Index (Container : Array_Access) return Extended_Index;
+
    generic
    package Operators is
 

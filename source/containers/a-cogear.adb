@@ -265,6 +265,21 @@ package body Ada.Containers.Generic_Arrays is
       end if;
    end Swap;
 
+   function First_Index (Container : Array_Access) return Index_Type is
+      pragma Unreferenced (Container);
+   begin
+      return Index_Type'First;
+   end First_Index;
+
+   function Last_Index (Container : Array_Access) return Extended_Index is
+   begin
+      if Container = null then
+         return Index_Type'First - 1;
+      else
+         return Container'Last;
+      end if;
+   end Last_Index;
+
    package body Operators is
 
       function Start (
