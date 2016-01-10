@@ -53,6 +53,10 @@ begin
 		Arrays.Delete_First (X);
 		Arrays.Delete_Last (X);
 		pragma Assert (X.all = "AZD");
+		Arrays.Insert (X, X'First, "aa");
+		pragma Assert (X.all = "aaAZD");
+		Arrays.Insert (X, X'Last + 1, "zz");
+		pragma Assert (X.all = "aaAZDzz");
 		Free (X);
 	end Test_03;
 	Test_04 : declare

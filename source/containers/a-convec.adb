@@ -167,43 +167,6 @@ package body Ada.Containers.Vectors is
       end if;
    end Unique;
 
-   function Array_To_Vector (
-      Source : Element_Array;
-      Capacity : Count_Type)
-      return Vector;
-   function Array_To_Vector (
-      Source : Element_Array;
-      Capacity : Count_Type)
-      return Vector
-   is
-      Length : constant Count_Type := Source'Length;
-      New_Capacity : constant Count_Type := Count_Type'Max (Capacity, Length);
-   begin
-      return Result : Vector := (Finalization.Controlled with
-         Super => <>,
-         Length => Length)
-      do
-         if New_Capacity /= 0 then
-            declare
-               Capacity_Last : constant Extended_Index :=
-                  Index_Type'First - 1 + Index_Type'Base (New_Capacity);
-               Last : constant Extended_Index :=
-                  Index_Type'First - 1 + Index_Type'Base (Length);
-               New_Data : Data_Access;
-            begin
-               New_Data := new Data'(
-                  Capacity_Last => Capacity_Last,
-                  Super => <>,
-                  Items => Source & (Last + 1 .. Capacity_Last => <>));
-               New_Data.Super.Max_Length := Length;
-               --  follow
-               Result.Super.Data := Upcast (New_Data);
-               New_Data.Super.Super.Follower := Result.Super'Unchecked_Access;
-            end;
-         end if;
-      end return;
-   end Array_To_Vector;
-
    --  implementation
 
    function Empty_Vector return Vector is
@@ -258,7 +221,19 @@ package body Ada.Containers.Vectors is
 
    function Generic_Array_To_Vector (S : Element_Array) return Vector is
    begin
-      return Array_To_Vector (Vectors.Element_Array (S), 0);
+      return Result : Vector do
+         declare
+            Length : constant Count_Type := S'Length;
+            subtype R1 is
+               Extended_Index range
+                  Index_Type'First ..
+                  Index_Type'First - 1 + Index_Type'Base (Length);
+         begin
+            Set_Length (Result, Length);
+            Downcast (Result.Super.Data).Items (R1) :=
+               Vectors.Element_Array (S);
+         end;
+      end return;
    end Generic_Array_To_Vector;
 
    function "&" (Left, Right : Vector) return Vector is

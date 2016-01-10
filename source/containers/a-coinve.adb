@@ -167,43 +167,6 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
    end Unique;
 
---  diff (Array_To_Vector)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
-
    --  implementation
 
    function Empty_Vector return Vector is
@@ -257,6 +220,18 @@ package body Ada.Containers.Indefinite_Vectors is
    end To_Vector;
 
 --  diff (Generic_Array_To_Vector)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
