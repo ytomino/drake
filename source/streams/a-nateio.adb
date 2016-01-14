@@ -254,8 +254,10 @@ package body Ada.Naked_Text_IO is
    procedure Take_Buffer (
       File : Non_Controlled_File_Type;
       Length : Positive := 1);
+   procedure Take_Sequence (File : Non_Controlled_File_Type);
    procedure Take_Page (File : Non_Controlled_File_Type);
    procedure Take_Line (File : Non_Controlled_File_Type);
+   procedure Take_Line_Immediate (File : Non_Controlled_File_Type);
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
@@ -363,6 +365,23 @@ package body Ada.Naked_Text_IO is
       File.Virtual_Mark := None;
    end Take_Buffer;
 
+   procedure Take_Sequence (File : Non_Controlled_File_Type) is
+   begin
+      File.Col := File.Col + File.Ahead_Col;
+      Take_Buffer (File, Length => File.Looked_Ahead_Last);
+      if File.Looked_Ahead_Second (1) /= Character'Val (0) then
+         --  Prepend a second of surrogate pair to the buffer.
+         declare
+            New_Last : constant Natural := File.Last + 3;
+         begin
+            File.Buffer (4 .. New_Last) := File.Buffer (1 .. File.Last);
+            File.Buffer (1 .. 3) := File.Looked_Ahead_Second;
+            File.Last := New_Last;
+            File.Ahead_Last := File.Ahead_Last + 3;
+         end;
+      end if;
+   end Take_Sequence;
+
    procedure Take_Page (File : Non_Controlled_File_Type) is
    begin
       Take_Buffer (File);
@@ -386,44 +405,113 @@ package body Ada.Naked_Text_IO is
       end if;
    end Take_Line;
 
-   procedure Untake_Buffer (
-      File : Non_Controlled_File_Type;
-      Item : String);
-   procedure Untake_Buffer (
-      File : Non_Controlled_File_Type;
-      Item : String)
-   is
-      Item_Length : constant Natural := Item'Length;
-      New_Last : constant Natural := File.Last + Item_Length;
+   procedure Take_Line_Immediate (File : Non_Controlled_File_Type) is
+      C : constant Character := File.Buffer (1);
    begin
-      File.Buffer (Item_Length + 1 .. New_Last) :=
-         File.Buffer (1 .. File.Last);
-      File.Buffer (1 .. Item_Length) := Item;
-      File.Last := New_Last;
-      File.Ahead_Last := File.Ahead_Last + Item_Length;
-   end Untake_Buffer;
+      Take_Buffer (File);
+      if C = Character'Val (16#0d#) then
+         Read_Buffer (File);
+         if File.Buffer (1) = Character'Val (16#0a#) then
+            File.Col := File.Col + 1; -- do not get LF here
+         else
+            File.Line := File.Line + 1; -- CR without LF
+            File.Col := 1;
+         end if;
+      else
+         File.Line := File.Line + 1; -- LF
+         File.Col := 1;
+      end if;
+   end Take_Line_Immediate;
+
+   type Restore_Type is record
+      Handle : System.Native_IO.Handle_Type;
+      Old_Settings : aliased System.Native_Text_IO.Setting;
+   end record;
+   pragma Suppress_Initialization (Restore_Type);
+
+   procedure Finally (X : in out Restore_Type);
+   procedure Finally (X : in out Restore_Type) is
+   begin
+      System.Native_Text_IO.Restore (X.Handle, X.Old_Settings);
+   end Finally;
+
+   procedure Look_Ahead_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Character;
+      Available : out Boolean;
+      Wait : Boolean);
+   procedure Skip_Ahead_Immediate (File : Non_Controlled_File_Type);
+
+   procedure Look_Ahead_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Character;
+      Available : out Boolean;
+      Wait : Boolean) is
+   begin
+      loop
+         Read_Buffer (File, Wait => Wait);
+         if File.Ahead_Last > 0 then
+            File.Looked_Ahead_Last := 1; -- implies CR-LF sequence
+            File.Looked_Ahead_Second (1) := Character'Val (0);
+            Item := File.Buffer (1);
+            Available := True;
+            exit;
+         elsif File.End_Of_File then
+            File.Looked_Ahead_Last := 1;
+            File.Looked_Ahead_Second (1) := Character'Val (0);
+            Raise_Exception (End_Error'Identity);
+         elsif not Wait then
+            Item := Character'Val (0);
+            Available := False;
+            exit;
+         end if;
+      end loop;
+   end Look_Ahead_Immediate;
+
+   procedure Skip_Ahead_Immediate (File : Non_Controlled_File_Type) is
+   begin
+      if File.External = IO_Modes.Terminal then
+         --  Do not wait CR-LF sequence, nor update Col and Line.
+         Take_Buffer (File, Length => File.Looked_Ahead_Last);
+      else
+         --  Update Col and Line.
+         declare
+            C : constant Character := File.Buffer (1);
+         begin
+            case C is
+               when Character'Val (16#0d#) | Character'Val (16#0a#) =>
+                  Take_Line_Immediate (File);
+               when Character'Val (16#0c#) =>
+                  Take_Page (File);
+               when others =>
+                  Take_Sequence (File);
+            end case;
+         end;
+      end if;
+   end Skip_Ahead_Immediate;
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
+      Item : out Character;
+      Available : out Boolean;
       Wait : Boolean);
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
-      Item : out String; -- 1 .. 6
-      Last : out Natural;
+      Item : out Wide_Character;
+      Available : out Boolean;
+      Wait : Boolean);
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Wide_Wide_Character;
+      Available : out Boolean;
+      Wait : Boolean);
+
+   procedure Get_Immediate (
+      File : Non_Controlled_File_Type;
+      Item : out Character;
+      Available : out Boolean;
       Wait : Boolean)
    is
-      type Restore_Type is record
-         Handle : System.Native_IO.Handle_Type;
-         Old_Settings : aliased System.Native_Text_IO.Setting;
-      end record;
-      pragma Suppress_Initialization (Restore_Type);
-      procedure Finally (X : in out Restore_Type);
-      procedure Finally (X : in out Restore_Type) is
-      begin
-         System.Native_Text_IO.Restore (X.Handle, X.Old_Settings);
-      end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Restore_Type, Finally);
       X : aliased Restore_Type;
@@ -436,62 +524,11 @@ package body Ada.Naked_Text_IO is
             X.Old_Settings);
          Holder.Assign (X);
       end if;
-      Reading : loop
-         Read_Buffer (File, Wait => Wait);
-         if File.Ahead_Last > 0 then
-            Last := Item'First;
-            Item (Last) := File.Buffer (1);
-            File.Col := File.Col + File.Ahead_Col;
-            Take_Buffer (File);
-            if Item'Length > 1 then -- get single code point
-               declare
-                  Sequence_Length : Natural;
-                  Sequence_Status :
-                     System.UTF_Conversions.Sequence_Status_Type; -- ignore
-               begin
-                  System.UTF_Conversions.UTF_8_Sequence (
-                     Item (Last),
-                     Sequence_Length,
-                     Sequence_Status);
-                  for I in 2 .. Sequence_Length loop
-                     loop
-                        Read_Buffer (File); -- Wait => True for trailing
-                        if File.Ahead_Last > 0 then
-                           exit Reading when File.Buffer (1) not in
-                              Character'Val (2#10000000#) ..
-                              Character'Val (2#10111111#);
-                           Last := Last + 1;
-                           Item (Last) := File.Buffer (1);
-                           File.Col := File.Col + File.Ahead_Col;
-                           Take_Buffer (File);
-                           exit; -- next trailing
-                        elsif File.End_Of_File then
-                           exit Reading;
-                        end if;
-                     end loop;
-                  end loop;
-               end;
-            end if;
-            exit Reading;
-         elsif File.End_Of_File then
-            Raise_Exception (End_Error'Identity);
-         elsif not Wait then
-            Last := Item'First - 1;
-            exit Reading;
-         end if;
-      end loop Reading;
+      Look_Ahead_Immediate (File, Item, Available, Wait);
+      if Available then
+         Skip_Ahead_Immediate (File);
+      end if;
    end Get_Immediate;
-
-   procedure Get_Immediate (
-      File : Non_Controlled_File_Type;
-      Item : out Wide_Character;
-      Available : out Boolean;
-      Wait : Boolean);
-   procedure Get_Immediate (
-      File : Non_Controlled_File_Type;
-      Item : out Wide_Wide_Character;
-      Available : out Boolean;
-      Wait : Boolean);
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
@@ -499,38 +536,33 @@ package body Ada.Naked_Text_IO is
       Available : out Boolean;
       Wait : Boolean)
    is
-      C : Wide_Wide_Character;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Restore_Type, Finally);
+      X : aliased Restore_Type;
+      C : Character;
    begin
-      Get_Immediate (File, C, Available, Wait); -- Wide_Wide
+      if File.External = IO_Modes.Terminal then
+         X.Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         System.Native_Text_IO.Set_Non_Canonical_Mode (
+            X.Handle,
+            Wait, -- only POSIX
+            X.Old_Settings);
+         Holder.Assign (X);
+      end if;
+      Look_Ahead_Immediate (File, C, Available, Wait);
       if Available then
          declare
-            W_Buffer : Wide_String (
-               1 ..
-               System.UTF_Conversions.UTF_16_Max_Length);
-            W_Last : Natural;
-            To_Status : System.UTF_Conversions.To_Status_Type; -- ignore
+            End_Of_Line : Boolean;
          begin
-            System.UTF_Conversions.To_UTF_16 (
-               Wide_Wide_Character'Pos (C),
-               W_Buffer,
-               W_Last,
-               To_Status);
-            Item := W_Buffer (1);
-            if W_Last >= 2 then
-               --  store second of surrogate pair
-               declare
-                  Buffer : String (1 .. 3);
-                  Last : Natural;
-               begin
-                  System.UTF_Conversions.To_UTF_8 (
-                     Wide_Character'Pos (W_Buffer (2)),
-                     Buffer,
-                     Last,
-                     To_Status);
-                  Untake_Buffer (File, Buffer);
-               end;
+            if Character'Pos (C) < 16#80# then
+               --  Get_Immediate returns CR, LF and FF.
+               Item := Wide_Character'Val (Character'Pos (C));
+            else
+               --  Waiting is OK for trailing bytes.
+               Look_Ahead (File, Item, End_Of_Line); -- Wide
             end if;
          end;
+         Skip_Ahead_Immediate (File);
       else
          Item := Wide_Character'Val (0);
       end if;
@@ -542,28 +574,33 @@ package body Ada.Naked_Text_IO is
       Available : out Boolean;
       Wait : Boolean)
    is
-      S : String (1 .. System.UTF_Conversions.UTF_8_Max_Length);
-      Read_Last : Natural;
+      package Holder is
+         new Exceptions.Finally.Scoped_Holder (Restore_Type, Finally);
+      X : aliased Restore_Type;
+      C : Character;
    begin
-      Get_Immediate (
-         File,
-         S,
-         Read_Last,
-         Wait);
-      Available := Read_Last > 0;
+      if File.External = IO_Modes.Terminal then
+         X.Handle := Streams.Naked_Stream_IO.Handle (File.File);
+         System.Native_Text_IO.Set_Non_Canonical_Mode (
+            X.Handle,
+            Wait, -- only POSIX
+            X.Old_Settings);
+         Holder.Assign (X);
+      end if;
+      Look_Ahead_Immediate (File, C, Available, Wait);
       if Available then
          declare
-            Last : Natural;
-            Code : System.UTF_Conversions.UCS_4;
-            From_Status : System.UTF_Conversions.From_Status_Type; -- ignore
+            End_Of_Line : Boolean;
          begin
-            System.UTF_Conversions.From_UTF_8 (
-               S (1 .. Read_Last),
-               Last,
-               Code,
-               From_Status);
-            Item := Wide_Wide_Character'Val (Code);
+            if Character'Pos (C) < 16#80# then
+               --  Get_Immediate returns CR, LF and FF.
+               Item := Wide_Wide_Character'Val (Character'Pos (C));
+            else
+               --  Waiting is OK for trailing bytes.
+               Look_Ahead (File, Item, End_Of_Line); -- Wide_Wide
+            end if;
          end;
+         Skip_Ahead_Immediate (File);
       else
          Item := Wide_Wide_Character'Val (0);
       end if;
@@ -971,48 +1008,24 @@ package body Ada.Naked_Text_IO is
    begin
       for I in 1 .. Spacing loop
          loop
-            Read_Buffer (File);
-            if File.Last > 0 then -- ASCII
-               declare
-                  C : constant Character := File.Buffer (1);
-               begin
-                  case C is
-                     when Character'Val (16#0d#) | Character'Val (16#0a#) =>
-                        Take_Line (File);
-                        exit;
-                     when Character'Val (16#0c#) =>
-                        Take_Page (File);
-                        exit;
-                     when others =>
-                        File.Col := File.Col + File.Ahead_Col;
-                        Take_Buffer (File);
-                  end case;
-               end;
-            elsif File.End_Of_File then
-               if File.Virtual_Mark <= EOP then
-                  File.Virtual_Mark := EOP_EOF;
-                  File.Page := File.Page + 1;
-                  File.Line := 1;
-                  File.Col := 1;
-                  exit;
-               else
-                  Raise_Exception (End_Error'Identity);
-               end if;
-            end if;
+            declare
+               C : Character;
+               End_Of_Line : Boolean;
+            begin
+               Look_Ahead (File, C, End_Of_Line);
+               Skip_Ahead (File);
+               exit when End_Of_Line;
+            end;
          end loop;
       end loop;
    end Skip_Line;
 
    function End_Of_Line (File : Non_Controlled_File_Type) return Boolean is
+      C : Character;
+      Result : Boolean;
    begin
-      if End_Of_File (File) then -- End_Of_File calls Read_Buffer
-         return True;
-      else
-         return File.Last > 0 and then ( -- line mark is ASCII
-            File.Buffer (1) = Character'Val (16#0d#)
-            or else File.Buffer (1) = Character'Val (16#0a#)
-            or else File.Buffer (1) = Character'Val (16#0c#));
-      end if;
+      Look_Ahead (File, C, Result);
+      return Result;
    end End_Of_Line;
 
    procedure New_Page (File : Non_Controlled_File_Type) is
@@ -1049,25 +1062,26 @@ package body Ada.Naked_Text_IO is
 
    function End_Of_Page (File : Non_Controlled_File_Type) return Boolean is
    begin
-      if End_Of_File (File) -- End_Of_File calls Read_Buffer
-         or else File.Virtual_Mark = EOP
-         or else File.Virtual_Mark = EOP_EOF
-      then
-         return True;
-      else
-         return File.Last > 0 -- page mark is ASCII
-            and then File.Buffer (1) = Character'Val (16#0c#);
-      end if;
+      case File.Virtual_Mark is
+         when EOP | EOP_EOF =>
+            return True;
+         when others =>
+            return End_Of_File (File) -- End_Of_File calls Read_Buffer
+               or else (File.Last > 0 -- page mark is ASCII
+                  and then File.Buffer (1) = Character'Val (16#0c#));
+      end case;
    end End_Of_Page;
 
    function End_Of_File (File : Non_Controlled_File_Type) return Boolean is
    begin
-      Read_Buffer (File);
-      if File.Last > 0 then
-         return False;
-      else
-         return File.End_Of_File;
-      end if;
+      loop
+         Read_Buffer (File);
+         if File.Last > 0 then
+            return False;
+         elsif File.End_Of_File then
+            return True;
+         end if;
+      end loop;
    end End_Of_File;
 
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
@@ -1075,18 +1089,14 @@ package body Ada.Naked_Text_IO is
       if Mode (File) = IO_Modes.In_File then
          --  In_File
          loop
-            if End_Of_Page (File) then
-               Skip_Page (File); -- raise End_Error when End_Of_File.
-            elsif End_Of_Line (File) then
-               Skip_Line (File);
-            else
-               exit when Col (File) = To;
-               declare
-                  C : Character;
-               begin
-                  Get (File, C);
-               end;
-            end if;
+            declare
+               C : Character;
+               End_Of_Line : Boolean;
+            begin
+               Look_Ahead (File, C, End_Of_Line);
+               exit when not End_Of_Line and then File.Col = To;
+               Skip_Ahead (File); -- raise End_Error when End_Of_File
+            end;
          end loop;
       else
          --  Out_File (or Append_File)
@@ -1175,52 +1185,43 @@ package body Ada.Naked_Text_IO is
       Item : out Character) is
    begin
       loop
-         Read_Buffer (File);
-         if File.Ahead_Last > 0 then
-            declare
-               C : constant Character := File.Buffer (1);
-            begin
-               case C is
-                  when Character'Val (16#0d#) | Character'Val (16#0a#) =>
-                     Take_Line (File);
-                  when Character'Val (16#0c#) =>
-                     Take_Page (File);
-                  when others =>
-                     Item := C;
-                     File.Col := File.Col + File.Ahead_Col;
-                     Take_Buffer (File);
-                     exit;
-               end case;
-            end;
-         elsif File.End_Of_File then
-            Raise_Exception (End_Error'Identity);
-         end if;
+         declare
+            End_Of_Line : Boolean;
+         begin
+            Look_Ahead (File, Item, End_Of_Line);
+            Skip_Ahead (File);
+            exit when not End_Of_Line;
+         end;
       end loop;
    end Get;
 
    procedure Get (
       File : Non_Controlled_File_Type;
-      Item : out Wide_Character)
-   is
-      End_Of_Line : Boolean;
+      Item : out Wide_Character) is
    begin
       loop
-         Look_Ahead (File, Item, End_Of_Line);
-         Skip_Ahead (File);
-         exit when not End_Of_Line;
+         declare
+            End_Of_Line : Boolean;
+         begin
+            Look_Ahead (File, Item, End_Of_Line);
+            Skip_Ahead (File);
+            exit when not End_Of_Line;
+         end;
       end loop;
    end Get;
 
    procedure Get (
       File : Non_Controlled_File_Type;
-      Item : out Wide_Wide_Character)
-   is
-      End_Of_Line : Boolean;
+      Item : out Wide_Wide_Character) is
    begin
       loop
-         Look_Ahead (File, Item, End_Of_Line);
-         Skip_Ahead (File);
-         exit when not End_Of_Line;
+         declare
+            End_Of_Line : Boolean;
+         begin
+            Look_Ahead (File, Item, End_Of_Line);
+            Skip_Ahead (File);
+            exit when not End_Of_Line;
+         end;
       end loop;
    end Get;
 
@@ -1506,35 +1507,38 @@ package body Ada.Naked_Text_IO is
             or else raise Status_Error); -- Look_Ahead should be called before
    begin
       if File.Ahead_Last = 0 then -- File.End_Of_File = True
-         Raise_Exception (End_Error'Identity);
+         --  Skip_Ahead can be used instead of Skip_Line
+         if File.Virtual_Mark <= EOP then
+            File.Virtual_Mark := EOP_EOF;
+            File.Page := File.Page + 1;
+            File.Line := 1;
+            File.Col := 1;
+         else
+            Raise_Exception (End_Error'Identity);
+         end if;
+      else
+         declare
+            C : constant Character := File.Buffer (1);
+         begin
+            case C is
+               when Character'Val (16#0d#) | Character'Val (16#0a#) =>
+                  Take_Line (File);
+               when Character'Val (16#0c#) =>
+                  Take_Page (File);
+               when others =>
+                  Take_Sequence (File);
+            end case;
+         end;
       end if;
-      declare
-         C : constant Character := File.Buffer (1);
-      begin
-         case C is
-            when Character'Val (16#0d#) | Character'Val (16#0a#) =>
-               Take_Line (File);
-            when Character'Val (16#0c#) =>
-               Take_Page (File);
-            when others =>
-               File.Col := File.Col + File.Ahead_Col;
-               Take_Buffer (File, Length => File.Looked_Ahead_Last);
-               if File.Looked_Ahead_Second (1) /= Character'Val (0) then
-                  Untake_Buffer (File, File.Looked_Ahead_Second);
-               end if;
-         end case;
-      end;
    end Skip_Ahead;
 
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character)
    is
-      S : String (1 .. 1);
-      Last : Natural;
+      Available : Boolean;
    begin
-      Get_Immediate (File, S, Last, Wait => True);
-      Item := S (1);
+      Get_Immediate (File, Item, Available, Wait => True);
    end Get_Immediate;
 
    procedure Get_Immediate (
@@ -1558,18 +1562,9 @@ package body Ada.Naked_Text_IO is
    procedure Get_Immediate (
       File : Non_Controlled_File_Type;
       Item : out Character;
-      Available : out Boolean)
-   is
-      S : String (1 .. 1);
-      Last : Natural;
+      Available : out Boolean) is
    begin
-      Get_Immediate (File, S, Last, Wait => False);
-      Available := Last > 0;
-      if Available then
-         Item := S (1);
-      else
-         Item := Character'Val (0);
-      end if;
+      Get_Immediate (File, Item, Available, Wait => False);
    end Get_Immediate;
 
    procedure Get_Immediate (

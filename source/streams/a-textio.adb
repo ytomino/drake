@@ -1156,13 +1156,16 @@ package body Ada.Text_IO is
             Raise_Exception (End_Error'Identity);
          end if;
          while Last < Item'Last loop
-            if End_Of_Line (File) then
-               Skip_Line (File);
-               exit;
-            else
+            declare
+               C : Character;
+               End_Of_Line : Boolean;
+            begin
+               Overloaded_Look_Ahead (File, C, End_Of_Line);
+               Skip_Ahead (File);
+               exit when End_Of_Line;
                Last := Last + 1;
-               Overloaded_Get (File, Item (Last));
-            end if;
+               Item (Last) := C;
+            end;
          end loop;
       end if;
    end Overloaded_Get_Line;
@@ -1183,13 +1186,16 @@ package body Ada.Text_IO is
             Raise_Exception (End_Error'Identity);
          end if;
          while Last < Item'Last loop
-            if End_Of_Line (File) then
-               Skip_Line (File);
-               exit;
-            else
+            declare
+               C : Wide_Character;
+               End_Of_Line : Boolean;
+            begin
+               Overloaded_Look_Ahead (File, C, End_Of_Line);
+               Skip_Ahead (File);
+               exit when End_Of_Line;
                Last := Last + 1;
-               Overloaded_Get (File, Item (Last));
-            end if;
+               Item (Last) := C;
+            end;
          end loop;
       end if;
    end Overloaded_Get_Line;
@@ -1210,13 +1216,16 @@ package body Ada.Text_IO is
             Raise_Exception (End_Error'Identity);
          end if;
          while Last < Item'Last loop
-            if End_Of_Line (File) then
-               Skip_Line (File);
-               exit;
-            else
+            declare
+               C : Wide_Wide_Character;
+               End_Of_Line : Boolean;
+            begin
+               Overloaded_Look_Ahead (File, C, End_Of_Line);
+               Skip_Ahead (File);
+               exit when End_Of_Line;
                Last := Last + 1;
-               Overloaded_Get (File, Item (Last));
-            end if;
+               Item (Last) := C;
+            end;
          end loop;
       end if;
    end Overloaded_Get_Line;
