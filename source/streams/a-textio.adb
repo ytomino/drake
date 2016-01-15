@@ -1443,17 +1443,17 @@ package body Ada.Text_IO is
          return Standard_Error_Object'Access;
       end Standard_Error;
 
-      function Reference_Current_Input return access File_Access is
+      function Reference_Current_Input return not null access File_Access is
       begin
          return Current_Input'Access;
       end Reference_Current_Input;
 
-      function Reference_Current_Output return access File_Access is
+      function Reference_Current_Output return not null access File_Access is
       begin
          return Current_Output'Access;
       end Reference_Current_Output;
 
-      function Reference_Current_Error return access File_Access is
+      function Reference_Current_Error return not null access File_Access is
       begin
          return Current_Error'Access;
       end Reference_Current_Error;
