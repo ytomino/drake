@@ -1086,25 +1086,25 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if Mode (File) = IO_Modes.In_File then
-         --  In_File
-         loop
-            declare
-               C : Character;
-               End_Of_Line : Boolean;
-            begin
-               Look_Ahead (File, C, End_Of_Line);
-               exit when not End_Of_Line and then File.Col = To;
-               Skip_Ahead (File); -- raise End_Error when End_Of_File
-            end;
-         end loop;
+      if File.External = IO_Modes.Terminal then
+         System.Native_Text_IO.Set_Terminal_Col (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            To);
       else
-         --  Out_File (or Append_File)
-         if File.External = IO_Modes.Terminal then
-            System.Native_Text_IO.Set_Terminal_Col (
-               Streams.Naked_Stream_IO.Handle (File.File),
-               To);
+         if Mode (File) = IO_Modes.In_File then
+            --  In_File
+            loop
+               declare
+                  C : Character;
+                  End_Of_Line : Boolean;
+               begin
+                  Look_Ahead (File, C, End_Of_Line);
+                  exit when not End_Of_Line and then File.Col = To;
+                  Skip_Ahead (File); -- raise End_Error when End_Of_File
+               end;
+            end loop;
          else
+            --  Out_File (or Append_File)
             if File.Line_Length /= 0 and then To > File.Line_Length then
                Raise_Exception (Layout_Error'Identity);
             end if;
@@ -1120,19 +1120,19 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if Mode (File) = IO_Modes.In_File then
-         --  In_File
-         while To /= File.Line or else End_Of_Page (File) loop
-            Skip_Line (File);
-         end loop;
+      if File.External = IO_Modes.Terminal then
+         System.Native_Text_IO.Set_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File),
+            Col => 1,
+            Line => To);
       else
-         --  Out_File (or Append_File)
-         if File.External = IO_Modes.Terminal then
-            System.Native_Text_IO.Set_Terminal_Position (
-               Streams.Naked_Stream_IO.Handle (File.File),
-               Col => 1,
-               Line => To);
+         if Mode (File) = IO_Modes.In_File then
+            --  In_File
+            while To /= File.Line or else End_Of_Page (File) loop
+               Skip_Line (File);
+            end loop;
          else
+            --  Out_File (or Append_File)
             if File.Page_Length /= 0 and then To > File.Page_Length then
                Raise_Exception (Layout_Error'Identity);
             end if;
