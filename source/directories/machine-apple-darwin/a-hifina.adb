@@ -29,7 +29,10 @@ package body Ada.Hierarchical_File_Names is
 
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
-      Last : in out Natural) is
+      Last : in out Natural;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+   is
+      pragma Unreferenced (Path_Delimiter);
    begin
       if not Is_Path_Delimiter (S (Last)) then
          Last := Last + 1;
@@ -48,16 +51,17 @@ package body Ada.Hierarchical_File_Names is
       end loop;
    end Exclude_Trailing_Path_Delimiter;
 
-   procedure Exclude_Leading_Path_Delimiter (
-      S : String;
-      First : in out Positive) is
+   procedure Containing_Root_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
    begin
-      while First <= S'Last
-         and then Is_Path_Delimiter (S (First))
-      loop
-         First := First + 1;
+      First := Name'First;
+      Last := First - 1;
+      while Last < Name'Last and then Is_Path_Delimiter (Name (Last + 1)) loop
+         Last := Last + 1;
       end loop;
-   end Exclude_Leading_Path_Delimiter;
+   end Containing_Root_Directory;
 
    --  operations in Ada.Directories
 
@@ -181,8 +185,11 @@ package body Ada.Hierarchical_File_Names is
    function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
-      Extension : String := "") return String
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String
    is
+      pragma Unreferenced (Path_Delimiter);
       --  this is Directories.Compose
       --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
       Containing_Directory_Length : constant Natural :=
@@ -228,8 +235,11 @@ package body Ada.Hierarchical_File_Names is
    end Is_Simple_Name;
 
    function Is_Root_Directory_Name (Name : String) return Boolean is
+      First : Positive;
+      Last : Natural;
    begin
-      return Name = "/";
+      Containing_Root_Directory (Name, First, Last);
+      return First <= Last and then Last = Name'Last;
    end Is_Root_Directory_Name;
 
    function Is_Parent_Directory_Name (Name : String) return Boolean is
@@ -293,28 +303,28 @@ package body Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural) is
    begin
+      First := Name'First;
       Last := Name'Last;
-      if Is_Full_Name (Name) then -- full
-         First := Name'First + 1; -- skip root "/"
-      else -- relative
-         First := Name'First;
-         for I in Name'Range loop
-            if Is_Path_Delimiter (Name (I)) then
-               First := I + 1;
-               --  "//" as "/"
-               Exclude_Leading_Path_Delimiter (Name (First .. Last), First);
-               exit; -- found
-            end if;
-         end loop;
-      end if;
+      for I in Name'Range loop
+         if Is_Path_Delimiter (Name (I)) then
+            First := I + 1;
+            --  "//" as "/"
+            while First <= Last and then Is_Path_Delimiter (Name (First)) loop
+               First := First + 1;
+            end loop;
+            exit; -- found
+         end if;
+      end loop;
    end Relative_Name;
 
    function Compose (
       Directory : String := "";
       Relative_Name : String;
-      Extension : String := "")
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
+      pragma Unreferenced (Path_Delimiter);
       Parent_Count : Natural := 0;
       C_D_First : Positive; -- Containing_Directory (Directory)
       C_D_Last : Natural;
@@ -410,8 +420,11 @@ package body Ada.Hierarchical_File_Names is
 
    function Relative_Name (
       Name : String;
-      From : String)
-      return String is
+      From : String;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String
+   is
+      pragma Unreferenced (Path_Delimiter);
    begin
       if Is_Full_Name (Name) /= Is_Full_Name (From) then
          --  Relative_Name ("A", "/B") or reverse

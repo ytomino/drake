@@ -51,11 +51,6 @@ package body Ada.Hierarchical_File_Names is
       end loop;
    end Exclude_Trailing_Path_Delimiter;
 
-   function Is_Drive_Letter (Item : Character) return Boolean is
-   begin
-      return Item in 'A' .. 'Z' or else Item in 'a' .. 'z';
-   end Is_Drive_Letter;
-
    procedure Containing_Root_Directory (
       Name : String;
       First : out Positive;
@@ -87,7 +82,9 @@ package body Ada.Hierarchical_File_Names is
             Last := First; -- no drive letter
          end if;
       elsif First < Name'Last
-         and then Is_Drive_Letter (Name (First))
+         and then (
+            Name (First) in 'A' .. 'Z'
+            or else Name (First) in 'a' .. 'z')
          and then Name (First + 1) = ':'
       then
          if First + 2 <= Name'Last
@@ -222,20 +219,8 @@ package body Ada.Hierarchical_File_Names is
    function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
-      Extension : String := "") return String is
-   begin
-      return Unfolded_Compose (
-         Containing_Directory,
-         Name,
-         Extension,
-         Path_Delimiter => Default_Path_Delimiter);
-   end Unfolded_Compose;
-
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
       Extension : String := "";
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
       --  this is Directories.Compose
@@ -375,21 +360,8 @@ package body Ada.Hierarchical_File_Names is
    function Compose (
       Directory : String := "";
       Relative_Name : String;
-      Extension : String := "")
-      return String is
-   begin
-      return Compose (
-         Directory,
-         Relative_Name,
-         Extension,
-         Path_Delimiter => Default_Path_Delimiter);
-   end Compose;
-
-   function Compose (
-      Directory : String := "";
-      Relative_Name : String;
       Extension : String := "";
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
       Parent_Count : Natural := 0;
@@ -491,19 +463,8 @@ package body Ada.Hierarchical_File_Names is
 
    function Relative_Name (
       Name : String;
-      From : String)
-      return String is
-   begin
-      return Relative_Name (
-         Name,
-         From,
-         Path_Delimiter => Default_Path_Delimiter);
-   end Relative_Name;
-
-   function Relative_Name (
-      Name : String;
       From : String;
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
       Name_Root_First : Positive;

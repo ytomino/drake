@@ -8,18 +8,26 @@ package Ada.Hierarchical_File_Names is
 
    --  path delimiter
 
+   subtype Path_Delimiter_Type is Character;
+--    with Static_Predicate => Path_Delimiter = '/';
+
+   Default_Path_Delimiter : constant Character := '/';
+
    function Is_Path_Delimiter (Item : Character) return Boolean;
    pragma Inline (Is_Path_Delimiter);
 
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
-      Last : in out Natural);
+      Last : in out Natural;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter);
    procedure Exclude_Trailing_Path_Delimiter (
       S : String;
       Last : in out Natural);
-   procedure Exclude_Leading_Path_Delimiter (
-      S : String;
-      First : in out Positive);
+
+   procedure Containing_Root_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
 
    --  operations in Ada.Directories
 
@@ -57,7 +65,8 @@ package Ada.Hierarchical_File_Names is
    function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
-      Extension : String := "")
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
    --  operations in Ada.Directories.Hierarchical_File_Names
@@ -98,7 +107,8 @@ package Ada.Hierarchical_File_Names is
    function Compose (
       Directory : String := "";
       Relative_Name : String;
-      Extension : String := "")
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
    --  extended
@@ -107,7 +117,8 @@ package Ada.Hierarchical_File_Names is
    --    Relative_Name (Name, Initial_Directory (Name)) = Relative_Name (Name)
    function Relative_Name (
       Name : String;
-      From : String)
+      From : String;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
    --  exceptions
