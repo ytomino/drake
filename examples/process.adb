@@ -89,6 +89,12 @@ begin
 				Input => Input_Reading,
 				Output => Output_Writing);
 		end if;
+		declare
+			Terminated : Boolean;
+		begin
+			Ada.Processes.Wait_Immediate (C, Terminated => Terminated);
+			pragma Assert (not Terminated);
+		end;
 		Ada.Streams.Stream_IO.Close (Input_Reading);
 		Ada.Streams.Stream_IO.Close (Output_Writing);
 		Ada.Processes.Wait (C);

@@ -296,6 +296,7 @@
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
 #pragma for Ada "sys/uio.h" include "bits/uio.h" /* struct iovec */
+#pragma for Ada "sys/wait.h" include "bits/waitflags.h" /* WNOHANG */
 #pragma for Ada "termios.h" include "bits/termios.h"
 #pragma for Ada "time.h" include "bits/time.h" /* CLOCK_MONOTONIC */
 #pragma for Ada "unistd.h" include "bits/confname.h" /* _SC_NPROCESSORS_ONLN */

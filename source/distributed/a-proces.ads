@@ -47,6 +47,15 @@ package Ada.Processes is
       Child : in out Process); -- Open_Process
    pragma Inline (Wait);
 
+   procedure Wait_Immediate (
+      Child : in out Process; -- Open_Process
+      Terminated : out Boolean;
+      Status : out Command_Line.Exit_Status);
+   procedure Wait_Immediate (
+      Child : in out Process; -- Open_Process
+      Terminated : out Boolean);
+   pragma Inline (Wait_Immediate);
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);

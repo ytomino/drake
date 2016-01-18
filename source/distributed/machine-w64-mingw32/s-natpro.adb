@@ -21,6 +21,48 @@ package body System.Native_Processes is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memchr";
 
+   procedure Wait (
+      Child : in out Process;
+      Milliseconds : C.windef.DWORD;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure Wait (
+      Child : in out Process;
+      Milliseconds : C.windef.DWORD;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Handle : C.winnt.HANDLE
+         renames Reference (Child).all;
+   begin
+      case C.winbase.WaitForSingleObject (Handle, Milliseconds) is
+         when C.winbase.WAIT_OBJECT_0 =>
+            declare
+               Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
+               Exit_Code : aliased C.windef.DWORD;
+               R : C.windef.WINBOOL;
+            begin
+               R := C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access);
+               if C.winbase.CloseHandle (Handle) = 0 or else R = 0 then
+                  Raise_Exception (Use_Error'Identity);
+               end if;
+               Handle := C.winbase.INVALID_HANDLE_VALUE;
+               --  status code
+               if Exit_Code < Max then
+                  Status := Ada.Command_Line.Exit_Status (Exit_Code);
+               else
+                  --  terminated by an unhandled exception
+                  Status := -1;
+               end if;
+               Terminated := True;
+            end;
+         when C.winerror.WAIT_TIMEOUT =>
+            Terminated := False;
+         when others =>
+            Raise_Exception (Use_Error'Identity);
+      end case;
+   end Wait;
+
    --  implementation
 
    function Do_Is_Open (Child : Process) return Boolean is
@@ -136,37 +178,26 @@ package body System.Native_Processes is
 
    procedure Do_Wait (
       Child : in out Process;
-      Status : out Ada.Command_Line.Exit_Status)
-   is
-      Handle : C.winnt.HANDLE
-         renames Reference (Child).all;
+      Status : out Ada.Command_Line.Exit_Status) is
    begin
-      if C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE) /=
-         C.winbase.WAIT_OBJECT_0
-      then
-         Raise_Exception (Use_Error'Identity);
-      else
+      loop
          declare
-            Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
-            Exit_Code : aliased C.windef.DWORD;
+            Terminated : Boolean;
          begin
-            if C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access) = 0 then
-               Raise_Exception (Use_Error'Identity);
-            end if;
-            if C.winbase.CloseHandle (Handle) = 0 then
-               Raise_Exception (Use_Error'Identity);
-            end if;
-            Handle := C.winbase.INVALID_HANDLE_VALUE;
-            --  status code
-            if Exit_Code < Max then
-               Status := Ada.Command_Line.Exit_Status (Exit_Code);
-            else
-               --  terminated by an unhandled exception
-               Status := Ada.Command_Line.Exit_Status'Last;
-            end if;
+            Wait (Child, C.winbase.INFINITE,
+               Terminated => Terminated, Status => Status);
+            exit when Terminated;
          end;
-      end if;
+      end loop;
    end Do_Wait;
+
+   procedure Do_Wait_Immediate (
+      Child : in out Process;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status) is
+   begin
+      Wait (Child, 0, Terminated => Terminated, Status => Status);
+   end Do_Wait_Immediate;
 
    procedure Shell (
       Command_Line : String;
