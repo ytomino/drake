@@ -196,8 +196,9 @@ package body System.Native_Processes is
 
    function WIFEXITED (x : C.signed_int) return Boolean;
    function WIFEXITED (x : C.signed_int) return Boolean is
+      WSTATUS : constant C.signed_int := x mod (8#177# + 1); -- x & 0177
    begin
-      return x mod (8#177# + 1) = 0; -- x & 0177
+      return WSTATUS = 0;
    end WIFEXITED;
 
    function WEXITSTATUS (x : C.signed_int) return C.signed_int;
@@ -205,6 +206,15 @@ package body System.Native_Processes is
    begin
       return x / 256;
    end WEXITSTATUS;
+
+   function WIFSIGNALED (x : C.signed_int) return Boolean;
+   function WIFSIGNALED (x : C.signed_int) return Boolean is
+      WSTATUS : constant C.signed_int := x mod (8#177# + 1); -- x & 0177
+   begin
+      --  _WSTOPPED is 0177 in Darwin and FreeBSD.
+      --  Both low 7 bits of __W_STOPCODE and __W_CONTINUED is 0x7f in Linux.
+      return WSTATUS /= 8#177# and then WSTATUS /= 0;
+   end WIFSIGNALED;
 
    --  implementation
 
@@ -252,14 +262,16 @@ package body System.Native_Processes is
                end if;
                --  interrupted and the signal is not "abort", then retry
             else
-               Child.Id := -1; -- terminated or error
-               --  status code
                if WIFEXITED (Code) then
+                  Child.Id := -1;
                   Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
-               else
+                  exit; -- exited
+               elsif WIFSIGNALED (Code) then
+                  Child.Id := -1;
                   Status := -1;
+                  exit; -- signaled
                end if;
-               exit;
+               --  Otherwise, WIFSTOPPED or WIFCONTINUED
             end if;
          end;
       end loop;
