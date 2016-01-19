@@ -126,8 +126,7 @@ package Ada.Hierarchical_File_Names is
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
 
-   --  Note at A.16.1 (37/3).
-   --  These subprograms does not raise Name_Error
+   --  Note: In RM A.16.1 (37/3), these subprograms does not raise Name_Error
    --    since no accessing any real external file.
 
 end Ada.Hierarchical_File_Names;

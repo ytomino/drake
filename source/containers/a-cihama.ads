@@ -218,7 +218,7 @@ private
    type Cursor is access Node;
 
 --  diff (Key_Reference_Type)
---  diff
+--
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;

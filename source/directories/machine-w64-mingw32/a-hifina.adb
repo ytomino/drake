@@ -119,8 +119,7 @@ package body Ada.Hierarchical_File_Names is
    begin
       Containing_Directory (Name, First, Last);
       if First > Last and then Raise_On_Error then
-         --  A.16.1 (38/3)
-         Raise_Exception (Use_Error'Identity);
+         Raise_Exception (Use_Error'Identity); -- RM A.16.1 (38/3)
       end if;
       return Name (First .. Last);
    end Containing_Directory;

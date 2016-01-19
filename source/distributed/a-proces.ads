@@ -14,6 +14,8 @@ package Ada.Processes is
 --       Dynamic_Predicate => Is_Open (Open_Process),
 --       Predicate_Failure => raise Status_Error;
 
+   --  Child process management
+
    function Is_Open (Child : Process) return Boolean;
    pragma Inline (Is_Open); -- renamed
 
@@ -56,6 +58,8 @@ package Ada.Processes is
       Terminated : out Boolean);
    pragma Inline (Wait_Immediate);
 
+   --  Pass a command to the shell
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
@@ -63,11 +67,15 @@ package Ada.Processes is
       Command_Line : String);
    pragma Inline (Shell); -- renamed, or for shorthand
 
+   --  Command line
+
    procedure Append_Argument (
       Command_Line : in out String;
       Last : in out Natural;
       Argument : String);
    pragma Inline (Append_Argument); -- renamed
+
+   --  Exceptions
 
    Status_Error : exception
       renames IO_Exceptions.Status_Error;
