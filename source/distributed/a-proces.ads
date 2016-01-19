@@ -58,6 +58,12 @@ package Ada.Processes is
       Terminated : out Boolean);
    pragma Inline (Wait_Immediate);
 
+   procedure Abort_Process (Child : in out Process); -- Open_Process
+   procedure Forced_Abort_Process (Child : in out Process); -- Open_Process
+
+   pragma Inline (Abort_Process);
+   pragma Inline (Forced_Abort_Process);
+
    --  Pass a command to the shell
 
    procedure Shell (

@@ -89,6 +89,20 @@ package body Ada.Processes is
       Wait_Immediate (Child, Terminated, Dummy); -- checking the predicate
    end Wait_Immediate;
 
+   procedure Abort_Process (Child : in out Process) is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Child) or else raise Status_Error);
+   begin
+      Do_Abort_Process (Child);
+   end Abort_Process;
+
+   procedure Forced_Abort_Process (Child : in out Process) is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Child) or else raise Status_Error);
+   begin
+      Do_Forced_Abort_Process (Child);
+   end Forced_Abort_Process;
+
    procedure Shell (
       Command_Line : String)
    is

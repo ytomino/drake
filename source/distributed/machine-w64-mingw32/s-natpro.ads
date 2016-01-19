@@ -31,6 +31,12 @@ package System.Native_Processes is
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status);
 
+   procedure Do_Forced_Abort_Process (Child : in out Process);
+
+   procedure Do_Abort_Process (Child : in out Process)
+      renames Do_Forced_Abort_Process;
+      --  Should it use CREATE_NEW_PROCESS_GROUP and GenerateConsoleCtrlEvent?
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);

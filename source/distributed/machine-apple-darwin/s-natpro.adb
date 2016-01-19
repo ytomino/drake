@@ -5,6 +5,7 @@ with System.Native_IO;
 with System.Synchronous_Control;
 with System.Zero_Terminated_Strings;
 with C.errno;
+with C.signal;
 with C.spawn;
 with C.stdlib;
 with C.sys.wait;
@@ -257,6 +258,14 @@ package body System.Native_Processes is
       end if;
    end Wait;
 
+   procedure Kill (Child : Process; Signal : C.signed_int);
+   procedure Kill (Child : Process; Signal : C.signed_int) is
+   begin
+      if C.signal.kill (Child.Id, Signal) < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+   end Kill;
+
    --  implementation
 
    function Do_Is_Open (Child : Process) return Boolean is
@@ -305,6 +314,16 @@ package body System.Native_Processes is
       Wait (Child, C.sys.wait.WNOHANG,
          Terminated => Terminated, Status => Status);
    end Do_Wait_Immediate;
+
+   procedure Do_Abort_Process (Child : in out Process) is
+   begin
+      Kill (Child, C.signal.SIGTERM);
+   end Do_Abort_Process;
+
+   procedure Do_Forced_Abort_Process (Child : in out Process) is
+   begin
+      Kill (Child, C.signal.SIGKILL);
+   end Do_Forced_Abort_Process;
 
    procedure Shell (
       Command_Line : String;

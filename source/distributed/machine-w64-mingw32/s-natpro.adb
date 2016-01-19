@@ -11,6 +11,7 @@ package body System.Native_Processes is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+   use type C.windef.UINT;
    use type C.winnt.HANDLE; -- C.void_ptr
 
    function memchr (
@@ -198,6 +199,28 @@ package body System.Native_Processes is
    begin
       Wait (Child, 0, Terminated => Terminated, Status => Status);
    end Do_Wait_Immediate;
+
+   procedure Do_Forced_Abort_Process (Child : in out Process) is
+      Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
+      Handle : constant C.winnt.HANDLE := Reference (Child).all;
+   begin
+      if C.winbase.TerminateProcess (Handle, Code) = 0 then
+         declare
+            Exit_Code : aliased C.windef.DWORD;
+         begin
+            --  It is not an error if the process is already terminated.
+            if not (
+               C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
+               and then C.winbase.GetExitCodeProcess (
+                  Handle,
+                  Exit_Code'Access) /= 0
+               and then Exit_Code /= C.winbase.STILL_ACTIVE)
+            then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+         end;
+      end if;
+   end Do_Forced_Abort_Process;
 
    procedure Shell (
       Command_Line : String;
