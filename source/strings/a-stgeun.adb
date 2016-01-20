@@ -322,20 +322,26 @@ package body Ada.Strings.Generic_Unbounded is
       New_Item : Unbounded_String)
    is
       pragma Suppress (Access_Check);
+      New_Item_Length : constant Natural := New_Item.Length;
    begin
-      if Source.Length = 0 then
-         Assign (Source, New_Item);
-      elsif Source'Address = New_Item'Address then -- Append (X, X)
+      if New_Item_Length > 0 then
          declare
-            Last : constant Natural := Source.Length;
-            Total_Length : constant Natural := Last * 2;
+            Old_Length : constant Natural := Source.Length;
          begin
-            Set_Length (Source, Total_Length);
-            Source.Data.Items (Last + 1 .. Total_Length) :=
-               Source.Data.Items (1 .. Last);
+            if Old_Length = 0 then
+               Assign (Source, New_Item);
+            else
+               declare
+                  Total_Length : constant Natural :=
+                     Old_Length + New_Item_Length;
+               begin
+                  Set_Length (Source, Total_Length);
+                  Source.Data.Items (Old_Length + 1 .. Total_Length) :=
+                     New_Item.Data.Items (1 .. New_Item_Length);
+                  --  Do not use New_Item.Length in here for Append (X, X).
+               end;
+            end if;
          end;
-      else
-         Append (Source, New_Item.Data.Items (1 .. New_Item.Length));
       end if;
    end Append;
 
@@ -344,11 +350,11 @@ package body Ada.Strings.Generic_Unbounded is
       New_Item : String_Type)
    is
       pragma Suppress (Access_Check);
-      Last : constant Natural := Source.Length;
-      Total_Length : constant Natural := Last + New_Item'Length;
+      Old_Length : constant Natural := Source.Length;
+      Total_Length : constant Natural := Old_Length + New_Item'Length;
    begin
       Set_Length (Source, Total_Length);
-      Source.Data.Items (Last + 1 .. Total_Length) := New_Item;
+      Source.Data.Items (Old_Length + 1 .. Total_Length) := New_Item;
    end Append;
 
    procedure Append_Element (
@@ -356,8 +362,8 @@ package body Ada.Strings.Generic_Unbounded is
       New_Item : Character_Type)
    is
       pragma Suppress (Access_Check);
-      Last : constant Natural := Source.Length;
-      Total_Length : constant Natural := Last + 1;
+      Old_Length : constant Natural := Source.Length;
+      Total_Length : constant Natural := Old_Length + 1;
    begin
       Set_Length (Source, Total_Length);
       Source.Data.Items (Total_Length) := New_Item;

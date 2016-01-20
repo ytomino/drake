@@ -501,6 +501,13 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Insert)
 --
@@ -589,6 +596,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Append)
 --
@@ -635,37 +644,35 @@ package body Ada.Containers.Limited_Vectors is
       pragma Check (Pre,
          Check => Before <= Last_Index (Container) + 1
             or else raise Constraint_Error);
+      Old_Length : constant Count_Type := Container.Length;
       After_Last : constant Index_Type'Base :=
-         Index_Type'First + Index_Type'Base (Container.Length);
+         Index_Type'First + Index_Type'Base (Old_Length);
    begin
       Position := Before;
       if Position = No_Element then
          Position := After_Last;
       end if;
-      if Position = After_Last then -- Last_Index (Container) + 1
-         Set_Length (Container, Container.Length + Count);
-      else
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-            Moving : constant Index_Type'Base :=
-               Last_Index (Container) - Position;
-            After : constant Index_Type := Position + Index_Type'Base (Count);
-         begin
-            Set_Length (Container, Old_Length + Count);
+      if Count > 0 then
+         Set_Length (Container, Old_Length + Count);
+         if Position < After_Last then -- Last_Index (Container) + 1
+            declare
+               subtype R1 is
+                  Extended_Index range
+                     Position + Index_Type'Base (Count) ..
+                     After_Last - 1 + Index_Type'Base (Count);
+               subtype R2 is Extended_Index range Position .. After_Last - 1;
+            begin
 --  diff
-            for I in
-               Index_Type'First + Index_Type'Base (Old_Length) ..
-               Last_Index (Container)
-            loop
-               Free (Container.Data.Items (I));
-            end loop;
-            Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Position .. Position + Moving);
+               for I in R2'Last + 1 .. R1'Last loop
+                  Free (Container.Data.Items (I));
+               end loop;
+               Container.Data.Items (R1) := Container.Data.Items (R2);
 --  diff
-            for I in Position .. After - 1 loop
-               Container.Data.Items (I) := null;
-            end loop;
-         end;
+               for I in R2'First .. R1'First - 1 loop
+                  Container.Data.Items (I) := null;
+               end loop;
+            end;
+         end if;
       end if;
    end Insert_Space;
 
