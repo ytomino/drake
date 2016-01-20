@@ -687,35 +687,36 @@ package body Ada.Containers.Indefinite_Vectors is
                Index_Type'First ..
                Last_Index (Container) - Index_Type'Base (Count) + 1
             or else raise Constraint_Error);
-      Old_Length : constant Count_Type := Container.Length;
    begin
-      if Index + Index_Type'Base (Count) =
-         Index_Type'First + Index_Type'Base (Old_Length)
-      then
-         Set_Length (Container, Old_Length - Count);
-      else
-         Unique (Container, True);
+      if Count > 0 then
          declare
-            Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length))
-               - (Index + Index_Type'Base (Count))
-               - 1;
-            Before : constant Index_Type := Index + Index_Type'Base (Count);
-            After : constant Index_Type := Index;
+            Old_Length : constant Count_Type := Container.Length;
+            After_Last : constant Index_Type'Base :=
+               Index_Type'First + Index_Type'Base (Old_Length);
          begin
+            if Index + Index_Type'Base (Count) < After_Last then
+               Unique (Container, True);
+               declare
+                  subtype R1 is
+                     Extended_Index range
+                        Index ..
+                        After_Last - 1 - Index_Type'Base (Count);
+                  subtype R2 is
+                     Extended_Index range
+                        Index + Index_Type'Base (Count) ..
+                        After_Last - 1;
+               begin
+                  for I in R1'First .. R2'First - 1 loop
+                     Free (Downcast (Container.Super.Data).Items (I));
+                  end loop;
+                  Downcast (Container.Super.Data).Items (R1) :=
+                     Downcast (Container.Super.Data).Items (R2);
+                  for I in R1'Last + 1 .. R2'Last loop
+                     Downcast (Container.Super.Data).Items (I) := null;
+                  end loop;
+               end;
+            end if;
             Set_Length (Container, Old_Length - Count);
-            for I in After .. After + Index_Type'Base (Count) - 1 loop
-               Free (Downcast (Container.Super.Data).Items (I));
-            end loop;
-            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
-               Downcast (Container.Super.Data).Items
-                  (Before .. Before + Moving);
-            for I in
-               Index_Type'First + Index_Type'Base (Container.Length) ..
-               Index_Type'First - 1 + Index_Type'Base (Old_Length)
-            loop
-               Downcast (Container.Super.Data).Items (I) := null;
-            end loop;
          end;
       end if;
    end Delete;

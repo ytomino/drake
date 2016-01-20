@@ -687,35 +687,37 @@ package body Ada.Containers.Limited_Vectors is
                Index_Type'First ..
                Last_Index (Container) - Index_Type'Base (Count) + 1
             or else raise Constraint_Error);
-      Old_Length : constant Count_Type := Container.Length;
    begin
-      if Index + Index_Type'Base (Count) =
-         Index_Type'First + Index_Type'Base (Old_Length)
-      then
-         Container.Length := Old_Length - Count;
-      else
---  diff
+      if Count > 0 then
          declare
-            Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length))
-               - (Index + Index_Type'Base (Count))
-               - 1;
-            Before : constant Index_Type := Index + Index_Type'Base (Count);
-            After : constant Index_Type := Index;
+            Old_Length : constant Count_Type := Container.Length;
+            After_Last : constant Index_Type'Base :=
+               Index_Type'First + Index_Type'Base (Old_Length);
          begin
-            Container.Length := Old_Length - Count;
-            for I in After .. After + Index_Type'Base (Count) - 1 loop
-               Free (Container.Data.Items (I));
-            end loop;
-            Container.Data.Items (After .. After + Moving) :=
-               Container.Data.Items (Before .. Before + Moving);
+            if Index + Index_Type'Base (Count) < After_Last then
 --  diff
-            for I in
-               Index_Type'First + Index_Type'Base (Container.Length) ..
-               Index_Type'First - 1 + Index_Type'Base (Old_Length)
-            loop
-               Container.Data.Items (I) := null;
-            end loop;
+               Container.Length := Old_Length - Count;
+               declare
+                  subtype R1 is
+                     Extended_Index range
+                        Index ..
+                        After_Last - 1 - Index_Type'Base (Count);
+                  subtype R2 is
+                     Extended_Index range
+                        Index + Index_Type'Base (Count) ..
+                        After_Last - 1;
+               begin
+                  for I in R1'First .. R2'First - 1 loop
+                     Free (Container.Data.Items (I));
+                  end loop;
+                  Container.Data.Items (R1) := Container.Data.Items (R2);
+--  diff
+                  for I in R1'Last + 1 .. R2'Last loop
+                     Container.Data.Items (I) := null;
+                  end loop;
+               end;
+            end if;
+            Container.Length := Old_Length - Count;
          end;
       end if;
    end Delete;
