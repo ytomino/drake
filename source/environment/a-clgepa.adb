@@ -267,7 +267,7 @@ package body Ada.Command_Line.Generic_Parsing is
       end if;
    end Next;
 
-   package body Cursors is
+   package body Controlled is
 
       function Create (
          Argument_Context : Argument_Context_Access;
@@ -300,6 +300,6 @@ package body Ada.Command_Line.Generic_Parsing is
          end if;
       end Finalize;
 
-   end Cursors;
+   end Controlled;
 
 end Ada.Command_Line.Generic_Parsing;

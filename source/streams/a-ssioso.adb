@@ -101,7 +101,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       end return;
    end Connect;
 
-   package body End_Points is
+   package body Controlled_End_Points is
 
       function Reference (Object : End_Point)
          return not null access System.Native_IO.Sockets.End_Point is
@@ -114,7 +114,7 @@ package body Ada.Streams.Stream_IO.Sockets is
          System.Native_IO.Sockets.Finalize (Object.Data);
       end Finalize;
 
-   end End_Points;
+   end Controlled_End_Points;
 
    --  implementation of server
 
@@ -212,7 +212,7 @@ package body Ada.Streams.Stream_IO.Sockets is
       end if;
    end Accept_Socket;
 
-   package body Listeners is
+   package body Controlled_Listeners is
 
       function Reference (Object : Listener)
          return not null access System.Native_IO.Sockets.Listener is
@@ -230,6 +230,6 @@ package body Ada.Streams.Stream_IO.Sockets is
          end if;
       end Finalize;
 
-   end Listeners;
+   end Controlled_Listeners;
 
 end Ada.Streams.Stream_IO.Sockets;

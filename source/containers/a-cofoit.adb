@@ -77,7 +77,7 @@ package body Ada.Containers.Forward_Iterators is
       end return;
    end Iterate;
 
-   package body Cursors is
+   package body Controlled is
 
       function Create (Node : Node_Access) return Cursor is
       begin
@@ -104,7 +104,7 @@ package body Ada.Containers.Forward_Iterators is
          Release (Object.Node);
       end Finalize;
 
-   end Cursors;
+   end Controlled;
 
    overriding procedure Finalize (Object : in out Iterator) is
    begin

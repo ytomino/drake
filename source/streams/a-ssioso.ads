@@ -59,7 +59,7 @@ private
 
    type Socket_Address is new System.Native_IO.Sockets.Socket_Address;
 
-   package End_Points is
+   package Controlled_End_Points is
 
       type End_Point is limited private;
 
@@ -75,11 +75,11 @@ private
 
       overriding procedure Finalize (Object : in out End_Point);
 
-   end End_Points;
+   end Controlled_End_Points;
 
-   type End_Point is new End_Points.End_Point;
+   type End_Point is new Controlled_End_Points.End_Point;
 
-   package Listeners is
+   package Controlled_Listeners is
 
       type Listener is limited private;
 
@@ -96,8 +96,8 @@ private
 
       overriding procedure Finalize (Object : in out Listener);
 
-   end Listeners;
+   end Controlled_Listeners;
 
-   type Listener is new Listeners.Listener;
+   type Listener is new Controlled_Listeners.Listener;
 
 end Ada.Streams.Stream_IO.Sockets;
