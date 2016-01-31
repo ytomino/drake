@@ -59,7 +59,7 @@ private
 
       type Process is limited private;
 
-      function Reference (Object : Process)
+      function Reference (Object : Native_Processes.Process)
          return not null access C.winnt.HANDLE;
       pragma Inline (Reference);
 

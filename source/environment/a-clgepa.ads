@@ -87,7 +87,7 @@ private
          Subindex : Argument_Parsing.Cursor)
          return Cursor;
 
-      function Reference (Position : Cursor)
+      function Reference (Position : Generic_Parsing.Cursor)
          return not null access Non_Controlled_Cursor;
       pragma Inline (Reference);
 

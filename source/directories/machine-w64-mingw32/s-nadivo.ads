@@ -50,11 +50,13 @@ package System.Native_Directories.Volumes is
    function Owner (FS : Non_Controlled_File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 
+   type File_System;
+
    package Controlled is
 
       type File_System is limited private;
 
-      function Reference (Object : File_System)
+      function Reference (Object : Volumes.File_System)
          return not null access Non_Controlled_File_System;
       pragma Inline (Reference);
 
@@ -78,5 +80,9 @@ package System.Native_Directories.Volumes is
    end Controlled;
 
    type File_System is limited new Controlled.File_System;
+
+   function Reference (Object : File_System)
+      return not null access Non_Controlled_File_System
+      renames Controlled.Reference;
 
 end System.Native_Directories.Volumes;

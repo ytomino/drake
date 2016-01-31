@@ -223,13 +223,13 @@ package body Ada.Streams.Unbounded_Storage_IO is
    --  implementation
 
    procedure Reset (Object : in out Buffer_Type) is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       S.Index := 1;
    end Reset;
 
    function Size (Object : Buffer_Type) return Stream_Element_Count is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       return S.Last;
    end Size;
@@ -238,7 +238,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Object : in out Buffer_Type;
       Size : Stream_Element_Count)
    is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       Set_Size (S.all, Size);
       if S.Index > Size + 1 then
@@ -247,7 +247,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
    end Set_Size;
 
    function Capacity (Object : Buffer_Type) return Stream_Element_Count is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       return S.Data.Capacity;
    end Capacity;
@@ -256,7 +256,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Object : in out Buffer_Type;
       Capacity : Stream_Element_Count)
    is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
       New_Capacity : constant Stream_Element_Count :=
          Stream_Element_Offset'Max (Capacity, S.Last);
    begin
@@ -266,7 +266,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
    function Storage_Address (Object : aliased in out Buffer_Type)
       return System.Address
    is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       Unique (S.all);
       return S.Data.Storage;
@@ -275,17 +275,15 @@ package body Ada.Streams.Unbounded_Storage_IO is
    function Storage_Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count
    is
-      S : constant not null Stream_Access := Stream (Object);
+      S : constant not null Stream_Access := Controlled.Stream (Object);
    begin
       return System.Storage_Elements.Storage_Count (S.Last);
    end Storage_Size;
 
    function Stream (Object : Buffer_Type)
-      return not null access Root_Stream_Type'Class
-   is
-      S : constant not null Stream_Access := Stream (Object);
+      return not null access Root_Stream_Type'Class is
    begin
-      return S;
+      return Controlled.Stream (Object);
    end Stream;
 
    overriding procedure Read (
@@ -361,9 +359,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
 
    package body Controlled is
 
-      function Stream (Object : Buffer_Type) return not null Stream_Access is
+      function Stream (Object : Unbounded_Storage_IO.Buffer_Type)
+         return not null Stream_Access is
       begin
-         return Object.Stream;
+         return Buffer_Type (Object).Stream;
       end Stream;
 
       overriding procedure Initialize (Object : in out Buffer_Type) is

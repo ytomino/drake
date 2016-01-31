@@ -55,7 +55,8 @@ private
 
       function Create (Node : Node_Access) return Cursor;
 
-      function Reference (Position : Cursor) return Node_Access;
+      function Reference (Position : Forward_Iterators.Cursor)
+         return Node_Access;
       pragma Inline (Reference);
 
    private

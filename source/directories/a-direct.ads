@@ -349,7 +349,7 @@ private
 
       type Directory_Entry_Type is limited private;
 
-      function Reference (Object : Directory_Entry_Type)
+      function Reference (Object : Directories.Directory_Entry_Type)
          return not null access Non_Controlled_Directory_Entry_Type;
       pragma Inline (Reference);
 

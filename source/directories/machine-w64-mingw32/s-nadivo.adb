@@ -227,10 +227,10 @@ package body System.Native_Directories.Volumes is
 
    package body Controlled is
 
-      function Reference (Object : File_System)
+      function Reference (Object : Volumes.File_System)
          return not null access Non_Controlled_File_System is
       begin
-         return Object.Data'Unrestricted_Access;
+         return File_System (Object).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out File_System) is

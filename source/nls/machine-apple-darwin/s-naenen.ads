@@ -107,11 +107,13 @@ package System.Native_Environment_Encoding is
    end record;
    pragma Suppress_Initialization (Non_Controlled_Converter);
 
+   type Converter;
+
    package Controlled is
 
       type Converter is limited private;
 
-      function Reference (Object : Converter)
+      function Reference (Object : Native_Environment_Encoding.Converter)
          return not null access Non_Controlled_Converter;
       pragma Inline (Reference);
 

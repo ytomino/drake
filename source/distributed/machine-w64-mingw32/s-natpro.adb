@@ -34,7 +34,7 @@ package body System.Native_Processes is
       Status : out Ada.Command_Line.Exit_Status)
    is
       Handle : C.winnt.HANDLE
-         renames Reference (Child).all;
+         renames Controlled.Reference (Child).all;
    begin
       case C.winbase.WaitForSingleObject (Handle, Milliseconds) is
          when C.winbase.WAIT_OBJECT_0 =>
@@ -67,8 +67,10 @@ package body System.Native_Processes is
    --  implementation
 
    function Do_Is_Open (Child : Process) return Boolean is
+      Handle : C.winnt.HANDLE
+         renames Controlled.Reference (Child).all;
    begin
-      return Reference (Child).all /= C.winbase.INVALID_HANDLE_VALUE;
+      return Handle /= C.winbase.INVALID_HANDLE_VALUE;
    end Do_Is_Open;
 
    procedure Create (
@@ -173,7 +175,12 @@ package body System.Native_Processes is
          if C.winbase.CloseHandle (Process_Info.hThread) = 0 then
             Raise_Exception (Use_Error'Identity);
          end if;
-         Reference (Child).all := Process_Info.hProcess;
+         declare
+            Handle : C.winnt.HANDLE
+               renames Controlled.Reference (Child).all;
+         begin
+            Handle := Process_Info.hProcess;
+         end;
       end if;
    end Create;
 
@@ -202,7 +209,8 @@ package body System.Native_Processes is
 
    procedure Do_Forced_Abort_Process (Child : in out Process) is
       Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
-      Handle : constant C.winnt.HANDLE := Reference (Child).all;
+      Handle : C.winnt.HANDLE
+         renames Controlled.Reference (Child).all;
    begin
       if C.winbase.TerminateProcess (Handle, Code) = 0 then
          declare
@@ -284,10 +292,10 @@ package body System.Native_Processes is
 
    package body Controlled is
 
-      function Reference (Object : Process)
+      function Reference (Object : Native_Processes.Process)
          return not null access C.winnt.HANDLE is
       begin
-         return Object.Handle'Unrestricted_Access;
+         return Process (Object).Handle'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Process) is

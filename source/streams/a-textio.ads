@@ -610,7 +610,7 @@ private
       pragma Inline (Reference_Current_Output);
       pragma Inline (Reference_Current_Error);
 
-      function Reference (File : File_Type)
+      function Reference (File : Text_IO.File_Type)
          return not null access Naked_Text_IO.Non_Controlled_File_Type;
       pragma Inline (Reference);
 

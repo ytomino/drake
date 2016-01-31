@@ -90,7 +90,8 @@ private
 
       type Buffer_Type is private;
 
-      function Stream (Object : Buffer_Type) return not null Stream_Access;
+      function Stream (Object : Unbounded_Storage_IO.Buffer_Type)
+         return not null Stream_Access;
       pragma Inline (Stream);
 
    private
