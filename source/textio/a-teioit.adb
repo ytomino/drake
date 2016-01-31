@@ -1,10 +1,30 @@
 package body Ada.Text_IO.Iterators is
 
+   function Unchecked_Next (Object : Line_Iterator) return Line_Cursor;
+   function Unchecked_Next (Object : Line_Iterator) return Line_Cursor is
+   begin
+      if End_Of_File (Object.Lines.File.all) then
+         return 0; -- No_Element
+      else
+         Free (Object.Lines.Item);
+         Object.Lines.Count := Object.Lines.Count + 1;
+         Overloaded_Get_Line (
+            Object.Lines.File.all,
+            Object.Lines.Item); -- allocation
+         return Line_Cursor (Object.Lines.Count);
+      end if;
+   end Unchecked_Next;
+
    --  implementation
 
    function Lines (
       File : File_Type)
-      return Lines_Type is
+      return Lines_Type
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      pragma Check (Dynamic_Predicate,
+         Check => Mode (File) = In_File or else raise Mode_Error);
    begin
       return (Finalization.Limited_Controlled with
          File => File'Unrestricted_Access,
@@ -47,17 +67,9 @@ package body Ada.Text_IO.Iterators is
    end Finalize;
 
    overriding function First (Object : Line_Iterator) return Line_Cursor is
+      pragma Check (Pre, Object.Lines.Count = 0 or else raise Status_Error);
    begin
-      if End_Of_File (Object.Lines.File.all) then
-         return 0; -- No_Element
-      else
-         Free (Object.Lines.Item);
-         Object.Lines.Count := Object.Lines.Count + 1;
-         Overloaded_Get_Line (
-            Object.Lines.File.all,
-            Object.Lines.Item); -- allocation
-         return Line_Cursor (Object.Lines.Count);
-      end if;
+      return Unchecked_Next (Object);
    end First;
 
    overriding function Next (Object : Line_Iterator; Position : Line_Cursor)
@@ -67,7 +79,7 @@ package body Ada.Text_IO.Iterators is
          Check => Integer (Position) = Object.Lines.Count
             or else raise Status_Error);
    begin
-      return First (Object);
+      return Unchecked_Next (Object);
    end Next;
 
 end Ada.Text_IO.Iterators;
