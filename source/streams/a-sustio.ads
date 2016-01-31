@@ -63,10 +63,10 @@ private
       Capacity => 0,
       Storage => System.Null_Address);
 
+   type Non_Controlled_Buffer_Type;
+
    type Stream_Type is limited new Seekable_Stream_Type with record
-      Data : aliased not null Data_Access := Empty_Data'Unrestricted_Access;
-      Last : Stream_Element_Offset := 0;
-      Index : Stream_Element_Offset := 1;
+      Buffer : not null access Non_Controlled_Buffer_Type;
    end record;
 
    overriding procedure Read (
@@ -86,21 +86,32 @@ private
 
    type Stream_Access is access Stream_Type;
 
+   type Non_Controlled_Buffer_Type is record
+      Data : aliased not null Data_Access;
+      Last : Stream_Element_Offset;
+      Index : Stream_Element_Offset;
+      Stream : Stream_Access;
+   end record;
+   pragma Suppress_Initialization (Non_Controlled_Buffer_Type);
+
    package Controlled is
 
       type Buffer_Type is private;
 
-      function Stream (Object : Unbounded_Storage_IO.Buffer_Type)
-         return not null Stream_Access;
-      pragma Inline (Stream);
+      function Reference (Object : Unbounded_Storage_IO.Buffer_Type)
+         return not null access Non_Controlled_Buffer_Type;
+      pragma Inline (Reference);
 
    private
 
       type Buffer_Type is new Finalization.Controlled with record
-         Stream : Stream_Access;
+         Data : aliased Non_Controlled_Buffer_Type := (
+            Data => Data_Access'(Empty_Data'Unrestricted_Access),
+            Last => 0,
+            Index => 1,
+            Stream => null);
       end record;
 
-      overriding procedure Initialize (Object : in out Buffer_Type);
       overriding procedure Finalize (Object : in out Buffer_Type);
       overriding procedure Adjust (Object : in out Buffer_Type);
 
