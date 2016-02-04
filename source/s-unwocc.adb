@@ -295,8 +295,7 @@ package body System.Unwind.Occurrences is
       Put (X.Msg (1 .. X.Msg_Length), Params);
       New_Line (Params);
       if X.Pid /= 0 then
-         --  output X.Pid is unimplemented
-         null;
+         null; -- output X.Pid is unimplemented
       end if;
       if X.Num_Tracebacks > 0
          and then Backtrace_Information'Address /= Null_Address

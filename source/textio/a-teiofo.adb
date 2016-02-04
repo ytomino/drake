@@ -30,12 +30,12 @@ package body Ada.Text_IO.Formatting is
    is
       Line : constant Count := Line_Length (File); -- checking the predicate
    begin
-      if Line = 0 then
-         null;
-      elsif Count (Width) > Line then
-         Raise_Exception (Layout_Error'Identity);
-      elsif Col (File) + Count (Width) - 1 > Line then
-         New_Line (File);
+      if Line > 0 then
+         if Count (Width) > Line then
+            Raise_Exception (Layout_Error'Identity);
+         elsif Col (File) + Count (Width) - 1 > Line then
+            New_Line (File);
+         end if;
       end if;
    end Adjust;
 

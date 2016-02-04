@@ -530,7 +530,7 @@ package body Ada.Hierarchical_File_Names is
                   if Is_Current_Directory_Name (
                      From (I_F_First .. I_F_Last))
                   then
-                     null;
+                     null; -- skip "./" of From
                   elsif Is_Parent_Directory_Name (
                      From (I_F_First .. I_F_Last))
                   then

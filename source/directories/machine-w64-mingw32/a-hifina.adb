@@ -320,9 +320,7 @@ package body Ada.Hierarchical_File_Names is
       Last : out Natural) is
    begin
       Containing_Root_Directory (Name, First, Last);
-      if First <= Last then -- full
-         null;
-      else -- relative
+      if First > Last then -- relative
          Last := First - 1;
          for I in Name'Range loop
             if Is_Path_Delimiter (Name (I)) then
@@ -586,7 +584,7 @@ package body Ada.Hierarchical_File_Names is
                   if Is_Current_Directory_Name (
                      From (I_F_First .. I_F_Last))
                   then
-                     null;
+                     null; -- skip "./" of From
                   elsif Is_Parent_Directory_Name (
                      From (I_F_First .. I_F_Last))
                   then

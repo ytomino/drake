@@ -29,11 +29,10 @@ package body System.Unwind.Handling is
       Machine_Occurrence : Representation.Machine_Occurrence_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      if Machine_Occurrence = null then
-         pragma Check (Trace, Ada.Debug.Put (
-            "Machine_Occurrence = null, reraised"));
-         null;
-      else
+      pragma Check (Trace,
+         Check => Machine_Occurrence = null
+            or else Ada.Debug.Put ("Machine_Occurrence = null, reraised"));
+      if Machine_Occurrence /= null then
          Occurrences.Free (Machine_Occurrence);
          Occurrences.Set_Current_Machine_Occurrence (null);
          --  in Win32 SEH, the chain may be rollback, so restore it

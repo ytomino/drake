@@ -283,7 +283,7 @@ package body System.Native_Environment_Encoding is
          when C.icucore.unicode.utypes.U_ILLEGAL_CHAR_FOUND =>
             Status := Illegal_Sequence;
          when C.icucore.unicode.utypes.U_BUFFER_OVERFLOW_ERROR =>
-            null;
+            null; -- not finished
          when others =>
             Raise_Exception (Use_Error'Identity);
       end case;
