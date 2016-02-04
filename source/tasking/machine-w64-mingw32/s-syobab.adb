@@ -139,17 +139,34 @@ package body System.Synchronous_Objects.Abortable is
    begin
       if Attr /= null and then not Attr.Blocked then
          declare
-            Added : Counter;
+            Order : Natural;
          begin
-            Added := sync_add_and_fetch (Object.Blocked'Access, 1);
-            Notified := Added = 1;
-            if Added = Object.Release_Threshold then
-               Object.Blocked := 0;
+            Enter (Object.Mutex);
+            Object.Blocked := Object.Blocked + 1;
+            Order := Object.Blocked rem Object.Release_Threshold;
+            Notified := Order = 1;
+            if Order = 0 then
                Set (Object.Event);
                Aborted := Tasks.Is_Aborted;
+               Object.Unblocked := Object.Unblocked + 1;
             else
-               Wait (Object.Event, Aborted);
+               loop
+                  Leave (Object.Mutex);
+                  Wait (Object.Event, Aborted);
+                  Enter (Object.Mutex);
+                  exit when Object.Blocked >= Object.Release_Threshold
+                     or else Aborted;
+               end loop;
+               Object.Unblocked := Object.Unblocked + 1;
             end if;
+            if Object.Unblocked = Object.Release_Threshold then
+               Object.Blocked := Object.Blocked - Object.Release_Threshold;
+               Object.Unblocked := 0;
+               if Object.Blocked < Object.Release_Threshold then
+                  Reset (Object.Event);
+               end if;
+            end if;
+            Leave (Object.Mutex);
          end;
       else
          Wait (Object, Notified);

@@ -326,14 +326,17 @@ package body System.Synchronous_Objects is
       Object : in out Barrier;
       Release_Threshold : Natural) is
    begin
-      Object.Release_Threshold := Counter (Release_Threshold);
+      Object.Release_Threshold := Release_Threshold;
       Object.Blocked := 0;
+      Object.Unblocked := 0;
+      Initialize (Object.Mutex);
       Initialize (Object.Event, Manual => True);
    end Initialize;
 
    procedure Finalize (
       Object : in out Barrier) is
    begin
+      Finalize (Object.Mutex);
       Finalize (Object.Event);
    end Finalize;
 
@@ -341,16 +344,32 @@ package body System.Synchronous_Objects is
       Object : in out Barrier;
       Notified : out Boolean)
    is
-      Added : Counter;
+      Order : Natural;
    begin
-      Added := sync_add_and_fetch (Object.Blocked'Access, 1);
-      Notified := Added = 1;
-      if Added = Object.Release_Threshold then
-         Object.Blocked := 0;
+      Enter (Object.Mutex);
+      Object.Blocked := Object.Blocked + 1;
+      Order := Object.Blocked rem Object.Release_Threshold;
+      Notified := Order = 1;
+      if Order = 0 then
          Set (Object.Event);
+         Object.Unblocked := Object.Unblocked + 1;
       else
-         Wait (Object.Event);
+         loop
+            Leave (Object.Mutex);
+            Wait (Object.Event);
+            Enter (Object.Mutex);
+            exit when Object.Blocked >= Object.Release_Threshold;
+         end loop;
+         Object.Unblocked := Object.Unblocked + 1;
       end if;
+      if Object.Unblocked = Object.Release_Threshold then
+         Object.Blocked := Object.Blocked - Object.Release_Threshold;
+         Object.Unblocked := 0;
+         if Object.Blocked < Object.Release_Threshold then
+            Reset (Object.Event);
+         end if;
+      end if;
+      Leave (Object.Mutex);
    end Wait;
 
    --  multi-read/exclusive-write lock for protected

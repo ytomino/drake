@@ -372,6 +372,7 @@ package body System.Synchronous_Objects is
       Initialize (Object.Condition_Variable);
       Object.Release_Threshold := Release_Threshold;
       Object.Blocked := 0;
+      Object.Unblocked := 0;
    end Initialize;
 
    procedure Finalize (Object : in out Barrier) is
@@ -382,18 +383,27 @@ package body System.Synchronous_Objects is
 
    procedure Wait (
       Object : in out Barrier;
-      Notified : out Boolean) is
+      Notified : out Boolean)
+   is
+      Order : Natural;
    begin
       Enter (Object.Mutex);
-      Notified := Object.Blocked = 0;
       Object.Blocked := Object.Blocked + 1;
-      if Object.Blocked = Object.Release_Threshold then
+      Order := Object.Blocked rem Object.Release_Threshold;
+      Notified := Order = 1;
+      if Order = 0 then
          Notify_All (Object.Condition_Variable);
-         Object.Blocked := 0;
+         Object.Unblocked := Object.Unblocked + 1;
       else
-         Wait (
-            Object.Condition_Variable,
-            Object.Mutex);
+         loop
+            Wait (Object.Condition_Variable, Object.Mutex);
+            exit when Object.Blocked >= Object.Release_Threshold;
+         end loop;
+         Object.Unblocked := Object.Unblocked + 1;
+      end if;
+      if Object.Unblocked = Object.Release_Threshold then
+         Object.Blocked := Object.Blocked - Object.Release_Threshold;
+         Object.Unblocked := 0;
       end if;
       Leave (Object.Mutex);
    end Wait;
