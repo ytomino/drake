@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
@@ -367,10 +368,12 @@ package body System.Native_Environment_Encoding is
       end Reference;
 
       overriding procedure Finalize (Object : in out Converter) is
+         R : C.signed_int;
       begin
-         if C.iconv.iconv_close (Object.Data.iconv) /= 0 then
-            null; -- raise Use_Error;
-         end if;
+         R := C.iconv.iconv_close (Object.Data.iconv);
+         pragma Check (Debug,
+            Check => not (R < 0)
+               or else Debug.Runtime_Error ("iconv_close failed"));
       end Finalize;
 
    end Controlled;

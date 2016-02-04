@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with C.winbase;
 with C.windef;
 with C.winerror;
@@ -15,10 +16,11 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Mutex) is
+      R : C.windef.WINBOOL;
    begin
-      if C.winbase.CloseHandle (Object.Handle) = 0 then
-         null; -- ignore
-      end if;
+      R := C.winbase.CloseHandle (Object.Handle);
+      pragma Check (Debug,
+         Check => R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
    end Finalize;
 
    procedure Enter (Object : in out Mutex) is
@@ -266,10 +268,11 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Event) is
+      R : C.windef.WINBOOL;
    begin
-      if C.winbase.CloseHandle (Object.Handle) = 0 then
-         null; -- ignore
-      end if;
+      R := C.winbase.CloseHandle (Object.Handle);
+      pragma Check (Debug,
+         Check => R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
    end Finalize;
 
    function Get (Object : Event) return Boolean is

@@ -1,10 +1,14 @@
 with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with System.Native_Time;
 with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.signed_long;
+   use type C.pthread.pthread_cond_t;
+   use type C.pthread.pthread_mutex_t;
+   use type C.pthread.pthread_rwlock_t;
 
    --  mutex
 
@@ -14,10 +18,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Mutex) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_mutex_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_mutex_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_MUTEX_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_mutex_destroy failed"));
    end Finalize;
 
    procedure Enter (Object : in out Mutex) is
@@ -42,10 +51,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Condition_Variable) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_cond_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_cond_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_COND_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_cond_destroy failed"));
    end Finalize;
 
    procedure Notify_One (Object : in out Condition_Variable) is
@@ -416,10 +430,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out RW_Lock) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_rwlock_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_rwlock_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_RWLOCK_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_rwlock_destroy failed"));
    end Finalize;
 
    procedure Enter_Reading (Object : in out RW_Lock) is

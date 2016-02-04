@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with System.Native_Time;
 with System.Tasks;
 with C.pthread;
@@ -134,9 +135,15 @@ package body System.Synchronous_Objects.Abortable.Delays is
                   Finalize (CV);
                end if;
             end if;
-            if C.pthread.pthread_condattr_destroy (condattr'Access) < 0 then
-               null; -- error
-            end if;
+            declare
+               R : C.signed_int;
+            begin
+               R := C.pthread.pthread_condattr_destroy (condattr'Access);
+               pragma Check (Debug,
+                  Check => R = 0
+                     or else Debug.Runtime_Error (
+                        "pthread_condattr_destroy failed"));
+            end;
          end if;
          Finalize (M);
       end;

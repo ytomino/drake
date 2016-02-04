@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
+with System.Debug;
 with System.Formatting;
 with System.Once;
 with System.Termination;
@@ -20,10 +21,12 @@ package body System.Native_IO.Sockets is
 
    procedure Finalize;
    procedure Finalize is
+      R : C.windef.WINBOOL;
    begin
-      if C.winsock2.WSACleanup /= 0 then
-         null; -- ignore error
-      end if;
+      R := C.winsock2.WSACleanup;
+      pragma Check (Debug,
+         Check => R = 0
+            or else Debug.Runtime_Error ("WSACleanup failed"));
    end Finalize;
 
    procedure Initialize;

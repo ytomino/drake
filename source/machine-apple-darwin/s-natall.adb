@@ -1,19 +1,12 @@
 pragma Check_Policy (Trace => Ignore);
 with Ada;
+with System.Debug;
 with C.stdlib;
 with C.sys.mman;
 with C.unistd;
 package body System.Native_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
-
-   function Runtime_Error (
-      S : String;
-      Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
-      return Boolean
-      with Import, Convention => Ada, External_Name => "__drake_runtime_error";
-   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    --  implementation
 
@@ -98,7 +91,7 @@ package body System.Native_Allocators is
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       R := C.sys.mman.munmap (C.void_ptr (Storage_Address), C.size_t (Size));
       pragma Check (Debug,
-         Check => not (R < 0) or else Runtime_Error ("failed to unmap"));
+         Check => not (R < 0) or else Debug.Runtime_Error ("munmap failed"));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 

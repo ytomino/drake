@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
+with System.Debug;
 with System.Native_IO;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -301,9 +302,14 @@ package body System.Native_Processes is
       overriding procedure Finalize (Object : in out Process) is
       begin
          if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-            if C.winbase.CloseHandle (Object.Handle) = 0 then
-               null; -- raise Use_Error;
-            end if;
+            declare
+               R : C.windef.WINBOOL;
+            begin
+               R := C.winbase.CloseHandle (Object.Handle);
+               pragma Check (Debug,
+                  Check => R /= 0
+                     or else Debug.Runtime_Error ("CloseHandle failed"));
+            end;
          end if;
       end Finalize;
 

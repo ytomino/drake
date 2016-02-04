@@ -1,5 +1,6 @@
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
+with System.Debug;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
 with C.string;
@@ -257,12 +258,12 @@ package body System.Native_Environment_Variables is
          new Address_To_Named_Access_Conversions (
             C.winnt.WCHAR,
             C.winnt.LPWCH);
+      R : C.windef.WINBOOL;
    begin
-      if C.winbase.FreeEnvironmentStrings (
-         LPWCH_Conv.To_Pointer (Block)) = 0
-      then
-         null; -- ignore
-      end if;
+      R := C.winbase.FreeEnvironmentStrings (LPWCH_Conv.To_Pointer (Block));
+      pragma Check (Debug,
+         Check => R /= 0
+            or else Debug.Runtime_Error ("FreeEnvironmentStrings failed"));
    end Release_Block;
 
    function First (Block : Address) return Cursor is
