@@ -258,7 +258,7 @@ package body Ada.Hierarchical_File_Names is
    function Is_Full_Name (Name : String) return Boolean is
    begin
       return Name'First <= Name'Last
-         and then Name (Name'First) = '/';
+         and then Is_Path_Delimiter (Name (Name'First));
    end Is_Full_Name;
 
    function Is_Relative_Name (Name : String) return Boolean is
