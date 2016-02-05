@@ -20,6 +20,22 @@ package body Ada.Hierarchical_File_Names is
       end return;
    end Parent_Directory_Name;
 
+   procedure Containing_Root_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
+   procedure Containing_Root_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural) is
+   begin
+      First := Name'First;
+      Last := First - 1;
+      while Last < Name'Last and then Is_Path_Delimiter (Name (Last + 1)) loop
+         Last := Last + 1;
+      end loop;
+   end Containing_Root_Directory;
+
    --  path delimiter
 
    function Is_Path_Delimiter (Item : Character) return Boolean is
@@ -50,18 +66,6 @@ package body Ada.Hierarchical_File_Names is
          Last := Last - 1;
       end loop;
    end Exclude_Trailing_Path_Delimiter;
-
-   procedure Containing_Root_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
-   begin
-      First := Name'First;
-      Last := First - 1;
-      while Last < Name'Last and then Is_Path_Delimiter (Name (Last + 1)) loop
-         Last := Last + 1;
-      end loop;
-   end Containing_Root_Directory;
 
    --  operations in Ada.Directories
 

@@ -24,11 +24,6 @@ package Ada.Hierarchical_File_Names is
       S : String;
       Last : in out Natural);
 
-   procedure Containing_Root_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural);
-
    --  operations in Ada.Directories
 
    function Simple_Name (Name : String) return String;

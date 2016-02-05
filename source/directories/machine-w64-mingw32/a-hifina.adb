@@ -22,35 +22,10 @@ package body Ada.Hierarchical_File_Names is
       end return;
    end Parent_Directory_Name;
 
-   --  path delimiter
-
-   function Is_Path_Delimiter (Item : Character) return Boolean is
-   begin
-      return Item = '\' or else Item = '/';
-   end Is_Path_Delimiter;
-
-   procedure Include_Trailing_Path_Delimiter (
-      S : in out String;
-      Last : in out Natural;
-      Path_Delimiter : Character := Default_Path_Delimiter) is
-   begin
-      if not Is_Path_Delimiter (S (Last)) then
-         Last := Last + 1;
-         S (Last) := Path_Delimiter;
-      end if;
-   end Include_Trailing_Path_Delimiter;
-
-   procedure Exclude_Trailing_Path_Delimiter (
-      S : String;
-      Last : in out Natural) is
-   begin
-      while Last > S'First -- no removing root path delimiter
-         and then Is_Path_Delimiter (S (Last))
-      loop
-         Last := Last - 1;
-      end loop;
-   end Exclude_Trailing_Path_Delimiter;
-
+   procedure Containing_Root_Directory (
+      Name : String;
+      First : out Positive;
+      Last : out Natural);
    procedure Containing_Root_Directory (
       Name : String;
       First : out Positive;
@@ -98,6 +73,35 @@ package body Ada.Hierarchical_File_Names is
          Last := First - 1; -- relative
       end if;
    end Containing_Root_Directory;
+
+   --  path delimiter
+
+   function Is_Path_Delimiter (Item : Character) return Boolean is
+   begin
+      return Item = '\' or else Item = '/';
+   end Is_Path_Delimiter;
+
+   procedure Include_Trailing_Path_Delimiter (
+      S : in out String;
+      Last : in out Natural;
+      Path_Delimiter : Character := Default_Path_Delimiter) is
+   begin
+      if not Is_Path_Delimiter (S (Last)) then
+         Last := Last + 1;
+         S (Last) := Path_Delimiter;
+      end if;
+   end Include_Trailing_Path_Delimiter;
+
+   procedure Exclude_Trailing_Path_Delimiter (
+      S : String;
+      Last : in out Natural) is
+   begin
+      while Last > S'First -- no removing root path delimiter
+         and then Is_Path_Delimiter (S (Last))
+      loop
+         Last := Last - 1;
+      end loop;
+   end Exclude_Trailing_Path_Delimiter;
 
    --  operations in Ada.Directories
 
