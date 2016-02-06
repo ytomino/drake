@@ -74,6 +74,48 @@ package body Ada.Hierarchical_File_Names is
       end if;
    end Containing_Root_Directory;
 
+   procedure Exclude_Trailing_Directories (
+      Directory : String;
+      Last : in out Natural;
+      Level : in out Natural);
+   procedure Exclude_Trailing_Directories (
+      Directory : String;
+      Last : in out Natural;
+      Level : in out Natural)
+   is
+      R_First : Positive;
+      R_Last : Natural;
+   begin
+      Exclude_Trailing_Path_Delimiter (Directory, Last);
+      Containing_Root_Directory (
+         Directory (Directory'First .. Last),
+         First => R_First,
+         Last => R_Last); -- First - 1 if not Is_Full_Name (...)
+      while Last > R_Last loop
+         declare
+            S_First : Positive;
+            S_Last : Natural;
+         begin
+            Simple_Name (
+               Directory (Directory'First .. Last),
+               First => S_First,
+               Last => S_Last);
+            if Is_Current_Directory_Name (Directory (S_First .. S_Last)) then
+               null; -- skip "./"
+            elsif Is_Parent_Directory_Name (Directory (S_First .. S_Last)) then
+               Level := Level + 1;
+            elsif Level = 0 then
+               exit;
+            else
+               Level := Level - 1;
+            end if;
+            --  Containing_Directory (Directory (First .. Last), ...)
+            Last := S_First - 1;
+            Exclude_Trailing_Path_Delimiter (Directory, Last);
+         end;
+      end loop;
+   end Exclude_Trailing_Directories;
+
    --  path delimiter
 
    function Is_Path_Delimiter (Item : Character) return Boolean is
@@ -366,8 +408,7 @@ package body Ada.Hierarchical_File_Names is
       return String
    is
       Parent_Count : Natural := 0;
-      C_D_First : Positive; -- Containing_Directory (Directory)
-      C_D_Last : Natural;
+      C_D_Last : Natural; -- Containing_Directory (Directory)
       R_R_First : Positive; -- Relative_Name (Relative_Name)
       R_R_Last : Natural;
    begin
@@ -402,50 +443,15 @@ package body Ada.Hierarchical_File_Names is
             end if;
          end;
       end loop;
-      C_D_First := Directory'First;
       C_D_Last := Directory'Last;
-      while C_D_First <= C_D_Last loop
-         declare
-            S_D_First : Positive; -- Simple_Name (Directory)
-            S_D_Last : Natural;
-         begin
-            Simple_Name (
-               Directory (C_D_First .. C_D_Last),
-               First => S_D_First,
-               Last => S_D_Last);
-            if Is_Current_Directory_Name (
-               Directory (S_D_First .. S_D_Last))
-            then
-               Containing_Directory (
-                  Directory (C_D_First .. C_D_Last),
-                  First => C_D_First,
-                  Last => C_D_Last);
-            elsif Is_Parent_Directory_Name (
-               Directory (S_D_First .. S_D_Last))
-            then
-               Parent_Count := Parent_Count + 1;
-               Containing_Directory (
-                  Directory (C_D_First .. C_D_Last),
-                  First => C_D_First,
-                  Last => C_D_Last);
-            elsif Parent_Count > 0
-               and then not Is_Root_Directory_Name (
-                  Directory (C_D_First .. C_D_Last))
-            then
-               Parent_Count := Parent_Count - 1;
-               Containing_Directory (
-                  Directory (C_D_First .. C_D_Last),
-                  First => C_D_First,
-                  Last => C_D_Last);
-            else
-               exit;
-            end if;
-         end;
-      end loop;
+      Exclude_Trailing_Directories (
+         Directory,
+         Last => C_D_Last,
+         Level => Parent_Count);
       if Parent_Count > 0 then
          return Unfolded_Compose (
             Unfolded_Compose (
-               Directory (C_D_First .. C_D_Last),
+               Directory (Directory'First .. C_D_Last),
                Parent_Directory_Name (
                   Parent_Count,
                   Path_Delimiter => Path_Delimiter),
@@ -455,7 +461,7 @@ package body Ada.Hierarchical_File_Names is
             Path_Delimiter => Path_Delimiter);
       else
          return Unfolded_Compose (
-            Directory (C_D_First .. C_D_Last),
+            Directory (Directory'First .. C_D_Last),
             Relative_Name (R_R_First .. R_R_Last),
             Extension,
             Path_Delimiter => Path_Delimiter);
@@ -635,5 +641,57 @@ package body Ada.Hierarchical_File_Names is
          end;
       end if;
    end Relative_Name;
+
+   function Parent_Directory (
+      Directory : String;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String
+   is
+      First : Positive;
+      Last : Natural;
+      Parent_Count : Natural;
+   begin
+      Parent_Directory (
+         Directory,
+         First => First,
+         Last => Last,
+         Parent_Count => Parent_Count);
+      if Parent_Count = 0 then
+         if First <= Last then
+            return Directory (First .. Last);
+         else
+            return ".";
+         end if;
+      else
+         if First <= Last then -- Is_Full_Name (Directory)
+            --  raise Use_Error ?
+            return Unfolded_Compose (
+               Directory (First .. Last),
+               Parent_Directory_Name (
+                  Parent_Count,
+                  Path_Delimiter => Path_Delimiter),
+               Path_Delimiter => Path_Delimiter);
+         else
+            return Parent_Directory_Name (
+               Parent_Count,
+               Path_Delimiter => Path_Delimiter);
+         end if;
+      end if;
+   end Parent_Directory;
+
+   procedure Parent_Directory (
+      Directory : String;
+      First : out Positive;
+      Last : out Natural;
+      Parent_Count : out Natural) is
+   begin
+      First := Directory'First;
+      Last := Directory'Last;
+      Parent_Count := 1;
+      Exclude_Trailing_Directories (
+         Directory,
+         Last => Last,
+         Level => Parent_Count);
+   end Parent_Directory;
 
 end Ada.Hierarchical_File_Names;

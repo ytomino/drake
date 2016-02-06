@@ -65,6 +65,7 @@ begin
 	pragma Assert (AD.Compose ("", "", "") = "");
 	pragma Assert (AD.Compose ("", "../A") = "../A");
 	pragma Assert (AD.Compose ("/", "../A") = "/../A");
+	pragma Assert (AD.Compose ("./", "../A") = "./../A");
 	if Windows then
 		pragma Assert (AD.Compose ("A", "B", "C") = "A\B.C");
 		pragma Assert (AD.Compose ("A", "../B") = "A\../B");
@@ -77,6 +78,8 @@ begin
 		null;
 	end if;
 	pragma Assert (ADH.Compose ("", "", "") = "");
+	pragma Assert (ADH.Compose (".", "A") = "A");
+	pragma Assert (ADH.Compose ("./", "A") = "A");
 	pragma Assert (ADH.Compose ("A", "../B") = "B");
 	if Windows then
 		pragma Assert (ADH.Compose ("", "../A") = "..\A");
@@ -154,6 +157,26 @@ begin
 		pragma Assert (ADH.Relative_Name ("\\host\share\filename") = "filename");
 		pragma Assert (AH.Relative_Name ("C:\A", "D:\B") = "C:\A");
 	end if;
+	pragma Assert (AH.Parent_Directory ("A") = ".");
+	pragma Assert (AH.Parent_Directory ("A/") = ".");
+	pragma Assert (AH.Parent_Directory ("A/.") = ".");
+	pragma Assert (AH.Parent_Directory ("A/B") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/.") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/C/..") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/C/D/../..") = "A");
+	pragma Assert (AH.Parent_Directory ("") = "..");
+	pragma Assert (AH.Parent_Directory (".") = "..");
+	if Windows then
+		pragma Assert (AH.Parent_Directory ("..") = "..\..");
+		pragma Assert (AH.Parent_Directory ("./..") = "..\..");
+		null;
+	else
+		pragma Assert (AH.Parent_Directory ("..") = "../..");
+		pragma Assert (AH.Parent_Directory ("./..") = "../..");
+		null;
+	end if;
+	pragma Assert (AH.Parent_Directory ("/") = "/..");
 	declare
 		FS : Ada.Directories.Volumes.File_System :=
 			Ada.Directories.Volumes.Where ("/");

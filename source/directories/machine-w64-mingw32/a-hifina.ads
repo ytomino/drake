@@ -116,6 +116,25 @@ package Ada.Hierarchical_File_Names is
       Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
+   --  extended
+   --  This is a "folded" version of Containing_Directory if Directory /= "".
+   --    Otherwise, it returns ".." as the parent directory name.
+   --  For example: Parent_Directory ("A/B/.") = "A"
+   --    Parent_Directory ("A/B/C/..") = "A"
+   --    Parent_Directory (Name) = Compose (Name, "..")
+   function Parent_Directory (
+      Directory : String;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String;
+
+   --  extended
+   --  There is a procedure version.
+   procedure Parent_Directory (
+      Directory : String;
+      First : out Positive;
+      Last : out Natural;
+      Parent_Count : out Natural);
+
    --  exceptions
 
    Use_Error : exception
