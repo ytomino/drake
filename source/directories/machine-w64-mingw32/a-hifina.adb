@@ -22,23 +22,16 @@ package body Ada.Hierarchical_File_Names is
       end return;
    end Parent_Directory_Name;
 
-   procedure Containing_Root_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural);
-   procedure Containing_Root_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural) is
+   procedure Containing_Root_Directory (Name : String; Last : out Natural);
+   procedure Containing_Root_Directory (Name : String; Last : out Natural) is
    begin
-      First := Name'First;
-      if First > Name'Last then
-         Last := First - 1;
-      elsif Is_Path_Delimiter (Name (First)) then
-         if First < Name'Last
-            and then Is_Path_Delimiter (Name (First + 1))
+      if Name'First > Name'Last then
+         Last := Name'First - 1;
+      elsif Is_Path_Delimiter (Name (Name'First)) then
+         if Name'First < Name'Last
+            and then Is_Path_Delimiter (Name (Name'First + 1))
          then -- UNC \\HOST\SHARE\
-            Last := First + 1;
+            Last := Name'First + 1;
             loop -- skip host-name
                if Last = Name'Last then
                   return;
@@ -54,23 +47,23 @@ package body Ada.Hierarchical_File_Names is
                exit when Is_Path_Delimiter (Name (Last));
             end loop;
          else
-            Last := First; -- no drive letter
+            Last := Name'First; -- no drive letter
          end if;
-      elsif First < Name'Last
+      elsif Name'First < Name'Last
          and then (
-            Name (First) in 'A' .. 'Z'
-            or else Name (First) in 'a' .. 'z')
-         and then Name (First + 1) = ':'
+            Name (Name'First) in 'A' .. 'Z'
+            or else Name (Name'First) in 'a' .. 'z')
+         and then Name (Name'First + 1) = ':'
       then
-         if First + 2 <= Name'Last
-            and then Is_Path_Delimiter (Name (First + 2))
+         if Name'First + 2 <= Name'Last
+            and then Is_Path_Delimiter (Name (Name'First + 2))
          then
-            Last := First + 2; -- "C:\"
+            Last := Name'First + 2; -- "C:\"
          else
-            Last := First + 1; -- "C:"
+            Last := Name'First + 1; -- "C:"
          end if;
       else
-         Last := First - 1; -- relative
+         Last := Name'First - 1; -- relative
       end if;
    end Containing_Root_Directory;
 
@@ -83,13 +76,11 @@ package body Ada.Hierarchical_File_Names is
       Last : in out Natural;
       Level : in out Natural)
    is
-      R_First : Positive;
       R_Last : Natural;
    begin
       Exclude_Trailing_Path_Delimiter (Directory, Last);
       Containing_Root_Directory (
          Directory (Directory'First .. Last),
-         First => R_First,
          Last => R_Last); -- First - 1 if not Is_Full_Name (...)
       while Last > R_Last loop
          declare
@@ -314,11 +305,10 @@ package body Ada.Hierarchical_File_Names is
    end Is_Simple_Name;
 
    function Is_Root_Directory_Name (Name : String) return Boolean is
-      First : Positive;
       Last : Natural;
    begin
-      Containing_Root_Directory (Name, First => First, Last => Last);
-      return First <= Last and then Last = Name'Last;
+      Containing_Root_Directory (Name, Last => Last);
+      return Name'First <= Last and then Last = Name'Last;
    end Is_Root_Directory_Name;
 
    function Is_Parent_Directory_Name (Name : String) return Boolean is
@@ -332,11 +322,10 @@ package body Ada.Hierarchical_File_Names is
    end Is_Current_Directory_Name;
 
    function Is_Full_Name (Name : String) return Boolean is
-      First : Positive;
       Last : Natural;
    begin
-      Containing_Root_Directory (Name, First => First, Last => Last);
-      return First <= Last;
+      Containing_Root_Directory (Name, Last => Last);
+      return Name'First <= Last;
    end Is_Full_Name;
 
    function Is_Relative_Name (Name : String) return Boolean is
@@ -365,7 +354,8 @@ package body Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural) is
    begin
-      Containing_Root_Directory (Name, First => First, Last => Last);
+      Containing_Root_Directory (Name, Last => Last);
+      First := Name'First;
       if First > Last then -- relative
          Last := First - 1;
          for I in Name'Range loop
@@ -382,12 +372,11 @@ package body Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural)
    is
-      Root_First : Positive;
       Root_Last : Natural;
    begin
       Last := Name'Last;
-      Containing_Root_Directory (Name, First => Root_First, Last => Root_Last);
-      if Root_First <= Root_Last then -- full
+      Containing_Root_Directory (Name, Last => Root_Last);
+      if Name'First <= Root_Last then -- full
          First := Root_Last + 1; -- skip root
       else -- relative
          First := Name'First;
@@ -474,27 +463,17 @@ package body Ada.Hierarchical_File_Names is
       Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
-      Name_Root_First : Positive;
       Name_Root_Last : Natural;
-      From_Root_First : Positive;
       From_Root_Last : Natural;
    begin
-      Containing_Root_Directory (
-         Name,
-         First => Name_Root_First,
-         Last => Name_Root_Last);
-      Containing_Root_Directory (
-         From,
-         First => From_Root_First,
-         Last => From_Root_Last);
-      if (Name_Root_First <= Name_Root_Last) /=
-         (From_Root_First <= From_Root_Last)
-      then
+      Containing_Root_Directory (Name, Last => Name_Root_Last);
+      Containing_Root_Directory (From, Last => From_Root_Last);
+      if (Name'First <= Name_Root_Last) /= (From'First <= From_Root_Last) then
          --  Relative_Name ("A", "/B") or reverse
          Raise_Exception (Use_Error'Identity);
-      elsif Name_Root_First <= Name_Root_Last
-         and then Name (Name_Root_First .. Name_Root_Last) /=
-            From (From_Root_First .. From_Root_Last)
+      elsif Name'First <= Name_Root_Last
+         and then Name (Name'First .. Name_Root_Last) /=
+            From (From'First .. From_Root_Last)
       then
          --  full names and different drive letters
          return Name;
