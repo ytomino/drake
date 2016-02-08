@@ -67,6 +67,18 @@ package body Ada.Hierarchical_File_Names is
       end if;
    end Containing_Root_Directory;
 
+   procedure Raw_Simple_Name (Name : String; First : out Positive);
+   procedure Raw_Simple_Name (Name : String; First : out Positive) is
+   begin
+      First := Name'First;
+      for I in reverse Name'Range loop
+         if Is_Path_Delimiter (Name (I)) then
+            First := I + 1;
+            exit; -- found
+         end if;
+      end loop;
+   end Raw_Simple_Name;
+
    procedure Exclude_Trailing_Directories (
       Directory : String;
       Last : in out Natural;
@@ -76,24 +88,22 @@ package body Ada.Hierarchical_File_Names is
       Last : in out Natural;
       Level : in out Natural)
    is
-      R_Last : Natural;
+      Root_Last : Natural;
    begin
       Exclude_Trailing_Path_Delimiter (Directory, Last);
       Containing_Root_Directory (
          Directory (Directory'First .. Last),
-         Last => R_Last); -- First - 1 if not Is_Full_Name (...)
-      while Last > R_Last loop
+         Last => Root_Last); -- First - 1 if not Is_Full_Name (...)
+      while Last > Root_Last loop
          declare
             S_First : Positive;
-            S_Last : Natural;
          begin
-            Simple_Name (
-               Directory (Directory'First .. Last),
-               First => S_First,
-               Last => S_Last);
-            if Is_Current_Directory_Name (Directory (S_First .. S_Last)) then
+            Raw_Simple_Name (
+               Directory (Root_Last + 1 .. Last),
+               First => S_First);
+            if Is_Current_Directory_Name (Directory (S_First .. Last)) then
                null; -- skip "./"
-            elsif Is_Parent_Directory_Name (Directory (S_First .. S_Last)) then
+            elsif Is_Parent_Directory_Name (Directory (S_First .. Last)) then
                Level := Level + 1;
             elsif Level = 0 then
                exit;
@@ -180,26 +190,26 @@ package body Ada.Hierarchical_File_Names is
    procedure Simple_Name (
       Name : String;
       First : out Positive;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      Root_Last : Natural;
    begin
-      First := Name'First;
+      Containing_Root_Directory (Name, Last => Root_Last);
+      Raw_Simple_Name (Name (Root_Last + 1 .. Name'Last), First => First);
       Last := Name'Last;
-      for I in reverse Name'Range loop
-         if Is_Path_Delimiter (Name (I)) then
-            First := I + 1;
-            exit; -- found
-         end if;
-      end loop;
    end Simple_Name;
 
    procedure Containing_Directory (
       Name : String;
       First : out Positive;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      Root_Last : Natural;
    begin
+      Containing_Root_Directory (Name, Last => Root_Last);
       First := Name'First;
-      Last := Name'First - 1;
-      for I in reverse Name'Range loop
+      Last := Root_Last;
+      for I in reverse Last + 1 .. Name'Last loop
          if Is_Path_Delimiter (Name (I)) then
             if I > First then
                Last := I - 1;
@@ -214,18 +224,22 @@ package body Ada.Hierarchical_File_Names is
    procedure Extension (
       Name : String;
       First : out Positive;
-      Last : out Natural) is
+      Last : out Natural)
+   is
+      Root_Last : Natural;
    begin
+      Containing_Root_Directory (Name, Last => Root_Last);
       First := Name'Last + 1;
       Last := Name'Last;
-      for I in reverse Name'Range loop
+      for I in reverse
+         Root_Last + 2 .. -- >= Name'First + 1
+         Last
+      loop
          if Is_Path_Delimiter (Name (I)) then
             exit; -- not found
          elsif Name (I) = '.' then
             --  Extension (".DOTFILE") = ""
-            if I > Name'First
-               and then not Is_Path_Delimiter (Name (I - 1))
-            then
+            if not Is_Path_Delimiter (Name (I - 1)) then
                First := I + 1;
             end if;
             exit; -- found
