@@ -112,8 +112,8 @@ private
             Stream => null);
       end record;
 
-      overriding procedure Finalize (Object : in out Buffer_Type);
       overriding procedure Adjust (Object : in out Buffer_Type);
+      overriding procedure Finalize (Object : in out Buffer_Type);
 
       package Streaming is
 

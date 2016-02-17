@@ -380,6 +380,13 @@ package body Ada.Streams.Unbounded_Storage_IO is
          return Buffer_Type (Object).Data'Unrestricted_Access;
       end Reference;
 
+      overriding procedure Adjust (Object : in out Buffer_Type) is
+      begin
+         Object.Data.Stream := null;
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data.Data'Unchecked_Access));
+      end Adjust;
+
       overriding procedure Finalize (Object : in out Buffer_Type) is
       begin
          System.Reference_Counting.Clear (
@@ -387,13 +394,6 @@ package body Ada.Streams.Unbounded_Storage_IO is
             Free => Free_Data'Access);
          Free (Object.Data.Stream);
       end Finalize;
-
-      overriding procedure Adjust (Object : in out Buffer_Type) is
-      begin
-         Object.Data.Stream := null;
-         System.Reference_Counting.Adjust (
-            Upcast (Object.Data.Data'Unchecked_Access));
-      end Adjust;
 
       package body Streaming is
 
