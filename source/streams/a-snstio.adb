@@ -19,6 +19,10 @@ package body Ada.Streams.Naked_Stream_IO is
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
    pragma No_Return (unreachable);
 
+   function To_Pointer (Value : System.Address)
+      return access Root_Stream_Type'Class
+      with Import, Convention => Intrinsic;
+
    --  the parameter Form
 
    procedure Set (
@@ -702,14 +706,7 @@ package body Ada.Streams.Naked_Stream_IO is
          end if;
          File.Dispatcher.File := File;
       end if;
-      declare
-         pragma Suppress (Alignment_Check);
-         S : aliased Dispatchers.Root_Dispatcher
-            with Import, Convention => Ada;
-         for S'Address use File.Dispatcher'Address;
-      begin
-         return S'Unchecked_Access;
-      end;
+      return To_Pointer (File.Dispatcher'Address);
    end Stream;
 
    procedure Read (

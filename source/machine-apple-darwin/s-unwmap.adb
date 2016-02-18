@@ -1,4 +1,5 @@
 with Ada.Unchecked_Conversion;
+with System.Address_To_Constant_Access_Conversions;
 with System.Native_Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -24,7 +25,20 @@ package body System.Unwind.Mapping is
       Info : access C.signal.siginfo_t;
       Context : C.void_ptr)
    is
-      pragma Unreferenced (Info);
+      --  allow to inspect the parameters with debugger.
+      type ucontext_t_ptr is access constant C.sys.ucontext.ucontext_t
+         with Convention => C;
+      for ucontext_t_ptr'Storage_Size use 0;
+      package ucontext_t_ptr_Conv is
+         new Address_To_Constant_Access_Conversions (
+            C.sys.ucontext.ucontext_t,
+            ucontext_t_ptr);
+      uap : constant ucontext_t_ptr :=
+         ucontext_t_ptr_Conv.To_Pointer (Address (Context));
+      pragma Inspection_Point (Signal_Number);
+      pragma Inspection_Point (Info);
+      pragma Inspection_Point (uap);
+      --  the components of the exception.
       C_Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       subtype Fixed_String is String (Positive);
       Message : Fixed_String;
@@ -42,14 +56,6 @@ package body System.Unwind.Mapping is
                Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
             end;
             Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
-            declare
-               uc : C.sys.ucontext.ucontext_t
-                  with Import, Convention => C;
-               for uc'Address use Address (Context);
-               pragma Inspection_Point (uc);
-            begin
-               null; -- probe uc for debugging
-            end;
             Native_Stack.Fake_Return_From_Signal_Handler;
             Eexception_Id := Standard.Storage_Error'Access;
          when others =>
