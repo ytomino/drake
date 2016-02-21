@@ -49,21 +49,26 @@ package body Ada.Text_IO.Terminal.Colors is
       if Background.Changing then
          Background_Item := System.Terminal_Colors.Color (Background.Item);
       end if;
-      System.Terminal_Colors.Set (
-         Naked_Text_IO.Terminal_Handle (Reference (File).all),
-         Reset,
-         Bold.Changing,
-         Bold_Item,
-         Underline.Changing,
-         Underline_Item,
-         Blink.Changing,
-         Blink_Item,
-         Reversed.Changing,
-         Reversed_Item,
-         Foreground.Changing,
-         Foreground_Item,
-         Background.Changing,
-         Background_Item);
+      declare
+         NC_File : Naked_Text_IO.Non_Controlled_File_Type
+            renames Controlled.Reference (File).all;
+      begin
+         System.Terminal_Colors.Set (
+            Naked_Text_IO.Terminal_Handle (NC_File),
+            Reset,
+            Bold.Changing,
+            Bold_Item,
+            Underline.Changing,
+            Underline_Item,
+            Blink.Changing,
+            Blink_Item,
+            Reversed.Changing,
+            Reversed_Item,
+            Foreground.Changing,
+            Foreground_Item,
+            Background.Changing,
+            Background_Item);
+      end;
    end Set_Color;
 
    procedure Reset_Color (
@@ -73,9 +78,10 @@ package body Ada.Text_IO.Terminal.Colors is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      System.Terminal_Colors.Reset (
-         Naked_Text_IO.Terminal_Handle (Reference (File).all));
+      System.Terminal_Colors.Reset (Naked_Text_IO.Terminal_Handle (NC_File));
    end Reset_Color;
 
 end Ada.Text_IO.Terminal.Colors;

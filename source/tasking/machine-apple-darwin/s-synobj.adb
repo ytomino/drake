@@ -1,10 +1,14 @@
 with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with System.Native_Time;
 with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
    use type C.signed_int;
    use type C.signed_long;
+   use type C.pthread.pthread_cond_t;
+   use type C.pthread.pthread_mutex_t;
+   use type C.pthread.pthread_rwlock_t;
 
    --  mutex
 
@@ -14,10 +18,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Mutex) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_mutex_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_mutex_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_MUTEX_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_mutex_destroy failed"));
    end Finalize;
 
    procedure Enter (Object : in out Mutex) is
@@ -42,10 +51,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Condition_Variable) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_cond_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_cond_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_COND_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_cond_destroy failed"));
    end Finalize;
 
    procedure Notify_One (Object : in out Condition_Variable) is
@@ -372,6 +386,7 @@ package body System.Synchronous_Objects is
       Initialize (Object.Condition_Variable);
       Object.Release_Threshold := Release_Threshold;
       Object.Blocked := 0;
+      Object.Unblocked := 0;
    end Initialize;
 
    procedure Finalize (Object : in out Barrier) is
@@ -382,18 +397,27 @@ package body System.Synchronous_Objects is
 
    procedure Wait (
       Object : in out Barrier;
-      Notified : out Boolean) is
+      Notified : out Boolean)
+   is
+      Order : Natural;
    begin
       Enter (Object.Mutex);
-      Notified := Object.Blocked = 0;
       Object.Blocked := Object.Blocked + 1;
-      if Object.Blocked = Object.Release_Threshold then
+      Order := Object.Blocked rem Object.Release_Threshold;
+      Notified := Order = 1;
+      if Order = 0 then
          Notify_All (Object.Condition_Variable);
-         Object.Blocked := 0;
+         Object.Unblocked := Object.Unblocked + 1;
       else
-         Wait (
-            Object.Condition_Variable,
-            Object.Mutex);
+         loop
+            Wait (Object.Condition_Variable, Object.Mutex);
+            exit when Object.Blocked >= Object.Release_Threshold;
+         end loop;
+         Object.Unblocked := Object.Unblocked + 1;
+      end if;
+      if Object.Unblocked = Object.Release_Threshold then
+         Object.Blocked := Object.Blocked - Object.Release_Threshold;
+         Object.Unblocked := 0;
       end if;
       Leave (Object.Mutex);
    end Wait;
@@ -406,10 +430,15 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out RW_Lock) is
+      R : C.signed_int;
    begin
-      if C.pthread.pthread_rwlock_destroy (Object.Handle'Access) /= 0 then
-         null; -- raise Tasking_Error;
-      end if;
+      R := C.pthread.pthread_rwlock_destroy (Object.Handle'Access);
+      pragma Check (Debug,
+         Check => R = 0
+            or else (
+               R = C.errno.EINVAL
+               and then Object.Handle = C.pthread.PTHREAD_RWLOCK_INITIALIZER)
+            or else Debug.Runtime_Error ("pthread_rwlock_destroy failed"));
    end Finalize;
 
    procedure Enter_Reading (Object : in out RW_Lock) is

@@ -26,6 +26,17 @@ package System.Native_Processes is
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status);
 
+   procedure Do_Wait_Immediate (
+      Child : in out Process;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status);
+
+   procedure Do_Forced_Abort_Process (Child : in out Process);
+
+   procedure Do_Abort_Process (Child : in out Process)
+      renames Do_Forced_Abort_Process;
+      --  Should it use CREATE_NEW_PROCESS_GROUP and GenerateConsoleCtrlEvent?
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
@@ -48,7 +59,7 @@ private
 
       type Process is limited private;
 
-      function Reference (Object : Process)
+      function Reference (Object : Native_Processes.Process)
          return not null access C.winnt.HANDLE;
       pragma Inline (Reference);
 

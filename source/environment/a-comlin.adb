@@ -4,12 +4,10 @@ package body Ada.Command_Line is
    --  implementation
 
    function Argument (Number : Positive) return String is
+      pragma Check (Pre,
+         Check => Number <= Argument_Count or else raise Constraint_Error);
    begin
-      if Number > System.Native_Command_Line.Argument_Count then
-         raise Constraint_Error;
-      else
-         return System.Native_Command_Line.Argument (Number);
-      end if;
+      return System.Native_Command_Line.Argument (Number);
    end Argument;
 
    function Has_Element (Position : Natural) return Boolean is

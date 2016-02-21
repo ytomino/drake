@@ -5,6 +5,7 @@ with System.Native_IO;
 with System.Synchronous_Control;
 with System.Zero_Terminated_Strings;
 with C.errno;
+with C.signal;
 with C.spawn;
 with C.stdlib;
 with C.sys.wait;
@@ -196,8 +197,9 @@ package body System.Native_Processes is
 
    function WIFEXITED (x : C.signed_int) return Boolean;
    function WIFEXITED (x : C.signed_int) return Boolean is
+      WSTATUS : constant C.signed_int := x mod (8#177# + 1); -- x & 0177
    begin
-      return x mod (8#177# + 1) = 0; -- x & 0177
+      return WSTATUS = 0;
    end WIFEXITED;
 
    function WEXITSTATUS (x : C.signed_int) return C.signed_int;
@@ -205,6 +207,64 @@ package body System.Native_Processes is
    begin
       return x / 256;
    end WEXITSTATUS;
+
+   function WIFSIGNALED (x : C.signed_int) return Boolean;
+   function WIFSIGNALED (x : C.signed_int) return Boolean is
+      WSTATUS : constant C.signed_int := x mod (8#177# + 1); -- x & 0177
+   begin
+      --  _WSTOPPED is 0177 in Darwin and FreeBSD.
+      --  Both low 7 bits of __W_STOPCODE and __W_CONTINUED is 0x7f in Linux.
+      return WSTATUS /= 8#177# and then WSTATUS /= 0;
+   end WIFSIGNALED;
+
+   procedure Wait (
+      Child : in out Process;
+      Options : C.signed_int;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure Wait (
+      Child : in out Process;
+      Options : C.signed_int;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Code : aliased C.signed_int;
+      R : C.sys.types.pid_t;
+      errno : C.signed_int;
+   begin
+      Synchronous_Control.Unlock_Abort;
+      R := C.sys.wait.waitpid (Child.Id, Code'Access, Options);
+      errno := C.errno.errno;
+      Synchronous_Control.Lock_Abort; -- raise if aborted
+      if R < 0 then
+         if errno /= C.errno.EINTR then
+            Raise_Exception (Use_Error'Identity);
+         end if;
+         Terminated := False; -- interrupted and the signal is not "abort"
+      elsif R = 0 then
+         Terminated := False; -- WNOHANG
+      else
+         if WIFEXITED (Code) then
+            Child.Id := -1;
+            Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
+            Terminated := True; -- exited
+         elsif WIFSIGNALED (Code) then
+            Child.Id := -1;
+            Status := -1;
+            Terminated := True; -- signaled
+         else
+            Terminated := False; -- otherwise, WIFSTOPPED or WIFCONTINUED
+         end if;
+      end if;
+   end Wait;
+
+   procedure Kill (Child : Process; Signal : C.signed_int);
+   procedure Kill (Child : Process; Signal : C.signed_int) is
+   begin
+      if C.signal.kill (Child.Id, Signal) < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+   end Kill;
 
    --  implementation
 
@@ -238,32 +298,32 @@ package body System.Native_Processes is
    begin
       loop
          declare
-            Code : aliased C.signed_int;
-            R : C.sys.types.pid_t;
-            errno : C.signed_int;
+            Terminated : Boolean;
          begin
-            Synchronous_Control.Unlock_Abort;
-            R := C.sys.wait.waitpid (Child.Id, Code'Access, 0);
-            errno := C.errno.errno;
-            Synchronous_Control.Lock_Abort; -- raise if aborted
-            if R < 0 then
-               if errno /= C.errno.EINTR then
-                  Raise_Exception (Use_Error'Identity);
-               end if;
-               --  interrupted and the signal is not "abort", then retry
-            else
-               Child.Id := -1; -- terminated or error
-               --  status code
-               if WIFEXITED (Code) then
-                  Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
-               else
-                  Status := -1;
-               end if;
-               exit;
-            end if;
+            Wait (Child, 0, Terminated => Terminated, Status => Status);
+            exit when Terminated;
          end;
       end loop;
    end Do_Wait;
+
+   procedure Do_Wait_Immediate (
+      Child : in out Process;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status) is
+   begin
+      Wait (Child, C.sys.wait.WNOHANG,
+         Terminated => Terminated, Status => Status);
+   end Do_Wait_Immediate;
+
+   procedure Do_Abort_Process (Child : in out Process) is
+   begin
+      Kill (Child, C.signal.SIGTERM);
+   end Do_Abort_Process;
+
+   procedure Do_Forced_Abort_Process (Child : in out Process) is
+   begin
+      Kill (Child, C.signal.SIGKILL);
+   end Do_Forced_Abort_Process;
 
    procedure Shell (
       Command_Line : String;

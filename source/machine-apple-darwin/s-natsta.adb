@@ -1,3 +1,4 @@
+with System.Debug;
 with System.Storage_Elements;
 with C.sys.syscall;
 with C.unistd;
@@ -19,15 +20,17 @@ package body System.Native_Stack is
 
    procedure Fake_Return_From_Signal_Handler is
       UC_RESET_ALT_STACK : constant := 16#80000000#; -- ???
+      R : C.signed_int;
    begin
       --  emulate normal return
-      if C.unistd.syscall (
+      R := C.unistd.syscall (
          C.sys.syscall.SYS_sigreturn,
          C.void_ptr (Null_Address),
-         UC_RESET_ALT_STACK) < 0
-      then
-         null; -- no error handling
-      end if;
+         UC_RESET_ALT_STACK);
+      pragma Check (Debug,
+         Check => not (R < 0)
+            or else Debug.Runtime_Error (
+               "syscall (SYS_sigreturn, ...) failed"));
    end Fake_Return_From_Signal_Handler;
 
 end System.Native_Stack;

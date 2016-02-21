@@ -6,16 +6,10 @@ with System.Tasks;
 package body Ada.Task_Attributes is
    use type System.Address;
 
-   procedure Finally (Item : not null access System.Tasks.Attribute_Index);
-   procedure Finally (Item : not null access System.Tasks.Attribute_Index) is
-   begin
-      System.Tasks.Free (Item.all); -- Item.all indicates Index
-   end Finally;
-
    package Holder is
       new Exceptions.Finally.Scoped_Holder (
          System.Tasks.Attribute_Index,
-         Finally);
+         System.Tasks.Free);
 
    Index : aliased System.Tasks.Attribute_Index;
 
@@ -123,5 +117,5 @@ package body Ada.Task_Attributes is
 
 begin
    System.Tasks.Allocate (Index);
-   Holder.Assign (Index'Access);
+   Holder.Assign (Index);
 end Ada.Task_Attributes;

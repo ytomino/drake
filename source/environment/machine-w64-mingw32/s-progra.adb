@@ -15,10 +15,10 @@ package body System.Program is
          new Address_To_Named_Access_Conversions (
             C.winnt.WCHAR,
             C.winnt.LPWSTR);
-      procedure Finally (X : not null access C.winnt.LPWSTR);
-      procedure Finally (X : not null access C.winnt.LPWSTR) is
+      procedure Finally (X : in out C.winnt.LPWSTR);
+      procedure Finally (X : in out C.winnt.LPWSTR) is
       begin
-         Standard_Allocators.Free (Conv.To_Address (X.all));
+         Standard_Allocators.Free (Conv.To_Address (X));
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
@@ -28,7 +28,7 @@ package body System.Program is
             Storage_Elements.Storage_Count (Buffer_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
    begin
-      Holder.Assign (Buffer'Access);
+      Holder.Assign (Buffer);
       loop
          declare
             Result_Length : C.windef.DWORD;

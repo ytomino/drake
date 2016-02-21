@@ -49,13 +49,14 @@ private
       Item : Element_Access;
    end record;
 
-   package Cursors is
+   package Controlled is
 
       type Cursor is private;
 
       function Create (Node : Node_Access) return Cursor;
 
-      function Reference (Position : Cursor) return Node_Access;
+      function Reference (Position : Forward_Iterators.Cursor)
+         return Node_Access;
       pragma Inline (Reference);
 
    private
@@ -92,9 +93,9 @@ private
       for Cursor'Write use Streaming.Missing_Write;
       for Cursor'Output use Streaming.Missing_Write;
 
-   end Cursors;
+   end Controlled;
 
-   type Cursor is new Cursors.Cursor;
+   type Cursor is new Controlled.Cursor;
 
    type State_Type is (First, Next, No_Element);
    pragma Discard_Names (State_Type);

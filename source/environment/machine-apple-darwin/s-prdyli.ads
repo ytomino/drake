@@ -43,7 +43,8 @@ private
 
       type Library is limited private;
 
-      function Reference (Lib : Library) return not null access C.void_ptr;
+      function Reference (Lib : Dynamic_Linking.Library)
+         return not null access C.void_ptr;
       pragma Inline (Reference);
 
    private

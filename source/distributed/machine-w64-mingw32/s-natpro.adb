@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
+with System.Debug;
 with System.Native_IO;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -11,6 +12,7 @@ package body System.Native_Processes is
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+   use type C.windef.UINT;
    use type C.winnt.HANDLE; -- C.void_ptr
 
    function memchr (
@@ -21,11 +23,55 @@ package body System.Native_Processes is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memchr";
 
+   procedure Wait (
+      Child : in out Process;
+      Milliseconds : C.windef.DWORD;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure Wait (
+      Child : in out Process;
+      Milliseconds : C.windef.DWORD;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Handle : C.winnt.HANDLE
+         renames Controlled.Reference (Child).all;
+   begin
+      case C.winbase.WaitForSingleObject (Handle, Milliseconds) is
+         when C.winbase.WAIT_OBJECT_0 =>
+            declare
+               Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
+               Exit_Code : aliased C.windef.DWORD;
+               R : C.windef.WINBOOL;
+            begin
+               R := C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access);
+               if C.winbase.CloseHandle (Handle) = 0 or else R = 0 then
+                  Raise_Exception (Use_Error'Identity);
+               end if;
+               Handle := C.winbase.INVALID_HANDLE_VALUE;
+               --  status code
+               if Exit_Code < Max then
+                  Status := Ada.Command_Line.Exit_Status (Exit_Code);
+               else
+                  --  terminated by an unhandled exception
+                  Status := -1;
+               end if;
+               Terminated := True;
+            end;
+         when C.winerror.WAIT_TIMEOUT =>
+            Terminated := False;
+         when others =>
+            Raise_Exception (Use_Error'Identity);
+      end case;
+   end Wait;
+
    --  implementation
 
    function Do_Is_Open (Child : Process) return Boolean is
+      Handle : C.winnt.HANDLE
+         renames Controlled.Reference (Child).all;
    begin
-      return Reference (Child).all /= C.winbase.INVALID_HANDLE_VALUE;
+      return Handle /= C.winbase.INVALID_HANDLE_VALUE;
    end Do_Is_Open;
 
    procedure Create (
@@ -130,43 +176,60 @@ package body System.Native_Processes is
          if C.winbase.CloseHandle (Process_Info.hThread) = 0 then
             Raise_Exception (Use_Error'Identity);
          end if;
-         Reference (Child).all := Process_Info.hProcess;
+         declare
+            Handle : C.winnt.HANDLE
+               renames Controlled.Reference (Child).all;
+         begin
+            Handle := Process_Info.hProcess;
+         end;
       end if;
    end Create;
 
    procedure Do_Wait (
       Child : in out Process;
-      Status : out Ada.Command_Line.Exit_Status)
-   is
-      Handle : C.winnt.HANDLE
-         renames Reference (Child).all;
+      Status : out Ada.Command_Line.Exit_Status) is
    begin
-      if C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE) /=
-         C.winbase.WAIT_OBJECT_0
-      then
-         Raise_Exception (Use_Error'Identity);
-      else
+      loop
          declare
-            Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
+            Terminated : Boolean;
+         begin
+            Wait (Child, C.winbase.INFINITE,
+               Terminated => Terminated, Status => Status);
+            exit when Terminated;
+         end;
+      end loop;
+   end Do_Wait;
+
+   procedure Do_Wait_Immediate (
+      Child : in out Process;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status) is
+   begin
+      Wait (Child, 0, Terminated => Terminated, Status => Status);
+   end Do_Wait_Immediate;
+
+   procedure Do_Forced_Abort_Process (Child : in out Process) is
+      Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
+      Handle : C.winnt.HANDLE
+         renames Controlled.Reference (Child).all;
+   begin
+      if C.winbase.TerminateProcess (Handle, Code) = 0 then
+         declare
             Exit_Code : aliased C.windef.DWORD;
          begin
-            if C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access) = 0 then
+            --  It is not an error if the process is already terminated.
+            if not (
+               C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
+               and then C.winbase.GetExitCodeProcess (
+                  Handle,
+                  Exit_Code'Access) /= 0
+               and then Exit_Code /= C.winbase.STILL_ACTIVE)
+            then
                Raise_Exception (Use_Error'Identity);
-            end if;
-            if C.winbase.CloseHandle (Handle) = 0 then
-               Raise_Exception (Use_Error'Identity);
-            end if;
-            Handle := C.winbase.INVALID_HANDLE_VALUE;
-            --  status code
-            if Exit_Code < Max then
-               Status := Ada.Command_Line.Exit_Status (Exit_Code);
-            else
-               --  terminated by an unhandled exception
-               Status := Ada.Command_Line.Exit_Status'Last;
             end if;
          end;
       end if;
-   end Do_Wait;
+   end Do_Forced_Abort_Process;
 
    procedure Shell (
       Command_Line : String;
@@ -230,18 +293,23 @@ package body System.Native_Processes is
 
    package body Controlled is
 
-      function Reference (Object : Process)
+      function Reference (Object : Native_Processes.Process)
          return not null access C.winnt.HANDLE is
       begin
-         return Object.Handle'Unrestricted_Access;
+         return Process (Object).Handle'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Process) is
       begin
          if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-            if C.winbase.CloseHandle (Object.Handle) = 0 then
-               null; -- raise Use_Error;
-            end if;
+            declare
+               R : C.windef.WINBOOL;
+            begin
+               R := C.winbase.CloseHandle (Object.Handle);
+               pragma Check (Debug,
+                  Check => R /= 0
+                     or else Debug.Runtime_Error ("CloseHandle failed"));
+            end;
          end if;
       end Finalize;
 

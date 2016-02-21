@@ -4,10 +4,13 @@ package body Ada.Streams.Stream_IO is
       File : in out File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String) is
+      Form : String)
+   is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Stream_IO.Create (
-         Reference (File).all,
+         NC_File,
          IO_Modes.File_Mode (Mode),
          Name => Name,
          Form => Naked_Stream_IO.Pack (Form));
@@ -19,10 +22,13 @@ package body Ada.Streams.Stream_IO is
       Name : String := "";
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
-      Overwrite : Boolean := True) is
+      Overwrite : Boolean := True)
+   is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Stream_IO.Create (
-         Reference (File).all,
+         NC_File,
          IO_Modes.File_Mode (Mode),
          Name => Name,
          Form => (Shared, Wait, Overwrite));
@@ -37,11 +43,16 @@ package body Ada.Streams.Stream_IO is
       return File_Type is
    begin
       return Result : File_Type do
-         Naked_Stream_IO.Create (
-            Reference (Result).all,
-            IO_Modes.File_Mode (Mode),
-            Name => Name,
-            Form => (Shared, Wait, Overwrite));
+         declare
+            NC_Result : Naked_Stream_IO.Non_Controlled_File_Type
+               renames Controlled.Reference (Result).all;
+         begin
+            Naked_Stream_IO.Create (
+               NC_Result,
+               IO_Modes.File_Mode (Mode),
+               Name => Name,
+               Form => (Shared, Wait, Overwrite));
+         end;
       end return;
    end Create;
 
@@ -49,10 +60,13 @@ package body Ada.Streams.Stream_IO is
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String) is
+      Form : String)
+   is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Stream_IO.Open (
-         Reference (File).all,
+         NC_File,
          IO_Modes.File_Mode (Mode),
          Name => Name,
          Form => Naked_Stream_IO.Pack (Form));
@@ -64,10 +78,13 @@ package body Ada.Streams.Stream_IO is
       Name : String;
       Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
       Wait : Boolean := False;
-      Overwrite : Boolean := True) is
+      Overwrite : Boolean := True)
+   is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Stream_IO.Open (
-         Reference (File).all,
+         NC_File,
          IO_Modes.File_Mode (Mode),
          Name => Name,
          Form => (Shared, Wait, Overwrite));
@@ -82,27 +99,38 @@ package body Ada.Streams.Stream_IO is
       return File_Type is
    begin
       return Result : File_Type do
-         Naked_Stream_IO.Open (
-            Reference (Result).all,
-            IO_Modes.File_Mode (Mode),
-            Name => Name,
-            Form => (Shared, Wait, Overwrite));
+         declare
+            NC_Result : Naked_Stream_IO.Non_Controlled_File_Type
+               renames Controlled.Reference (Result).all;
+         begin
+            Naked_Stream_IO.Open (
+               NC_Result,
+               IO_Modes.File_Mode (Mode),
+               Name => Name,
+               Form => (Shared, Wait, Overwrite));
+         end;
       end return;
    end Open;
 
    procedure Close (File : in out File_Type) is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Close (Reference (File).all, Raise_On_Error => True);
+      Naked_Stream_IO.Close (NC_File, Raise_On_Error => True);
    end Close;
 
    procedure Delete (File : in out File_Type) is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Delete (Reference (File).all);
+      Naked_Stream_IO.Delete (NC_File);
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Reset (Reference (File).all, IO_Modes.File_Mode (Mode));
+      Naked_Stream_IO.Reset (NC_File, IO_Modes.File_Mode (Mode));
    end Reset;
 
    procedure Reset (File : in out File_Type) is
@@ -116,8 +144,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return File_Mode (Naked_Stream_IO.Mode (Reference (File).all));
+      return File_Mode (Naked_Stream_IO.Mode (NC_File));
    end Mode;
 
    function Name (
@@ -126,8 +156,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.Name (Reference (File).all);
+      return Naked_Stream_IO.Name (NC_File);
    end Name;
 
    function Form (
@@ -136,22 +168,20 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
       Result : Naked_Stream_IO.Form_String;
       Last : Natural;
    begin
-      Naked_Stream_IO.Unpack (
-         Naked_Stream_IO.Form (Non_Controlled_File),
-         Result,
-         Last);
+      Naked_Stream_IO.Unpack (Naked_Stream_IO.Form (NC_File), Result, Last);
       return Result (Result'First .. Last);
    end Form;
 
    function Is_Open (File : File_Type) return Boolean is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.Is_Open (Reference (File).all);
+      return Naked_Stream_IO.Is_Open (NC_File);
    end Is_Open;
 
    function End_Of_File (
@@ -160,8 +190,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.End_Of_File (Reference (File).all);
+      return Naked_Stream_IO.End_Of_File (NC_File);
    end End_Of_File;
 
    function Stream (
@@ -170,8 +202,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.Stream (Reference (File).all);
+      return Naked_Stream_IO.Stream (NC_File);
    end Stream;
 
    procedure Read (
@@ -198,11 +232,10 @@ package body Ada.Streams.Stream_IO is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= Out_File or else raise Mode_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Read (Non_Controlled_File, Item, Last);
+      Naked_Stream_IO.Read (NC_File, Item, Last);
    end Read;
 
    procedure Write (
@@ -227,11 +260,10 @@ package body Ada.Streams.Stream_IO is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Write (Non_Controlled_File, Item);
+      Naked_Stream_IO.Write (NC_File, Item);
    end Write;
 
    procedure Set_Index (
@@ -240,11 +272,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Set_Index (Non_Controlled_File, To);
+      Naked_Stream_IO.Set_Index (NC_File, To);
    end Set_Index;
 
    function Index (
@@ -253,11 +284,10 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.Index (Non_Controlled_File);
+      return Naked_Stream_IO.Index (NC_File);
    end Index;
 
    function Size (
@@ -266,18 +296,17 @@ package body Ada.Streams.Stream_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
-      Non_Controlled_File : constant
-         Naked_Stream_IO.Non_Controlled_File_Type :=
-         Reference (File).all;
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Stream_IO.Size (Non_Controlled_File);
+      return Naked_Stream_IO.Size (NC_File);
    end Size;
 
    procedure Set_Mode (File : in out File_Type; Mode : File_Mode) is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Set_Mode (
-         Reference (File).all,
-         IO_Modes.File_Mode (Mode));
+      Naked_Stream_IO.Set_Mode (NC_File, IO_Modes.File_Mode (Mode));
    end Set_Mode;
 
    procedure Flush (
@@ -287,27 +316,24 @@ package body Ada.Streams.Stream_IO is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      Naked_Stream_IO.Flush (Reference (File).all);
+      Naked_Stream_IO.Flush (NC_File);
    end Flush;
 
    package body Controlled is
 
-      function Reference (File : File_Type)
+      function Reference (File : Stream_IO.File_Type)
          return not null access Naked_Stream_IO.Non_Controlled_File_Type is
       begin
-         return File.Stream'Unrestricted_Access;
+         return File_Type (File).Stream'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out File_Type) is
-         Non_Controlled_File : constant
-            not null access Naked_Stream_IO.Non_Controlled_File_Type :=
-            Reference (Object);
       begin
-         if Naked_Stream_IO.Is_Open (Non_Controlled_File.all) then
-            Naked_Stream_IO.Close (
-               Non_Controlled_File.all,
-               Raise_On_Error => False);
+         if Naked_Stream_IO.Is_Open (Object.Stream) then
+            Naked_Stream_IO.Close (Object.Stream, Raise_On_Error => False);
          end if;
       end Finalize;
 

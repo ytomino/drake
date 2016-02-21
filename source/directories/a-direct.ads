@@ -94,10 +94,13 @@ package Ada.Directories is
    function Base_Name (Name : String) return String
       renames Hierarchical_File_Names.Base_Name;
 
+   --  modified
    function Compose (
       Containing_Directory : String := "";
       Name : String;
-      Extension : String := "")
+      Extension : String := "";
+      Path_Delimiter : Hierarchical_File_Names.Path_Delimiter_Type :=
+         Hierarchical_File_Names.Default_Path_Delimiter) -- additional
       return String
       renames Hierarchical_File_Names.Unfolded_Compose;
 
@@ -346,7 +349,7 @@ private
 
       type Directory_Entry_Type is limited private;
 
-      function Reference (Object : Directory_Entry_Type)
+      function Reference (Object : Directories.Directory_Entry_Type)
          return not null access Non_Controlled_Directory_Entry_Type;
       pragma Inline (Reference);
 

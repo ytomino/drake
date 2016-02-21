@@ -68,7 +68,8 @@ package Interfaces.Fortran is
       Last : out Natural;
       Substitute : String := "?"); -- additional, and unreferenced
 
-   --  B.5(21), Integer_Star_n, Real_Star_n, Logical_Star_n, Complex_Star_n,
+   --  Note: In RM B.5(21), an implementation is permitted to add
+   --    Integer_Star_n, Real_Star_n, Logical_Star_n, Complex_Star_n,
    --    Integer_Kind_n, Real_Kind_n, Logical_Kind_n, Complex_Kind_n,
    --    and Character_Kind_n.
 

@@ -173,6 +173,42 @@ procedure cntnr_Vector is
 	end Test_08;
 	pragma Debug (Test_08);
 begin
+	Append_Self : declare
+		use type Vectors.Element_Array;
+		X : Vectors.Vector;
+		IX : IVectors.Vector;
+	begin
+		-- no effect
+		Vectors.Append (X, X);
+		IVectors.Append (IX, IX);
+		Vectors.Insert (X, 1, X);
+		IVectors.Insert (IX, 1, IX);
+		-- construction
+		Vectors.Append (X, 'a');
+		Vectors.Append (X, 'b');
+		IVectors.Append (IX, 'a');
+		IVectors.Append (IX, 'b');
+		-- append self
+		Vectors.Append (X, X);
+		IVectors.Append (IX, IX);
+		pragma Assert (X.Length = 4);
+		pragma Assert (X.Constant_Reference.Element.all = "abab");
+		pragma Assert (IX.Length = 4);
+		for I in 1 .. 4 loop
+			pragma Assert (IX.Element (I) = X.Element (I));
+			null;
+		end loop;
+		-- insert itself
+		Vectors.Insert (X, 3, X);
+		IVectors.Insert (IX, 3, IX);
+		pragma Assert (X.Length = 8);
+		pragma Assert (X.Constant_Reference.Element.all = "abababab");
+		pragma Assert (IX.Length = 8);
+		for I in 1 .. 8 loop
+			pragma Assert (IX.Element (I) = X.Element (I));
+			null;
+		end loop;
+	end Append_Self;
 	Stream_Test : declare
 		package USIO renames Ada.Streams.Unbounded_Storage_IO;
 		X : Vectors.Vector;

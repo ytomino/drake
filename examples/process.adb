@@ -89,6 +89,12 @@ begin
 				Input => Input_Reading,
 				Output => Output_Writing);
 		end if;
+		declare
+			Terminated : Boolean;
+		begin
+			Ada.Processes.Wait_Immediate (C, Terminated => Terminated);
+			pragma Assert (not Terminated);
+		end;
 		Ada.Streams.Stream_IO.Close (Input_Reading);
 		Ada.Streams.Stream_IO.Close (Output_Writing);
 		Ada.Processes.Wait (C);
@@ -101,6 +107,20 @@ begin
 			pragma Assert (Ada.Streams.Stream_IO.End_Of_File (Output_Reading));
 		end;
 		Ada.Streams.Stream_IO.Close (Output_Reading);
+		-- sleep and abort
+		if In_Windows then
+			Ada.Processes.Create (C, "C:\msys32\usr\bin\sleep.exe 2");
+		else
+			Ada.Processes.Create (C, "sleep 2", Search_Path => True);
+		end if;
+		Ada.Processes.Abort_Process (C);
+		declare
+			Code : Ada.Command_Line.Exit_Status;
+		begin
+			Ada.Processes.Wait (C, Code);
+			pragma Check (Trace,
+				Check => Ada.Debug.Put (Ada.Command_Line.Exit_Status'Image (Code)));
+		end;
 		-- error case
 		begin
 			Ada.Processes.Create (C, "acats"); -- dir
@@ -108,6 +128,12 @@ begin
 		exception
 			when Ada.Processes.Use_Error =>
 				null;
+			when Ada.Processes.Name_Error =>
+				-- In Windows, the executable attribute is missing.
+				-- ERROR_FILE_NOT_FOUND may be returned.
+				if not In_Windows then
+					raise;
+				end if;
 		end;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));

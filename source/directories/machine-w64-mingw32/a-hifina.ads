@@ -8,6 +8,9 @@ package Ada.Hierarchical_File_Names is
 
    --  path delimiter
 
+   subtype Path_Delimiter_Type is Character;
+--    with Static_Predicate => Path_Delimiter in '/' | '\';
+
    Default_Path_Delimiter : constant Character := '\';
 
    function Is_Path_Delimiter (Item : Character) return Boolean;
@@ -16,17 +19,10 @@ package Ada.Hierarchical_File_Names is
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
       Last : in out Natural;
-      Path_Delimiter : Character := Default_Path_Delimiter);
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter);
    procedure Exclude_Trailing_Path_Delimiter (
       S : String;
       Last : in out Natural);
-
-   function Is_Drive_Letter (Item : Character) return Boolean;
-
-   procedure Containing_Root_Directory (
-      Name : String;
-      First : out Positive;
-      Last : out Natural);
 
    --  operations in Ada.Directories
 
@@ -64,13 +60,8 @@ package Ada.Hierarchical_File_Names is
    function Unfolded_Compose (
       Containing_Directory : String := "";
       Name : String;
-      Extension : String := "")
-      return String;
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
       Extension : String := "";
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
    --  operations in Ada.Directories.Hierarchical_File_Names
@@ -111,13 +102,8 @@ package Ada.Hierarchical_File_Names is
    function Compose (
       Directory : String := "";
       Relative_Name : String;
-      Extension : String := "")
-      return String;
-   function Compose (
-      Directory : String := "";
-      Relative_Name : String;
       Extension : String := "";
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
    --  extended
@@ -126,21 +112,35 @@ package Ada.Hierarchical_File_Names is
    --    Relative_Name (Name, Initial_Directory (Name)) = Relative_Name (Name)
    function Relative_Name (
       Name : String;
-      From : String)
-      return String;
-   function Relative_Name (
-      Name : String;
       From : String;
-      Path_Delimiter : Character)
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
+
+   --  extended
+   --  This is a "folded" version of Containing_Directory if Directory /= "".
+   --    Otherwise, it returns ".." as the parent directory name.
+   --  For example: Parent_Directory ("A/B/.") = "A"
+   --    Parent_Directory ("A/B/C/..") = "A"
+   --    Parent_Directory (Name) = Compose (Name, "..")
+   function Parent_Directory (
+      Directory : String;
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String;
+
+   --  extended
+   --  There is a procedure version.
+   procedure Parent_Directory (
+      Directory : String;
+      First : out Positive;
+      Last : out Natural;
+      Parent_Count : out Natural);
 
    --  exceptions
 
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
 
-   --  Note at A.16.1 (37/3).
-   --  These subprograms does not raise Name_Error
+   --  Note: In RM A.16.1 (37/3), these subprograms does not raise Name_Error
    --    since no accessing any real external file.
 
 end Ada.Hierarchical_File_Names;

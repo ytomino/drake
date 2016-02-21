@@ -186,48 +186,61 @@ package body Ada.Calendar.Formatting is
    function Day_Of_Week (
       Date : Time;
       Time_Zone : Time_Zones.Time_Offset := 0)
-      return Day_Name is
+      return Day_Name
+   is
+      pragma Suppress (Range_Check);
    begin
       return Day_Name'Val (
          Shift_Right (Packed_Split (Date, Time_Zone), 32) and 16#7f#);
    end Day_Of_Week;
 
    function Year (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Year_Number is
+      return Year_Number
+   is
+      pragma Suppress (Range_Check);
    begin
       return Year_Number (
          Shift_Right (Packed_Split (Date, Time_Zone), 16) and 16#ffff#);
    end Year;
 
    function Month (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Month_Number is
+      return Month_Number
+   is
+      pragma Suppress (Range_Check);
    begin
       return Month_Number (
          Shift_Right (Packed_Split (Date, Time_Zone), 8) and 16#ff#);
    end Month;
 
    function Day (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Day_Number is
+      return Day_Number
+   is
+      pragma Suppress (Range_Check);
    begin
       return Day_Number (
          Packed_Split (Date, Time_Zone) and 16#ff#);
    end Day;
 
    function Hour (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Hour_Number is
+      return Hour_Number
+   is
+      pragma Suppress (Range_Check);
    begin
       return Hour_Number (
          Shift_Right (Packed_Split (Date, Time_Zone), 56));
    end Hour;
 
    function Minute (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
-      return Minute_Number is
+      return Minute_Number
+   is
+      pragma Suppress (Range_Check);
    begin
       return Minute_Number (
          Shift_Right (Packed_Split (Date, Time_Zone), 48) and 16#ff#);
    end Minute;
 
    function Second (Date : Time) return Second_Number is
+      pragma Suppress (Range_Check);
       Time_Zone : constant Time_Zones.Time_Offset := 0;
       --  unit of Time_Zone is minute
    begin
@@ -649,11 +662,7 @@ package body Ada.Calendar.Formatting is
          if Error then
             raise Constraint_Error;
          end if;
-         declare
-            pragma Suppress (Range_Check); -- [gcc-4.6] suppress a buggy check
-         begin
-            Sub_Second := Duration (Sub_Second_I) / 10 ** (Last - P);
-         end;
+         Sub_Second := Duration (Sub_Second_I) / 10 ** (Last - P);
       else
          Sub_Second := 0.0;
       end if;

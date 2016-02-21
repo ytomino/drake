@@ -17,7 +17,12 @@ package body Ada.Streams.Stream_IO.Sockets is
          Raise_Exception (Use_Error'Identity);
       else
          return Result : End_Point do
-            Reference (Result).all := Data;
+            declare
+               Result_Handle : System.Native_IO.Sockets.End_Point
+                  renames Controlled_End_Points.Reference (Result).all;
+            begin
+               Result_Handle := Data;
+            end;
          end return;
       end if;
    end Get;
@@ -25,8 +30,10 @@ package body Ada.Streams.Stream_IO.Sockets is
    --  implementation of client
 
    function Is_Assigned (Peer : End_Point) return Boolean is
+      Peer_Handle : System.Native_IO.Sockets.End_Point
+         renames Controlled_End_Points.Reference (Peer).all;
    begin
-      return Reference (Peer).all /= null;
+      return Peer_Handle /= null;
    end Is_Assigned;
 
    function Resolve (Host_Name : String; Service : String)
@@ -56,14 +63,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       pragma Check (Dynamic_Predicate,
          Check => Is_Assigned (Peer) or else raise Status_Error);
       use type System.Native_IO.Handle_Type;
-      procedure Finally (X : not null access System.Native_IO.Handle_Type);
-      procedure Finally (X : not null access System.Native_IO.Handle_Type) is
+      procedure Finally (X : in out System.Native_IO.Handle_Type);
+      procedure Finally (X : in out System.Native_IO.Handle_Type) is
          Empty_Name : aliased System.Native_IO.Name_String :=
             (0 => System.Native_IO.Name_Character'Val (0));
       begin
-         if X.all /= System.Native_IO.Invalid_Handle then
+         if X /= System.Native_IO.Invalid_Handle then
             System.Native_IO.Close_Ordinary (
-               X.all,
+               X,
                Empty_Name (0)'Unchecked_Access,
                Raise_On_Error => False);
          end if;
@@ -75,8 +82,13 @@ package body Ada.Streams.Stream_IO.Sockets is
       Handle : aliased System.Native_IO.Handle_Type :=
          System.Native_IO.Invalid_Handle;
    begin
-      Holder.Assign (Handle'Access);
-      System.Native_IO.Sockets.Connect (Handle, Reference (Peer).all);
+      Holder.Assign (Handle);
+      declare
+         Peer_Handle : System.Native_IO.Sockets.End_Point
+            renames Controlled_End_Points.Reference (Peer).all;
+      begin
+         System.Native_IO.Sockets.Connect (Handle, Peer_Handle);
+      end;
       if Handle = System.Native_IO.Invalid_Handle then
          Raise_Exception (Use_Error'Identity);
       else
@@ -101,12 +113,12 @@ package body Ada.Streams.Stream_IO.Sockets is
       end return;
    end Connect;
 
-   package body End_Points is
+   package body Controlled_End_Points is
 
-      function Reference (Object : End_Point)
+      function Reference (Object : Sockets.End_Point)
          return not null access System.Native_IO.Sockets.End_Point is
       begin
-         return Object.Data'Unrestricted_Access;
+         return End_Point (Object).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out End_Point) is
@@ -114,15 +126,16 @@ package body Ada.Streams.Stream_IO.Sockets is
          System.Native_IO.Sockets.Finalize (Object.Data);
       end Finalize;
 
-   end End_Points;
+   end Controlled_End_Points;
 
    --  implementation of server
 
    function Is_Open (Server : Listener) return Boolean is
       use type System.Native_IO.Sockets.Listener;
+      Server_Handle : System.Native_IO.Sockets.Listener
+         renames Controlled_Listeners.Reference (Server).all;
    begin
-      return Reference (Server).all /=
-         System.Native_IO.Sockets.Invalid_Listener;
+      return Server_Handle /= System.Native_IO.Sockets.Invalid_Listener;
    end Is_Open;
 
    function Listen (Port : Port_Number) return Listener is
@@ -130,13 +143,13 @@ package body Ada.Streams.Stream_IO.Sockets is
    begin
       return Result : Listener do
          declare
-            Server_Handle : System.Native_IO.Sockets.Listener
-               renames Reference (Result).all;
+            Result_Handle : System.Native_IO.Sockets.Listener
+               renames Controlled_Listeners.Reference (Result).all;
          begin
             System.Native_IO.Sockets.Listen (
-               Server_Handle,
+               Result_Handle,
                System.Native_IO.Sockets.Port_Number (Port));
-            if Server_Handle = System.Native_IO.Sockets.Invalid_Listener then
+            if Result_Handle = System.Native_IO.Sockets.Invalid_Listener then
                Raise_Exception (Use_Error'Identity);
             end if;
          end;
@@ -147,12 +160,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       pragma Check (Pre,
          Check => Is_Open (Server) or else raise Status_Error);
       Server_Handle : System.Native_IO.Sockets.Listener
-         renames Reference (Server).all;
+         renames Controlled_Listeners.Reference (Server).all;
+      Freeing_Handle : constant System.Native_IO.Sockets.Listener :=
+         Server_Handle;
    begin
-      System.Native_IO.Sockets.Close_Listener (
-         Server_Handle,
-         Raise_On_Error => True);
       Server_Handle := System.Native_IO.Sockets.Invalid_Listener;
+      System.Native_IO.Sockets.Close_Listener (
+         Freeing_Handle,
+         Raise_On_Error => True);
    end Close;
 
    procedure Accept_Socket (
@@ -175,14 +190,14 @@ package body Ada.Streams.Stream_IO.Sockets is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Server) or else raise Status_Error);
       use type System.Native_IO.Handle_Type;
-      procedure Finally (X : not null access System.Native_IO.Handle_Type);
-      procedure Finally (X : not null access System.Native_IO.Handle_Type) is
+      procedure Finally (X : in out System.Native_IO.Handle_Type);
+      procedure Finally (X : in out System.Native_IO.Handle_Type) is
          Empty_Name : aliased System.Native_IO.Name_String :=
             (0 => System.Native_IO.Name_Character'Val (0));
       begin
-         if X.all /= System.Native_IO.Invalid_Handle then
+         if X /= System.Native_IO.Invalid_Handle then
             System.Native_IO.Close_Ordinary (
-               X.all,
+               X,
                Empty_Name (0)'Unchecked_Access,
                Raise_On_Error => False);
          end if;
@@ -194,11 +209,16 @@ package body Ada.Streams.Stream_IO.Sockets is
       Handle : aliased System.Native_IO.Handle_Type :=
          System.Native_IO.Invalid_Handle;
    begin
-      Holder.Assign (Handle'Access);
-      System.Native_IO.Sockets.Accept_Socket (
-         Reference (Server).all,
-         Handle,
-         System.Native_IO.Sockets.Socket_Address (Remote_Address));
+      Holder.Assign (Handle);
+      declare
+         Server_Handle : System.Native_IO.Sockets.Listener
+            renames Controlled_Listeners.Reference (Server).all;
+      begin
+         System.Native_IO.Sockets.Accept_Socket (
+            Server_Handle,
+            Handle,
+            System.Native_IO.Sockets.Socket_Address (Remote_Address));
+      end;
       if Handle = System.Native_IO.Invalid_Handle then
          Raise_Exception (Use_Error'Identity);
       else
@@ -212,12 +232,12 @@ package body Ada.Streams.Stream_IO.Sockets is
       end if;
    end Accept_Socket;
 
-   package body Listeners is
+   package body Controlled_Listeners is
 
-      function Reference (Object : Listener)
+      function Reference (Object : Sockets.Listener)
          return not null access System.Native_IO.Sockets.Listener is
       begin
-         return Object.Data'Unrestricted_Access;
+         return Listener (Object).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Listener) is
@@ -230,6 +250,6 @@ package body Ada.Streams.Stream_IO.Sockets is
          end if;
       end Finalize;
 
-   end Listeners;
+   end Controlled_Listeners;
 
 end Ada.Streams.Stream_IO.Sockets;

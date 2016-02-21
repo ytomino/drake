@@ -12,7 +12,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       return Naked_Text_IO.External (NC_File) = IO_Modes.Terminal;
    end Is_Terminal;
@@ -36,7 +36,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Set_Terminal_Size (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -65,7 +65,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Terminal_Size (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -97,7 +97,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Terminal_View (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -126,7 +126,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Set_Terminal_Position (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -143,7 +143,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Set_Terminal_Col (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -171,7 +171,7 @@ package body Ada.Text_IO.Terminal is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
-         renames Reference (File).all;
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Terminal_Position (
          Naked_Text_IO.Terminal_Handle (NC_File),
@@ -187,9 +187,11 @@ package body Ada.Text_IO.Terminal is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Save_State (
-         Naked_Text_IO.Terminal_Handle (Reference (File).all),
+         Naked_Text_IO.Terminal_Handle (NC_File),
          System.Native_Text_IO.Output_State (To_State));
    end Save_State;
 
@@ -201,9 +203,11 @@ package body Ada.Text_IO.Terminal is
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) /= In_File or else raise Mode_Error);
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       System.Native_Text_IO.Reset_State (
-         Naked_Text_IO.Terminal_Handle (Reference (File).all),
+         Naked_Text_IO.Terminal_Handle (NC_File),
          System.Native_Text_IO.Output_State (From_State));
    end Reset_State;
 

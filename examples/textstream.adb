@@ -155,7 +155,8 @@ begin
 					Get (File, Item);
 					pragma Assert (Item = String_Data (I));
 				end loop;
-				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1
+					or else (Ada.Text_IO.Col (File) = 1 and then Ada.Text_IO.Line (File) = 2));
 				Ada.Text_IO.Close (File);
 			end;
 			-- with calling End_Of_*
@@ -170,16 +171,23 @@ begin
 					Ada.Text_IO.Text_Streams.Stream_Access (U.Stream (Buffer)),
 					External => External);
 				for I in String_Data'Range loop
-					pragma Assert (not Ada.Text_IO.End_Of_Line (File));
-					pragma Assert (not Ada.Text_IO.End_Of_Page (File));
-					pragma Assert (not Ada.Text_IO.End_Of_File (File));
-					Get (File, Item);
-					pragma Assert (Item = String_Data (I));
+					declare
+						End_Of_Line : constant Boolean := Ada.Text_IO.End_Of_Line (File);
+						End_Of_Page : constant Boolean := Ada.Text_IO.End_Of_Page (File);
+						End_Of_File : constant Boolean := Ada.Text_IO.End_Of_File (File);
+					begin
+						Get (File, Item);
+						pragma Assert (End_Of_Line = (Item = Character_Type'Val (16#0D#) or else Item = Character_Type'Val (16#0A#)));
+						pragma Assert (not End_Of_Page);
+						pragma Assert (not End_Of_File);
+						pragma Assert (Item = String_Data (I));
+					end;
 				end loop;
 				pragma Assert (Ada.Text_IO.End_Of_Line (File));
 				pragma Assert (Ada.Text_IO.End_Of_Page (File));
 				pragma Assert (Ada.Text_IO.End_Of_File (File));
-				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1);
+				pragma Assert (Ada.Text_IO.Col (File) = Stream_Data'Length + 1
+					or else (Ada.Text_IO.Col (File) = 1 and then Ada.Text_IO.Line (File) = 2));
 				Ada.Text_IO.Close (File);
 			end;
 		end Generic_Process;
@@ -229,6 +237,16 @@ begin
 			Process (Ada.IO_Modes.UTF_8, Illegal_UTF_8, Illegal_UTF_8);
 			Process (Ada.IO_Modes.UTF_8, Illegal_UTF_8, Illegal_UTF_8_As_UTF_16);
 			Process (Ada.IO_Modes.UTF_8, Illegal_UTF_8, Illegal_UTF_8_As_UTF_32);
+			-- CR-LF
+			Process (Ada.IO_Modes.UTF_8,
+				Character'Val (16#0D#) & Character'Val (16#0A#),
+				Character'Val (16#0D#) & Character'Val (16#0A#));
+			Process (Ada.IO_Modes.UTF_8,
+				Character'Val (16#0D#) & Character'Val (16#0A#),
+				Wide_Character'Val (16#0D#) & Wide_Character'Val (16#0A#));
+			Process (Ada.IO_Modes.UTF_8,
+				Character'Val (16#0D#) & Character'Val (16#0A#),
+				Wide_Wide_Character'Val (16#0D#) & Wide_Wide_Character'Val (16#0A#));
 		end;
 		-- by Look_Ahead and Get
 		declare

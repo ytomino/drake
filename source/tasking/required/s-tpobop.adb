@@ -211,11 +211,6 @@ package body System.Tasking.Protected_Objects.Operations is
       Block : out Communication_Block)
    is
       pragma Unreferenced (Block);
-      procedure Finally (X : not null access Synchronous_Objects.Event);
-      procedure Finally (X : not null access Synchronous_Objects.Event) is
-      begin
-         Synchronous_Objects.Finalize (X.all);
-      end Finally;
    begin
       case Mode is
          when Simple_Call =>
@@ -223,7 +218,7 @@ package body System.Tasking.Protected_Objects.Operations is
                package Holder is
                   new Ada.Exceptions.Finally.Scoped_Holder (
                      Synchronous_Objects.Event,
-                     Finally);
+                     Synchronous_Objects.Finalize);
                The_Node : aliased Entries.Node := (
                   Super => <>,
                   E => E,
@@ -238,7 +233,7 @@ package body System.Tasking.Protected_Objects.Operations is
                Aborted : Boolean;
             begin
                Synchronous_Objects.Initialize (The_Node.Waiting);
-               Holder.Assign (The_Node.Waiting'Access);
+               Holder.Assign (The_Node.Waiting);
                Synchronous_Objects.Add (
                   Object.Calling,
                   The_Node.Super'Unchecked_Access,

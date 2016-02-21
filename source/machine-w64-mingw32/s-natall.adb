@@ -1,4 +1,4 @@
-with Ada;
+with System.Debug;
 with C.basetsd;
 with C.winbase;
 with C.windef;
@@ -8,14 +8,6 @@ package body System.Native_Allocators is
    use type C.windef.WINBOOL;
 --  use type C.basetsd.SIZE_T;
 --  use type C.windef.DWORD;
-
-   function Runtime_Error (
-      S : String;
-      Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
-      return Boolean
-      with Import, Convention => Ada, External_Name => "__drake_runtime_error";
-   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    function Round_Up (Size : C.basetsd.SIZE_T) return C.basetsd.SIZE_T;
    function Round_Up (Size : C.basetsd.SIZE_T) return C.basetsd.SIZE_T is
@@ -53,7 +45,7 @@ package body System.Native_Allocators is
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,
-         Check => R /= 0 or else Runtime_Error ("failed to HeapFree"));
+         Check => R /= 0 or else Debug.Runtime_Error ("HeapFree failed"));
    end Free;
 
    function Reallocate (
@@ -117,26 +109,32 @@ package body System.Native_Allocators is
 
    procedure Unmap (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count)
-   is
-      R : C.windef.WINBOOL;
+      Size : Storage_Elements.Storage_Count) is
    begin
-      R := C.winbase.VirtualFree (
-         C.windef.LPVOID (Storage_Address),
-         C.basetsd.SIZE_T (Size),
-         C.winnt.MEM_DECOMMIT);
-      pragma Check (Debug,
-         Check => R /= 0
-            or else Runtime_Error (
-               "failed to VirtualFree (..., MEM_DECOMMIT)"));
-      R := C.winbase.VirtualFree (
-         C.windef.LPVOID (Storage_Address),
-         0,
-         C.winnt.MEM_RELEASE);
-      pragma Check (Debug,
-         Check => R /= 0
-            or else Runtime_Error (
-               "failed to VirtualFree (..., MEM_RELEASE)"));
+      declare
+         R : C.windef.WINBOOL;
+      begin
+         R := C.winbase.VirtualFree (
+            C.windef.LPVOID (Storage_Address),
+            C.basetsd.SIZE_T (Size),
+            C.winnt.MEM_DECOMMIT);
+         pragma Check (Debug,
+            Check => R /= 0
+               or else Debug.Runtime_Error (
+                  "VirtualFree (..., MEM_DECOMMIT) failed"));
+      end;
+      declare
+         R : C.windef.WINBOOL;
+      begin
+         R := C.winbase.VirtualFree (
+            C.windef.LPVOID (Storage_Address),
+            0,
+            C.winnt.MEM_RELEASE);
+         pragma Check (Debug,
+            Check => R /= 0
+               or else Debug.Runtime_Error (
+                  "VirtualFree (..., MEM_RELEASE) failed"));
+      end;
    end Unmap;
 
 end System.Native_Allocators;

@@ -245,7 +245,7 @@ package Ada.Containers.Hashed_Sets is
 
 private
 
---  diff
+--  diff (Element_Access)
 
    type Node is limited record
       Super : aliased Hash_Tables.Node;

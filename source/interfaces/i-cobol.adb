@@ -393,7 +393,7 @@ package body Interfaces.COBOL is
          declare
             Result : Long_Long_Integer := Unchecked_Unsigned_To_Decimal (Item);
          begin
-            if Item (Item'Last) = 16#B# or Item (Item'Last) = 16#D# then
+            if Item (Item'Last) = 16#B# or else Item (Item'Last) = 16#D# then
                Result := -Result;
             end if;
             return Result;

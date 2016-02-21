@@ -176,6 +176,7 @@ private
       Condition_Variable : Synchronous_Objects.Condition_Variable;
       Release_Threshold : Natural;
       Blocked : Natural;
+      Unblocked : Natural;
    end record;
    pragma Suppress_Initialization (Barrier);
 

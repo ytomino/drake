@@ -13,9 +13,13 @@ begin
 	Current_Col := Start_Col;
 	loop
 		Ada.Text_IO.Get_Immediate (D, Avail);
-		exit when Avail and then C = D;
-		Ada.Text_IO.Put (C);
-		Current_Col := Current_Col + 1;
+		if Avail then
+			exit when C = D;
+			Current_Col := Ada.Text_IO.Col;
+		else
+			Ada.Text_IO.Put (C);
+			Current_Col := Current_Col + 1;
+		end if;
 		if Current_Col = Line_Length then
 			Ada.Text_IO.Set_Col (Start_Col);
 			Current_Col := Start_Col;

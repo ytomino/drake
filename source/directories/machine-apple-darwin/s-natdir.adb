@@ -37,18 +37,18 @@ package body System.Native_Directories is
    --  implementation
 
    function Current_Directory return String is
-      procedure Finally (X : not null access C.char_ptr);
-      procedure Finally (X : not null access C.char_ptr) is
+      procedure Finally (X : in out C.char_ptr);
+      procedure Finally (X : in out C.char_ptr) is
          package Conv is
             new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       begin
-         C.stdlib.free (C.void_ptr (Conv.To_Address (X.all)));
+         C.stdlib.free (C.void_ptr (Conv.To_Address (X)));
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
       Path : aliased C.char_ptr := C.unistd.getcwd (null, 0);
    begin
-      Holder.Assign (Path'Access);
+      Holder.Assign (Path);
       return Zero_Terminated_Strings.Value (Path);
    end Current_Directory;
 

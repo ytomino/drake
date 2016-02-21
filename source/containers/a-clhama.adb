@@ -418,8 +418,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
          Node : Cursor;
       end record;
       pragma Suppress_Initialization (Pair);
-      procedure Finally (X : not null access Pair);
-      procedure Finally (X : not null access Pair) is
+      procedure Finally (X : in out Pair);
+      procedure Finally (X : in out Pair) is
       begin
          Free (X.Key);
          Free (X.Node);
@@ -429,7 +429,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
       New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
       New_Hash : Hash_Type;
    begin
-      Holder.Assign (New_Pair'Access);
+      Holder.Assign (New_Pair);
       New_Hash := Hash (New_Pair.Key.all);
       Position := Find (Container, New_Hash, New_Pair.Key.all);
       Inserted := Position = null;

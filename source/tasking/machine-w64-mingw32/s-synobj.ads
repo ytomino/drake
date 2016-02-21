@@ -193,9 +193,11 @@ private
    pragma Suppress_Initialization (Event);
 
    type Barrier is limited record
+      Mutex : Synchronous_Objects.Mutex;
       Event : Synchronous_Objects.Event;
-      Release_Threshold : Counter;
-      Blocked : aliased Counter;
+      Release_Threshold : Natural;
+      Blocked : Natural;
+      Unblocked : Natural;
    end record;
    pragma Suppress_Initialization (Barrier);
 

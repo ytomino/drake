@@ -20,10 +20,10 @@ package body System.Program is
    function Full_Name return String is
       package Conv is
          new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
-      procedure Finally (X : not null access C.char_ptr);
-      procedure Finally (X : not null access C.char_ptr) is
+      procedure Finally (X : in out C.char_ptr);
+      procedure Finally (X : in out C.char_ptr) is
       begin
-         Standard_Allocators.Free (Conv.To_Address (X.all));
+         Standard_Allocators.Free (Conv.To_Address (X));
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
@@ -32,7 +32,7 @@ package body System.Program is
          Standard_Allocators.Allocate (
             Storage_Elements.Storage_Count (Buffer_Length)));
    begin
-      Holder.Assign (Buffer'Access);
+      Holder.Assign (Buffer);
       loop
          declare
             Result_Length : aliased C.size_t := Buffer_Length;

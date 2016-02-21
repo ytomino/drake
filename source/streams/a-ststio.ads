@@ -182,7 +182,7 @@ private
 
       type File_Type is limited private;
 
-      function Reference (File : File_Type)
+      function Reference (File : Stream_IO.File_Type)
          return not null access Naked_Stream_IO.Non_Controlled_File_Type;
       pragma Inline (Reference);
 

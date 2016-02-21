@@ -19,6 +19,16 @@ begin
 	pragma Assert (AD.Containing_Directory ("/A/B") = "/A");
 	pragma Assert (AD.Containing_Directory ("/A/B/") = "/A/B");
 	pragma Assert (Windows or else AD.Containing_Directory ("/A//B") = "/A");
+	if Windows then
+		pragma Assert (AD.Containing_Directory ("C:") = "C:");
+		pragma Assert (AD.Containing_Directory ("C:\") = "C:\");
+		pragma Assert (AD.Containing_Directory ("C:A") = "C:");
+		pragma Assert (AD.Containing_Directory ("C:\A") = "C:\");
+		pragma Assert (AD.Containing_Directory ("\\HOST\S") = "\\HOST\S");
+		pragma Assert (AD.Containing_Directory ("\\HOST\S\") = "\\HOST\S\");
+		pragma Assert (AD.Containing_Directory ("\\HOST\S\A") = "\\HOST\S\");
+		null;
+	end if;
 	pragma Assert (AD.Simple_Name ("") = "");
 	pragma Assert (AD.Simple_Name ("A") = "A");
 	pragma Assert (AD.Simple_Name ("A/B") = "B");
@@ -29,12 +39,25 @@ begin
 	pragma Assert (AD.Simple_Name ("/A/B") = "B");
 	pragma Assert (AD.Simple_Name ("/A/B/") = "");
 	pragma Assert (AD.Simple_Name ("/A//B") = "B");
+	if Windows then
+		pragma Assert (AD.Simple_Name ("C:") = "");
+		pragma Assert (AD.Simple_Name ("C:A") = "A");
+		pragma Assert (AD.Simple_Name ("C:\A") = "A");
+		pragma Assert (AD.Simple_Name ("\\HOST\S") = "");
+		pragma Assert (AD.Simple_Name ("\\HOST\S\A") = "A");
+		null;
+	end if;
 	pragma Assert (AD.Base_Name ("README") = "README");
 	pragma Assert (AD.Base_Name ("README.") = "README.");
 	pragma Assert (AD.Base_Name ("README.TXT") = "README");
 	pragma Assert (AD.Base_Name (".TXT") = ".TXT");
+	pragma Assert (AD.Base_Name ("DIR/.TXT") = ".TXT");
 	pragma Assert (AD.Base_Name (".") = ".");
 	pragma Assert (AD.Base_Name ("..") = "..");
+	if Windows then
+		pragma Assert (AD.Base_Name ("C:.TXT") = ".TXT");
+		null;
+	end if;
 	pragma Assert (AD.Extension ("README") = "");
 	pragma Assert (AD.Extension ("README.") = "");
 	pragma Assert (AD.Extension ("README.TXT") = "TXT");
@@ -42,6 +65,10 @@ begin
 	pragma Assert (AD.Extension ("DIR/.TXT") = "");
 	pragma Assert (AD.Extension (".") = "");
 	pragma Assert (AD.Extension ("..") = "");
+	if Windows then
+		pragma Assert (AD.Extension ("C:.TXT") = "");
+		null;
+	end if;
 	pragma Assert (ADH.Initial_Directory ("") = "");
 	pragma Assert (ADH.Initial_Directory ("A") = "");
 	pragma Assert (ADH.Initial_Directory ("A/B") = "A");
@@ -65,6 +92,7 @@ begin
 	pragma Assert (AD.Compose ("", "", "") = "");
 	pragma Assert (AD.Compose ("", "../A") = "../A");
 	pragma Assert (AD.Compose ("/", "../A") = "/../A");
+	pragma Assert (AD.Compose ("./", "../A") = "./../A");
 	if Windows then
 		pragma Assert (AD.Compose ("A", "B", "C") = "A\B.C");
 		pragma Assert (AD.Compose ("A", "../B") = "A\../B");
@@ -77,6 +105,8 @@ begin
 		null;
 	end if;
 	pragma Assert (ADH.Compose ("", "", "") = "");
+	pragma Assert (ADH.Compose (".", "A") = "A");
+	pragma Assert (ADH.Compose ("./", "A") = "A");
 	pragma Assert (ADH.Compose ("A", "../B") = "B");
 	if Windows then
 		pragma Assert (ADH.Compose ("", "../A") = "..\A");
@@ -154,6 +184,26 @@ begin
 		pragma Assert (ADH.Relative_Name ("\\host\share\filename") = "filename");
 		pragma Assert (AH.Relative_Name ("C:\A", "D:\B") = "C:\A");
 	end if;
+	pragma Assert (AH.Parent_Directory ("A") = ".");
+	pragma Assert (AH.Parent_Directory ("A/") = ".");
+	pragma Assert (AH.Parent_Directory ("A/.") = ".");
+	pragma Assert (AH.Parent_Directory ("A/B") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/.") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/C/..") = "A");
+	pragma Assert (AH.Parent_Directory ("A/B/C/D/../..") = "A");
+	pragma Assert (AH.Parent_Directory ("") = "..");
+	pragma Assert (AH.Parent_Directory (".") = "..");
+	if Windows then
+		pragma Assert (AH.Parent_Directory ("..") = "..\..");
+		pragma Assert (AH.Parent_Directory ("./..") = "..\..");
+		null;
+	else
+		pragma Assert (AH.Parent_Directory ("..") = "../..");
+		pragma Assert (AH.Parent_Directory ("./..") = "../..");
+		null;
+	end if;
+	pragma Assert (AH.Parent_Directory ("/") = "/..");
 	declare
 		FS : Ada.Directories.Volumes.File_System :=
 			Ada.Directories.Volumes.Where ("/");

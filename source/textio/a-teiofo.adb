@@ -4,12 +4,6 @@ with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
 
-   procedure Finally (X : not null access String_Access);
-   procedure Finally (X : not null access String_Access) is
-   begin
-      Free (X.all);
-   end Finally;
-
    procedure Skip_Spaces (
       File : File_Type); -- Input_File_Type
    procedure Skip_Spaces (
@@ -20,12 +14,10 @@ package body Ada.Text_IO.Formatting is
    begin
       loop
          Look_Ahead (File, Item, End_Of_Line); -- checking the predicate
-         if End_Of_Line then
-            Skip_Line (File);
-         else
-            exit when Item /= ' ' and then Item /= Character'Val (9);
-            Get (File, Item);
-         end if;
+         exit when not End_Of_Line
+            and then Item /= ' '
+            and then Item /= Character'Val (9);
+         Skip_Ahead (File);
       end loop;
    end Skip_Spaces;
 
@@ -38,12 +30,12 @@ package body Ada.Text_IO.Formatting is
    is
       Line : constant Count := Line_Length (File); -- checking the predicate
    begin
-      if Line = 0 then
-         null;
-      elsif Count (Width) > Line then
-         Raise_Exception (Layout_Error'Identity);
-      elsif Col (File) + Count (Width) - 1 > Line then
-         New_Line (File);
+      if Line > 0 then
+         if Count (Width) > Line then
+            Raise_Exception (Layout_Error'Identity);
+         elsif Col (File) + Count (Width) - 1 > Line then
+            New_Line (File);
+         end if;
       end if;
    end Adjust;
 
@@ -90,7 +82,7 @@ package body Ada.Text_IO.Formatting is
          if Item = '_' then
             exit when Last = Start;
             Add (Buffer, Last, Item);
-            Get (File, Item);
+            Skip_Ahead (File);
             Look_Ahead (File, Item, End_Of_Line);
          end if;
          exit when Item not in '0' .. '9'
@@ -98,7 +90,7 @@ package body Ada.Text_IO.Formatting is
                or else (Item not in 'A' .. 'F'
                   and then Item not in 'a' .. 'f'));
          Add (Buffer, Last, Item);
-         Get (File, Item);
+         Skip_Ahead (File);
          Look_Ahead (File, Item, End_Of_Line);
       end loop;
    end Get_Num;
@@ -279,9 +271,9 @@ package body Ada.Text_IO.Formatting is
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
          package Holder is
-            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Holder.Assign (Buffer'Access);
+         Holder.Assign (Buffer);
          declare
             Prev_Last : Natural;
             Mark : Character;
@@ -291,7 +283,7 @@ package body Ada.Text_IO.Formatting is
             Look_Ahead (File, Item, End_Of_Line);
             if Item = '+' or else Item = '-' then
                Add (Buffer, Last, Item);
-               Get (File, Item);
+               Skip_Ahead (File);
                Look_Ahead (File, Item, End_Of_Line);
             end if;
             Prev_Last := Last;
@@ -301,33 +293,33 @@ package body Ada.Text_IO.Formatting is
                if Item = '#' or else Item = ':' then
                   Mark := Item;
                   Add (Buffer, Last, Item);
-                  Get (File, Item);
+                  Skip_Ahead (File);
                   Get_Num (File, Buffer, Last, Based => True);
                   Look_Ahead (File, Item, End_Of_Line);
                   if Item = '.' and then Real then
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                      Get_Num (File, Buffer, Last, Based => False);
                      Look_Ahead (File, Item, End_Of_Line);
                   end if;
                   if Item = Mark then
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                      Look_Ahead (File, Item, End_Of_Line);
                   end if;
                elsif Item = '.' and then Real then
                   Add (Buffer, Last, Item);
-                  Get (File, Item);
+                  Skip_Ahead (File);
                   Get_Num (File, Buffer, Last, Based => False);
                   Look_Ahead (File, Item, End_Of_Line);
                end if;
                if Item = 'E' or else Item = 'e' then
                   Add (Buffer, Last, Item);
-                  Get (File, Item);
+                  Skip_Ahead (File);
                   Look_Ahead (File, Item, End_Of_Line);
                   if Item = '+' or else Item = '-' then
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                      Look_Ahead (File, Item, End_Of_Line);
                   end if;
                   Get_Num (File, Buffer, Last, Based => False);
@@ -350,7 +342,7 @@ package body Ada.Text_IO.Formatting is
       Look_Ahead (File, Item, End_Of_Line);
       Paren := Item = '(';
       if Paren then
-         Get (File, Item);
+         Skip_Ahead (File);
       end if;
       declare
          Re : constant String := Get_Numeric_Literal (File, True);
@@ -358,7 +350,7 @@ package body Ada.Text_IO.Formatting is
          Skip_Spaces (File);
          Look_Ahead (File, Item, End_Of_Line);
          if Item = ',' then
-            Get (File, Item);
+            Skip_Ahead (File);
          end if;
          declare
             Im : constant String := Get_Numeric_Literal (File, True);
@@ -367,7 +359,7 @@ package body Ada.Text_IO.Formatting is
                Skip_Spaces (File);
                Look_Ahead (File, Item, End_Of_Line);
                if Item = ')' then
-                  Get (File, Item);
+                  Skip_Ahead (File);
                else
                   Raise_Exception (Data_Error'Identity);
                end if;
@@ -386,9 +378,9 @@ package body Ada.Text_IO.Formatting is
          Buffer : aliased String_Access := new String (1 .. 256);
          Last : Natural := 0;
          package Holder is
-            new Exceptions.Finally.Scoped_Holder (String_Access, Finally);
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Holder.Assign (Buffer'Access);
+         Holder.Assign (Buffer);
          declare
             Item : Character;
             End_Of_Line : Boolean;
@@ -396,7 +388,7 @@ package body Ada.Text_IO.Formatting is
             Look_Ahead (File, Item, End_Of_Line);
             if Item = ''' then
                Add (Buffer, Last, Item);
-               Get (File, Item);
+               Skip_Ahead (File);
                Look_Ahead (File, Item, End_Of_Line);
                if not End_Of_Line then
                   declare
@@ -409,18 +401,18 @@ package body Ada.Text_IO.Formatting is
                         Length,
                         Sequence_Status);
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                      for I in 2 .. Length loop
                         Look_Ahead (File, Item, End_Of_Line);
                         exit when End_Of_Line;
                         Add (Buffer, Last, Item);
-                        Get (File, Item);
+                        Skip_Ahead (File);
                      end loop;
                   end;
                   Look_Ahead (File, Item, End_Of_Line);
                   if Item = ''' then
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                   end if;
                end if;
             elsif Item in 'A' .. 'Z'
@@ -433,7 +425,7 @@ package body Ada.Text_IO.Formatting is
                loop
                   if Item = '_' then
                      Add (Buffer, Last, Item);
-                     Get (File, Item);
+                     Skip_Ahead (File);
                      Look_Ahead (File, Item, End_Of_Line);
                   end if;
                   exit when not (
@@ -442,7 +434,7 @@ package body Ada.Text_IO.Formatting is
                      or else Item in '0' .. '9'
                      or else Item >= Character'Val (16#80#));
                   Add (Buffer, Last, Item);
-                  Get (File, Item);
+                  Skip_Ahead (File);
                   Look_Ahead (File, Item, End_Of_Line);
                end loop;
             end if;
@@ -467,7 +459,7 @@ package body Ada.Text_IO.Formatting is
       for I in Item'Range loop
          Look_Ahead (File, Item (I), End_Of_Line);
          exit when End_Of_Line;
-         Get (File, Item (I));
+         Skip_Ahead (File);
          if Item (I) = Character'Val (9) then
             Item (I) := ' '; -- treat tab as space, defined by RM A.10.6 (5/2)
          elsif Item (I) /= ' ' then

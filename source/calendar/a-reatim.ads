@@ -95,9 +95,11 @@ package Ada.Real_Time is
       -(2 ** (Duration'Size - 1)) / 1000000000 ..
       +(2 ** (Duration'Size - 1) - 1) / 1000000000; -- implementation-defined
 
-   --  what is Split meaning? because origin point of Time is unspecified...
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
 --  function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
+
+   --  Note: What is Split meaning?
+   --    Because the origin point of Time is unspecified...
 
 private
 

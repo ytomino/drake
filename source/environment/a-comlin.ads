@@ -9,6 +9,7 @@ package Ada.Command_Line is
    pragma Inline (Argument_Count); -- renamed
 
    function Argument (Number : Positive) return String;
+   pragma Inline (Argument);
 
    --  extended from here
    --  The iterator.

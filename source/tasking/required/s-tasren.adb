@@ -158,15 +158,10 @@ package body System.Tasking.Rendezvous is
          Tasks.Activate (Task_Record_Conv.To_Pointer (Acceptor));
       end if;
       declare
-         procedure Finally (X : not null access Synchronous_Objects.Event);
-         procedure Finally (X : not null access Synchronous_Objects.Event) is
-         begin
-            Synchronous_Objects.Finalize (X.all);
-         end Finally;
          package Holder is
             new Ada.Exceptions.Finally.Scoped_Holder (
                Synchronous_Objects.Event,
-               Finally);
+               Synchronous_Objects.Finalize);
          The_Node : aliased Node := (
             Super => <>,
             Previous => null,
@@ -178,7 +173,7 @@ package body System.Tasking.Rendezvous is
          Aborted : Boolean;
       begin
          Synchronous_Objects.Initialize (The_Node.Waiting);
-         Holder.Assign (The_Node.Waiting'Access);
+         Holder.Assign (The_Node.Waiting);
          Tasks.Call (
             Task_Record_Conv.To_Pointer (Acceptor),
             The_Node.Super'Unchecked_Access);

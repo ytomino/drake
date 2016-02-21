@@ -194,15 +194,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Item : Streams.Stream_Element_Array)
       return String_Type
    is
-      procedure Finally (X : not null access String_Type_Access);
-      procedure Finally (X : not null access String_Type_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            String_Type_Access,
-            Finally);
+         new Exceptions.Finally.Scoped_Holder (String_Type_Access, Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
       Last : Streams.Stream_Element_Offset := Item'First - 1;
@@ -210,7 +203,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last : Natural;
       Status : Substituting_Status_Type;
    begin
-      Holder.Assign (Out_Item'Access);
+      Holder.Assign (Out_Item);
       Out_Item := new String_Type (1 .. 2 * Item'Length / Integer (CS_In_SE));
       Out_Last := 0;
       loop
@@ -333,15 +326,10 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Item : String_Type)
       return Streams.Stream_Element_Array
    is
-      procedure Finally (X : not null access Stream_Element_Array_Access);
-      procedure Finally (X : not null access Stream_Element_Array_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (
             Stream_Element_Array_Access,
-            Finally);
+            Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
       Last : Natural := Item'First - 1;
@@ -349,7 +337,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last : Streams.Stream_Element_Offset;
       Status : Substituting_Status_Type;
    begin
-      Holder.Assign (Out_Item'Access);
+      Holder.Assign (Out_Item);
       Out_Item := new Streams.Stream_Element_Array (
          0 ..
          2 * Item'Length * CS_In_SE - 1);

@@ -1,3 +1,4 @@
+with System.Debug;
 with C.winerror;
 package body System.Native_Tasks is
    use type C.void_ptr; -- C.void_ptr
@@ -121,9 +122,14 @@ package body System.Native_Tasks is
       Closing_Handle : constant Handle_Type := Attr.Event;
    begin
       Attr.Event := C.winbase.INVALID_HANDLE_VALUE;
-      if C.winbase.CloseHandle (Closing_Handle) = 0 then
-         null; -- ignore
-      end if;
+      declare
+         R : C.windef.WINBOOL;
+      begin
+         R := C.winbase.CloseHandle (Closing_Handle);
+         pragma Check (Debug,
+            Check => R /= 0
+               or else Debug.Runtime_Error ("CloseHandle failed"));
+      end;
    end Finalize;
 
    procedure Send_Abort_Signal (

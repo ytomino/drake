@@ -318,10 +318,8 @@ package body System.Native_IO is
          Race_Is_Raising : constant Boolean := not Form.Wait;
          pragma Warnings (Off, Race_Is_Raising);
          Operation_Table : constant array (
-            Ada.IO_Modes.File_Shared range
-               Ada.IO_Modes.Read_Only ..
-               Ada.IO_Modes.Deny) of
-            C.unsigned_int := (
+            Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
+            Ada.IO_Modes.Deny) of C.unsigned_int := (
                Ada.IO_Modes.Read_Only => C.sys.file.LOCK_SH,
                Ada.IO_Modes.Deny => C.sys.file.LOCK_EX);
          operation : C.unsigned_int;

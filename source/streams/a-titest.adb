@@ -5,10 +5,13 @@ package body Ada.Text_IO.Text_Streams is
       Mode : File_Mode;
       Stream : Stream_Access;
       Name : String := "";
-      Form : String) is
+      Form : String)
+   is
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Text_IO.Open (
-         File => Reference (File).all,
+         File => NC_File,
          Mode => IO_Modes.File_Mode (Mode),
          Stream => Stream,
          Name => Name,
@@ -24,10 +27,13 @@ package body Ada.Text_IO.Text_Streams is
       Wait : Boolean := False;
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
-      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target) is
+      New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
+   is
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
       Naked_Text_IO.Open (
-         File => Reference (File).all,
+         File => NC_File,
          Mode => IO_Modes.File_Mode (Mode),
          Stream => Stream,
          Name => Name,
@@ -36,9 +42,12 @@ package body Ada.Text_IO.Text_Streams is
 
    function Stream (
       File : File_Type)
-      return Stream_Access is
+      return Stream_Access
+   is
+      NC_File : Naked_Text_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
    begin
-      return Naked_Text_IO.Stream (Reference (File).all);
+      return Naked_Text_IO.Stream (NC_File);
    end Stream;
 
 end Ada.Text_IO.Text_Streams;

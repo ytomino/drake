@@ -94,11 +94,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
---
---
---
 
 --  diff (Copy_Node)
 --
@@ -373,17 +368,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      procedure Finally (X : not null access Element_Access);
-      procedure Finally (X : not null access Element_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (Element_Access, Finally);
+         new Exceptions.Finally.Scoped_Holder (Element_Access, Free);
       New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
       Before : constant Cursor := Ceiling (Container, New_Element.all);
    begin
-      Holder.Assign (New_Element'Access);
+      Holder.Assign (New_Element);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
@@ -482,6 +472,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Union)
 --
@@ -513,6 +507,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
       Binary_Trees.Merge (
          Target.Root,
          Target.Length,
@@ -525,6 +520,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Insert => null,
          Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Intersection;
 
@@ -592,6 +588,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --

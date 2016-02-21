@@ -225,7 +225,7 @@ private
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
       Last : Natural := 0;
-      Ahead_Last : Natural := 0; -- one-character Length, In_Mode only
+      Ahead_Last : Natural := 0; -- one-character Length, only In_File mode
       Ahead_Col : Natural := 0; -- one-character Col
       Looked_Ahead_Last : Natural := 0;
       Looked_Ahead_Second : String (1 .. 3); -- second of surrogate pair

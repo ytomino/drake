@@ -11,6 +11,11 @@ package body Ada.Command_Line.Argument_Parsing is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memchr";
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+   pragma No_Return (unreachable);
+
    function Match (
       Argument : String;
       Position : aliased in out Cursor;
@@ -219,7 +224,8 @@ package body Ada.Command_Line.Argument_Parsing is
          when Long_Option =>
             return Argument (Argument'First .. Position.Option_Index - 2);
          when others =>
-            raise Constraint_Error; -- status error
+            pragma Check (Pre, Boolean'(raise Constraint_Error));
+            unreachable;
       end case;
    end Name;
 
@@ -232,7 +238,8 @@ package body Ada.Command_Line.Argument_Parsing is
          when Long_Option =>
             return Character'Val (0);
          when others =>
-            raise Constraint_Error; -- status error
+            pragma Check (Pre, Boolean'(raise Constraint_Error));
+            unreachable;
       end case;
    end Short_Name;
 
@@ -244,7 +251,8 @@ package body Ada.Command_Line.Argument_Parsing is
          when Long_Option =>
             return Argument (Position.Index .. Position.Option_Index - 2);
          when others =>
-            raise Constraint_Error; -- status error
+            pragma Check (Pre, Boolean'(raise Constraint_Error));
+            unreachable;
       end case;
    end Long_Name;
 
@@ -273,7 +281,8 @@ package body Ada.Command_Line.Argument_Parsing is
                return None;
             end if;
          when others =>
-            raise Constraint_Error; -- status error
+            pragma Check (Pre, Boolean'(raise Constraint_Error));
+            unreachable;
       end case;
    end Has_Value;
 
@@ -283,7 +292,8 @@ package body Ada.Command_Line.Argument_Parsing is
          when Short_Option | Long_Option =>
             return Argument (Position.Option_Index .. Argument'Last);
          when others =>
-            raise Constraint_Error; -- status error
+            pragma Check (Pre, Boolean'(raise Constraint_Error));
+            unreachable;
       end case;
    end Value;
 

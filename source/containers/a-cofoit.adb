@@ -57,13 +57,13 @@ package body Ada.Containers.Forward_Iterators is
 
    function Has_Element (Position : Cursor) return Boolean is
    begin
-      return Reference (Position) /= null;
+      return Controlled.Reference (Position) /= null;
    end Has_Element;
 
    function Constant_Reference (Position : Cursor)
       return Constant_Reference_Type is
    begin
-      return (Element => Reference (Position).Item.all'Access);
+      return (Element => Controlled.Reference (Position).Item.all'Access);
    end Constant_Reference;
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
@@ -77,7 +77,7 @@ package body Ada.Containers.Forward_Iterators is
       end return;
    end Iterate;
 
-   package body Cursors is
+   package body Controlled is
 
       function Create (Node : Node_Access) return Cursor is
       begin
@@ -87,9 +87,10 @@ package body Ada.Containers.Forward_Iterators is
          return (Finalization.Controlled with Node => Node);
       end Create;
 
-      function Reference (Position : Cursor) return Node_Access is
+      function Reference (Position : Forward_Iterators.Cursor)
+         return Node_Access is
       begin
-         return Position.Node;
+         return Cursor (Position).Node;
       end Reference;
 
       overriding procedure Adjust (Object : in out Cursor) is
@@ -104,7 +105,7 @@ package body Ada.Containers.Forward_Iterators is
          Release (Object.Node);
       end Finalize;
 
-   end Cursors;
+   end Controlled;
 
    overriding procedure Finalize (Object : in out Iterator) is
    begin
@@ -123,10 +124,9 @@ package body Ada.Containers.Forward_Iterators is
    is
       Mutable_Object : Iterator
          renames Object'Unrestricted_Access.all;
+      Result_Node : Node_Access := Controlled.Reference (Position).Next;
    begin
-      if Reference (Position).Next /= null then
-         return Create (Reference (Position).Next);
-      else
+      if Result_Node = null then
          --  Position is the current last
          if Mutable_Object.State /= No_Element then
             Mutable_Object.State := Next;
@@ -136,8 +136,9 @@ package body Ada.Containers.Forward_Iterators is
                   Mutable_Object.Last_Input_Cursor);
             Update_Last (Mutable_Object);
          end if;
-         return Create (Mutable_Object.Last);
+         Result_Node := Mutable_Object.Last;
       end if;
+      return Create (Result_Node);
    end Next;
 
 end Ada.Containers.Forward_Iterators;

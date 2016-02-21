@@ -85,16 +85,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
    procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
-      procedure Finally (X : not null access Cursor);
-      procedure Finally (X : not null access Cursor) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+         new Exceptions.Finally.Scoped_Holder (Cursor, Free);
       X : aliased Cursor := new Node;
    begin
-      Holder.Assign (X'Access);
+      Holder.Assign (X);
       Allocate_Element (X.Element, New_Item);
       Holder.Clear;
       Item := X;
@@ -376,11 +371,6 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
---  diff
---  diff
       Before : constant Cursor := Ceiling (Container, New_Item);
    begin
 --  diff
@@ -467,19 +457,23 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Union (Target : in out Set; Source : Set) is
    begin
       if not Is_Empty (Source) then
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => True,
-            In_Only_Right => True,
-            In_Both => True,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+         if Is_Empty (Target) then
+            Assign (Target, Source);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => True,
+               In_Only_Right => True,
+               In_Both => True,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Union;
 
@@ -509,22 +503,24 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
-      if Is_Empty (Source) then
-         Clear (Target);
-      else
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => False,
-            In_Only_Right => False,
-            In_Both => True,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+      if not Is_Empty (Target) then
+         if Is_Empty (Source) then
+            Clear (Target);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => False,
+               In_Only_Right => False,
+               In_Both => True,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Intersection;
 
@@ -532,7 +528,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       return Result : Set do
          if Is_Empty (Left) or else Is_Empty (Right) then
-            null; -- Empty_Set;
+            null; -- Empty_Set
          else
             Unique (Result, True);
             Binary_Trees.Merge (
@@ -594,19 +590,23 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    procedure Symmetric_Difference (Target : in out Set; Source : Set) is
    begin
       if not Is_Empty (Source) then
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => True,
-            In_Only_Right => True,
-            In_Both => False,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+         if Is_Empty (Target) then
+            Assign (Target, Source);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => True,
+               In_Only_Right => True,
+               In_Both => False,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Symmetric_Difference;
 

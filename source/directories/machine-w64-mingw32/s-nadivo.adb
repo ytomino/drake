@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
+with System.Address_To_Constant_Access_Conversions;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -47,9 +48,14 @@ package body System.Native_Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
+               type WCHAR_const_ptr is access constant C.winnt.WCHAR;
+               package WCHAR_const_ptr_Conv is
+                  new System.Address_To_Constant_Access_Conversions (
+                     C.winnt.WCHAR,
+                     WCHAR_const_ptr);
                FileSystem_A : C.winnt.WCHAR_array (C.size_t);
                for FileSystem_A'Address use
-                  Conv.To_Address (C.winnt.LPWSTR (FileSystemNameBuffer));
+                  WCHAR_const_ptr_Conv.To_Address (FileSystemNameBuffer);
             begin
                FS.Is_NTFS := FileSystem_A (0) = Wide_Character'Pos ('N')
                   and then FileSystem_A (1) = Wide_Character'Pos ('T')
@@ -227,10 +233,10 @@ package body System.Native_Directories.Volumes is
 
    package body Controlled is
 
-      function Reference (Object : File_System)
+      function Reference (Object : Volumes.File_System)
          return not null access Non_Controlled_File_System is
       begin
-         return Object.Data'Unrestricted_Access;
+         return File_System (Object).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out File_System) is

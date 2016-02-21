@@ -54,10 +54,10 @@ package body Ada.Storage_Mapped_IO is
    --  implementation
 
    function Is_Mapped (Object : Storage_Type) return Boolean is
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
-      return NC_Mapping.Mapping.Storage_Address /= System.Null_Address;
+      return NC_Object.Mapping.Storage_Address /= System.Null_Address;
    end Is_Mapped;
 
    procedure Map (
@@ -68,12 +68,12 @@ package body Ada.Storage_Mapped_IO is
    is
       pragma Check (Pre,
          Check => not Is_Mapped (Object) or else raise Status_Error);
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
       --  map
       Map (
-         NC_Mapping.all,
+         NC_Object,
          Streams.Stream_IO.Naked.Non_Controlled (File).all,
          Offset,
          Size,
@@ -101,20 +101,20 @@ package body Ada.Storage_Mapped_IO is
    is
       pragma Check (Pre,
          Check => not Is_Mapped (Object) or else raise Status_Error);
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
       --  open file
       --  this file will be closed in Finalize even if any exception is raised
       Streams.Naked_Stream_IO.Open (
-         NC_Mapping.File,
+         NC_Object.File,
          IO_Modes.File_Mode (Mode),
          Name,
          Streams.Naked_Stream_IO.Pack (Form));
       --  map
       Map (
-         NC_Mapping.all,
-         NC_Mapping.File,
+         NC_Object,
+         NC_Object.File,
          Offset,
          Size,
          Writable => Mode /= In_File);
@@ -136,10 +136,10 @@ package body Ada.Storage_Mapped_IO is
    procedure Unmap (Object : in out Storage_Type) is
       pragma Check (Pre,
          Check => Is_Mapped (Object) or else raise Status_Error);
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
-      Unmap (NC_Mapping.all, Raise_On_Error => True);
+      Unmap (NC_Object, Raise_On_Error => True);
    end Unmap;
 
    function Storage_Address (
@@ -148,10 +148,10 @@ package body Ada.Storage_Mapped_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Mapped (Object) or else raise Status_Error);
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
-      return NC_Mapping.Mapping.Storage_Address;
+      return NC_Object.Mapping.Storage_Address;
    end Storage_Address;
 
    function Storage_Size (
@@ -160,18 +160,18 @@ package body Ada.Storage_Mapped_IO is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Mapped (Object) or else raise Status_Error);
-      NC_Mapping : constant not null access Non_Controlled_Mapping :=
-         Reference (Object);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
    begin
-      return NC_Mapping.Mapping.Storage_Size;
+      return NC_Object.Mapping.Storage_Size;
    end Storage_Size;
 
    package body Controlled is
 
-      function Reference (Object : Storage_Type)
+      function Reference (Object : Storage_Mapped_IO.Storage_Type)
          return not null access Non_Controlled_Mapping is
       begin
-         return Object.Data'Unrestricted_Access;
+         return Storage_Type (Object).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Storage_Type) is

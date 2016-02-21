@@ -167,43 +167,6 @@ package body Ada.Containers.Vectors is
       end if;
    end Unique;
 
-   function Array_To_Vector (
-      Source : Element_Array;
-      Capacity : Count_Type)
-      return Vector;
-   function Array_To_Vector (
-      Source : Element_Array;
-      Capacity : Count_Type)
-      return Vector
-   is
-      Length : constant Count_Type := Source'Length;
-      New_Capacity : constant Count_Type := Count_Type'Max (Capacity, Length);
-   begin
-      return Result : Vector := (Finalization.Controlled with
-         Super => <>,
-         Length => Length)
-      do
-         if New_Capacity /= 0 then
-            declare
-               Capacity_Last : constant Extended_Index :=
-                  Index_Type'First - 1 + Index_Type'Base (New_Capacity);
-               Last : constant Extended_Index :=
-                  Index_Type'First - 1 + Index_Type'Base (Length);
-               New_Data : Data_Access;
-            begin
-               New_Data := new Data'(
-                  Capacity_Last => Capacity_Last,
-                  Super => <>,
-                  Items => Source & (Last + 1 .. Capacity_Last => <>));
-               New_Data.Super.Max_Length := Length;
-               --  follow
-               Result.Super.Data := Upcast (New_Data);
-               New_Data.Super.Super.Follower := Result.Super'Unchecked_Access;
-            end;
-         end if;
-      end return;
-   end Array_To_Vector;
-
    --  implementation
 
    function Empty_Vector return Vector is
@@ -258,7 +221,19 @@ package body Ada.Containers.Vectors is
 
    function Generic_Array_To_Vector (S : Element_Array) return Vector is
    begin
-      return Array_To_Vector (Vectors.Element_Array (S), 0);
+      return Result : Vector do
+         declare
+            Length : constant Count_Type := S'Length;
+            subtype R1 is
+               Extended_Index range
+                  Index_Type'First ..
+                  Index_Type'First - 1 + Index_Type'Base (Length);
+         begin
+            Set_Length (Result, Length);
+            Downcast (Result.Super.Data).Items (R1) :=
+               Vectors.Element_Array (S);
+         end;
+      end return;
    end Generic_Array_To_Vector;
 
    function "&" (Left, Right : Vector) return Vector is
@@ -503,23 +478,30 @@ package body Ada.Containers.Vectors is
       pragma Check (Pre,
          Check => Before <= Last_Index (Container) + 1
             or else raise Constraint_Error);
+      New_Item_Length : constant Count_Type := New_Item.Length;
    begin
       if Container.Length = 0 then
          Position := Index_Type'First;
-         Assign (Container, New_Item);
+         if New_Item_Length > 0 then
+            Assign (Container, New_Item);
+         end if;
       else
-         Insert_Space (Container, Before, Position, New_Item.Length);
+         Insert_Space (Container, Before, Position, New_Item_Length);
          declare
             subtype R1 is
-               Index_Type range
+               Extended_Index range
                   Position ..
-                  Position + Index_Type'Base (New_Item.Length) - 1;
+                  Position + Index_Type'Base (New_Item_Length) - 1;
+            subtype R2 is
+               Extended_Index range
+                  Index_Type'First ..
+                  Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
+            --  Do not use New_Item.Length or Last_Index (New_Item) in here
+            --    for Append (X, X).
          begin
             Downcast (Container.Super.Data).Items (R1) :=
-               Downcast (New_Item.Super.Data).Items;
+               Downcast (New_Item.Super.Data).Items (R2);
          end;
---  diff
---  diff
 --  diff
 --  diff
 --  diff
@@ -583,9 +565,11 @@ package body Ada.Containers.Vectors is
 
    procedure Append (
       Container : in out Vector;
-      New_Item : Vector) is
+      New_Item : Vector)
+   is
+      New_Item_Length : constant Count_Type := New_Item.Length;
    begin
-      if New_Item.Length > 0 then
+      if New_Item_Length > 0 then
          declare
             Old_Length : constant Count_Type := Container.Length;
          begin
@@ -595,21 +579,21 @@ package body Ada.Containers.Vectors is
                Set_Length (Container, Old_Length + New_Item.Length);
                declare
                   subtype R1 is
-                     Index_Type range
+                     Extended_Index range
                         Index_Type'First + Index_Type'Base (Old_Length) ..
                         Last_Index (Container);
                   subtype R2 is
-                     Index_Type range
+                     Extended_Index range
                         Index_Type'First ..
-                        Last_Index (New_Item);
+                        Index_Type'First
+                           - 1
+                           + Index_Type'Base (New_Item_Length);
+                  --  Do not use New_Item.Length or Last_Index (New_Item)
+                  --    in here for Append (X, X).
                begin
                   Downcast (Container.Super.Data).Items (R1) :=
                      Downcast (New_Item.Super.Data).Items (R2);
                end;
---  diff
---  diff
---  diff
---  diff
             end if;
          end;
       end if;
@@ -660,37 +644,35 @@ package body Ada.Containers.Vectors is
       pragma Check (Pre,
          Check => Before <= Last_Index (Container) + 1
             or else raise Constraint_Error);
+      Old_Length : constant Count_Type := Container.Length;
       After_Last : constant Index_Type'Base :=
-         Index_Type'First + Index_Type'Base (Container.Length);
+         Index_Type'First + Index_Type'Base (Old_Length);
    begin
       Position := Before;
       if Position = No_Element then
          Position := After_Last;
       end if;
-      if Position = After_Last then -- Last_Index (Container) + 1
-         Set_Length (Container, Container.Length + Count);
-      else
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-            Moving : constant Index_Type'Base :=
-               Last_Index (Container) - Position;
-            After : constant Index_Type := Position + Index_Type'Base (Count);
-         begin
-            Set_Length (Container, Old_Length + Count);
-            Unique (Container, True);
+      if Count > 0 then
+         Set_Length (Container, Old_Length + Count);
+         if Position < After_Last then -- Last_Index (Container) + 1
+            declare
+               subtype R1 is
+                  Extended_Index range
+                     Position + Index_Type'Base (Count) ..
+                     After_Last - 1 + Index_Type'Base (Count);
+               subtype R2 is Extended_Index range Position .. After_Last - 1;
+            begin
+               Unique (Container, True);
 --  diff
 --  diff
 --  diff
+               Downcast (Container.Super.Data).Items (R1) :=
+                  Downcast (Container.Super.Data).Items (R2);
 --  diff
 --  diff
 --  diff
-            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
-               Downcast (Container.Super.Data).Items
-                  (Position .. Position + Moving);
---  diff
---  diff
---  diff
-         end;
+            end;
+         end if;
       end if;
    end Insert_Space;
 
@@ -705,35 +687,36 @@ package body Ada.Containers.Vectors is
                Index_Type'First ..
                Last_Index (Container) - Index_Type'Base (Count) + 1
             or else raise Constraint_Error);
-      Old_Length : constant Count_Type := Container.Length;
    begin
-      if Index + Index_Type'Base (Count) =
-         Index_Type'First + Index_Type'Base (Old_Length)
-      then
-         Set_Length (Container, Old_Length - Count);
-      else
-         Unique (Container, True);
+      if Count > 0 then
          declare
-            Moving : constant Index_Type'Base :=
-               (Index_Type'First + Index_Type'Base (Old_Length))
-               - (Index + Index_Type'Base (Count))
-               - 1;
-            Before : constant Index_Type := Index + Index_Type'Base (Count);
-            After : constant Index_Type := Index;
+            Old_Length : constant Count_Type := Container.Length;
+            After_Last : constant Index_Type'Base :=
+               Index_Type'First + Index_Type'Base (Old_Length);
          begin
+            if Index + Index_Type'Base (Count) < After_Last then
+               Unique (Container, True);
+               declare
+                  subtype R1 is
+                     Extended_Index range
+                        Index ..
+                        After_Last - 1 - Index_Type'Base (Count);
+                  subtype R2 is
+                     Extended_Index range
+                        Index + Index_Type'Base (Count) ..
+                        After_Last - 1;
+               begin
+--  diff
+--  diff
+--  diff
+                  Downcast (Container.Super.Data).Items (R1) :=
+                     Downcast (Container.Super.Data).Items (R2);
+--  diff
+--  diff
+--  diff
+               end;
+            end if;
             Set_Length (Container, Old_Length - Count);
---  diff
---  diff
---  diff
-            Downcast (Container.Super.Data).Items (After .. After + Moving) :=
-               Downcast (Container.Super.Data).Items
-                  (Before .. Before + Moving);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
          end;
       end if;
    end Delete;

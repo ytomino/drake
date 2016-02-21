@@ -27,6 +27,14 @@ package System.Native_Processes is
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status);
 
+   procedure Do_Wait_Immediate (
+      Child : in out Process;
+      Terminated : out Boolean;
+      Status : out Ada.Command_Line.Exit_Status);
+
+   procedure Do_Abort_Process (Child : in out Process);
+   procedure Do_Forced_Abort_Process (Child : in out Process);
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);

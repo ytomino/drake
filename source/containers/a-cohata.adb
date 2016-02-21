@@ -320,6 +320,7 @@ package body Ada.Containers.Hash_Tables is
             Position : Node_Access := First (Container);
          begin
             Free (Container);
+            pragma Assert (New_Capacity > 0 or else Position = null);
             if New_Capacity > 0 then
                Container := new Table'(
                   Last => Hash_Type (New_Capacity) - 1,
@@ -332,9 +333,6 @@ package body Ada.Containers.Hash_Tables is
                      Position := Next;
                   end;
                end loop;
-            else
-               pragma Assert (Position = null);
-               null;
             end if;
          end;
       end if;
@@ -411,15 +409,15 @@ package body Ada.Containers.Hash_Tables is
          Source : not null Node_Access);
       Free : access procedure (Object : in out Node_Access)) is
    begin
-      if Length = 0 and then Source_Length = 0 then
-         null;
-      elsif Length = 0 and then In_Only_Right then
-         Hash_Tables.Free (Target);
-         Hash_Tables.Copy (Target, Length, Source, Source_Length, Copy);
-      elsif Source_Length = 0 and then In_Only_Left then
-         null;
-      elsif Length = 0 or else Source_Length = 0 then
-         Hash_Tables.Free (Target, Length, Free);
+      if Length = 0 then
+         if In_Only_Right and then Source_Length > 0 then
+            Hash_Tables.Free (Target);
+            Hash_Tables.Copy (Target, Length, Source, Source_Length, Copy);
+         end if;
+      elsif Source_Length = 0 then
+         if not In_Only_Left then -- Length > 0
+            Hash_Tables.Free (Target, Length, Free);
+         end if;
       else
          declare
             I, Next : Node_Access;
@@ -481,16 +479,21 @@ package body Ada.Containers.Hash_Tables is
          Target : out Node_Access;
          Source : not null Node_Access)) is
    begin
-      if Left_Length = 0 and then Right_Length = 0 then
-         Target := null;
-         Length := 0;
-      elsif Left_Length = 0 and then In_Only_Right then
-         Hash_Tables.Copy (Target, Length, Right, Right_Length, Copy => Copy);
-      elsif Right_Length = 0 and then In_Only_Left then
-         Hash_Tables.Copy (Target, Length, Left, Left_Length, Copy => Copy);
-      elsif Left_Length = 0 or else Right_Length = 0 then
-         Target := null;
-         Length := 0;
+      if Left_Length = 0 then
+         if In_Only_Right and then Right_Length > 0 then
+            Hash_Tables.Copy (Target, Length, Right, Right_Length,
+               Copy => Copy);
+         else
+            Target := null;
+            Length := 0;
+         end if;
+      elsif Right_Length = 0 then
+         if In_Only_Left then -- Left_Length > 0
+            Hash_Tables.Copy (Target, Length, Left, Left_Length, Copy => Copy);
+         else
+            Target := null;
+            Length := 0;
+         end if;
       else
          Target := null;
          Length := 0;

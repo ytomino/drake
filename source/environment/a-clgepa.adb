@@ -46,19 +46,14 @@ package body Ada.Command_Line.Generic_Parsing is
       while Has_Element (Next_Index) loop
          pragma Check (Trace, Debug.Put ("allocate"));
          declare
-            procedure Finally (X : not null access Argument_Context_Access);
-            procedure Finally (X : not null access Argument_Context_Access) is
-            begin
-               Release (X.all);
-            end Finally;
             package Holder is
                new Exceptions.Finally.Scoped_Holder (
                   Argument_Context_Access,
-                  Finally);
+                  Release);
             Context : aliased Argument_Context_Access;
             Subindex : Argument_Parsing.Cursor;
          begin
-            Holder.Assign (Context'Access);
+            Holder.Assign (Context);
             Context := new Argument_Context'(
                Reference_Count => 1,
                Index => Next_Index,
@@ -86,7 +81,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Has_Element (Position : Cursor) return Boolean is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
       Context : constant Argument_Context_Access :=
          NC_Position.Argument_Context;
    begin
@@ -106,7 +101,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Argument (Position : Cursor) return String is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return NC_Position.Argument_Context.Argument.all;
    end Argument;
@@ -118,7 +113,7 @@ package body Ada.Command_Line.Generic_Parsing is
       return Boolean
    is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
          NC_Position.Argument_Context.Argument.all,
@@ -135,7 +130,7 @@ package body Ada.Command_Line.Generic_Parsing is
       return Boolean
    is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
          NC_Position.Argument_Context.Argument.all,
@@ -153,7 +148,7 @@ package body Ada.Command_Line.Generic_Parsing is
       return Boolean
    is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Is_Option (
          NC_Position.Argument_Context.Argument.all,
@@ -166,7 +161,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Is_Unknown_Option (Position : Cursor) return Boolean is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Is_Unknown_Option (
          NC_Position.Argument_Context.Argument.all,
@@ -175,7 +170,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Name (Position : Cursor) return String is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Name (
          NC_Position.Argument_Context.Argument.all,
@@ -184,7 +179,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Short_Name (Position : Cursor) return Character is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Short_Name (
          NC_Position.Argument_Context.Argument.all,
@@ -193,7 +188,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Long_Name (Position : Cursor) return String is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
    begin
       return Argument_Parsing.Long_Name (
          NC_Position.Argument_Context.Argument.all,
@@ -202,7 +197,7 @@ package body Ada.Command_Line.Generic_Parsing is
 
    function Value (Position : Cursor) return String is
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
       Context : constant not null Argument_Context_Access :=
          NC_Position.Argument_Context;
    begin
@@ -247,7 +242,7 @@ package body Ada.Command_Line.Generic_Parsing is
    is
       pragma Unreferenced (Object);
       NC_Position : Non_Controlled_Cursor
-         renames Reference (Position).all;
+         renames Controlled.Reference (Position).all;
       Context : constant not null Argument_Context_Access :=
          NC_Position.Argument_Context;
       Subindex : constant Argument_Parsing.Cursor :=
@@ -272,7 +267,7 @@ package body Ada.Command_Line.Generic_Parsing is
       end if;
    end Next;
 
-   package body Cursors is
+   package body Controlled is
 
       function Create (
          Argument_Context : Argument_Context_Access;
@@ -285,10 +280,10 @@ package body Ada.Command_Line.Generic_Parsing is
          return (Finalization.Controlled with (Argument_Context, Subindex));
       end Create;
 
-      function Reference (Position : Cursor)
+      function Reference (Position : Generic_Parsing.Cursor)
          return not null access Non_Controlled_Cursor is
       begin
-         return Position.Data'Unrestricted_Access;
+         return Cursor (Position).Data'Unrestricted_Access;
       end Reference;
 
       overriding procedure Adjust (Object : in out Cursor) is
@@ -305,6 +300,6 @@ package body Ada.Command_Line.Generic_Parsing is
          end if;
       end Finalize;
 
-   end Cursors;
+   end Controlled;
 
 end Ada.Command_Line.Generic_Parsing;

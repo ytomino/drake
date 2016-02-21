@@ -78,7 +78,7 @@ private
    end record;
    pragma Suppress_Initialization (Non_Controlled_Cursor);
 
-   package Cursors is
+   package Controlled is
 
       type Cursor is private;
 
@@ -87,7 +87,7 @@ private
          Subindex : Argument_Parsing.Cursor)
          return Cursor;
 
-      function Reference (Position : Cursor)
+      function Reference (Position : Generic_Parsing.Cursor)
          return not null access Non_Controlled_Cursor;
       pragma Inline (Reference);
 
@@ -102,9 +102,9 @@ private
       overriding procedure Adjust (Object : in out Cursor);
       overriding procedure Finalize (Object : in out Cursor);
 
-   end Cursors;
+   end Controlled;
 
-   type Cursor is new Cursors.Cursor;
+   type Cursor is new Controlled.Cursor;
 
    type Iterator is new Iterator_Interfaces.Forward_Iterator with record
       State : Argument_Parsing.State_Type;

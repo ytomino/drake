@@ -51,16 +51,11 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type);
    procedure Allocate_Node (Item : out Cursor; New_Item : Element_Type) is
-      procedure Finally (X : not null access Cursor);
-      procedure Finally (X : not null access Cursor) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (Cursor, Finally);
+         new Exceptions.Finally.Scoped_Holder (Cursor, Free);
       X : aliased Cursor := new Node;
    begin
-      Holder.Assign (X'Access);
+      Holder.Assign (X);
       Allocate_Element (X.Element, New_Item);
       Holder.Clear;
       Item := X;
@@ -331,11 +326,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Unique (Container, True);
       for I in 1 .. Count loop
          declare
---  diff
---  diff
---  diff
---  diff
---  diff
 --  diff
 --  diff
             X : Cursor;

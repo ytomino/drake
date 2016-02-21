@@ -154,19 +154,19 @@ package body Ada.Streams.Unbounded_Storage_IO is
    end Copy_Data;
 
    procedure Reallocate (
-      Stream : in out Stream_Type;
+      Buffer : in out Non_Controlled_Buffer_Type;
       Length : Stream_Element_Count;
       Size : Stream_Element_Count);
    procedure Reallocate (
-      Stream : in out Stream_Type;
+      Buffer : in out Non_Controlled_Buffer_Type;
       Length : Stream_Element_Count;
       Size : Stream_Element_Count) is
    begin
       System.Reference_Counting.Unique (
-         Target => Upcast (Stream.Data'Unchecked_Access),
-         Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Stream.Data.Capacity),
+         Target => Upcast (Buffer.Data'Unchecked_Access),
+         Target_Length => System.Reference_Counting.Length_Type (Buffer.Last),
+         Target_Capacity =>
+            System.Reference_Counting.Length_Type (Buffer.Data.Capacity),
          New_Length => System.Reference_Counting.Length_Type (Length),
          New_Capacity => System.Reference_Counting.Length_Type (Size),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
@@ -175,31 +175,31 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Free => Free_Data'Access);
    end Reallocate;
 
-   procedure Unique (Stream : in out Stream_Type);
-   procedure Unique (Stream : in out Stream_Type) is
+   procedure Unique (Buffer : in out Non_Controlled_Buffer_Type);
+   procedure Unique (Buffer : in out Non_Controlled_Buffer_Type) is
    begin
-      if System.Reference_Counting.Shared (Upcast (Stream.Data)) then
+      if System.Reference_Counting.Shared (Upcast (Buffer.Data)) then
          Reallocate (
-            Stream,
-            Stream.Last,
-            Stream.Data.Capacity); -- not shrinking
+            Buffer,
+            Buffer.Last,
+            Buffer.Data.Capacity); -- not shrinking
       end if;
    end Unique;
 
    procedure Set_Size (
-      Stream : in out Stream_Type;
+      Buffer : in out Non_Controlled_Buffer_Type;
       Size : Stream_Element_Count);
    procedure Set_Size (
-      Stream : in out Stream_Type;
+      Buffer : in out Non_Controlled_Buffer_Type;
       Size : Stream_Element_Count)
    is
-      Old_Capacity : constant Stream_Element_Count := Stream.Data.Capacity;
+      Old_Capacity : constant Stream_Element_Count := Buffer.Data.Capacity;
       Failure : Boolean;
    begin
       System.Reference_Counting.In_Place_Set_Length (
-         Target_Data => Upcast (Stream.Data),
-         Target_Length => System.Reference_Counting.Length_Type (Stream.Last),
-         Target_Max_Length => Stream.Data.Max_Length,
+         Target_Data => Upcast (Buffer.Data),
+         Target_Length => System.Reference_Counting.Length_Type (Buffer.Last),
+         Target_Max_Length => Buffer.Data.Max_Length,
          Target_Capacity =>
             System.Reference_Counting.Length_Type (Old_Capacity),
          New_Length => System.Reference_Counting.Length_Type (Size),
@@ -214,78 +214,89 @@ package body Ada.Streams.Unbounded_Storage_IO is
                New_Capacity :=
                   Stream_Element_Offset'Max (Old_Capacity * 2, Size);
             end if;
-            Reallocate (Stream, Size, New_Capacity);
+            Reallocate (Buffer, Size, New_Capacity);
          end;
       end if;
-      Stream.Last := Size;
+      Buffer.Last := Size;
    end Set_Size;
 
    --  implementation
 
    procedure Reset (Object : in out Buffer_Type) is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      S.Index := 1;
+      NC_Object.Index := 1;
    end Reset;
 
    function Size (Object : Buffer_Type) return Stream_Element_Count is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      return S.Last;
+      return NC_Object.Last;
    end Size;
 
    procedure Set_Size (
       Object : in out Buffer_Type;
       Size : Stream_Element_Count)
    is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      Set_Size (S.all, Size);
-      if S.Index > Size + 1 then
-         S.Index := Size + 1;
+      Set_Size (NC_Object, Size);
+      if NC_Object.Index > Size + 1 then
+         NC_Object.Index := Size + 1;
       end if;
    end Set_Size;
 
    function Capacity (Object : Buffer_Type) return Stream_Element_Count is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      return S.Data.Capacity;
+      return NC_Object.Data.Capacity;
    end Capacity;
 
    procedure Reserve_Capacity (
       Object : in out Buffer_Type;
       Capacity : Stream_Element_Count)
    is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
       New_Capacity : constant Stream_Element_Count :=
-         Stream_Element_Offset'Max (Capacity, S.Last);
+         Stream_Element_Offset'Max (Capacity, NC_Object.Last);
    begin
-      Reallocate (S.all, S.Last, New_Capacity);
+      Reallocate (NC_Object, NC_Object.Last, New_Capacity);
    end Reserve_Capacity;
 
    function Storage_Address (Object : aliased in out Buffer_Type)
       return System.Address
    is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      Unique (S.all);
-      return S.Data.Storage;
+      Unique (NC_Object);
+      return NC_Object.Data.Storage;
    end Storage_Address;
 
    function Storage_Size (Object : Buffer_Type)
       return System.Storage_Elements.Storage_Count
    is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Object).all;
    begin
-      return System.Storage_Elements.Storage_Count (S.Last);
+      return System.Storage_Elements.Storage_Count (NC_Object.Last);
    end Storage_Size;
 
    function Stream (Object : Buffer_Type)
       return not null access Root_Stream_Type'Class
    is
-      S : constant not null Stream_Access := Stream (Object);
+      NC_Object_Ref : constant not null access Non_Controlled_Buffer_Type :=
+         Controlled.Reference (Object);
    begin
-      return S;
+      if NC_Object_Ref.Stream = null then
+         NC_Object_Ref.Stream := new Stream_Type'(Buffer => NC_Object_Ref);
+      end if;
+      return NC_Object_Ref.Stream;
    end Stream;
 
    overriding procedure Read (
@@ -294,7 +305,8 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Last : out Stream_Element_Offset)
    is
       Length : Stream_Element_Count := Item'Length;
-      Rest : constant Stream_Element_Count := Stream.Last - Stream.Index + 1;
+      Rest : constant Stream_Element_Count :=
+         Stream.Buffer.Last - Stream.Buffer.Index + 1;
    begin
       if Length > 0 and then Rest = 0 then
          Raise_Exception (End_Error'Identity);
@@ -304,95 +316,84 @@ package body Ada.Streams.Unbounded_Storage_IO is
       end if;
       Last := Item'First + Length - 1;
       declare
-         Stream_Item : Stream_Element_Array (1 .. Stream.Last);
-         for Stream_Item'Address use Stream.Data.Storage;
+         Stream_Item : Stream_Element_Array (1 .. Stream.Buffer.Last);
+         for Stream_Item'Address use Stream.Buffer.Data.Storage;
       begin
          Item (Item'First .. Last) := Stream_Item (
-            Stream.Index ..
-            Stream.Index + Length - 1);
+            Stream.Buffer.Index ..
+            Stream.Buffer.Index + Length - 1);
       end;
-      Stream.Index := Stream.Index + Length;
+      Stream.Buffer.Index := Stream.Buffer.Index + Length;
    end Read;
 
    overriding procedure Write (
       Stream : in out Stream_Type;
       Item : Stream_Element_Array)
    is
-      New_Index : constant Stream_Element_Count := Stream.Index + Item'Length;
+      New_Index : constant Stream_Element_Count :=
+         Stream.Buffer.Index + Item'Length;
       Copy_Last : constant Stream_Element_Offset := New_Index - 1;
       New_Last : constant Stream_Element_Offset :=
-         Stream_Element_Offset'Max (Stream.Last, Copy_Last);
+         Stream_Element_Offset'Max (Stream.Buffer.Last, Copy_Last);
    begin
-      Set_Size (Stream, New_Last);
-      if Stream.Index <= Stream.Last then -- overwriting
-         Unique (Stream);
+      Set_Size (Stream.Buffer.all, New_Last);
+      if Stream.Buffer.Index <= Stream.Buffer.Last then -- overwriting
+         Unique (Stream.Buffer.all);
       end if;
       declare
          Stream_Item : Stream_Element_Array (1 .. New_Last);
-         for Stream_Item'Address use Stream.Data.Storage;
+         for Stream_Item'Address use Stream.Buffer.Data.Storage;
       begin
-         Stream_Item (Stream.Index .. Copy_Last) := Item;
+         Stream_Item (Stream.Buffer.Index .. Copy_Last) := Item;
       end;
-      Stream.Index := New_Index;
-      Stream.Last := New_Last;
+      Stream.Buffer.Index := New_Index;
+      Stream.Buffer.Last := New_Last;
    end Write;
 
    overriding procedure Set_Index (
       Stream : in out Stream_Type;
       To : Stream_Element_Positive_Count) is
    begin
-      if To > Stream.Last + 1 then
+      if To > Stream.Buffer.Last + 1 then
          raise Constraint_Error;
       end if;
-      Stream.Index := To;
+      Stream.Buffer.Index := To;
    end Set_Index;
 
    overriding function Index (Stream : Stream_Type)
       return Stream_Element_Positive_Count is
    begin
-      return Stream.Index;
+      return Stream.Buffer.Index;
    end Index;
 
    overriding function Size (Stream : Stream_Type)
       return Stream_Element_Count is
    begin
-      return Stream.Last;
+      return Stream.Buffer.Last;
    end Size;
 
    package body Controlled is
 
-      function Stream (Object : Buffer_Type) return not null Stream_Access is
+      function Reference (Object : Unbounded_Storage_IO.Buffer_Type)
+         return not null access Non_Controlled_Buffer_Type is
       begin
-         return Object.Stream;
-      end Stream;
+         return Buffer_Type (Object).Data'Unrestricted_Access;
+      end Reference;
 
-      overriding procedure Initialize (Object : in out Buffer_Type) is
+      overriding procedure Adjust (Object : in out Buffer_Type) is
       begin
-         Object.Stream := new Stream_Type'(
-            Data => Empty_Data'Unrestricted_Access,
-            Last => 0,
-            Index => 1);
-      end Initialize;
+         Object.Data.Stream := null;
+         System.Reference_Counting.Adjust (
+            Upcast (Object.Data.Data'Unchecked_Access));
+      end Adjust;
 
       overriding procedure Finalize (Object : in out Buffer_Type) is
       begin
-         if Object.Stream /= null then
-            System.Reference_Counting.Clear (
-               Upcast (Object.Stream.Data'Access),
-               Free => Free_Data'Access);
-            Free (Object.Stream);
-         end if;
+         System.Reference_Counting.Clear (
+            Upcast (Object.Data.Data'Unchecked_Access),
+            Free => Free_Data'Access);
+         Free (Object.Data.Stream);
       end Finalize;
-
-      overriding procedure Adjust (Object : in out Buffer_Type) is
-         Old_Stream : constant Stream_Access := Object.Stream;
-      begin
-         Object.Stream := new Stream_Type'(
-            Data => Old_Stream.Data,
-            Last => Old_Stream.Last,
-            Index => Old_Stream.Index);
-         System.Reference_Counting.Adjust (Upcast (Object.Stream.Data'Access));
-      end Adjust;
 
       package body Streaming is
 
@@ -400,8 +401,8 @@ package body Ada.Streams.Unbounded_Storage_IO is
             Stream : not null access Root_Stream_Type'Class;
             Item : Buffer_Type)
          is
-            Stream_Item : Stream_Element_Array (1 .. Item.Stream.Last);
-            for Stream_Item'Address use Item.Stream.Data.Storage;
+            Stream_Item : Stream_Element_Array (1 .. Item.Data.Last);
+            for Stream_Item'Address use Item.Data.Data.Storage;
          begin
             Write (Stream.all, Stream_Item);
          end Write;

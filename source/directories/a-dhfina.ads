@@ -37,10 +37,13 @@ package Ada.Directories.Hierarchical_File_Names is
    function Relative_Name (Name : String) return String
       renames Ada.Hierarchical_File_Names.Relative_Name;
 
+   --  modified
    function Compose (
       Directory : String := "";
       Relative_Name : String;
-      Extension : String := "")
+      Extension : String := "";
+      Path_Delimiter : Ada.Hierarchical_File_Names.Path_Delimiter_Type :=
+         Ada.Hierarchical_File_Names.Default_Path_Delimiter) -- additional
       return String
       renames Ada.Hierarchical_File_Names.Compose;
 

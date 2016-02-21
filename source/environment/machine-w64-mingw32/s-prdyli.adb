@@ -38,32 +38,42 @@ package body System.Program.Dynamic_Linking is
    --  implementation
 
    function Is_Open (Lib : Library) return Boolean is
+      Handle : C.windef.HMODULE
+         renames Controlled.Reference (Lib).all;
    begin
-      return Reference (Lib).all /= null;
+      return Handle /= null;
    end Is_Open;
 
    procedure Open (Lib : in out Library; Name : String) is
       pragma Check (Pre,
          Check => not Is_Open (Lib) or else raise Status_Error);
-      Handle : constant not null access C.windef.HMODULE := Reference (Lib);
+      Handle : C.windef.HMODULE
+         renames Controlled.Reference (Lib).all;
    begin
-      Open (Handle.all, Name);
+      Open (Handle, Name);
    end Open;
 
    function Open (Name : String) return Library is
    begin
       return Result : Library do
-         Open (Reference (Result).all, Name);
+         declare
+            Handle : C.windef.HMODULE
+               renames Controlled.Reference (Result).all;
+         begin
+            Open (Handle, Name);
+         end;
       end return;
    end Open;
 
    procedure Close (Lib : in out Library) is
       pragma Check (Pre,
          Check => Is_Open (Lib) or else raise Status_Error);
-      Handle : constant not null access C.windef.HMODULE := Reference (Lib);
+      Handle : C.windef.HMODULE
+         renames Controlled.Reference (Lib).all;
+      Freeing_Handle : constant C.windef.HMODULE := Handle;
    begin
-      Close (Handle.all, Raise_On_Error => True);
-      Handle.all := null;
+      Handle := null;
+      Close (Freeing_Handle, Raise_On_Error => True);
    end Close;
 
    function Import (
@@ -75,7 +85,8 @@ package body System.Program.Dynamic_Linking is
          Check => Is_Open (Lib) or else raise Status_Error);
       function Cast is
          new Ada.Unchecked_Conversion (C.windef.FARPROC, Address);
-      Handle : constant C.windef.HMODULE := Reference (Lib).all;
+      Handle : C.windef.HMODULE
+         renames Controlled.Reference (Lib).all;
       Z_Symbol : String := Symbol & Character'Val (0);
       C_Symbol : C.char_array (C.size_t);
       for C_Symbol'Address use Z_Symbol'Address;
@@ -91,10 +102,10 @@ package body System.Program.Dynamic_Linking is
 
    package body Controlled is
 
-      function Reference (Lib : Library)
+      function Reference (Lib : Dynamic_Linking.Library)
          return not null access C.windef.HMODULE is
       begin
-         return Lib.Handle'Unrestricted_Access;
+         return Library (Lib).Handle'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Library) is

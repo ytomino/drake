@@ -23,10 +23,10 @@ package body Ada.Streams.Stream_IO.Standard_Files is
    end Standard_Error;
 
 begin
-   Reference (Standard_Input_Object).all :=
+   Controlled.Reference (Standard_Input_Object).all :=
       Naked_Stream_IO.Standard_Files.Standard_Input;
-   Reference (Standard_Output_Object).all :=
+   Controlled.Reference (Standard_Output_Object).all :=
       Naked_Stream_IO.Standard_Files.Standard_Output;
-   Reference (Standard_Error_Object).all :=
+   Controlled.Reference (Standard_Error_Object).all :=
       Naked_Stream_IO.Standard_Files.Standard_Error;
 end Ada.Streams.Stream_IO.Standard_Files;

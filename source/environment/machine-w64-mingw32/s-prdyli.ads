@@ -43,7 +43,7 @@ private
 
       type Library is limited private;
 
-      function Reference (Lib : Library)
+      function Reference (Lib : Dynamic_Linking.Library)
          return not null access C.windef.HMODULE;
       pragma Inline (Reference);
 

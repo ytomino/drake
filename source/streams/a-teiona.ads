@@ -11,6 +11,6 @@ private
 
    function Non_Controlled (File : File_Type)
       return not null access Naked_Text_IO.Non_Controlled_File_Type
-      renames Reference;
+      renames Controlled.Reference;
 
 end Ada.Text_IO.Naked;

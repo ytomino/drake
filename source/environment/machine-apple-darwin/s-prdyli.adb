@@ -34,32 +34,42 @@ package body System.Program.Dynamic_Linking is
    --  implementation
 
    function Is_Open (Lib : Library) return Boolean is
+      Handle : C.void_ptr
+         renames Controlled.Reference (Lib).all;
    begin
-      return Address (Reference (Lib).all) /= Null_Address;
+      return Address (Handle) /= Null_Address;
    end Is_Open;
 
    procedure Open (Lib : in out Library; Name : String) is
       pragma Check (Pre,
          Check => not Is_Open (Lib) or else raise Status_Error);
-      Handle : constant not null access C.void_ptr := Reference (Lib);
+      Handle : C.void_ptr
+         renames Controlled.Reference (Lib).all;
    begin
-      Open (Handle.all, Name);
+      Open (Handle, Name);
    end Open;
 
    function Open (Name : String) return Library is
    begin
       return Result : Library do
-         Open (Reference (Result).all, Name);
+         declare
+            Handle : C.void_ptr
+               renames Controlled.Reference (Result).all;
+         begin
+            Open (Handle, Name);
+         end;
       end return;
    end Open;
 
    procedure Close (Lib : in out Library) is
       pragma Check (Pre,
          Check => Is_Open (Lib) or else raise Status_Error);
-      Handle : constant not null access C.void_ptr := Reference (Lib);
+      Handle : C.void_ptr
+         renames Controlled.Reference (Lib).all;
+      Freeing_Handle : constant C.void_ptr := Handle;
    begin
-      Close (Handle.all, Raise_On_Error => True);
-      Handle.all := C.void_ptr (Null_Address);
+      Handle := C.void_ptr (Null_Address);
+      Close (Freeing_Handle, Raise_On_Error => True);
    end Close;
 
    function Import (
@@ -69,7 +79,8 @@ package body System.Program.Dynamic_Linking is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Lib) or else raise Status_Error);
-      Handle : constant C.void_ptr := Reference (Lib).all;
+      Handle : C.void_ptr
+         renames Controlled.Reference (Lib).all;
       C_Symbol : C.char_array (
          0 ..
          Symbol'Length * Zero_Terminated_Strings.Expanding);
@@ -86,9 +97,10 @@ package body System.Program.Dynamic_Linking is
 
    package body Controlled is
 
-      function Reference (Lib : Library) return not null access C.void_ptr is
+      function Reference (Lib : Dynamic_Linking.Library)
+         return not null access C.void_ptr is
       begin
-         return Lib.Handle'Unrestricted_Access;
+         return Library (Lib).Handle'Unrestricted_Access;
       end Reference;
 
       overriding procedure Finalize (Object : in out Library) is

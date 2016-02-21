@@ -82,7 +82,7 @@ private
 
       type Storage_Type is limited private;
 
-      function Reference (Object : Storage_Type)
+      function Reference (Object : Storage_Mapped_IO.Storage_Type)
          return not null access Non_Controlled_Mapping;
       pragma Inline (Reference);
 

@@ -376,8 +376,8 @@ package body Ada.Containers.Limited_Ordered_Maps is
          Node : Cursor;
       end record;
       pragma Suppress_Initialization (Pair);
-      procedure Finally (X : not null access Pair);
-      procedure Finally (X : not null access Pair) is
+      procedure Finally (X : in out Pair);
+      procedure Finally (X : in out Pair) is
       begin
          Free (X.Key);
          Free (X.Node);
@@ -387,7 +387,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
       New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
       Before : constant Cursor := Ceiling (Container, New_Pair.Key.all);
    begin
-      Holder.Assign (New_Pair'Access);
+      Holder.Assign (New_Pair);
       Inserted := Before = null or else New_Pair.Key.all < Before.Key.all;
       if Inserted then
          New_Pair.Node := new Node;

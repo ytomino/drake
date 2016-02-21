@@ -238,7 +238,7 @@ private
          return Character_Set;
 
       function Reference (
-         Object : Character_Set)
+         Object : Maps.Character_Set)
          return not null Set_Data_Access;
       pragma Inline (Reference);
 
@@ -288,7 +288,7 @@ private
          return Character_Mapping;
 
       function Reference (
-         Object : Character_Mapping)
+         Object : Maps.Character_Mapping)
          return not null Map_Data_Access;
       pragma Inline (Reference);
 

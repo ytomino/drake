@@ -1,3 +1,4 @@
+with System.Debug;
 with C.basetsd;
 with C.winbase;
 with C.windef;
@@ -5,14 +6,6 @@ package body System.Storage_Pools.Unbounded is
    use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
-
-   function Runtime_Error (
-      S : String;
-      Source_Location : String := Ada.Debug.Source_Location;
-      Enclosing_Entity : String := Ada.Debug.Enclosing_Entity)
-      return Boolean
-      with Import, Convention => Ada, External_Name => "__drake_runtime_error";
-   pragma Machine_Attribute (Runtime_Error, "noreturn");
 
    --  implementation
 
@@ -26,7 +19,8 @@ package body System.Storage_Pools.Unbounded is
    begin
       R := C.winbase.HeapDestroy (Object.Heap);
       pragma Check (Debug,
-         Check => R /= 0 or else Runtime_Error ("failed to HeapDestroy"));
+         Check => R /= 0
+            or else Debug.Runtime_Error ("HeapDestroy failed"));
    end Finalize;
 
    overriding procedure Allocate (
@@ -67,7 +61,7 @@ package body System.Storage_Pools.Unbounded is
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,
-         Check => R /= 0 or else Runtime_Error ("failed to HeapFree"));
+         Check => R /= 0 or else Debug.Runtime_Error ("HeapFree failed"));
    end Deallocate;
 
    overriding function Storage_Size (Pool : Unbounded_Pool)

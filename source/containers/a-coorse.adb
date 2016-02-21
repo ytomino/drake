@@ -88,11 +88,6 @@ package body Ada.Containers.Ordered_Sets is
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
---  diff
---  diff
    begin
       Item := new Node'(Super => <>, Element => New_Item);
 --  diff
@@ -376,11 +371,6 @@ package body Ada.Containers.Ordered_Sets is
 --  diff
 --  diff
 --  diff
---  diff
---  diff
---  diff
---  diff
---  diff
       Before : constant Cursor := Ceiling (Container, New_Item);
    begin
 --  diff
@@ -467,19 +457,23 @@ package body Ada.Containers.Ordered_Sets is
    procedure Union (Target : in out Set; Source : Set) is
    begin
       if not Is_Empty (Source) then
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => True,
-            In_Only_Right => True,
-            In_Both => True,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+         if Is_Empty (Target) then
+            Assign (Target, Source);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => True,
+               In_Only_Right => True,
+               In_Both => True,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Union;
 
@@ -509,22 +503,24 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
-      if Is_Empty (Source) then
-         Clear (Target);
-      else
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => False,
-            In_Only_Right => False,
-            In_Both => True,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+      if not Is_Empty (Target) then
+         if Is_Empty (Source) then
+            Clear (Target);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => False,
+               In_Only_Right => False,
+               In_Both => True,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Intersection;
 
@@ -532,7 +528,7 @@ package body Ada.Containers.Ordered_Sets is
    begin
       return Result : Set do
          if Is_Empty (Left) or else Is_Empty (Right) then
-            null; -- Empty_Set;
+            null; -- Empty_Set
          else
             Unique (Result, True);
             Binary_Trees.Merge (
@@ -594,19 +590,23 @@ package body Ada.Containers.Ordered_Sets is
    procedure Symmetric_Difference (Target : in out Set; Source : Set) is
    begin
       if not Is_Empty (Source) then
-         Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => True,
-            In_Only_Right => True,
-            In_Both => False,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+         if Is_Empty (Target) then
+            Assign (Target, Source);
+         else
+            Unique (Target, True);
+            Binary_Trees.Merge (
+               Downcast (Target.Super.Data).Root,
+               Downcast (Target.Super.Data).Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => True,
+               In_Only_Right => True,
+               In_Both => False,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end if;
       end if;
    end Symmetric_Difference;
 

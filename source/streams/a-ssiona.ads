@@ -28,6 +28,6 @@ private
 
    function Non_Controlled (File : File_Type)
       return not null access Naked_Stream_IO.Non_Controlled_File_Type
-      renames Reference;
+      renames Controlled.Reference;
 
 end Ada.Streams.Stream_IO.Naked;

@@ -73,11 +73,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
---
---
---
 
 --  diff (Copy_Node)
 --
@@ -397,17 +392,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Position : out Cursor;
       Inserted : out Boolean)
    is
-      procedure Finally (X : not null access Element_Access);
-      procedure Finally (X : not null access Element_Access) is
-      begin
-         Free (X.all);
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (Element_Access, Finally);
+         new Exceptions.Finally.Scoped_Holder (Element_Access, Free);
       New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
       New_Hash : Hash_Type;
    begin
-      Holder.Assign (New_Element'Access);
+      Holder.Assign (New_Element);
       New_Hash := Hash (New_Element.all);
       Position := Find (Container, New_Hash, New_Element.all);
       Inserted := Position = null;
@@ -491,6 +481,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Union)
 --
@@ -523,6 +517,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
       Hash_Tables.Merge (
          Target.Table,
          Target.Length,
@@ -534,6 +529,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Intersection;
 
@@ -602,6 +598,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --

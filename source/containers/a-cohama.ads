@@ -183,8 +183,8 @@ package Ada.Containers.Hashed_Maps is
 
 private
 
---  diff
---  diff
+--  diff (Key_Access)
+--  diff (Element_Access)
 
    type Node is limited record
       Super : aliased Hash_Tables.Node;
@@ -217,7 +217,7 @@ private
    type Cursor is access Node;
 
 --  diff (Key_Reference_Type)
---  diff
+--
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;

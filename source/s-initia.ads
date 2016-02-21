@@ -14,6 +14,9 @@ package System.Initialization is
       --  need separate versions for limited Obj vs. non-limited Obj?
       --  => yes
 
+   --  Note: Your application-code should set the alignment
+   --    because Object'Alignment can not be static expression...
+
    type Object_Pointer is access all Object;
    for Object_Pointer'Storage_Size use 0;
 
@@ -39,14 +42,22 @@ package System.Initialization is
       renames Delete_Object;
 
 private
+   use type Storage_Elements.Storage_Offset;
+
+   type A1 is array (1 .. 1) of Object;
+   pragma Suppress_Initialization (A1);
+   type A2 is array (1 .. 2) of Object;
+   pragma Suppress_Initialization (A2);
+
+   --  Use A2'Max_Size_In_Storage_Elements - A1'Max_Size_In_Storage_Elements
+   --    because Ada.Finalization.Controlled'Max_Size_In_Storage_Elements
+   --    includes System.Finalization_Masters.Header_Size.
 
    type Object_Storage is
       new Storage_Elements.Storage_Array (
          1 ..
-         Object'Max_Size_In_Storage_Elements);
-   for Object_Storage'Alignment use Standard'Maximum_Alignment;
+         Storage_Elements.Storage_Offset'(A2'Max_Size_In_Storage_Elements)
+            - A1'Max_Size_In_Storage_Elements);
    pragma Suppress_Initialization (Object_Storage);
-
-   --  Note: 'Alignment and 'Size can not be static expression...
 
 end System.Initialization;

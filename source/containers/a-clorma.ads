@@ -172,10 +172,10 @@ package Ada.Containers.Limited_Ordered_Maps is
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
 --  diff (Element)
---  diff
---  diff
---  diff
---  diff
+--
+--
+--
+--
 
    function Floor (Container : Map; Key : Key_Type) return Cursor;
 
