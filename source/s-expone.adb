@@ -20,7 +20,6 @@ package body System.Exponentiations is
          end if;
       else
          declare
-            pragma Suppress (Division_Check); -- Left /= 0
             function mul_overflow (
                a, b : Integer;
                res : not null access Integer)
@@ -176,7 +175,6 @@ package body System.Exponentiations is
       Right : Natural)
       return Unsigned_Type
    is
-      pragma Suppress (Range_Check);
       pragma Suppress (Division_Check); -- Modulus > 0
    begin
       if Left = 2 and then Right < Unsigned_Type'Size then

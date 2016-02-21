@@ -22,7 +22,6 @@ package body System.Packed_Arrays is
             and then Element_Type'Enum_Rep (Element_Type'First) = 0
          then
             declare
-               pragma Suppress (Range_Check);
                Result : constant Integer := memcmp (
                   Left,
                   Right,

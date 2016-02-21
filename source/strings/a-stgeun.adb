@@ -55,7 +55,6 @@ package body Ada.Strings.Generic_Unbounded is
 
    procedure Adjust_Allocated (Data : not null Data_Access);
    procedure Adjust_Allocated (Data : not null Data_Access) is
-      pragma Suppress (Alignment_Check);
       package Fixed_String_Access_Conv is
          new System.Address_To_Named_Access_Conversions (
             Fixed_String,
