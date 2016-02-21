@@ -100,7 +100,6 @@ package body Ada.Calendar is
    end Day;
 
    function Seconds (Date : Time) return Day_Duration is
-      pragma Suppress (Range_Check);
    begin
       return Duration'Fixed_Value (
          System.Native_Time.Nanosecond_Number'Integer_Value (Date)
@@ -114,7 +113,6 @@ package body Ada.Calendar is
       Day : out Day_Number;
       Seconds : out Day_Duration)
    is
-      pragma Suppress (Range_Check);
       Hour : System.Native_Calendar.Hour_Number;
       Minute : System.Native_Calendar.Minute_Number;
       Second : System.Native_Calendar.Second_Number;
