@@ -83,11 +83,6 @@ package Ada.Strings.Naked_Maps is
          System.Reference_Counting.Counter'Size - 1;
    end record;
 
-   function To_Mapping (
-      From, To : Character_Sequence;
-      Initial_Reference_Count : System.Reference_Counting.Counter)
-      return Character_Mapping;
-
    function Value (Map : Character_Mapping; Element : Character_Type)
       return Character_Type;
 
@@ -99,6 +94,13 @@ package Ada.Strings.Naked_Maps is
       return Wide_String;
    function Translate (Source : Wide_Wide_String; Mapping : Character_Mapping)
       return Wide_Wide_String;
+
+   --  making operations
+
+   function To_Mapping (
+      From, To : Character_Sequence;
+      Initial_Reference_Count : System.Reference_Counting.Counter)
+      return Character_Mapping;
 
 private
 

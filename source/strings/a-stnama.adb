@@ -295,31 +295,6 @@ package body Ada.Strings.Naked_Maps is
 
    --  implementation of maps
 
-   function To_Mapping (
-      From, To : Character_Sequence;
-      Initial_Reference_Count : System.Reference_Counting.Counter)
-      return Character_Mapping
-   is
-      From_Length : constant Natural := From'Length;
-   begin
-      if From_Length /= To'Length then
-         Raise_Exception (Translation_Error'Identity);
-      else
-         declare
-            Sorted_From : Character_Sequence (1 .. From_Length) := From;
-            Sorted_To : Character_Sequence (1 .. From_Length) := To;
-            Last : Natural;
-         begin
-            Sort (Sorted_From, Sorted_To, Last);
-            return Character_Mapping'(
-               Length => Last,
-               Reference_Count => Initial_Reference_Count,
-               From => Sorted_From (1 .. Last),
-               To => Sorted_To (1 .. Last));
-         end;
-      end if;
-   end To_Mapping;
-
    function Value (Map : Character_Mapping; Element : Character_Type)
       return Character_Type
    is
@@ -464,6 +439,31 @@ package body Ada.Strings.Naked_Maps is
       end loop;
       return Result (1 .. Result_Last);
    end Translate;
+
+   function To_Mapping (
+      From, To : Character_Sequence;
+      Initial_Reference_Count : System.Reference_Counting.Counter)
+      return Character_Mapping
+   is
+      From_Length : constant Natural := From'Length;
+   begin
+      if From_Length /= To'Length then
+         Raise_Exception (Translation_Error'Identity);
+      else
+         declare
+            Sorted_From : Character_Sequence (1 .. From_Length) := From;
+            Sorted_To : Character_Sequence (1 .. From_Length) := To;
+            Last : Natural;
+         begin
+            Sort (Sorted_From, Sorted_To, Last);
+            return Character_Mapping'(
+               Length => Last,
+               Reference_Count => Initial_Reference_Count,
+               From => Sorted_From (1 .. Last),
+               To => Sorted_To (1 .. Last));
+         end;
+      end if;
+   end To_Mapping;
 
    procedure Sort (From, To : in out Character_Sequence) is
       pragma Assert (From'First = To'First);
