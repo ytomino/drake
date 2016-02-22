@@ -10,21 +10,6 @@ package body Ada.Strings.Naked_Maps is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_expect";
 
-   procedure Sort (From, To : in out Character_Sequence; Last : out Natural);
-   procedure Sort (From, To : in out Character_Sequence; Last : out Natural) is
-      pragma Assert (From'First = To'First);
-   begin
-      Last := From'Last;
-      for I in reverse From'Range loop
-         if From (I) = To (I) then
-            From (I) := From (Last);
-            To (I) := To (Last);
-            Last := Last - 1;
-         end if;
-      end loop;
-      Sort (From (From'First .. Last), To (To'First .. Last));
-   end Sort;
-
    --  implementation of alternative conversions functions
 
    function To_Character (Item : Wide_Wide_Character)
@@ -440,27 +425,33 @@ package body Ada.Strings.Naked_Maps is
       return Result (1 .. Result_Last);
    end Translate;
 
-   function To_Mapping (
+   procedure To_Mapping (
       From, To : Character_Sequence;
-      Initial_Reference_Count : System.Reference_Counting.Counter)
-      return Character_Mapping
+      Out_From, Out_To : out Character_Sequence; -- should have same 'First
+      Out_Last : out Natural)
    is
       From_Length : constant Natural := From'Length;
    begin
       if From_Length /= To'Length then
          Raise_Exception (Translation_Error'Identity);
       else
+         pragma Assert (Out_From'First = Out_To'First);
          declare
-            Sorted_From : Character_Sequence (1 .. From_Length) := From;
-            Sorted_To : Character_Sequence (1 .. From_Length) := To;
-            Last : Natural;
+            Out_First : constant Positive := Out_From'First;
          begin
-            Sort (Sorted_From, Sorted_To, Last);
-            return Character_Mapping'(
-               Length => Last,
-               Reference_Count => Initial_Reference_Count,
-               From => Sorted_From (1 .. Last),
-               To => Sorted_To (1 .. Last));
+            Out_Last := Out_First + From_Length - 1;
+            Out_From (Out_First .. Out_Last) := From;
+            Out_To (Out_First .. Out_Last) := To;
+            for I in reverse Out_First .. Out_Last loop
+               if Out_From (I) = Out_To (I) then
+                  Out_From (I) := Out_From (Out_Last);
+                  Out_To (I) := Out_To (Out_Last);
+                  Out_Last := Out_Last - 1;
+               end if;
+            end loop;
+            Sort (
+               From => Out_From (Out_First .. Out_Last),
+               To => Out_To (Out_First .. Out_Last));
          end;
       end if;
    end To_Mapping;

@@ -97,10 +97,10 @@ package Ada.Strings.Naked_Maps is
 
    --  making operations
 
-   function To_Mapping (
+   procedure To_Mapping (
       From, To : Character_Sequence;
-      Initial_Reference_Count : System.Reference_Counting.Counter)
-      return Character_Mapping;
+      Out_From, Out_To : out Character_Sequence; -- should have same 'First
+      Out_Last : out Natural);
 
 private
 
