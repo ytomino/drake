@@ -93,7 +93,6 @@ package body Ada.Command_Line.Argument_Parsing is
    function Iterate (Argument : String; Initial_State : State_Type)
       return Argument_Iterator
    is
-      pragma Suppress (Accessibility_Check);
       First : Cursor;
    begin
       First.State := Initial_State;

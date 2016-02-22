@@ -375,7 +375,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Decoder) or else raise Status_Error);
-      pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
          with Import, Convention => Intrinsic;
@@ -428,7 +427,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Encoder) or else raise Status_Error);
-      pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
          with Import, Convention => Intrinsic;
@@ -493,7 +491,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Stream : not null access Streams.Root_Stream_Type'Class)
       return Inout_Type
    is
-      pragma Suppress (Accessibility_Check);
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
          with Import, Convention => Intrinsic;

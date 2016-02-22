@@ -32,20 +32,23 @@ package Ada.Strings.Naked_Maps is
    type Character_Ranges is array (Positive range <>) of Character_Range;
    pragma Suppress_Initialization (Character_Ranges);
 
-   type Character_Set (Length : Natural) is limited record
+   type Character_Set_Data (Length : Natural) is limited record
       Reference_Count : aliased System.Reference_Counting.Counter;
       Items : aliased Character_Ranges (1 .. Length);
    end record;
-   pragma Suppress_Initialization (Character_Set);
+   pragma Suppress_Initialization (Character_Set_Data);
 
    --  place Reference_Count at first
-   for Character_Set use record
+   for Character_Set_Data use record
       Reference_Count at 0 range
          0 ..
          System.Reference_Counting.Counter'Size - 1;
    end record;
 
-   function Is_In (Element : Character_Type; Set : Character_Set)
+   type Character_Set_Access is access all Character_Set_Data;
+   for Character_Set_Access'Storage_Size use 0;
+
+   function Is_In (Element : Character_Type; Set : Character_Set_Data)
       return Boolean;
 
    --  making operations
@@ -69,30 +72,39 @@ package Ada.Strings.Naked_Maps is
 
    --  maps
 
-   type Character_Mapping (Length : Natural) is limited record
+   type Character_Mapping_Data (Length : Natural) is limited record
       Reference_Count : aliased System.Reference_Counting.Counter;
       From : Character_Sequence (1 .. Length); -- To_Domain
       To : Character_Sequence (1 .. Length); -- To_Range
    end record;
-   pragma Suppress_Initialization (Character_Mapping);
+   pragma Suppress_Initialization (Character_Mapping_Data);
 
    --  place Reference_Count at first
-   for Character_Mapping use record
+   for Character_Mapping_Data use record
       Reference_Count at 0 range
          0 ..
          System.Reference_Counting.Counter'Size - 1;
    end record;
 
-   function Value (Map : Character_Mapping; Element : Character_Type)
+   type Character_Mapping_Access is access all Character_Mapping_Data;
+   for Character_Mapping_Access'Storage_Size use 0;
+
+   function Value (Map : Character_Mapping_Data; Element : Character_Type)
       return Character_Type;
 
    --  for Handling
 
-   function Translate (Source : String; Mapping : Character_Mapping)
+   function Translate (
+      Source : String;
+      Mapping : Character_Mapping_Data)
       return String;
-   function Translate (Source : Wide_String; Mapping : Character_Mapping)
+   function Translate (
+      Source : Wide_String;
+      Mapping : Character_Mapping_Data)
       return Wide_String;
-   function Translate (Source : Wide_Wide_String; Mapping : Character_Mapping)
+   function Translate (
+      Source : Wide_Wide_String;
+      Mapping : Character_Mapping_Data)
       return Wide_Wide_String;
 
    --  making operations
@@ -105,7 +117,7 @@ package Ada.Strings.Naked_Maps is
 private
 
    type Character_Set_Array is
-      array (Positive range <>) of not null access constant Character_Set;
+      array (Positive range <>) of not null access constant Character_Set_Data;
    pragma Suppress_Initialization (Character_Set_Array);
 
    --  for Set_Constants

@@ -18,6 +18,10 @@ package body Ada.Naked_Text_IO is
          Convention => Intrinsic, External_Name => "__builtin_unreachable";
    pragma No_Return (unreachable);
 
+   function To_Pointer (Value : System.Address)
+      return access Streams.Root_Stream_Type'Class
+      with Import, Convention => Intrinsic;
+
    --  the parameter Form
 
    function Select_External (Spec : IO_Modes.File_External_Spec)
@@ -233,13 +237,9 @@ package body Ada.Naked_Text_IO is
    function Unchecked_Stream (File : Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class;
    function Unchecked_Stream (File : Non_Controlled_File_Type)
-      return not null access Streams.Root_Stream_Type'Class
-   is
-      function To_Pointer (Value : System.Address)
-         return access Streams.Root_Stream_Type'Class
-         with Import, Convention => Intrinsic;
+      return not null access Streams.Root_Stream_Type'Class is
    begin
-      return To_Pointer (File.Stream).all'Unchecked_Access;
+      return To_Pointer (File.Stream);
    end Unchecked_Stream;
 
    --  Input

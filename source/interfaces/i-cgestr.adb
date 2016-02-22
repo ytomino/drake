@@ -1,7 +1,7 @@
-with System.Address_To_Named_Access_Conversions;
 with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
+   use type Pointers.Constant_Pointer;
    use type Pointers.Pointer;
    use type System.Storage_Elements.Storage_Offset;
 
@@ -17,8 +17,6 @@ package body Interfaces.C.Generic_Strings is
 
    end libc;
 
-   package Conv is
-      new System.Address_To_Named_Access_Conversions (Element, chars_ptr);
    package const_Conv is
       new System.Address_To_Constant_Access_Conversions (
          Element,
@@ -73,21 +71,21 @@ package body Interfaces.C.Generic_Strings is
                end;
             end if;
          end if;
-         return Item (Item'First)'Access;
+         return Item (Item'First)'Unchecked_Access;
       end if;
    end To_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr is
    begin
-      return Item (Item'First)'Access;
+      return Item (Item'First)'Unchecked_Access;
    end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
       return not null chars_ptr is
    begin
       return New_Chars_Ptr (
-         const_Conv.To_Pointer (Chars'Address),
+         Chars (Chars'First)'Access,
          Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
 
@@ -218,7 +216,7 @@ package body Interfaces.C.Generic_Strings is
       return Element_Array
    is
       pragma Check (Pre,
-         Check => const_chars_ptr (Item) /= null
+         Check => Standard."/=" (Item, null) -- operator for anonymous access
             or else Length = 0
             or else raise Dereference_Error); -- CXB3010
       pragma Suppress (Alignment_Check);
@@ -227,7 +225,7 @@ package body Interfaces.C.Generic_Strings is
       if not Append_Nul and then Length = 0 then
          raise Constraint_Error; -- CXB3010
       end if;
-      if const_chars_ptr (Item) = null then
+      if Standard."=" (Item, null) then -- operator for anonymous access
          Actual_Length := 0;
       else
          Actual_Length := Strlen (Item, Limit => Length) + 1; -- including nul
@@ -238,7 +236,7 @@ package body Interfaces.C.Generic_Strings is
          else
             declare
                Source : Element_Array (0 .. Actual_Length - 1);
-               for Source'Address use Conv.To_Address (Item);
+               for Source'Address use const_Conv.To_Address (Item);
             begin
                return Source (0 .. Length - 1) & Element'Val (0);
             end;
@@ -260,7 +258,7 @@ package body Interfaces.C.Generic_Strings is
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item); -- checking
       Source : Element_Array (size_t);
-      for Source'Address use Conv.To_Address (Item);
+      for Source'Address use const_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -285,12 +283,12 @@ package body Interfaces.C.Generic_Strings is
       return String_Type
    is
       pragma Check (Dynamic_Predicate,
-         Check => const_chars_ptr (Item) /= null
+         Check => Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item, Limit => Length);
       Source : Element_Array (size_t);
-      for Source'Address use Conv.To_Address (Item);
+      for Source'Address use const_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -312,7 +310,7 @@ package body Interfaces.C.Generic_Strings is
       return size_t
    is
       pragma Check (Dynamic_Predicate,
-         Check => const_chars_ptr (Item) /= null
+         Check => Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
    begin
       if Element'Size = char'Size
@@ -339,14 +337,12 @@ package body Interfaces.C.Generic_Strings is
          end;
       else
          declare
-            S : const_chars_ptr := const_chars_ptr (Item);
+            S : not null const_chars_ptr := Item;
             Length : size_t := 0;
          begin
             while S.all /= Element'Val (0) loop
                Length := Length + 1;
-               S := const_Conv.To_Pointer (
-                  const_Conv.To_Address (S)
-                  + Element_Array'Component_Size / Standard'Storage_Unit);
+               S := S + ptrdiff_t'(1);
             end loop;
             return Length;
          end;
@@ -374,8 +370,7 @@ package body Interfaces.C.Generic_Strings is
             if P = null then
                Result := Limit;
             else
-               Result := C.size_t (
-                  const_Conv.To_Address (P) - const_Conv.To_Address (Item));
+               Result := size_t (P - Item);
             end if;
          end;
       elsif Element'Size = wchar_t'Size
@@ -393,15 +388,13 @@ package body Interfaces.C.Generic_Strings is
             if P = null then
                Result := Limit;
             else
-               Result := C.size_t (
-                  (const_Conv.To_Address (P) - const_Conv.To_Address (Item))
-                  / (wchar_t'Size / Standard'Storage_Unit));
+               Result := size_t (P - Item);
             end if;
          end;
       else
          declare
             Source : Element_Array (0 .. Limit - 1);
-            for Source'Address use Conv.To_Address (Item);
+            for Source'Address use const_Conv.To_Address (Item);
          begin
             Result := 0;
             while Result < Limit
@@ -421,17 +414,21 @@ package body Interfaces.C.Generic_Strings is
       Check : Boolean := True)
    is
       pragma Check (Dynamic_Predicate,
-         Check => const_chars_ptr (Item) /= null
+         Check => Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       Chars_Length : constant C.size_t := Chars'Length;
    begin
       if Check and then Offset + Chars_Length > Strlen (Item) then
          raise Update_Error;
       end if;
-      Pointers.Copy_Array (
-         Source => const_Conv.To_Pointer (Chars'Address),
-         Target => chars_ptr (Item) + ptrdiff_t (Offset),
-         Length => ptrdiff_t (Chars_Length));
+      declare
+         Target : constant not null chars_ptr := Item;
+      begin
+         Pointers.Copy_Array (
+            Source => Chars (Chars'First)'Unchecked_Access,
+            Target => Target + ptrdiff_t (Offset),
+            Length => ptrdiff_t (Chars_Length));
+      end;
    end Update;
 
    procedure Update (

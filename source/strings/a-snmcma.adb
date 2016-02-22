@@ -7,14 +7,12 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
-   type Character_Mapping_Access is access Character_Mapping;
-
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type);
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type) is
    begin
@@ -30,12 +28,12 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    end Decode;
 
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Simple_Case_Mapping.Compressed_Type;
       Offset : UCD.Difference_Base);
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Simple_Case_Mapping.Compressed_Type;
       Offset : UCD.Difference_Base) is
@@ -61,11 +59,11 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    end Decode;
 
    procedure Decode_Reverse (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type);
    procedure Decode_Reverse (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type) is
    begin
@@ -81,12 +79,12 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    end Decode_Reverse;
 
    procedure Decode_Reverse (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Simple_Case_Mapping.Compressed_Type;
       Offset : UCD.Difference_Base);
    procedure Decode_Reverse (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Simple_Case_Mapping.Compressed_Type;
       Offset : UCD.Difference_Base) is
@@ -111,17 +109,19 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
       end loop;
    end Decode_Reverse;
 
+   type Character_Mapping_Access_With_Pool is access Character_Mapping_Data;
+
    --  lower case map
 
-   L_Mapping : Character_Mapping_Access;
+   L_Mapping : Character_Mapping_Access_With_Pool;
    L_Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure L_Mapping_Init;
    procedure L_Mapping_Init is
-      Mapping : Character_Mapping_Access
+      Mapping : Character_Mapping_Access_With_Pool
          renames L_Mapping;
    begin
-      Mapping := new Character_Mapping'(
+      Mapping := new Character_Mapping_Data'(
          Length => UCD.Simple_Case_Mapping.L_Total,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
@@ -159,23 +159,23 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
 
    --  implementation of lower case map
 
-   function Lower_Case_Map return not null access Character_Mapping is
+   function Lower_Case_Map return not null Character_Mapping_Access is
    begin
       System.Once.Initialize (L_Mapping_Flag'Access, L_Mapping_Init'Access);
-      return L_Mapping;
+      return Character_Mapping_Access (L_Mapping);
    end Lower_Case_Map;
 
    --  upper case map
 
-   U_Mapping : Character_Mapping_Access;
+   U_Mapping : Character_Mapping_Access_With_Pool;
    U_Mapping_Flag : aliased System.Once.Flag := 0;
 
    procedure U_Mapping_Init;
    procedure U_Mapping_Init is
-      Mapping : Character_Mapping_Access
+      Mapping : Character_Mapping_Access_With_Pool
          renames U_Mapping;
    begin
-      Mapping := new Character_Mapping'(
+      Mapping := new Character_Mapping_Data'(
          Length => UCD.Simple_Case_Mapping.U_Total,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
@@ -213,10 +213,10 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
 
    --  implementation of upper case map
 
-   function Upper_Case_Map return not null access Character_Mapping is
+   function Upper_Case_Map return not null Character_Mapping_Access is
    begin
       System.Once.Initialize (U_Mapping_Flag'Access, U_Mapping_Init'Access);
-      return U_Mapping;
+      return Character_Mapping_Access (U_Mapping);
    end Upper_Case_Map;
 
 end Ada.Strings.Naked_Maps.Case_Mapping;

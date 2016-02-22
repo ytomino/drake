@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Real_Time;
 with System.Parameters;
+with System.Tasks;
 with System.Task_Info;
 package System.Tasking.Stages is
 
@@ -17,7 +18,7 @@ package System.Tasking.Stages is
       Master : Master_Level;
       State : Task_Procedure_Access;
       Discriminants : Address; -- discriminants and Task_Id
-      Elaborated : not null access Boolean;
+      Elaborated : not null Tasks.Boolean_Access;
       Chain : in out Activation_Chain;
       Task_Image : String;
       Created_Task : out Task_Id);

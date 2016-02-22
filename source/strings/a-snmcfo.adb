@@ -7,17 +7,12 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
    use type UCD.Difference_Base;
    use type UCD.UCS_4;
 
-   type Character_Mapping_Access is access Character_Mapping;
-
-   Mapping : Character_Mapping_Access;
-   Mapping_Flag : aliased System.Once.Flag := 0;
-
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type);
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Map_16x1_Type) is
    begin
@@ -33,12 +28,12 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
    end Decode;
 
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Case_Folding.Compressed_Type;
       Offset : UCD.Difference_Base);
    procedure Decode (
-      Mapping : in out Character_Mapping;
+      Mapping : in out Character_Mapping_Data;
       I : in out Positive;
       Table : UCD.Case_Folding.Compressed_Type;
       Offset : UCD.Difference_Base) is
@@ -62,10 +57,15 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
       end loop;
    end Decode;
 
+   type Character_Mapping_Access_With_Pool is access Character_Mapping_Data;
+
+   Mapping : Character_Mapping_Access_With_Pool;
+   Mapping_Flag : aliased System.Once.Flag := 0;
+
    procedure Mapping_Init;
    procedure Mapping_Init is
    begin
-      Mapping := new Character_Mapping'(
+      Mapping := new Character_Mapping_Data'(
          Length => UCD.Case_Folding.C_Total + UCD.Case_Folding.S_Total,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
@@ -109,10 +109,10 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
 
    --  implementation
 
-   function Case_Folding_Map return not null access Character_Mapping is
+   function Case_Folding_Map return not null Character_Mapping_Access is
    begin
       System.Once.Initialize (Mapping_Flag'Access, Mapping_Init'Access);
-      return Mapping;
+      return Character_Mapping_Access (Mapping);
    end Case_Folding_Map;
 
 end Ada.Strings.Naked_Maps.Case_Folding;

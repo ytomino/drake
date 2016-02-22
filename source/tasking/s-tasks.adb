@@ -641,7 +641,6 @@ package body System.Tasks is
    procedure Remove_From_Merged_Activation_Chain_List (
       C : not null Activation_Chain)
    is
-      pragma Suppress (Accessibility_Check);
       Chain : constant access Activation_Chain := C.Self;
    begin
       if Chain.all = C then
@@ -842,8 +841,8 @@ package body System.Tasks is
       Params : Address;
       Process : not null access procedure (Params : Address);
       Name : String := "";
-      Chain : access Activation_Chain := null;
-      Elaborated : access Boolean := null;
+      Chain : Activation_Chain_Access := null;
+      Elaborated : Boolean_Access := null;
       Master : Master_Access := null;
       Entry_Last_Index : Task_Entry_Index := 0)
    is
@@ -1204,7 +1203,7 @@ package body System.Tasks is
    end Accept_Activation;
 
    procedure Activate (
-      Chain : not null access Activation_Chain;
+      Chain : not null Activation_Chain_Access;
       Aborted : out Boolean)
    is
       Error : Activation_Error;
@@ -1237,7 +1236,7 @@ package body System.Tasks is
    end Activate;
 
    procedure Move (
-      From, To : not null access Activation_Chain;
+      From, To : not null Activation_Chain_Access;
       New_Master : Master_Access) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));

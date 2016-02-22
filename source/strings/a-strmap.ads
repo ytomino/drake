@@ -221,7 +221,7 @@ package Ada.Strings.Maps is
 
 private
 
-   subtype Set_Data is Naked_Maps.Character_Set;
+   subtype Set_Data is Naked_Maps.Character_Set_Data;
    type Set_Data_Access is access all Set_Data;
 
    pragma Warnings (Off, "uninitialized"); -- [gcc-5] Items
@@ -272,7 +272,7 @@ private
 
    type Character_Set is new Controlled_Sets.Character_Set;
 
-   subtype Map_Data is Naked_Maps.Character_Mapping;
+   subtype Map_Data is Naked_Maps.Character_Mapping_Data;
    type Map_Data_Access is access all Map_Data;
 
    pragma Warnings (Off, "uninitialized"); -- [gcc-5] From and To

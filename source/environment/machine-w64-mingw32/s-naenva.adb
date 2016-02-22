@@ -22,11 +22,11 @@ package body System.Native_Environment_Variables is
          C.winnt.LPCWCH);
 
    procedure Get_1 (
-      Name : not null access constant C.winnt.WCHAR;
+      Name : not null C.winnt.LPCWCH;
       Length : out C.windef.DWORD;
       Found : out Boolean);
    procedure Get_1 (
-      Name : not null access constant C.winnt.WCHAR;
+      Name : not null C.winnt.LPCWCH;
       Length : out C.windef.DWORD;
       Found : out Boolean) is
    begin
@@ -36,11 +36,11 @@ package body System.Native_Environment_Variables is
    end Get_1;
 
    function Get_2 (
-      Name : not null access constant C.winnt.WCHAR;
+      Name : not null C.winnt.LPCWCH;
       Length : C.windef.DWORD)
       return String;
    function Get_2 (
-      Name : not null access constant C.winnt.WCHAR;
+      Name : not null C.winnt.LPCWCH;
       Length : C.windef.DWORD)
       return String
    is
@@ -57,11 +57,11 @@ package body System.Native_Environment_Variables is
    end Get_2;
 
    procedure Do_Separate (
-      Item : not null access constant C.winnt.WCHAR;
+      Item : not null C.winnt.LPCWCH;
       Name_Length : out C.size_t;
       Value : out C.winnt.LPCWCH);
    procedure Do_Separate (
-      Item : not null access constant C.winnt.WCHAR;
+      Item : not null C.winnt.LPCWCH;
       Name_Length : out C.size_t;
       Value : out C.winnt.LPCWCH)
    is
@@ -102,11 +102,11 @@ package body System.Native_Environment_Variables is
       Found : Boolean;
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      Get_1 (W_Name (0)'Unchecked_Access, Length, Found => Found);
       if not Found then
          raise Constraint_Error;
       else
-         return Get_2 (W_Name (0)'Access, Length);
+         return Get_2 (W_Name (0)'Unchecked_Access, Length);
       end if;
    end Value;
 
@@ -118,11 +118,11 @@ package body System.Native_Environment_Variables is
       Found : Boolean;
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      Get_1 (W_Name (0)'Unchecked_Access, Length, Found => Found);
       if not Found then
          return Default;
       else
-         return Get_2 (W_Name (0)'Access, Length);
+         return Get_2 (W_Name (0)'Unchecked_Access, Length);
       end if;
    end Value;
 
@@ -134,7 +134,7 @@ package body System.Native_Environment_Variables is
       Found : Boolean;
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      Get_1 (W_Name (0)'Access, Length, Found => Found);
+      Get_1 (W_Name (0)'Unchecked_Access, Length, Found => Found);
       return Found;
    end Exists;
 

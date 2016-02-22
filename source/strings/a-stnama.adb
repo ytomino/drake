@@ -105,7 +105,7 @@ package body Ada.Strings.Naked_Maps is
 
    --  implementation of sets
 
-   function Is_In (Element : Character_Type; Set : Character_Set)
+   function Is_In (Element : Character_Type; Set : Character_Set_Data)
       return Boolean
    is
       Index : constant Integer := Search (Set.Items, Element, Element);
@@ -280,7 +280,7 @@ package body Ada.Strings.Naked_Maps is
 
    --  implementation of maps
 
-   function Value (Map : Character_Mapping; Element : Character_Type)
+   function Value (Map : Character_Mapping_Data; Element : Character_Type)
       return Character_Type
    is
       L : Positive := Map.From'First;
@@ -304,7 +304,9 @@ package body Ada.Strings.Naked_Maps is
       return Element;
    end Value;
 
-   function Translate (Source : String; Mapping : Character_Mapping)
+   function Translate (
+      Source : String;
+      Mapping : Character_Mapping_Data)
       return String
    is
       Result : String (
@@ -345,7 +347,9 @@ package body Ada.Strings.Naked_Maps is
       return Result (1 .. Result_Last);
    end Translate;
 
-   function Translate (Source : Wide_String; Mapping : Character_Mapping)
+   function Translate (
+      Source : Wide_String;
+      Mapping : Character_Mapping_Data)
       return Wide_String
    is
       Result : Wide_String (
@@ -386,7 +390,9 @@ package body Ada.Strings.Naked_Maps is
       return Result (1 .. Result_Last);
    end Translate;
 
-   function Translate (Source : Wide_Wide_String; Mapping : Character_Mapping)
+   function Translate (
+      Source : Wide_Wide_String;
+      Mapping : Character_Mapping_Data)
       return Wide_Wide_String
    is
       Result : Wide_Wide_String (1 .. Source'Length);

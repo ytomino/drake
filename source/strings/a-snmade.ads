@@ -5,10 +5,10 @@ package Ada.Strings.Naked_Maps.Debug is
 
    --  sets
 
-   function Valid (Set : Character_Set) return Boolean;
+   function Valid (Set : Character_Set_Data) return Boolean;
 
    --  maps
 
-   function Valid (Map : Character_Mapping) return Boolean;
+   function Valid (Map : Character_Mapping_Data) return Boolean;
 
 end Ada.Strings.Naked_Maps.Debug;
