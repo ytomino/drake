@@ -29,12 +29,12 @@ package Ada.Containers.Limited_Vectors is
          Iterator_Element => Element_Type;
    pragma Preelaborable_Initialization (Vector);
 
---  diff
+   --  modified
 --  type Cursor is private;
 --  pragma Preelaborable_Initialization (Cursor);
    subtype Cursor is Extended_Index;
 
---  diff
+   --  modified
 --  Empty_Vector : constant Vector;
    function Empty_Vector return Vector;
 
@@ -244,10 +244,12 @@ package Ada.Containers.Limited_Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_First (
       Container : in out Vector'Class; -- not primitive
       Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_Last (
       Container : in out Vector'Class; -- not primitive
       Count : Count_Type := 1);
@@ -264,6 +266,7 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (First_Element)
 --
+--
 
    function Last_Index (Container : Vector) return Extended_Index;
 
@@ -271,6 +274,7 @@ package Ada.Containers.Limited_Vectors is
       renames Last_Index;
 
 --  diff (Last_Element)
+--
 --
 
 --  function Next (Position : Cursor) return Cursor;

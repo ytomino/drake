@@ -23,7 +23,7 @@ package System.Tasking.Stages is
       Task_Image : String;
       Created_Task : out Task_Id);
 
-   --  required (optional?) for task by compiler (s-tassta.ads)
+   --  (optionally?) required for task by compiler (s-tassta.ads)
    procedure Complete_Activation;
    procedure Complete_Task;
 

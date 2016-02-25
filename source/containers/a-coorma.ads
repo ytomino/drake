@@ -141,23 +141,29 @@ package Ada.Containers.Ordered_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor);
 
+   --  modified
    procedure Delete_First (Container : in out Map'Class); -- not primitive
 
+   --  modified
    procedure Delete_Last (Container : in out Map'Class); -- not primitive
 
    function First (Container : Map) return Cursor;
 
+   --  modified
    function First_Element (Container : Map'Class) -- not primitive
       return Element_Type;
 
+   --  modified
    function First_Key (Container : Map'Class) -- not primitive
       return Key_Type;
 
    function Last (Container : Map) return Cursor;
 
+   --  modified
    function Last_Element (Container : Map'Class) -- not primitive
       return Element_Type;
 
+   --  modified
    function Last_Key (Container : Map'Class) -- not primitive
       return Key_Type;
 

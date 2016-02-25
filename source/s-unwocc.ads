@@ -54,7 +54,7 @@ package System.Unwind.Occurrences is
    procedure Set_Current_Machine_Occurrence (
       Machine_Occurrence : Representation.Machine_Occurrence_Access);
 
-   --  implementation for tasking (a-except-2005.adb)
+   --  implementation for finalizer (a-except-2005.adb)
    function Triggered_By_Abort return Boolean
       with Export,
          Convention => Ada,

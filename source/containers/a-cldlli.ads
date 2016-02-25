@@ -24,7 +24,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
---  diff
+   --  modified
 --  Empty_List : constant List;
    function Empty_List return List;
 
@@ -118,10 +118,12 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : in out Cursor;
       Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_First (
       Container : in out List'Class; -- not primitive
       Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_Last (
       Container : in out List'Class; -- not primitive
       Count : Count_Type := 1);
@@ -152,10 +154,12 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
 --  diff (First_Element)
 --
+--
 
    function Last (Container : List) return Cursor;
 
 --  diff (Last_Element)
+--
 --
 
    function Next (Position : Cursor) return Cursor;
