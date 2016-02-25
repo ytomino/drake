@@ -2,7 +2,7 @@ package body Ada.Strings.Naked_Maps.Debug is
 
    --  implementation of sets
 
-   function Valid (Set : Character_Set) return Boolean is
+   function Valid (Set : Character_Set_Data) return Boolean is
    begin
       for I in Set.Items'First .. Set.Items'Last loop
          if Set.Items (I).High < Set.Items (I).Low then
@@ -21,7 +21,7 @@ package body Ada.Strings.Naked_Maps.Debug is
 
    --  implementation of maps
 
-   function Valid (Map : Character_Mapping) return Boolean is
+   function Valid (Map : Character_Mapping_Data) return Boolean is
    begin
       for I in Map.From'First .. Map.From'Last - 1 loop
          if Map.From (I) >= Map.From (I + 1) then

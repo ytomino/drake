@@ -36,6 +36,9 @@ package System.Tasks is
    type Master_Record is limited private;
    type Master_Access is access all Master_Record;
 
+   type Boolean_Access is access all Boolean;
+   for Boolean_Access'Storage_Size use 0;
+
    procedure Create (
       T : out Task_Id;
       Params : Address;
@@ -43,8 +46,8 @@ package System.Tasks is
       --  name
       Name : String := "";
       --  activation
-      Chain : access Activation_Chain := null;
-      Elaborated : access Boolean := null;
+      Chain : Activation_Chain_Access := null;
+      Elaborated : Boolean_Access := null;
       --  completion
       Master : Master_Access := null;
       --  rendezvous
@@ -84,11 +87,11 @@ package System.Tasks is
    function Elaborated (T : not null Task_Id) return Boolean;
    procedure Accept_Activation (Aborted : out Boolean);
    procedure Activate ( -- activate all task
-      Chain : not null access Activation_Chain;
+      Chain : not null Activation_Chain_Access;
       Aborted : out Boolean);
    procedure Activate (T : not null Task_Id); -- activate single task
    procedure Move (
-      From, To : not null access Activation_Chain;
+      From, To : not null Activation_Chain_Access;
       New_Master : Master_Access);
 
    --  for manual completion (Master /= null)
@@ -173,7 +176,7 @@ private
       Condition_Variable : Synchronous_Objects.Condition_Variable;
       Error : Activation_Error;
       Merged : Activation_Chain;
-      Self : access Activation_Chain;
+      Self : Activation_Chain_Access;
    end record;
    pragma Suppress_Initialization (Activation_Chain_Data);
 
@@ -252,7 +255,7 @@ private
             Activation_Chain : Tasks.Activation_Chain;
             Next_Of_Activation_Chain : Task_Id;
             Activation_Chain_Living : Boolean;
-            Elaborated : access Boolean;
+            Elaborated : Boolean_Access;
             --  manual completion
             Master_Of_Parent : Master_Access;
             Previous_At_Same_Level : Task_Id;

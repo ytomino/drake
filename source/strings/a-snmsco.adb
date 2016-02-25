@@ -5,8 +5,6 @@ with System.Once;
 with System.Reference_Counting;
 package body Ada.Strings.Naked_Maps.Set_Constants is
 
-   type Character_Set_Access is access Naked_Maps.Character_Set;
-
    function Total_Length (Source : Character_Set_Array) return Natural;
    function Total_Length (Source : Character_Set_Array) return Natural is
       Result : Natural := 0;
@@ -17,60 +15,59 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       return Result;
    end Total_Length;
 
+   type Character_Set_Access_With_Pool is access Character_Set_Data;
+
    --  implementation
 
-   Decimal_Digit_Set_Data : Character_Set_Access;
+   Decimal_Digit_Set_Data : Character_Set_Access_With_Pool;
    Decimal_Digit_Flag : aliased System.Once.Flag := 0;
 
    procedure Decimal_Digit_Init;
    procedure Decimal_Digit_Init is
    begin
-      Decimal_Digit_Set_Data := new Naked_Maps.Character_Set'(
+      Decimal_Digit_Set_Data := new Character_Set_Data'(
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
          Items => (1 => ('0', '9')));
       pragma Check (Validate, Debug.Valid (Decimal_Digit_Set_Data.all));
    end Decimal_Digit_Init;
 
-   function Decimal_Digit_Set
-      return not null access Naked_Maps.Character_Set is
+   function Decimal_Digit_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Decimal_Digit_Flag'Access,
          Decimal_Digit_Init'Access);
-      return Decimal_Digit_Set_Data;
+      return Character_Set_Access (Decimal_Digit_Set_Data);
    end Decimal_Digit_Set;
 
-   Hexadecimal_Digit_Set_Data : Character_Set_Access;
+   Hexadecimal_Digit_Set_Data : Character_Set_Access_With_Pool;
    Hexadecimal_Digit_Flag : aliased System.Once.Flag := 0;
 
    procedure Hexadecimal_Digit_Init;
    procedure Hexadecimal_Digit_Init is
    begin
-      Hexadecimal_Digit_Set_Data :=
-         new Naked_Maps.Character_Set'(
-            Length => 3,
-            Reference_Count => System.Reference_Counting.Static,
-            Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
+      Hexadecimal_Digit_Set_Data := new Character_Set_Data'(
+         Length => 3,
+         Reference_Count => System.Reference_Counting.Static,
+         Items => (('0', '9'), ('A', 'F'), ('a', 'f')));
       pragma Check (Validate, Debug.Valid (Hexadecimal_Digit_Set_Data.all));
    end Hexadecimal_Digit_Init;
 
-   function Hexadecimal_Digit_Set
-      return not null access Naked_Maps.Character_Set is
+   function Hexadecimal_Digit_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Hexadecimal_Digit_Flag'Access,
          Hexadecimal_Digit_Init'Access);
-      return Hexadecimal_Digit_Set_Data;
+      return Character_Set_Access (Hexadecimal_Digit_Set_Data);
    end Hexadecimal_Digit_Set;
 
-   ISO_646_Set_Data : Character_Set_Access;
+   ISO_646_Set_Data : Character_Set_Access_With_Pool;
    ISO_646_Flag : aliased System.Once.Flag := 0;
 
    procedure ISO_646_Init;
    procedure ISO_646_Init is
    begin
-      ISO_646_Set_Data := new Naked_Maps.Character_Set'(
+      ISO_646_Set_Data := new Character_Set_Data'(
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
          Items => (
@@ -78,21 +75,21 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       pragma Check (Validate, Debug.Valid (ISO_646_Set_Data.all));
    end ISO_646_Init;
 
-   function ISO_646_Set return not null access Naked_Maps.Character_Set is
+   function ISO_646_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          ISO_646_Flag'Access,
          ISO_646_Init'Access);
-      return ISO_646_Set_Data;
+      return Character_Set_Access (ISO_646_Set_Data);
    end ISO_646_Set;
 
-   Wide_Character_Set_Data : Character_Set_Access;
+   Wide_Character_Set_Data : Character_Set_Access_With_Pool;
    Wide_Character_Flag : aliased System.Once.Flag := 0;
 
    procedure Wide_Character_Init;
    procedure Wide_Character_Init is
    begin
-      Wide_Character_Set_Data := new Naked_Maps.Character_Set'(
+      Wide_Character_Set_Data := new Character_Set_Data'(
          Length => 2,
          Reference_Count => System.Reference_Counting.Static,
          Items => (
@@ -105,16 +102,15 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       pragma Check (Validate, Debug.Valid (Wide_Character_Set_Data.all));
    end Wide_Character_Init;
 
-   function Wide_Character_Set
-      return not null access Naked_Maps.Character_Set is
+   function Wide_Character_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Wide_Character_Flag'Access,
          Wide_Character_Init'Access);
-      return Wide_Character_Set_Data;
+      return Character_Set_Access (Wide_Character_Set_Data);
    end Wide_Character_Set;
 
-   Letter_Set_Data : Character_Set_Access;
+   Letter_Set_Data : Character_Set_Access_With_Pool;
    Letter_Flag : aliased System.Once.Flag := 0;
 
    procedure Letter_Init;
@@ -129,22 +125,22 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Last : Natural;
    begin
       Union (Items, Last, Source);
-      Letter_Set_Data := new Naked_Maps.Character_Set'(
+      Letter_Set_Data := new Character_Set_Data'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
       pragma Check (Validate, Debug.Valid (Letter_Set_Data.all));
    end Letter_Init;
 
-   function Letter_Set return not null access Naked_Maps.Character_Set is
+   function Letter_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Letter_Flag'Access,
          Letter_Init'Access);
-      return Letter_Set_Data;
+      return Character_Set_Access (Letter_Set_Data);
    end Letter_Set;
 
-   Alphanumeric_Set_Data : Character_Set_Access;
+   Alphanumeric_Set_Data : Character_Set_Access_With_Pool;
    Alphanumeric_Flag : aliased System.Once.Flag := 0;
 
    procedure Alphanumeric_Init;
@@ -158,22 +154,22 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Last : Natural;
    begin
       Union (Items, Last, Source);
-      Alphanumeric_Set_Data := new Naked_Maps.Character_Set'(
+      Alphanumeric_Set_Data := new Character_Set_Data'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
       pragma Check (Validate, Debug.Valid (Alphanumeric_Set_Data.all));
    end Alphanumeric_Init;
 
-   function Alphanumeric_Set return not null access Naked_Maps.Character_Set is
+   function Alphanumeric_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Alphanumeric_Flag'Access,
          Alphanumeric_Init'Access);
-      return Alphanumeric_Set_Data;
+      return Character_Set_Access (Alphanumeric_Set_Data);
    end Alphanumeric_Set;
 
-   Special_Set_Data : Character_Set_Access := null;
+   Special_Set_Data : Character_Set_Access_With_Pool;
    Special_Flag : aliased System.Once.Flag := 0;
 
    procedure Special_Init;
@@ -198,22 +194,22 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Last : Natural;
    begin
       Union (Items, Last, Source);
-      Special_Set_Data := new Naked_Maps.Character_Set'(
+      Special_Set_Data := new Character_Set_Data'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
       pragma Check (Validate, Debug.Valid (Special_Set_Data.all));
    end Special_Init;
 
-   function Special_Set return not null access Naked_Maps.Character_Set is
+   function Special_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Special_Flag'Access,
          Special_Init'Access);
-      return Special_Set_Data;
+      return Character_Set_Access (Special_Set_Data);
    end Special_Set;
 
-   Graphic_Set_Data : Character_Set_Access := null;
+   Graphic_Set_Data : Character_Set_Access_With_Pool;
    Graphic_Flag : aliased System.Once.Flag := 0;
 
    procedure Graphic_Init;
@@ -224,19 +220,19 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       Last : Natural;
    begin
       Union (Items, Last, Alphanumeric_Set.Items, Special_Set.Items);
-      Graphic_Set_Data := new Naked_Maps.Character_Set'(
+      Graphic_Set_Data := new Character_Set_Data'(
          Length => Last,
          Reference_Count => System.Reference_Counting.Static,
          Items => Items (1 .. Last));
       pragma Check (Validate, Debug.Valid (Graphic_Set_Data.all));
    end Graphic_Init;
 
-   function Graphic_Set return not null access Naked_Maps.Character_Set is
+   function Graphic_Set return not null Character_Set_Access is
    begin
       System.Once.Initialize (
          Graphic_Flag'Access,
          Graphic_Init'Access);
-      return Graphic_Set_Data;
+      return Character_Set_Access (Graphic_Set_Data);
    end Graphic_Set;
 
 end Ada.Strings.Naked_Maps.Set_Constants;

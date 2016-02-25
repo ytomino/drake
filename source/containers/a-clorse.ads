@@ -26,7 +26,7 @@ package Ada.Containers.Limited_Ordered_Sets is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
---  diff
+   --  modified
 --  Empty_Set : constant Set;
    function Empty_Set return Set;
 
@@ -101,8 +101,10 @@ package Ada.Containers.Limited_Ordered_Sets is
 
    procedure Delete (Container : in out Set; Position : in out Cursor);
 
+   --  modified
    procedure Delete_First (Container : in out Set'Class); -- not primitive
 
+   --  modified
    procedure Delete_Last (Container : in out Set'Class); -- not primitive
 
 --  diff (Union)
@@ -141,10 +143,12 @@ package Ada.Containers.Limited_Ordered_Sets is
 
 --  diff (First_Element)
 --
+--
 
    function Last (Container : Set) return Cursor;
 
 --  diff (Last_Element)
+--
 --
 
    function Next (Position : Cursor) return Cursor;

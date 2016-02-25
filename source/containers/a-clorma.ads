@@ -28,7 +28,7 @@ package Ada.Containers.Limited_Ordered_Maps is
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
---  diff
+   --  modified
 --  Empty_Map : constant Map;
    function Empty_Map return Map;
 
@@ -141,24 +141,30 @@ package Ada.Containers.Limited_Ordered_Maps is
 
    procedure Delete (Container : in out Map; Position : in out Cursor);
 
+   --  modified
    procedure Delete_First (Container : in out Map'Class); -- not primitive
 
+   --  modified
    procedure Delete_Last (Container : in out Map'Class); -- not primitive
 
    function First (Container : Map) return Cursor;
 
 --  diff (First_Element)
 --
+--
 
 --  diff (First_Key)
+--
 --
 
    function Last (Container : Map) return Cursor;
 
 --  diff (Last_Element)
 --
+--
 
 --  diff (Last_Key)
+--
 --
 
    function Next (Position : Cursor) return Cursor;

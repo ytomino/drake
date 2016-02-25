@@ -89,7 +89,7 @@ package body System.Synchronous_Objects is
 
    procedure Initialize (
       Object : in out Queue;
-      Mutex : not null access Synchronous_Objects.Mutex) is
+      Mutex : not null Mutex_Access) is
    begin
       Object.Mutex := Mutex;
       Initialize (Object.Event, Manual => False);

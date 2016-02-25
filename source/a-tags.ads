@@ -35,7 +35,7 @@ private
    type Object_Specific_Data_Array is array (Positive range <>) of Positive;
    pragma Suppress_Initialization (Object_Specific_Data_Array);
 
-   --  required by compiler (a-tags.ads)
+   --  required types by compiler (a-tags.ads)
 
    type Prim_Ptr is access procedure;
    for Prim_Ptr'Storage_Size use 0;
@@ -50,11 +50,10 @@ private
 
    No_Tag : constant Tag := null;
 
-   --  zero-terminated string required by compiler (a-tags.ads)
+   --  required types by compiler (a-tags.ads)
+
    type Cstring_Ptr is access all Fixed_String;
    for Cstring_Ptr'Storage_Size use 0;
-
-   --  required for tagged types by compiler (a-tags.ads)
 
    type Offset_To_Top_Function_Ptr is access function (This : System.Address)
       return System.Storage_Elements.Storage_Offset;
@@ -204,30 +203,61 @@ private
    type Addr_Ptr is access System.Address;
    for Addr_Ptr'Storage_Size use 0;
 
-   --  required for interface class-wide types by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for INTERFACE'Class (Object)'Access (exp_attr.adb)
+   --  for accessibility checks of new access INTERFACE'Class (exp_ch4.adb)
+   --  for accessibility checks of return access INTERFACE'Class (exp_ch6.adb)
+   --  for Unchecked_Deallocation of access INTERFACE'Class (exp_intr.adb)
    function Base_Address (This : System.Address) return System.Address;
 
-   --  required for downcast to interface types by compiler (a-tags.ads)
+   --  optionally required by compiler (a-tags.ads)
+   --  for Duplicated_Tag_Check (exp_disp.adb)
+--  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
+
+   --  required by compiler (a-tags.ads)
+   --  for downcast to INTERFACE'Class (exp_ch3.adb)
+   --  for new INTERFACE'Class'(...) (exp_ch4.adb)
+   --  for non-statically upcast to INTERFACE'Class (exp_disp.adb)
+   --  for assignment to INTERFACE'Class (exp_util.adb)
    function Displace (This : System.Address; T : Tag) return System.Address;
 
-   --  required for controlled types by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for elaborating dispatch tables of derived types (exp_atag.adb)
    function DT (T : Tag) return Dispatch_Table_Ptr;
 
-   --  required for synchronized interface by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for requeue statements using synchronized interface (exp_ch9.adb)
+   --  for implicit primitives of synchronized interface (exp_disp.adb)
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
+--  function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
 
-   --  required for virtual subprograms by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for select statements using synchronized interface (exp_atag.adb)
+   --  for implicit primitives of synchronized interface (exp_disp.adb)
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind;
 
-   --  required for Obj in Intf'Class by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for select statements using synchronized interface (exp_sel.adb)
+--  function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
+
+   --  required by compiler (a-tags.ads)
+   --  for Object in INTERFACE'Class (exp_ch4.adb)
+   --  for Generic_Dispatching_Constructor (exp_intr.adb)
    function IW_Membership (This : System.Address; T : Tag) return Boolean;
 
-   --  required for non-controlled tagged'Class by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for deferencing access values associated to Checked_Pool (exp_ch4.adb)
+   --  for Unchecked_Deallocation of access TAGGED'Class (exp_util.adb)
    function Needs_Finalization (T : Tag) return Boolean;
 
-   --  required for tagged types having two (or more) ancestors
-   --    by compiler (s-exctab.ads)
+   --  optionally required by compiler (a-tags.ads)
+   --  for abstract types implementing abstract interfaces (exp_disp.adb)
+--  function Offset_To_Top (This : System.Address)
+--    return System.Storage_Elements.Storage_Offset;
+
+   --  required by compiler (a-tags.ads)
+   --  for types implementing interfaces (exp_ch3.adb)
    procedure Register_Interface_Offset (
       This : System.Address;
       Interface_T : Tag;
@@ -235,10 +265,25 @@ private
       Offset_Value : System.Storage_Elements.Storage_Offset;
       Offset_Func : Offset_To_Top_Function_Ptr);
 
-   --  required for library-level tagged types by compiler (s-exctab.ads)
+   --  optionally required by compiler (a-tags.ads)
+   --  for finalizers (exp_ch7.adb)
+   --  for elaborating dispatch tables (exp_disp.adb)
    procedure Register_Tag (T : Tag) is null; -- unimplemented
 
-   --  required for synchronized interface by compiler (a-tags.ads)
+   --  required by compiler (a-tags.ads)
+   --  for Generic_Dispatching_Constructor (exp_intr.adb)
+--  function Secondary_Tag (T, Iface : Tag) return Tag;
+
+   --  required by compiler (a-tags.ads)
+   --  for variable-sized types implementing interfaces (exp_ch3.adb)
+--  procedure Set_Dynamic_Offset_To_Top (
+--    This : System.Address;
+--    Interface_T : Tag;
+--    Offset_Value : System.Storage_Elements.Storage_Offset;
+--    Offset_Func : Offset_To_Top_Function_Ptr);
+
+   --  required by compiler (a-tags.ads)
+   --  for elaborating dispatch tables of synchronized interface (exp_disp.adb)
    procedure Set_Entry_Index (
       T : Tag;
       Position : Positive;
@@ -248,21 +293,9 @@ private
       Position : Positive;
       Value : Prim_Op_Kind);
 
-   --  required for library-level tagged types by compiler (s-exctab.ads)
+   --  optionally required by compiler (a-tags.ads)
+   --  for finalizers (exp_ch7.adb, exp_util.adb)
    procedure Unregister_Tag (T : Tag) is null; -- unimplemented
-
-   --  required by compiler ??? (a-tags.ads)
---  procedure Check_TSD (TSD : Type_Specific_Data_Ptr);
---  function Secondary_Tag (T, Iface : Tag) return Tag;
---  function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
---  function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
---  function Offset_To_Top (This : System.Address)
---    return System.Storage_Elements.Storage_Offset;
---  procedure Set_Dynamic_Offset_To_Top (
---    This : System.Address;
---    Interface_T : Tag;
---    Offset_Value : System.Storage_Elements.Storage_Offset;
---    Offset_Func : Offset_To_Top_Function_Ptr);
 
    --  interface delegation
 

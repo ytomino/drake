@@ -2,7 +2,7 @@ with Ada.Strings.Naked_Maps.Case_Folding;
 function Ada.Strings.Generic_Equal_Case_Insensitive (Left, Right : String_Type)
    return Boolean
 is
-   Mapping : constant not null access Naked_Maps.Character_Mapping :=
+   Mapping : constant not null Naked_Maps.Character_Mapping_Access :=
       Naked_Maps.Case_Folding.Case_Folding_Map;
    Left_Last : Natural := Left'First - 1;
    Right_Last : Natural := Right'First - 1;

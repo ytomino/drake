@@ -41,6 +41,24 @@ package body Ada.Strings.Maps is
       Data := null;
    end Free_Set_Data;
 
+   function Copy_Set_Data (Items : Naked_Maps.Character_Ranges)
+      return not null Set_Data_Access;
+   function Copy_Set_Data (Items : Naked_Maps.Character_Ranges)
+      return not null Set_Data_Access
+   is
+      Result : Set_Data_Access;
+   begin
+      if Items'Length = 0 then
+         Result := Empty_Set_Data'Unrestricted_Access;
+      else
+         Result := new Set_Data'(
+            Length => Items'Length,
+            Reference_Count => 1,
+            Items => Items);
+      end if;
+      return Result;
+   end Copy_Set_Data;
+
    --  "-" operation
    procedure Sub (
       Result : in out Naked_Maps.Character_Ranges;
@@ -129,15 +147,8 @@ package body Ada.Strings.Maps is
                Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
          end if;
       end loop;
-      if Last < Items'First then
-         Data := Empty_Set_Data'Unrestricted_Access;
-      else
-         Data := new Set_Data'(
-            Length => Last,
-            Reference_Count => 1,
-            Items => Items (1 .. Last));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-      end if;
+      Data := Copy_Set_Data (Items (Items'First .. Last));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       return Create (Data);
    end Overloaded_To_Set;
 
@@ -157,15 +168,8 @@ package body Ada.Strings.Maps is
                Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
          end if;
       end loop;
-      if Last < Items'First then
-         Data := Empty_Set_Data'Unrestricted_Access;
-      else
-         Data := new Set_Data'(
-            Length => Last,
-            Reference_Count => 1,
-            Items => Items (1 .. Last));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-      end if;
+      Data := Copy_Set_Data (Items (Items'First .. Last));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       return Create (Data);
    end Overloaded_To_Set;
 
@@ -185,15 +189,8 @@ package body Ada.Strings.Maps is
                Ranges (I).High);
          end if;
       end loop;
-      if Last < Items'First then
-         Data := Empty_Set_Data'Unrestricted_Access;
-      else
-         Data := new Set_Data'(
-            Length => Last,
-            Reference_Count => 1,
-            Items => Items (1 .. Last));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-      end if;
+      Data := Copy_Set_Data (Items (Items'First .. Last));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       return Create (Data);
    end Overloaded_To_Set;
 
@@ -309,15 +306,8 @@ package body Ada.Strings.Maps is
             Last : Natural;
          begin
             Sub (Items, Last, Full_Set_Data.Items, Right_Data.Items);
-            if Last < Items'First then
-               Data := Empty_Set_Data'Unrestricted_Access;
-            else
-               Data := new Set_Data'(
-                  Length => Last - Items'First + 1,
-                  Reference_Count => 1,
-                  Items => Items (Items'First .. Last));
-               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-            end if;
+            Data := Copy_Set_Data (Items (Items'First .. Last));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
       return Create (Data);
@@ -348,15 +338,8 @@ package body Ada.Strings.Maps is
                Last,
                Left_Data.Items,
                Right_Data.Items);
-            if Last < Items'First then
-               Data := Empty_Set_Data'Unrestricted_Access;
-            else
-               Data := new Set_Data'(
-                  Length => Last - Items'First + 1,
-                  Reference_Count => 1,
-                  Items => Items (Items'First .. Last));
-               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-            end if;
+            Data := Copy_Set_Data (Items (Items'First .. Last));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
       return Create (Data);
@@ -399,10 +382,7 @@ package body Ada.Strings.Maps is
                Last,
                Left_Data.Items,
                Right_Data.Items);
-            Data := new Set_Data'(
-               Length => Last - Items'First + 1,
-               Reference_Count => 1,
-               Items => Items (Items'First .. Last));
+            Data := Copy_Set_Data (Items (Items'First .. Last)); -- Length > 0
             pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
@@ -455,15 +435,8 @@ package body Ada.Strings.Maps is
                Left_Data.Items,
                Right_Data.Items);
             Sub (Items, Last, X (1 .. X_Last), Y (1 .. Y_Last));
-            if Last < Items'First then
-               Data := Empty_Set_Data'Unrestricted_Access;
-            else
-               Data := new Set_Data'(
-                  Length => Last - Items'First + 1,
-                  Reference_Count => 1,
-                  Items => Items (Items'First .. Last));
-               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-            end if;
+            Data := Copy_Set_Data (Items (Items'First .. Last));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
       return Create (Data);
@@ -497,15 +470,8 @@ package body Ada.Strings.Maps is
             Last : Natural;
          begin
             Sub (Items, Last, Left_Data.Items, Right_Data.Items);
-            if Last < Items'First then
-               Data := Empty_Set_Data'Unrestricted_Access;
-            else
-               Data := new Set_Data'(
-                  Length => Last - Items'First + 1,
-                  Reference_Count => 1,
-                  Items => Items (Items'First .. Last));
-               pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-            end if;
+            Data := Copy_Set_Data (Items (Items'First .. Last));
+            pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
          end;
       end if;
       return Create (Data);
@@ -630,15 +596,8 @@ package body Ada.Strings.Maps is
             Sequence (I),
             Sequence (I));
       end loop;
-      if Last < Items'First then
-         Data := Empty_Set_Data'Unrestricted_Access;
-      else
-         Data := new Set_Data'(
-            Length => Last - Items'First + 1,
-            Reference_Count => 1,
-            Items => Items (Items'First .. Last));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
-      end if;
+      Data := Copy_Set_Data (Items (Items'First .. Last));
+      pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
       return Create (Data);
    end Overloaded_To_Set;
 
@@ -746,10 +705,9 @@ package body Ada.Strings.Maps is
             Length : Integer;
          begin
             Finalize (Item);
+            Item.Data := Empty_Set_Data'Unrestricted_Access;
             Integer'Read (Stream, Length);
-            if Length = 0 then
-               Item.Data := Empty_Set_Data'Unrestricted_Access;
-            else
+            if Length > 0 then
                Item.Data := new Set_Data'(
                   Length => Length,
                   Reference_Count => 1,
@@ -888,15 +846,26 @@ package body Ada.Strings.Maps is
    function Overloaded_To_Mapping (From, To : Wide_Wide_Character_Sequence)
       return Character_Mapping
    is
+      Sorted_From, Sorted_To : Wide_Wide_Character_Sequence (1 .. From'Length);
+      Sorted_Last : Natural;
       New_Data : Map_Data_Access;
    begin
-      if From'Length = 0 then
+      Naked_Maps.To_Mapping (
+         From => From,
+         To => To,
+         Out_From => Sorted_From,
+         Out_To => Sorted_To,
+         Out_Last => Sorted_Last);
+      if Sorted_Last = 0 then
          New_Data := Empty_Map_Data'Unrestricted_Access;
       else
          New_Data := new Map_Data'(
-            Naked_Maps.To_Mapping (From, To, Initial_Reference_Count => 1));
-         pragma Check (Validate, Naked_Maps.Debug.Valid (New_Data.all));
+            Length => Sorted_Last,
+            Reference_Count => 1,
+            From => Sorted_From,
+            To => Sorted_To);
       end if;
+      pragma Check (Validate, Naked_Maps.Debug.Valid (New_Data.all));
       return Create (New_Data);
    end Overloaded_To_Mapping;
 
@@ -1012,23 +981,18 @@ package body Ada.Strings.Maps is
             Length : Integer;
          begin
             Finalize (Item);
+            Item.Data := Empty_Map_Data'Unrestricted_Access;
             Integer'Read (Stream, Length);
-            if Length = 0 then
-               Item.Data := Empty_Map_Data'Unrestricted_Access;
-            else
-               declare
-                  From, To : Wide_Wide_Character_Sequence (1 .. Length);
-               begin
-                  for I in 1 .. Length loop
-                     Wide_Wide_Character'Read (Stream, From (I));
-                     Wide_Wide_Character'Read (Stream, To (I));
-                  end loop;
-                  Item.Data := new Map_Data'(
-                     Naked_Maps.To_Mapping (
-                        From,
-                        To,
-                        Initial_Reference_Count => 1));
-               end;
+            if Length > 0 then
+               Item.Data := new Map_Data'(
+                  Length => Length,
+                  Reference_Count => 1,
+                  From => <>,
+                  To => <>);
+               for I in 1 .. Length loop
+                  Wide_Wide_Character'Read (Stream, Item.Data.From (I));
+                  Wide_Wide_Character'Read (Stream, Item.Data.To (I));
+               end loop;
                pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
             end if;
          end Read;

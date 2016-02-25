@@ -2,7 +2,6 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Soft_Links;
 with System.Synchronous_Control;
-with System.Tasks;
 with System.Termination;
 package body System.Tasking.Stages is
 
@@ -56,7 +55,7 @@ package body System.Tasking.Stages is
       Master : Master_Level;
       State : Task_Procedure_Access;
       Discriminants : Address;
-      Elaborated : not null access Boolean;
+      Elaborated : not null Tasks.Boolean_Access;
       Chain : in out Activation_Chain;
       Task_Image : String;
       Created_Task : out Task_Id)

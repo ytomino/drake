@@ -3,7 +3,7 @@ with Ada.Strings.Naked_Maps.Case_Folding;
 function Ada.Strings.Generic_Hash_Case_Insensitive (Key : String_Type)
    return Containers.Hash_Type
 is
-   Mapping : constant not null access Naked_Maps.Character_Mapping :=
+   Mapping : constant not null Naked_Maps.Character_Mapping_Access :=
       Strings.Naked_Maps.Case_Folding.Case_Folding_Map;
    State : Containers.Murmur_Hash_3.State :=
       Containers.Murmur_Hash_3.Initialize (0);

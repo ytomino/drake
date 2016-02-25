@@ -5,10 +5,13 @@ private package Ada.Containers.Copy_On_Write is
 
    type Container;
 
+   type Container_Access is access all Container;
+   for Container_Access'Storage_Size use 0;
+
    Data_Size : constant := Standard'Address_Size;
 
    type Data is limited record
-      Follower : access Container; -- first container is owner
+      Follower : Container_Access; -- first container is owner
       pragma Atomic (Follower);
    end record;
 
@@ -21,7 +24,7 @@ private package Ada.Containers.Copy_On_Write is
    type Container is record
       Data : Data_Access;
       pragma Atomic (Data);
-      Next_Follower : access Container;
+      Next_Follower : Container_Access;
       pragma Atomic (Next_Follower);
    end record;
 

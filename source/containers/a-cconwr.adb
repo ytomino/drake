@@ -4,14 +4,11 @@ with System.Shared_Locking;
 package body Ada.Containers.Copy_On_Write is
 
    procedure Follow (
-      Target : not null access Container;
+      Target : not null Container_Access;
       Data : not null Data_Access);
    procedure Follow (
-      Target : not null access Container;
-      Data : not null Data_Access)
-   is
-      pragma Suppress (Accessibility_Check);
-      --  if Target points local variable, accessibility check may failed.
+      Target : not null Container_Access;
+      Data : not null Data_Access) is
    begin
       pragma Check (Trace, Debug.Put ("enter"));
       Target.Data := Data;
@@ -27,10 +24,10 @@ package body Ada.Containers.Copy_On_Write is
    end Follow;
 
    procedure Unfollow (
-      Target : not null access Container;
+      Target : not null Container_Access;
       To_Free : out Data_Access);
    procedure Unfollow (
-      Target : not null access Container;
+      Target : not null Container_Access;
       To_Free : out Data_Access)
    is
       Data : constant Data_Access := Target.Data;

@@ -7,6 +7,7 @@ with C.stdlib;
 with C.string;
 package body System.Native_Environment_Variables is
    use type Storage_Elements.Storage_Offset;
+   use type C.char_const_ptr;
    use type C.char_ptr;
    use type C.char_ptr_ptr;
    use type C.signed_int;
@@ -30,23 +31,23 @@ package body System.Native_Environment_Variables is
    end getenv;
 
    procedure Do_Separate (
-      Item : not null access constant C.char;
+      Item : not null C.char_const_ptr;
       Name_Length : out C.size_t;
       Value : out C.char_const_ptr);
    procedure Do_Separate (
-      Item : not null access constant C.char;
+      Item : not null C.char_const_ptr;
       Name_Length : out C.size_t;
       Value : out C.char_const_ptr)
    is
-      P : C.char_ptr;
+      P : C.char_const_ptr;
    begin
-      P := C.string.strchr (Item, C.char'Pos ('='));
+      P := C.char_const_ptr (C.string.strchr (Item, C.char'Pos ('=')));
       if P /= null then
          Name_Length := C.size_t (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (P))
-            - char_const_ptr_Conv.To_Address (C.char_const_ptr (Item)));
+            char_const_ptr_Conv.To_Address (P)
+            - char_const_ptr_Conv.To_Address (Item));
          Value := char_const_ptr_Conv.To_Pointer (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (P))
+            char_const_ptr_Conv.To_Address (P)
             + Storage_Elements.Storage_Offset'(1));
       else
          Name_Length := C.string.strlen (Item);
@@ -59,7 +60,7 @@ package body System.Native_Environment_Variables is
    --  implementation
 
    function Value (Name : String) return String is
-      Result : constant C.char_ptr := getenv (Name);
+      Result : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
    begin
       if Result = null then
          raise Constraint_Error;
@@ -69,7 +70,7 @@ package body System.Native_Environment_Variables is
    end Value;
 
    function Value (Name : String; Default : String) return String is
-      Result : constant C.char_ptr := getenv (Name);
+      Result : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
    begin
       if Result = null then
          return Default;
@@ -79,7 +80,7 @@ package body System.Native_Environment_Variables is
    end Value;
 
    function Exists (Name : String) return Boolean is
-      Item : constant C.char_ptr := getenv (Name);
+      Item : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
    begin
       return Item /= null;
    end Exists;
@@ -126,15 +127,14 @@ package body System.Native_Environment_Variables is
             - Storage_Elements.Storage_Offset'(
                C.char_ptr'Size / Standard'Storage_Unit));
          declare
-            Item : constant C.char_ptr := I.all;
+            Item : constant C.char_const_ptr := C.char_const_ptr (I.all);
             Name_Length : C.size_t;
             Value : C.char_const_ptr;
          begin
             Do_Separate (Item, Name_Length, Value);
             declare
                Item_A : C.char_array (C.size_t);
-               for Item_A'Address use
-                  char_const_ptr_Conv.To_Address (C.char_const_ptr (Item));
+               for Item_A'Address use char_const_ptr_Conv.To_Address (Item);
                Name : aliased C.char_array (0 .. Name_Length);
             begin
                Name (0 .. Name_Length - 1) := Item_A (0 .. Name_Length - 1);
@@ -154,8 +154,9 @@ package body System.Native_Environment_Variables is
    end Has_Element;
 
    function Name (Position : Cursor) return String is
-      Item : constant C.char_ptr :=
-         char_ptr_ptr_Conv.To_Pointer (Address (Position)).all;
+      Item : constant C.char_const_ptr :=
+         C.char_const_ptr (
+            char_ptr_ptr_Conv.To_Pointer (Address (Position)).all);
       Name_Length : C.size_t;
       Value : C.char_const_ptr;
    begin
@@ -164,8 +165,9 @@ package body System.Native_Environment_Variables is
    end Name;
 
    function Value (Position : Cursor) return String is
-      Item : constant C.char_ptr :=
-         char_ptr_ptr_Conv.To_Pointer (Address (Position)).all;
+      Item : constant C.char_const_ptr :=
+         C.char_const_ptr (
+            char_ptr_ptr_Conv.To_Pointer (Address (Position)).all);
       Name_Length : C.size_t;
       Value : C.char_const_ptr;
    begin

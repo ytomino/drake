@@ -32,6 +32,9 @@ package System.Synchronous_Objects is
 
    --  queue
 
+   type Mutex_Access is access all Mutex;
+   for Mutex_Access'Storage_Size use 0;
+
    type Queue_Node is limited private;
    type Queue_Node_Access is access all Queue_Node;
    type Queue_Filter is access function (
@@ -43,7 +46,7 @@ package System.Synchronous_Objects is
 
    procedure Initialize (
       Object : in out Queue;
-      Mutex : not null access Synchronous_Objects.Mutex);
+      Mutex : not null Mutex_Access);
    procedure Finalize (
       Object : in out Queue);
    function Count (
@@ -159,7 +162,7 @@ private
    pragma Suppress_Initialization (Condition_Variable);
 
    type Queue is limited record
-      Mutex : not null access Synchronous_Objects.Mutex;
+      Mutex : not null Mutex_Access;
       Event : Synchronous_Objects.Event; -- auto
       Head : aliased Queue_Node_Access;
       Tail : Queue_Node_Access;

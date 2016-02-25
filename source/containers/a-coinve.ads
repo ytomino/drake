@@ -244,10 +244,12 @@ package Ada.Containers.Indefinite_Vectors is
 --    Position : in out Cursor;
 --    Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_First (
       Container : in out Vector'Class; -- not primitive
       Count : Count_Type := 1);
 
+   --  modified
    procedure Delete_Last (
       Container : in out Vector'Class; -- not primitive
       Count : Count_Type := 1);
@@ -262,6 +264,7 @@ package Ada.Containers.Indefinite_Vectors is
 
    function First (Container : Vector) return Cursor;
 
+   --  modified
    function First_Element (Container : Vector'Class) -- not primitive
       return Element_Type;
 
@@ -270,6 +273,7 @@ package Ada.Containers.Indefinite_Vectors is
    function Last (Container : Vector) return Cursor
       renames Last_Index;
 
+   --  modified
    function Last_Element (Container : Vector'Class) -- not primitive
       return Element_Type;
 

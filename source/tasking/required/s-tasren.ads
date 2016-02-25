@@ -9,7 +9,7 @@ package System.Tasking.Rendezvous is
       E : Task_Entry_Index;
       Uninterpreted_Data : out Address);
 
-   --  required optional for accept statement by compiler (s-tasren.ads)
+   --  optionally required for accept statement by compiler (s-tasren.ads)
    procedure Complete_Rendezvous;
 
    --  required for accept statement by compiler (s-tasren.ads)
