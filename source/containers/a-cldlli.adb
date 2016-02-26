@@ -385,24 +385,29 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Delete (
       Container : in out List;
       Position : in out Cursor;
-      Count : Count_Type := 1)
-   is
-      X : Linked_Lists.Node_Access;
-      Next : Linked_Lists.Node_Access;
+      Count : Count_Type := 1) is
    begin
+      if Count > 0 then
 --  diff
-      for I in 1 .. Count loop
-         X := Upcast (Position);
-         Next := Position.Super.Next;
-         Base.Remove (
-            Container.First,
-            Container.Last,
-            Container.Length,
-            Position => X,
-            Next => Next);
-         Free_Node (X);
-         Position := Downcast (Next);
-      end loop;
+         for I in 1 .. Count loop
+            declare
+               X : Linked_Lists.Node_Access;
+               Next : Linked_Lists.Node_Access;
+            begin
+               X := Upcast (Position);
+               Next := Position.Super.Next;
+               Base.Remove (
+                  Container.First,
+                  Container.Last,
+                  Container.Length,
+                  Position => X,
+                  Next => Next);
+               Free_Node (X);
+               Position := Downcast (Next);
+            end;
+         end loop;
+         Position := No_Element;
+      end if;
    end Delete;
 
    procedure Delete_First (
