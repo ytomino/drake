@@ -330,7 +330,9 @@ package body Ada.Containers.Limited_Vectors is
       Container.Length := 0;
    end Clear;
 
-   function To_Cursor (Container : Vector; Index : Extended_Index)
+   function To_Cursor (
+      Container : Vector'Class;
+      Index : Extended_Index)
       return Cursor
    is
       pragma Check (Pre,
@@ -621,14 +623,14 @@ package body Ada.Containers.Limited_Vectors is
 --
 
    procedure Insert_Space (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Before : Extended_Index;
       Count : Count_Type := 1)
    is
       Position : Cursor;
    begin
       Insert_Space (
-         Container,
+         Vector (Container),
          Before, -- checking Constraint_Error
          Position,
          Count);
@@ -761,7 +763,9 @@ package body Ada.Containers.Limited_Vectors is
          Data_Cast.To_Address (Container.Data));
    end Swap;
 
-   function First_Index (Container : Vector) return Index_Type is
+   function First_Index (Container : Vector'Class)
+      return Index_Type
+   is
       pragma Unreferenced (Container);
    begin
       return Index_Type'First;
@@ -782,9 +786,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   function Last_Index (Container : Vector) return Extended_Index is
+   function Last_Index (Container : Vector'Class)
+      return Extended_Index is
    begin
-      return Last (Container);
+      return Last (Vector (Container));
    end Last_Index;
 
    function Last (Container : Vector) return Cursor is

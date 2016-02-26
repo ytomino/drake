@@ -80,7 +80,10 @@ package Ada.Containers.Vectors is
 
    procedure Clear (Container : in out Vector);
 
-   function To_Cursor (Container : Vector; Index : Extended_Index)
+   --  modified
+   function To_Cursor (
+      Container : Vector'Class; -- not primitive
+      Index : Extended_Index)
       return Cursor;
 
    function To_Index (Position : Cursor) return Extended_Index
@@ -223,8 +226,9 @@ package Ada.Containers.Vectors is
       New_Item : Element_Type;
       Count : Count_Type := 1);
 
+   --  modified
    procedure Insert_Space (
-      Container : in out Vector;
+      Container : in out Vector'Class; -- not primitive
       Before : Extended_Index;
       Count : Count_Type := 1);
 
@@ -260,7 +264,9 @@ package Ada.Containers.Vectors is
 
    procedure Swap (Container : in out Vector; I, J : Cursor);
 
-   function First_Index (Container : Vector) return Index_Type;
+   --  modified
+   function First_Index (Container : Vector'Class) -- not primitive
+      return Index_Type;
 
    function First (Container : Vector) return Cursor;
 
@@ -268,7 +274,9 @@ package Ada.Containers.Vectors is
    function First_Element (Container : Vector'Class) -- not primitive
       return Element_Type;
 
-   function Last_Index (Container : Vector) return Extended_Index;
+   --  modified
+   function Last_Index (Container : Vector'Class) -- not primitive
+      return Extended_Index;
 
    function Last (Container : Vector) return Cursor;
 
@@ -284,8 +292,9 @@ package Ada.Containers.Vectors is
 
 --  procedure Previous (Position : in out Cursor);
 
+   --  modified
    function Find_Index (
-      Container : Vector;
+      Container : Vector'Class; -- not primitive
       Item : Element_Type;
       Index : Index_Type := Index_Type'First)
       return Extended_Index;
@@ -306,8 +315,9 @@ package Ada.Containers.Vectors is
       Position : Cursor)
       return Cursor;
 
+   --  modified
    function Reverse_Find_Index (
-      Container : Vector;
+      Container : Vector'Class; -- not primitive
       Item : Element_Type;
       Index : Index_Type := Index_Type'Last)
       return Extended_Index;

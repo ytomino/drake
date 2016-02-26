@@ -330,7 +330,9 @@ package body Ada.Containers.Vectors is
       Container.Length := 0;
    end Clear;
 
-   function To_Cursor (Container : Vector; Index : Extended_Index)
+   function To_Cursor (
+      Container : Vector'Class;
+      Index : Extended_Index)
       return Cursor
    is
       pragma Check (Pre,
@@ -621,14 +623,14 @@ package body Ada.Containers.Vectors is
    end Append;
 
    procedure Insert_Space (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Before : Extended_Index;
       Count : Count_Type := 1)
    is
       Position : Cursor;
    begin
       Insert_Space (
-         Container,
+         Vector (Container),
          Before, -- checking Constraint_Error
          Position,
          Count);
@@ -761,7 +763,9 @@ package body Ada.Containers.Vectors is
          Data_Cast.To_Address (Downcast (Container.Super.Data)));
    end Swap;
 
-   function First_Index (Container : Vector) return Index_Type is
+   function First_Index (Container : Vector'Class)
+      return Index_Type
+   is
       pragma Unreferenced (Container);
    begin
       return Index_Type'First;
@@ -782,9 +786,10 @@ package body Ada.Containers.Vectors is
       return Element (Container, Index_Type'First);
    end First_Element;
 
-   function Last_Index (Container : Vector) return Extended_Index is
+   function Last_Index (Container : Vector'Class)
+      return Extended_Index is
    begin
-      return Last (Container);
+      return Last (Vector (Container));
    end Last_Index;
 
    function Last (Container : Vector) return Cursor is
@@ -795,17 +800,17 @@ package body Ada.Containers.Vectors is
    function Last_Element (Container : Vector'Class)
       return Element_Type is
    begin
-      return Element (Container, Last_Index (Vector (Container)));
+      return Element (Container, Last_Index (Container));
    end Last_Element;
 
    function Find_Index (
-      Container : Vector;
+      Container : Vector'Class;
       Item : Element_Type;
       Index : Index_Type := Index_Type'First)
       return Extended_Index is
    begin
       return Find (
-         Container,
+         Vector (Container),
          Item,
          Index); -- checking Constraint_Error
    end Find_Index;
@@ -842,7 +847,7 @@ package body Ada.Containers.Vectors is
    end Find;
 
    function Reverse_Find_Index (
-      Container : Vector;
+      Container : Vector'Class;
       Item : Element_Type;
       Index : Index_Type := Index_Type'Last)
       return Extended_Index
@@ -851,7 +856,7 @@ package body Ada.Containers.Vectors is
          Extended_Index'Min (Index, Last_Index (Container));
    begin
       return Reverse_Find (
-         Container,
+         Vector (Container),
          Item,
          Start); -- checking Constraint_Error
    end Reverse_Find_Index;
