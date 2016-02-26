@@ -94,15 +94,15 @@ package Ada.Containers.Vectors is
 
 --  function Element (Position : Cursor) return Element_Type;
 
-   procedure Replace_Element (
-      Container : in out Vector;
-      Index : Index_Type;
-      New_Item : Element_Type);
-
 --  procedure Replace_Element (
 --    Container : in out Vector;
---    Position : Cursor;
---    New_item : Element_Type);
+--    Index : Index_Type;
+--    New_Item : Element_Type);
+
+   procedure Replace_Element (
+      Container : in out Vector;
+      Position : Cursor;
+      New_Item : Element_Type);
 
    --  modified
    procedure Query_Element (
@@ -114,16 +114,16 @@ package Ada.Containers.Vectors is
 --    Position : Cursor;
 --    Process : not null access procedure (Element : Element_Type));
 
+--  procedure Update_Element (
+--    Container : in out Vector;
+--    Index : Index_Type;
+--    Process : not null access procedure (Element : in out Element_Type));
+
    --  modified
    procedure Update_Element (
       Container : in out Vector'Class; -- not primitive
-      Index : Index_Type;
+      Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type));
-
---  procedure Update_Element (
---    Container : in out Vector;
---    Position : Cursor;
---    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private
@@ -133,25 +133,25 @@ package Ada.Containers.Vectors is
       Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Index : Index_Type)
-      return Constant_Reference_Type;
-
-   function Reference (
-      Container : aliased in out Vector;
-      Index : Index_Type)
-      return Reference_Type;
-
 --  function Constant_Reference (
 --    Container : aliased Vector;
---    Position : Cursor)
+--    Index : Index_Type)
 --    return Constant_Reference_Type;
 
 --  function Reference (
 --    Container : aliased in out Vector;
---    Position : Cursor)
+--    Index : Index_Type)
 --    return Reference_Type;
+
+   function Constant_Reference (
+      Container : aliased Vector;
+      Position : Cursor)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : aliased in out Vector;
+      Position : Cursor)
+      return Reference_Type;
 
    procedure Assign (Target : in out Vector; Source : Vector);
 
@@ -159,15 +159,15 @@ package Ada.Containers.Vectors is
 
    procedure Move (Target : in out Vector; Source : in out Vector);
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Extended_Index;
-      New_Item : Vector);
-
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : Cursor;
+--    Before : Extended_Index;
 --    New_Item : Vector);
+
+   procedure Insert (
+      Container : in out Vector;
+      Before : Cursor;
+      New_Item : Vector);
 
    procedure Insert (
       Container : in out Vector;
@@ -175,17 +175,17 @@ package Ada.Containers.Vectors is
       New_Item : Vector;
       Position : out Cursor);
 
-   procedure Insert (
-      Container : in out Vector;
-      Before : Extended_Index;
-      New_Item : Element_Type;
-      Count : Count_Type := 1);
-
 --  procedure Insert (
 --    Container : in out Vector;
---    Before : Cursor;
+--    Before : Extended_Index;
 --    New_Item : Element_Type;
 --    Count : Count_Type := 1);
+
+   procedure Insert (
+      Container : in out Vector;
+      Before : Cursor;
+      New_Item : Element_Type;
+      Count : Count_Type := 1);
 
    procedure Insert (
       Container : in out Vector;
@@ -234,15 +234,15 @@ package Ada.Containers.Vectors is
       Position : out Cursor;
       Count : Count_Type := 1);
 
-   procedure Delete (
-      Container : in out Vector;
-      Index : Extended_Index;
-      Count : Count_Type := 1);
-
 --  procedure Delete (
 --    Container : in out Vector;
---    Position : in out Cursor;
+--    Index : Extended_Index;
 --    Count : Count_Type := 1);
+
+   procedure Delete (
+      Container : in out Vector;
+      Position : in out Cursor;
+      Count : Count_Type := 1);
 
    --  modified
    procedure Delete_First (
@@ -256,9 +256,9 @@ package Ada.Containers.Vectors is
 
    procedure Reverse_Elements (Container : in out Vector);
 
-   procedure Swap (Container : in out Vector; I, J : Index_Type);
+--  procedure Swap (Container : in out Vector; I, J : Index_Type);
 
---  procedure Swap (Container : in out Vector; I, J : Cursor);
+   procedure Swap (Container : in out Vector; I, J : Cursor);
 
    function First_Index (Container : Vector) return Index_Type;
 
@@ -270,8 +270,7 @@ package Ada.Containers.Vectors is
 
    function Last_Index (Container : Vector) return Extended_Index;
 
-   function Last (Container : Vector) return Cursor
-      renames Last_Index;
+   function Last (Container : Vector) return Cursor;
 
    --  modified
    function Last_Element (Container : Vector'Class) -- not primitive
