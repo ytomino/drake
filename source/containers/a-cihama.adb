@@ -522,13 +522,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    end Delete;
 
    procedure Delete (Container : in out Map; Position : in out Cursor) is
+      Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
       Hash_Tables.Remove (
          Downcast (Container.Super.Data).Table,
          Downcast (Container.Super.Data).Length,
-         Upcast (Position));
-      Free (Position);
+         Position_2);
+      Free_Node (Position_2);
+      Position := null;
    end Delete;
 
    function First (Container : Map) return Cursor is
