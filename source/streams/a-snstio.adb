@@ -439,9 +439,8 @@ package body Ada.Streams.Naked_Stream_IO is
       for Buffer'Address use File.Buffer;
    begin
       Last := Item'First + Taking_Length - 1;
-      Item (Item'First .. Last) := Buffer (
-         File.Reading_Index ..
-         File.Reading_Index + Taking_Length - 1);
+      Item (Item'First .. Last) :=
+         Buffer (File.Reading_Index .. File.Reading_Index + Taking_Length - 1);
       File.Reading_Index := File.Reading_Index + Taking_Length;
    end Read_From_Buffer;
 
@@ -464,9 +463,8 @@ package body Ada.Streams.Naked_Stream_IO is
    begin
       First := Item'First + Taking_Length;
       Last := First - 1;
-      Buffer (
-         File.Writing_Index ..
-         File.Writing_Index + Taking_Length - 1) := Item (Item'First .. Last);
+      Buffer (File.Writing_Index .. File.Writing_Index + Taking_Length - 1) :=
+         Item (Item'First .. Last);
       File.Writing_Index := File.Writing_Index + Taking_Length;
    end Write_To_Buffer;
 

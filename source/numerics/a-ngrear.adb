@@ -161,7 +161,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
    function Unit_Vector (
       Index : Integer;
       Order : Positive;
-      First : Integer := 1) return Real_Vector
+      First : Integer := 1)
+      return Real_Vector
    is
       function Unit_Vector_Body is
          new Generic_Arrays.Unit_Vector (

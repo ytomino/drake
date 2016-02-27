@@ -12,7 +12,8 @@ package System.Formatting is
    type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
    pragma Discard_Names (Type_Set);
 
-   function Width (Value : Unsigned; Base : Number_Base := 10) return Positive;
+   function Width (Value : Unsigned; Base : Number_Base := 10)
+      return Positive;
    function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
       return Positive;
 

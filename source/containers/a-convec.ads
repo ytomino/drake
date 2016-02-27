@@ -338,7 +338,8 @@ package Ada.Containers.Vectors is
       Position : Cursor)
       return Cursor;
 
-   function Contains (Container : Vector; Item : Element_Type) return Boolean;
+   function Contains (Container : Vector; Item : Element_Type)
+      return Boolean;
 
    --  modified
    procedure Iterate (

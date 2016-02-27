@@ -103,7 +103,9 @@ package System.Synchronous_Objects is
 
    type Barrier is limited private;
 
-   procedure Initialize (Object : in out Barrier; Release_Threshold : Natural);
+   procedure Initialize (
+      Object : in out Barrier;
+      Release_Threshold : Natural);
    procedure Finalize (Object : in out Barrier);
    procedure Wait (
       Object : in out Barrier;

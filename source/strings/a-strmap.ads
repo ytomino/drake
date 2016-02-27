@@ -235,12 +235,10 @@ private
 
       type Character_Set is private;
 
-      function Create (
-         Data : not null Set_Data_Access)
+      function Create (Data : not null Set_Data_Access)
          return Character_Set;
 
-      function Reference (
-         Object : Maps.Character_Set)
+      function Reference (Object : Maps.Character_Set)
          return not null Set_Data_Access;
       pragma Inline (Reference);
 
@@ -287,12 +285,10 @@ private
 
       type Character_Mapping is private;
 
-      function Create (
-         Data : not null Map_Data_Access)
+      function Create (Data : not null Map_Data_Access)
          return Character_Mapping;
 
-      function Reference (
-         Object : Maps.Character_Mapping)
+      function Reference (Object : Maps.Character_Mapping)
          return not null Map_Data_Access;
       pragma Inline (Reference);
 

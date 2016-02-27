@@ -62,7 +62,9 @@ package System.Tasks is
    pragma Discard_Names (Free_Mode);
 
    function Preferred_Free_Mode (T : not null Task_Id) return Free_Mode;
-   procedure Set_Preferred_Free_Mode (T : not null Task_Id; Mode : Free_Mode);
+   procedure Set_Preferred_Free_Mode (
+      T : not null Task_Id;
+      Mode : Free_Mode);
 
    procedure Get_Stack (
       T : not null Task_Id;

@@ -767,10 +767,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
       function Is_Sorted (Container : List) return Boolean is
       begin
+--  diff
+--  diff
+--  diff
+--  diff
          return Linked_Lists.Is_Sorted (Container.Last, LT'Access);
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff

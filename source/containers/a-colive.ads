@@ -339,6 +339,7 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Contains)
+--
 
    --  modified
    procedure Iterate (

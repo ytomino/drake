@@ -14,7 +14,8 @@ package body System.WCh_WtS is
 
    function Wide_Wide_String_To_String (
       S : Wide_Wide_String;
-      EM : WC_Encoding_Method) return String
+      EM : WC_Encoding_Method)
+      return String
    is
       pragma Unreferenced (EM);
    begin

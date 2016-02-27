@@ -38,9 +38,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Last : Natural)
    is
       New_Item : constant String_Type_Access :=
-         new String_Type (
-            Item'First ..
-            Item'First + 2 * Item'Length - 1);
+         new String_Type (Item'First .. Item'First + 2 * Item'Length - 1);
    begin
       New_Item (Item'First .. Last) := Item.all (Item'First .. Last);
       Free (Item);
@@ -93,9 +91,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Out_Item'Length * CS_In_SE);
+      Out_Item_2 :
+         Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -114,9 +111,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Out_Item'Length * CS_In_SE);
+      Out_Item_2 :
+         Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -134,9 +130,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Out_Item'Length * CS_In_SE);
+      Out_Item_2 :
+         Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -156,9 +151,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Out_Item'Length * CS_In_SE);
+      Out_Item_2 :
+         Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -178,9 +172,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Out_Item'Length * CS_In_SE);
+      Out_Item_2 :
+         Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
       for Out_Item_2'Address use Out_Item'Address;
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
@@ -310,9 +303,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (
-         1 ..
-         Item'Length * CS_In_SE);
+      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
       for Item_2'Address use Item'Address;
       Last_2 : Streams.Stream_Element_Offset;
    begin

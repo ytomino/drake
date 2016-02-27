@@ -171,9 +171,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    function Empty_Vector return Vector is
    begin
-      return (Finalization.Controlled with
-         Super => <>,
-         Length => 0);
+      return (Finalization.Controlled with Super => <>, Length => 0);
    end Empty_Vector;
 
    function Has_Element (Position : Cursor) return Boolean is

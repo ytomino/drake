@@ -178,8 +178,7 @@ package body Ada.Containers.Indefinite_Holders is
       return Constant_Reference_Type is
    begin
       Unique (Container'Unrestricted_Access.all, False);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
+      return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Constant_Reference;
 
    function Reference (
@@ -187,8 +186,7 @@ package body Ada.Containers.Indefinite_Holders is
       return Reference_Type is
    begin
       Unique (Container, True);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
+      return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Reference;
 
    procedure Assign (Target : in out Holder; Source : Holder) is

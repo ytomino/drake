@@ -669,15 +669,13 @@ package body Ada.Strings.Maps is
 
    package body Controlled_Sets is
 
-      function Create (
-         Data : not null Set_Data_Access)
+      function Create (Data : not null Set_Data_Access)
          return Character_Set is
       begin
          return (Finalization.Controlled with Data => Data);
       end Create;
 
-      function Reference (
-         Object : Maps.Character_Set)
+      function Reference (Object : Maps.Character_Set)
          return not null Set_Data_Access is
       begin
          return Character_Set (Object).Data;
@@ -941,15 +939,13 @@ package body Ada.Strings.Maps is
 
    package body Controlled_Maps is
 
-      function Create (
-         Data : not null Map_Data_Access)
+      function Create (Data : not null Map_Data_Access)
          return Character_Mapping is
       begin
          return (Finalization.Controlled with Data => Data);
       end Create;
 
-      function Reference (
-         Object : Maps.Character_Mapping)
+      function Reference (Object : Maps.Character_Mapping)
          return not null Map_Data_Access is
       begin
          return Character_Mapping (Object).Data;

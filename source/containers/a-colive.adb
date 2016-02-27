@@ -171,9 +171,7 @@ package body Ada.Containers.Limited_Vectors is
 
    function Empty_Vector return Vector is
    begin
-      return (Finalization.Limited_Controlled with
-         Data => null,
-         Length => 0);
+      return (Finalization.Limited_Controlled with Data => null, Length => 0);
    end Empty_Vector;
 
    function Has_Element (Position : Cursor) return Boolean is
@@ -1133,7 +1131,8 @@ package body Ada.Containers.Limited_Vectors is
       function Find (
          Container : Vector;
          Item : Element_Type;
-         Position : Cursor) return Cursor
+         Position : Cursor)
+         return Cursor
       is
          pragma Check (Pre,
             Check =>

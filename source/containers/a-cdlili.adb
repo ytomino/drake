@@ -772,7 +772,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
          else
             Unique (Container'Unrestricted_Access.all, False);
             return Linked_Lists.Is_Sorted (
-               Downcast (Container.Super.Data).Last, LT'Access);
+               Downcast (Container.Super.Data).Last,
+               LT'Access);
          end if;
       end Is_Sorted;
 

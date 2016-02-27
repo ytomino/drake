@@ -154,9 +154,10 @@ package Ada.Containers.Limited_Hashed_Maps is
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
 --  diff (Element)
---  diff
---  diff
---  diff
+--
+--
+--
+--
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 

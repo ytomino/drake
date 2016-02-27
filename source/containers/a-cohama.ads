@@ -156,7 +156,8 @@ package Ada.Containers.Hashed_Maps is
    --  modified
    function Element (
       Container : Map'Class; -- not primitive
-      Key : Key_Type) return Element_Type;
+      Key : Key_Type)
+      return Element_Type;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 

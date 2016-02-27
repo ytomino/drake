@@ -343,8 +343,7 @@ package body Ada.Text_IO.Editing is
                Dollar_Used : Boolean := False;
             begin
                for I in reverse
-                  Item_Image'First ..
-                  Item_Image'First + Fore
+                  Item_Image'First .. Item_Image'First + Fore
                loop
                   exit when Item_Image (I) = ' ';
                   loop
