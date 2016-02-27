@@ -6,7 +6,7 @@ package body Ada.Text_IO.Generic_Unbounded_IO is
    begin
       Put (
          File, -- checking the predicate
-         Item.Constant_Reference.Element.all);
+         Unbounded_Strings.Constant_Reference (Item).Element.all);
    end Put;
 
    procedure Put (
@@ -21,7 +21,7 @@ package body Ada.Text_IO.Generic_Unbounded_IO is
    begin
       Put_Line (
          File, -- checking the predicate
-         Item.Constant_Reference.Element.all);
+         Unbounded_Strings.Constant_Reference (Item).Element.all);
    end Put_Line;
 
    procedure Put_Line (
@@ -56,7 +56,7 @@ package body Ada.Text_IO.Generic_Unbounded_IO is
          Unbounded_Strings.Set_Length (Item, Capacity);
          Get_Line (
             File, -- checking the predicate
-            Item.Reference.Element.all (Last + 1 .. Capacity),
+            Unbounded_Strings.Reference (Item).Element (Last + 1 .. Capacity),
             Last);
          exit when Last < Capacity;
          Capacity := Capacity * 2;
