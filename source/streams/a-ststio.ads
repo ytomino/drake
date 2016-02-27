@@ -61,7 +61,6 @@ package Ada.Streams.Stream_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True)
       return File_Type;
-   pragma Inline (Create);
 
    --  modified
    procedure Open (
@@ -84,7 +83,6 @@ package Ada.Streams.Stream_IO is
       Wait : Boolean := False;
       Overwrite : Boolean := True)
       return File_Type;
-   pragma Inline (Open);
 
    procedure Close (File : in out File_Type);
    procedure Delete (File : in out File_Type);

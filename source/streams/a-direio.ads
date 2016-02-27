@@ -103,6 +103,7 @@ package Ada.Direct_IO is
    function End_Of_File (
       File : File_Type) -- Input_File_Type
       return Boolean;
+   pragma Inline (End_Of_File);
 
    --  Exceptions
 

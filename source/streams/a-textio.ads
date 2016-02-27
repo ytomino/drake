@@ -81,7 +81,6 @@ package Ada.Text_IO is
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type;
-   pragma Inline (Create);
 
    --  modified
    procedure Open (
@@ -108,7 +107,6 @@ package Ada.Text_IO is
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target)
       return File_Type;
-   pragma Inline (Open);
 
    procedure Close (File : in out File_Type);
    procedure Delete (File : in out File_Type);

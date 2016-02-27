@@ -267,6 +267,7 @@ package Ada.Containers.Indefinite_Vectors is
    --  modified
    function First_Index (Container : Vector'Class) -- not primitive
       return Index_Type;
+   pragma Inline (First_Index);
 
    function First (Container : Vector) return Cursor;
 
@@ -277,6 +278,7 @@ package Ada.Containers.Indefinite_Vectors is
    --  modified
    function Last_Index (Container : Vector'Class) -- not primitive
       return Extended_Index;
+   pragma Inline (Last_Index);
 
    function Last (Container : Vector) return Cursor;
 

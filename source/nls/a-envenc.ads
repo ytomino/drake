@@ -73,10 +73,12 @@ package Ada.Environment_Encoding is
    function Min_Size_In_From_Stream_Elements (
       Object : Converter) -- Open_Converter
       return Streams.Stream_Element_Offset;
+   pragma Inline (Min_Size_In_From_Stream_Elements);
 
    function Substitute (
       Object : Converter) -- Open_Converter
       return Streams.Stream_Element_Array;
+   pragma Inline (Substitute);
 
    procedure Set_Substitute (
       Object : in out Converter; -- Open_Converter
