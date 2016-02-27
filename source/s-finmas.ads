@@ -15,6 +15,7 @@ package System.Finalization_Masters is
    Header_Offset : constant Storage_Elements.Storage_Offset;
 
    subtype Any_Storage_Pool_Ptr is Storage_Pools.Storage_Pool_Access;
+   pragma Suppress (Access_Check, Any_Storage_Pool_Ptr);
 
    type Finalization_Master is
       limited new Ada.Finalization.Limited_Controlled with private;
