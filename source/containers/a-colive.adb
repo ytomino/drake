@@ -926,16 +926,19 @@ package body Ada.Containers.Limited_Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Check (Pre,
-         (First in
-            Index_Type'First ..
-            Limited_Vectors.Last (Vector (Container)) + 1
-            and then Last <= Limited_Vectors.Last (Vector (Container)))
-         or else (First = No_Element and then Last = No_Element)
-         or else raise Constraint_Error);
+         Check =>
+            (First in
+               Index_Type'First ..
+               Limited_Vectors.Last (Vector (Container)) + 1
+               and then Last <= Limited_Vectors.Last (Vector (Container)))
+            or else (First = No_Element and then Last = No_Element)
+            or else raise Constraint_Error);
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
-      if Actual_Last < Actual_First then
+      if Actual_First = No_Element
+         or else Actual_Last < Actual_First -- implies Last = No_Element
+      then
          Actual_First := No_Element;
          Actual_Last := No_Element;
       end if;

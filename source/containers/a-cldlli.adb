@@ -712,7 +712,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
-      if Actual_Last < Actual_First then
+      if Actual_First = No_Element
+         or else Actual_Last = No_Element
+         or else Actual_Last < Actual_First
+      then
          Actual_First := No_Element;
          Actual_Last := No_Element;
       end if;

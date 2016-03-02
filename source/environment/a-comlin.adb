@@ -11,8 +11,10 @@ package body Ada.Command_Line is
    end Argument;
 
    function Has_Element (Position : Natural) return Boolean is
+      pragma Check (Pre,
+         Check => Position <= Argument_Count or else raise Constraint_Error);
    begin
-      return Position in 1 .. Argument_Count;
+      return Position > 0;
    end Has_Element;
 
    function Iterate return Iterator_Interfaces.Reversible_Iterator'Class is
@@ -21,9 +23,19 @@ package body Ada.Command_Line is
    end Iterate;
 
    function Iterate (First : Positive; Last : Natural)
-      return Iterator_Interfaces.Reversible_Iterator'Class is
+      return Iterator_Interfaces.Reversible_Iterator'Class
+   is
+      pragma Check (Pre,
+         Check => (First <= Argument_Count + 1 and then Last <= Argument_Count)
+            or else raise Constraint_Error);
+      Actual_First : Natural := First;
+      Actual_Last : Natural := Last;
    begin
-      return Iterator'(First, Last);
+      if Actual_Last < Actual_First then
+         Actual_First := 0;
+         Actual_Last := 0;
+      end if;
+      return Iterator'(First => Actual_First, Last => Actual_Last);
    end Iterate;
 
    function Command_Name return String is
