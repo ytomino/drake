@@ -323,28 +323,38 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
+      Position := Before;
+      if Count > 0 then
 --  diff
-      for I in 1 .. Count loop
-         declare
-            package Holder is
-               new Exceptions.Finally.Scoped_Holder (Cursor, Free);
-            X : aliased Cursor := new Node;
-         begin
-            Holder.Assign (X);
-            X.Element := new Element_Type'(New_Item.all);
-            Holder.Clear;
-            Base.Insert (
-               Container.First,
-               Container.Last,
-               Container.Length,
-               Before => Upcast (Before),
-               New_Item => Upcast (X));
-            Position := X;
-         end;
-      end loop;
+         for I in 1 .. Count loop
+            declare
+               package Holder is
+                  new Exceptions.Finally.Scoped_Holder (Cursor, Free);
+               New_Node : aliased Cursor := new Node;
+            begin
+               Holder.Assign (New_Node);
+               New_Node.Element := new Element_Type'(New_Item.all);
+               Holder.Clear;
+               Base.Insert (
+                  Container.First,
+                  Container.Last,
+                  Container.Length,
+                  Before => Upcast (Position),
+                  New_Item => Upcast (New_Node));
+               Position := New_Node;
+            end;
+         end loop;
+      end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --

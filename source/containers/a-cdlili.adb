@@ -323,25 +323,28 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
-      Unique (Container, True);
-      for I in 1 .. Count loop
-         declare
+      Position := Before;
+      if Count > 0 then
+         Unique (Container, True);
+         for I in 1 .. Count loop
+            declare
 --  diff
 --  diff
-            X : Cursor;
-         begin
-            Allocate_Node (X, New_Item);
+               New_Node : Cursor;
+            begin
+               Allocate_Node (New_Node, New_Item);
 --  diff
 --  diff
-            Base.Insert (
-               Downcast (Container.Super.Data).First,
-               Downcast (Container.Super.Data).Last,
-               Downcast (Container.Super.Data).Length,
-               Before => Upcast (Before),
-               New_Item => Upcast (X));
-            Position := X;
-         end;
-      end loop;
+               Base.Insert (
+                  Downcast (Container.Super.Data).First,
+                  Downcast (Container.Super.Data).Last,
+                  Downcast (Container.Super.Data).Length,
+                  Before => Upcast (Position),
+                  New_Item => Upcast (New_Node));
+               Position := New_Node;
+            end;
+         end loop;
+      end if;
    end Insert;
 
    procedure Insert (
@@ -350,16 +353,23 @@ package body Ada.Containers.Doubly_Linked_Lists is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
-      Unique (Container, True);
-      for I in 1 .. Count loop
-         Position := new Node;
-         Base.Insert (
-            Downcast (Container.Super.Data).First,
-            Downcast (Container.Super.Data).Last,
-            Downcast (Container.Super.Data).Length,
-            Before => Upcast (Before),
-            New_Item => Upcast (Position));
-      end loop;
+      Position := Before;
+      if Count > 0 then
+         Unique (Container, True);
+         for I in 1 .. Count loop
+            declare
+               New_Node : constant Cursor := new Node;
+            begin
+               Base.Insert (
+                  Downcast (Container.Super.Data).First,
+                  Downcast (Container.Super.Data).Last,
+                  Downcast (Container.Super.Data).Length,
+                  Before => Upcast (Position),
+                  New_Item => Upcast (New_Node));
+               Position := New_Node;
+            end;
+         end loop;
+      end if;
    end Insert;
 
    procedure Prepend (
