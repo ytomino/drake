@@ -343,14 +343,28 @@ package body Ada.Characters.Handling is
    function To_ISO_646 (Item : String; Substitute : ISO_646 := ' ')
       return String
    is
-      Length : constant Natural := Item'Length;
+      Wide_Wide_Substitute : constant Wide_Wide_Character :=
+         Wide_Wide_Character'Val (Character'Pos (Substitute));
+      Result : String (1 .. Item'Length);
+      Last : Natural := 0;
+      I : Natural := Item'First - 1;
    begin
-      return Result : String (1 .. Length) do
-         for I in 0 .. Length - 1 loop
-            Result (Result'First + I) :=
-               To_ISO_646 (Item (Item'First + I), Substitute);
-         end loop;
-      end return;
+      while I < Item'Last loop
+         declare
+            Item_Last : Natural;
+            C : Wide_Wide_Character;
+         begin
+            Conversions.Get (Item (I + 1 .. Item'Last), Item_Last, C,
+               Substitute => Wide_Wide_Substitute);
+            if Wide_Wide_Character'Pos (C) > Character'Pos (ISO_646'Last) then
+               C := Wide_Wide_Substitute;
+            end if;
+            Last := Last + 1;
+            Result (Last) := Character'Val (Wide_Wide_Character'Pos (C));
+            I := Item_Last;
+         end;
+      end loop;
+      return Result (1 .. Last);
    end To_ISO_646;
 
 end Ada.Characters.Handling;
