@@ -19,7 +19,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if First >= Buffer_Type'First + Half_Buffer_Length then
          --  shift
          declare
-            New_Last : constant Streams.Stream_Element_Offset :=
+            New_Last : constant Stream_Element_Offset :=
                Buffer_Type'First + Last - First;
          begin
             Buffer (Buffer_Type'First .. New_Last) := Buffer (First .. Last);
@@ -185,10 +185,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
    is
-      Substitute_Last : Streams.Stream_Element_Offset :=
-         Substitute'First - 1;
+      Substitute_Last : Stream_Element_Offset := Substitute'First - 1;
       S2 : Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
-      S2_Last : Streams.Stream_Element_Offset := S2'First - 1;
+      S2_Last : Stream_Element_Offset := S2'First - 1;
    begin
       --  convert substitute from internal to external
       loop
