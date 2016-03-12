@@ -987,8 +987,13 @@ package body Interfaces.C is
    function Length (Item : char16_array) return size_t
       renames char16_Lengths.Length;
 
-   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
-      return char16_array is
+   function To_C (
+      Item : Wide_String;
+      Append_Nul : Boolean := True;
+      Substitute : char16_array := "?")
+      return char16_array
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Append_Nul then
          return char16_Func.To_Nul_Terminated (Item,
@@ -999,8 +1004,13 @@ package body Interfaces.C is
       end if;
    end To_C;
 
-   function To_Ada (Item : char16_array; Trim_Nul : Boolean := True)
-      return Wide_String is
+   function To_Ada (
+      Item : char16_array;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_String := "?")
+      return Wide_String
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Trim_Nul then
          return char16_Func.From_Nul_Terminated (Item,
@@ -1015,7 +1025,10 @@ package body Interfaces.C is
       Item : Wide_String;
       Target : out char16_array;
       Count : out size_t;
-      Append_Nul : Boolean := True) is
+      Append_Nul : Boolean := True;
+      Substitute : char16_array := "?")
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Append_Nul then
          char16_Func.To_Nul_Terminated (Item, Target, Count,
@@ -1030,7 +1043,10 @@ package body Interfaces.C is
       Item : char16_array;
       Target : out Wide_String;
       Count : out Natural;
-      Trim_Nul : Boolean := True) is
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_String := "?")
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Trim_Nul then
          char16_Func.From_Nul_Terminated (Item, Target, Count,
@@ -1059,8 +1075,13 @@ package body Interfaces.C is
    function Length (Item : char32_array) return size_t
       renames char32_Lengths.Length;
 
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
-      return char32_array is
+   function To_C (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean := True;
+      Substitute : char32_array := "?")
+      return char32_array
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Append_Nul then
          return char32_Func.To_Nul_Terminated (Item,
@@ -1071,8 +1092,13 @@ package body Interfaces.C is
       end if;
    end To_C;
 
-   function To_Ada (Item : char32_array; Trim_Nul : Boolean := True)
-      return Wide_Wide_String is
+   function To_Ada (
+      Item : char32_array;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_String := "?")
+      return Wide_Wide_String
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Trim_Nul then
          return char32_Func.From_Nul_Terminated (Item,
@@ -1087,7 +1113,10 @@ package body Interfaces.C is
       Item : Wide_Wide_String;
       Target : out char32_array;
       Count : out size_t;
-      Append_Nul : Boolean := True) is
+      Append_Nul : Boolean := True;
+      Substitute : char32_array := "?")
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Append_Nul then
          char32_Func.To_Nul_Terminated (Item, Target, Count,
@@ -1102,7 +1131,10 @@ package body Interfaces.C is
       Item : char32_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
-      Trim_Nul : Boolean := True) is
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_String := "?")
+   is
+      pragma Unreferenced (Substitute);
    begin
       if Trim_Nul then
          char32_Func.From_Nul_Terminated (Item, Target, Count,
