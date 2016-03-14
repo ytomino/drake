@@ -11,6 +11,11 @@ package body Ada.Streams.Overlaps_Storage_IO is
       return (Address, Size, 1);
    end Create;
 
+   procedure Reset (Object : in out Overlay) is
+   begin
+      Object.Index := 1;
+   end Reset;
+
    function Stream (Object : Overlay)
       return not null access Root_Stream_Type'Class is
    begin

@@ -17,6 +17,8 @@ package Ada.Streams.Overlaps_Storage_IO is
       Size : System.Storage_Elements.Storage_Count)
       return Overlay;
 
+   procedure Reset (Object : in out Overlay);
+
    function Stream (Object : Overlay)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
