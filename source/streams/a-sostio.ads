@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.IO_Exceptions;
 with System.Storage_Elements;
 package Ada.Streams.Overlaps_Storage_IO is
    --  This package provides overlapping stream to access existing memory.
@@ -19,6 +20,13 @@ package Ada.Streams.Overlaps_Storage_IO is
    function Stream (Object : Overlay)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
+
+   --  exceptions
+
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
+
+   --  Note: Write propagates Storage_Error if overflow.
 
 private
 
