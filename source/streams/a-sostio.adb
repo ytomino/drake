@@ -42,12 +42,12 @@ package body Ada.Streams.Overlaps_Storage_IO is
             end if;
          end;
       end if;
-      Last := Item'First + Stream_Element_Count (Size) - 1;
+      Last := Item'First + (Stream_Element_Count (Size) - 1);
       declare
          Source : Stream_Element_Array (1 .. Stream_Element_Offset (Size));
          for Source'Address use Object.Address + Object.Index - 1;
       begin
-         Item := Source;
+         Item (Item'First .. Last) := Source;
       end;
       Object.Index := Object.Index + Size;
    end Read;

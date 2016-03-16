@@ -438,7 +438,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Buffer : Stream_Element_Array (Stream_Element_Count);
       for Buffer'Address use File.Buffer;
    begin
-      Last := Item'First + Taking_Length - 1;
+      Last := Item'First + (Taking_Length - 1);
       Item (Item'First .. Last) :=
          Buffer (File.Reading_Index .. File.Reading_Index + Taking_Length - 1);
       File.Reading_Index := File.Reading_Index + Taking_Length;
@@ -447,11 +447,11 @@ package body Ada.Streams.Naked_Stream_IO is
    procedure Write_To_Buffer (
       File : not null Non_Controlled_File_Type;
       Item : Stream_Element_Array;
-      First : out Stream_Element_Offset);
+      Last : out Stream_Element_Offset);
    procedure Write_To_Buffer (
       File : not null Non_Controlled_File_Type;
       Item : Stream_Element_Array;
-      First : out Stream_Element_Offset)
+      Last : out Stream_Element_Offset)
    is
       Taking_Length : constant Stream_Element_Offset :=
          Stream_Element_Offset'Min (
@@ -459,10 +459,8 @@ package body Ada.Streams.Naked_Stream_IO is
             File.Buffer_Length - File.Writing_Index);
       Buffer : Stream_Element_Array (Stream_Element_Count);
       for Buffer'Address use File.Buffer;
-      Last : Stream_Element_Count;
    begin
-      First := Item'First + Taking_Length;
-      Last := First - 1;
+      Last := Item'First + (Taking_Length - 1);
       Buffer (File.Writing_Index .. File.Writing_Index + Taking_Length - 1) :=
          Item (Item'First .. Last);
       File.Writing_Index := File.Writing_Index + Taking_Length;
@@ -715,162 +713,191 @@ package body Ada.Streams.Naked_Stream_IO is
    procedure Read (
       File : not null Non_Controlled_File_Type;
       Item : out Stream_Element_Array;
-      Last : out Stream_Element_Offset) is
+      Last : out Stream_Element_Offset)
+   is
+      Index : Stream_Element_Offset := Item'First;
    begin
-      Last := Item'First - 1;
-      if Item'First > Item'Last then
-         return;
-      end if;
       if File.Reading_Index < File.Buffer_Index then
-         Read_From_Buffer (File, Item, Last);
-      elsif File.Writing_Index > File.Buffer_Index then
-         Flush_Writing_Buffer (File);
-      end if;
-      if Last < Item'Last then
-         Get_Buffer (File);
          declare
-            Error : Boolean := False;
-            Buffer_Length : constant Stream_Element_Count :=
-               File.Buffer_Length;
+            Temp_Last : Stream_Element_Offset;
          begin
-            declare
-               Taking_Length : Stream_Element_Count;
-            begin
-               Taking_Length := Item'Last - Last;
-               if Buffer_Length > 0 then
-                  declare
-                     Misaligned : constant Stream_Element_Count :=
-                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
-                  begin
-                     if Taking_Length < Misaligned then
-                        Taking_Length := 0; -- to use reading buffer
-                     else
-                        Taking_Length := Taking_Length - Misaligned;
-                        Taking_Length := Taking_Length
-                           - Taking_Length rem Buffer_Length;
-                        Taking_Length := Taking_Length + Misaligned;
-                     end if;
-                  end;
-               end if;
-               if Taking_Length > 0 then
-                  declare
-                     Read_Size : Stream_Element_Offset;
-                  begin
-                     System.Native_IO.Read (
-                        File.Handle,
-                        Item (Last + 1)'Address,
-                        Taking_Length,
-                        Read_Size);
-                     Error := Read_Size < 0;
-                     if not Error then
-                        Last := Last + Read_Size;
-                        --  update indexes
-                        if Buffer_Length > 0 then
-                           File.Buffer_Index :=
-                              (File.Buffer_Index + Read_Size)
-                              rem Buffer_Length;
-                        else
-                           File.Buffer_Index := 0;
-                        end if;
-                        File.Reading_Index := File.Buffer_Index;
-                        File.Writing_Index := File.Buffer_Index;
-                     end if;
-                  end;
-               end if;
-            end;
-            if not Error
-               and then Last < Item'Last
-               and then File.Buffer_Length > 0
-            then
-               Ready_Reading_Buffer (File, Error); -- reading buffer is empty
-               if not Error
-                  and then File.Reading_Index < File.Buffer_Index
-               then
-                  Read_From_Buffer (File, Item (Last + 1 .. Item'Last), Last);
-               end if;
+            Read_From_Buffer (File, Item, Temp_Last);
+            if Temp_Last = Item'Last then
+               Last := Temp_Last;
+               return;
             end if;
-            if Last < Item'First
-               and then (Error
-                  or else (
-                     Buffer_Length > 0 and then End_Of_Ordinary_File (File)))
-            then
-               Raise_Exception (End_Error'Identity);
+            Index := Temp_Last + 1;
+         end;
+      else
+         if File.Writing_Index > File.Buffer_Index then
+            Flush_Writing_Buffer (File);
+         end if;
+         if Index > Item'Last then
+            Last := Index - 1;
+            return;
+         end if;
+      end if;
+      Get_Buffer (File);
+      declare
+         Error : Boolean := False;
+         Buffer_Length : constant Stream_Element_Count := File.Buffer_Length;
+      begin
+         declare
+            Taking_Length : Stream_Element_Count;
+         begin
+            Taking_Length := Item'Last - Index + 1;
+            if Buffer_Length > 0 then
+               declare
+                  Misaligned : constant Stream_Element_Count :=
+                     (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+               begin
+                  if Taking_Length < Misaligned then
+                     Taking_Length := 0; -- to use reading buffer
+                  else
+                     Taking_Length := Taking_Length - Misaligned;
+                     Taking_Length := Taking_Length
+                        - Taking_Length rem Buffer_Length;
+                     Taking_Length := Taking_Length + Misaligned;
+                  end if;
+               end;
+            end if;
+            if Taking_Length > 0 then
+               declare
+                  Read_Size : Stream_Element_Offset;
+               begin
+                  System.Native_IO.Read (
+                     File.Handle,
+                     Item (Index)'Address,
+                     Taking_Length,
+                     Read_Size);
+                  Error := Read_Size < 0;
+                  if not Error then
+                     Index := Index + Read_Size;
+                     --  update indexes
+                     if Buffer_Length > 0 then
+                        File.Buffer_Index :=
+                           (File.Buffer_Index + Read_Size) rem Buffer_Length;
+                     else
+                        File.Buffer_Index := 0;
+                     end if;
+                     File.Reading_Index := File.Buffer_Index;
+                     File.Writing_Index := File.Buffer_Index;
+                  end if;
+               end;
             end if;
          end;
-      end if;
+         if not Error
+            and then Index <= Item'Last
+            and then File.Buffer_Length > 0
+         then
+            Ready_Reading_Buffer (File, Error); -- reading buffer is empty
+            if not Error and then File.Reading_Index < File.Buffer_Index then
+               declare
+                  Temp_Last : Stream_Element_Offset;
+               begin
+                  Read_From_Buffer (
+                     File,
+                     Item (Index .. Item'Last),
+                     Temp_Last);
+                  Index := Temp_Last + 1;
+               end;
+            end if;
+         end if;
+         if Index <= Item'First
+            and then (Error
+               or else (
+                  Buffer_Length > 0 and then End_Of_Ordinary_File (File)))
+         then
+            Raise_Exception (End_Error'Identity);
+         end if;
+      end;
+      Last := Index - 1;
    end Read;
 
    procedure Write (
       File : not null Non_Controlled_File_Type;
       Item : Stream_Element_Array)
    is
-      First : Stream_Element_Offset;
+      First : Stream_Element_Offset := Item'First;
    begin
-      First := Item'First;
       if File.Writing_Index > File.Buffer_Index then
          --  append to writing buffer
-         Write_To_Buffer (File, Item, First);
-         if File.Writing_Index = File.Buffer_Length then
-            Flush_Writing_Buffer (File);
-         end if;
-      elsif File.Reading_Index < File.Buffer_Index then
-         --  reset reading buffer
-         Reset_Reading_Buffer (File);
-      end if;
-      if First <= Item'Last then
-         Get_Buffer (File);
          declare
-            Buffer_Length : constant Stream_Element_Count :=
-               File.Buffer_Length;
+            Temp_Last : Stream_Element_Offset;
          begin
-            declare
-               Taking_Length : Stream_Element_Count;
-            begin
-               Taking_Length := Item'Last - First + 1;
-               if Buffer_Length > 0 then
-                  declare
-                     Misaligned : constant Stream_Element_Count :=
-                        (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
-                  begin
-                     if Taking_Length < Misaligned then
-                        Taking_Length := 0; -- to use writing buffer
-                     else
-                        Taking_Length := Taking_Length - Misaligned;
-                        Taking_Length := Taking_Length
-                           - Taking_Length rem Buffer_Length;
-                        Taking_Length := Taking_Length + Misaligned;
-                     end if;
-                  end;
-               end if;
-               if Taking_Length > 0 then
-                  declare
-                     Written_Length : Stream_Element_Offset;
-                  begin
-                     System.Native_IO.Write (
-                        File.Handle,
-                        Item (First)'Address,
-                        Taking_Length,
-                        Written_Length);
-                     if Written_Length < 0 then
-                        Raise_Exception (Device_Error'Identity);
-                     end if;
-                  end;
-                  First := First + Taking_Length;
-                  --  update indexes
-                  if Buffer_Length > 0 then
-                     File.Buffer_Index :=
-                        (File.Buffer_Index + Taking_Length) rem Buffer_Length;
-                     File.Reading_Index := File.Buffer_Index;
-                     File.Writing_Index := File.Buffer_Index;
+            Write_To_Buffer (File, Item, Temp_Last);
+            if File.Writing_Index = File.Buffer_Length then
+               Flush_Writing_Buffer (File);
+            end if;
+            if Temp_Last >= Item'Last then
+               return;
+            end if;
+            First := Temp_Last + 1;
+         end;
+      else
+         if File.Reading_Index < File.Buffer_Index then
+            --  reset reading buffer
+            Reset_Reading_Buffer (File);
+         end if;
+         if First > Item'Last then
+            return;
+         end if;
+      end if;
+      Get_Buffer (File);
+      declare
+         Buffer_Length : constant Stream_Element_Count := File.Buffer_Length;
+      begin
+         declare
+            Taking_Length : Stream_Element_Count;
+         begin
+            Taking_Length := Item'Last - First + 1;
+            if Buffer_Length > 0 then
+               declare
+                  Misaligned : constant Stream_Element_Count :=
+                     (Buffer_Length - File.Buffer_Index) rem Buffer_Length;
+               begin
+                  if Taking_Length < Misaligned then
+                     Taking_Length := 0; -- to use writing buffer
+                  else
+                     Taking_Length := Taking_Length - Misaligned;
+                     Taking_Length := Taking_Length
+                        - Taking_Length rem Buffer_Length;
+                     Taking_Length := Taking_Length + Misaligned;
                   end if;
+               end;
+            end if;
+            if Taking_Length > 0 then
+               declare
+                  Written_Length : Stream_Element_Offset;
+               begin
+                  System.Native_IO.Write (
+                     File.Handle,
+                     Item (First)'Address,
+                     Taking_Length,
+                     Written_Length);
+                  if Written_Length < 0 then
+                     Raise_Exception (Device_Error'Identity);
+                  end if;
+               end;
+               First := First + Taking_Length;
+               --  update indexes
+               if Buffer_Length > 0 then
+                  File.Buffer_Index :=
+                     (File.Buffer_Index + Taking_Length) rem Buffer_Length;
+                  File.Reading_Index := File.Buffer_Index;
+                  File.Writing_Index := File.Buffer_Index;
                end if;
-            end;
-            if First <= Item'Last and then Buffer_Length > 0 then
-               Ready_Writing_Buffer (File);
-               Write_To_Buffer (File, Item (First .. Item'Last), First);
             end if;
          end;
-      end if;
+         if First <= Item'Last and then Buffer_Length > 0 then
+            Ready_Writing_Buffer (File);
+            declare
+               Temp_Last : Stream_Element_Offset;
+            begin
+               Write_To_Buffer (File, Item (First .. Item'Last), Temp_Last);
+            end;
+         end if;
+      end;
    end Write;
 
    procedure Set_Index (

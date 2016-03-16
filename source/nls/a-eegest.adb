@@ -68,6 +68,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Item := New_Item;
    end Expand;
 
+   Minimal_Size : constant := 8;
+
    --  implementation of decoder
 
    function From (Id : Encoding_Id) return Decoder is
@@ -98,7 +100,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
       pragma Assert (Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Natural (Out_Last_2 / CS_In_SE) - 1;
+      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -118,7 +120,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Status);
       pragma Assert (Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Natural (Out_Last_2 / CS_In_SE) - 1;
+      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -137,7 +139,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Out_Item_2, Out_Last_2, Finish, Status);
       pragma Assert (Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Natural (Out_Last_2 / CS_In_SE) - 1;
+      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -158,7 +160,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
       pragma Assert (Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Natural (Out_Last_2 / CS_In_SE) - 1;
+      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -179,7 +181,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
       pragma Assert (Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Natural (Out_Last_2 / CS_In_SE) - 1;
+      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
    function Decode (
@@ -191,31 +193,43 @@ package body Ada.Environment_Encoding.Generic_Strings is
          new Exceptions.Finally.Scoped_Holder (String_Type_Access, Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Last : Streams.Stream_Element_Offset := Item'First - 1;
+      MS_In_SE : constant Streams.Stream_Element_Count :=
+         Min_Size_In_From_Stream_Elements (Object);
+      I : Streams.Stream_Element_Offset := Item'First;
       Out_Item : aliased String_Type_Access;
       Out_Last : Natural;
-      Status : Substituting_Status_Type;
    begin
       Holder.Assign (Out_Item);
-      Out_Item := new String_Type (1 .. 2 * Item'Length / Integer (CS_In_SE));
+      Out_Item := new String_Type (
+         1 ..
+         Natural (
+            Streams.Stream_Element_Count'Max (
+               2 * ((Item'Length + MS_In_SE - 1) / MS_In_SE),
+               Minimal_Size / CS_In_SE)));
       Out_Last := 0;
       loop
-         Decode (
-            Object,
-            Item (Last + 1 .. Item'Last),
-            Last,
-            Out_Item.all (Out_Last + 1 .. Out_Item'Last),
-            Out_Last,
-            Finish => True,
-            Status => Status);
-         case Status is
-            when Finished =>
-               exit;
-            when Success =>
-               null;
-            when Overflow =>
-               Expand (Out_Item, Out_Last);
-         end case;
+         declare
+            Last : Streams.Stream_Element_Offset;
+            Status : Substituting_Status_Type;
+         begin
+            Decode (
+               Object,
+               Item (I .. Item'Last),
+               Last,
+               Out_Item.all (Out_Last + 1 .. Out_Item'Last),
+               Out_Last,
+               Finish => True,
+               Status => Status);
+            case Status is
+               when Finished =>
+                  exit;
+               when Success =>
+                  null;
+               when Overflow =>
+                  Expand (Out_Item, Out_Last);
+            end case;
+            I := Last + 1;
+         end;
       end loop;
       return Out_Item (Out_Item'First .. Out_Last);
    end Decode;
@@ -250,7 +264,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
       pragma Assert (Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Natural (Last_2 / CS_In_SE) - 1;
+      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -269,7 +283,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Status);
       pragma Assert (Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Natural (Last_2 / CS_In_SE) - 1;
+      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -289,7 +303,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
       pragma Assert (Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Natural (Last_2 / CS_In_SE) - 1;
+      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -309,7 +323,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
       pragma Assert (Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Natural (Last_2 / CS_In_SE) - 1;
+      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
    function Encode (
@@ -323,33 +337,42 @@ package body Ada.Environment_Encoding.Generic_Strings is
             Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Last : Natural := Item'First - 1;
+      I : Positive := Item'First;
       Out_Item : aliased Stream_Element_Array_Access;
       Out_Last : Streams.Stream_Element_Offset;
-      Status : Substituting_Status_Type;
    begin
       Holder.Assign (Out_Item);
       Out_Item := new Streams.Stream_Element_Array (
          0 ..
-         2 * Item'Length * CS_In_SE - 1);
+         Streams.Stream_Element_Count'(
+            Streams.Stream_Element_Offset'Max (
+               2 * Item'Length * CS_In_SE,
+               Minimal_Size)
+            - 1));
       Out_Last := -1;
       loop
-         Encode (
-            Object,
-            Item (Last + 1 .. Item'Last),
-            Last,
-            Out_Item.all (Out_Last + 1 .. Out_Item'Last),
-            Out_Last,
-            Finish => True,
-            Status => Status);
-         case Status is
-            when Finished =>
-               exit;
-            when Success =>
-               null;
-            when Overflow =>
-               Expand (Out_Item, Out_Last);
-         end case;
+         declare
+            Last : Natural;
+            Status : Substituting_Status_Type;
+         begin
+            Encode (
+               Object,
+               Item (I .. Item'Last),
+               Last,
+               Out_Item.all (Out_Last + 1 .. Out_Item'Last),
+               Out_Last,
+               Finish => True,
+               Status => Status);
+            case Status is
+               when Finished =>
+                  exit;
+               when Success =>
+                  null;
+               when Overflow =>
+                  Expand (Out_Item, Out_Last);
+            end case;
+            I := Last + 1;
+         end;
       end loop;
       return Out_Item (Out_Item'First .. Out_Last);
    end Encode;

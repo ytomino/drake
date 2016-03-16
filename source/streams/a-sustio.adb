@@ -314,7 +314,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       if Length > Rest then
          Length := Rest;
       end if;
-      Last := Item'First + Length - 1;
+      Last := Item'First + (Length - 1);
       declare
          Stream_Item : Stream_Element_Array (1 .. Stream.Buffer.Last);
          for Stream_Item'Address use Stream.Buffer.Data.Storage;

@@ -289,8 +289,9 @@ package body System.Native_Environment_Encoding is
       end case;
       Last := Item'First
          + Ada.Streams.Stream_Element_Offset (
-            char_const_ptr_Conv.To_Address (Pointer) - Item'Address)
-         - 1;
+            Storage_Elements.Storage_Offset'(
+               char_const_ptr_Conv.To_Address (Pointer) - Item'Address)
+            - 1);
       Finish_2nd := Finish and then Last = Item'Last;
       Error := C.icucore.unicode.utypes.U_ZERO_ERROR;
       C.icucore.unicode.ucnv.ucnv_fromUnicode (
@@ -320,8 +321,9 @@ package body System.Native_Environment_Encoding is
       end case;
       Out_Last := Out_Item'First
          + Ada.Streams.Stream_Element_Offset (
-            char_ptr_Conv.To_Address (Out_Pointer) - Out_Item'Address)
-         - 1;
+            Storage_Elements.Storage_Offset'(
+               char_ptr_Conv.To_Address (Out_Pointer) - Out_Item'Address)
+            - 1);
    end Convert_No_Check;
 
    procedure Convert_No_Check (
@@ -387,8 +389,9 @@ package body System.Native_Environment_Encoding is
       end case;
       Out_Last := Out_Item'First
          + Ada.Streams.Stream_Element_Offset (
-            char_ptr_Conv.To_Address (Out_Pointer) - Out_Item'Address)
-         - 1;
+            Storage_Elements.Storage_Offset'(
+               char_ptr_Conv.To_Address (Out_Pointer) - Out_Item'Address)
+            - 1);
    end Convert_No_Check;
 
    procedure Convert_No_Check (
@@ -398,19 +401,20 @@ package body System.Native_Environment_Encoding is
       Out_Item : out Ada.Streams.Stream_Element_Array;
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Finish : True_Only;
-      Status : out Substituting_Status_Type) is
+      Status : out Substituting_Status_Type)
+   is
+      Index : Ada.Streams.Stream_Element_Offset := Item'First;
+      Out_Index : Ada.Streams.Stream_Element_Offset := Out_Item'First;
    begin
-      Last := Item'First - 1;
-      Out_Last := Out_Item'First - 1;
       loop
          declare
             Subsequence_Status : Subsequence_Status_Type;
          begin
             Convert_No_Check (
                Object,
-               Item (Last + 1 .. Item'Last),
+               Item (Index .. Item'Last),
                Last,
-               Out_Item (Out_Last + 1 .. Out_Item'Last),
+               Out_Item (Out_Index .. Out_Item'Last),
                Out_Last,
                Finish => Finish,
                Status => Subsequence_Status);
@@ -453,6 +457,8 @@ package body System.Native_Environment_Encoding is
                      end if;
                      Last := New_Last;
                   end;
+                  Index := Last + 1;
+                  Out_Index := Out_Last + 1;
             end case;
          end;
       end loop;
@@ -467,12 +473,12 @@ package body System.Native_Environment_Encoding is
       NC_Object : Non_Controlled_Converter
          renames Controlled.Reference (Object).all;
    begin
-      Out_Last := Out_Item'First - 1;
       Is_Overflow := Out_Item'Length < NC_Object.Substitute_Length;
       if Is_Overflow then
+         Out_Last := Out_Item'First - 1;
          return;
       end if;
-      Out_Last := Out_Last + NC_Object.Substitute_Length;
+      Out_Last := Out_Item'First + (NC_Object.Substitute_Length - 1);
       Out_Item (Out_Item'First .. Out_Last) :=
          NC_Object.Substitute (1 .. NC_Object.Substitute_Length);
    end Put_Substitute;
