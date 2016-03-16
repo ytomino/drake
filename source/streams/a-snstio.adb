@@ -468,6 +468,20 @@ package body Ada.Streams.Naked_Stream_IO is
       File.Writing_Index := File.Writing_Index + Taking_Length;
    end Write_To_Buffer;
 
+   function End_Of_Ordinary_File (File : not null Non_Controlled_File_Type)
+      return Boolean;
+   function End_Of_Ordinary_File (File : not null Non_Controlled_File_Type)
+      return Boolean
+   is
+      Size : constant Stream_Element_Count :=
+         System.Native_IO.Size (File.Handle);
+      Index : constant Stream_Element_Offset :=
+         System.Native_IO.Index (File.Handle) + Offset_Of_Buffer (File);
+   begin
+      return Index > Size;
+      --  The writing buffer can be expanded over the file size.
+   end End_Of_Ordinary_File;
+
    procedure Close_And_Deallocate (
       File : aliased in out Non_Controlled_File_Type;
       Raise_On_Error : Boolean);
@@ -680,16 +694,7 @@ package body Ada.Streams.Naked_Stream_IO is
          end if;
          return File.Reading_Index = File.Buffer_Index;
       else
-         declare
-            Size : Stream_Element_Count;
-            Index : Stream_Element_Offset;
-         begin
-            Size := System.Native_IO.Size (File.Handle);
-            Index := System.Native_IO.Index (File.Handle)
-               + Offset_Of_Buffer (File);
-            return Index > Size;
-            --  whether writing buffer will expand the file size or not
-         end;
+         return End_Of_Ordinary_File (File);
       end if;
    end End_Of_File;
 
@@ -784,7 +789,11 @@ package body Ada.Streams.Naked_Stream_IO is
                   Read_From_Buffer (File, Item (Last + 1 .. Item'Last), Last);
                end if;
             end if;
-            if Last < Item'First and then Error then
+            if Last < Item'First
+               and then (Error
+                  or else (
+                     Buffer_Length > 0 and then End_Of_Ordinary_File (File)))
+            then
                Raise_Exception (End_Error'Identity);
             end if;
          end;
