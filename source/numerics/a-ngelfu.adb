@@ -14,7 +14,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Sqrt (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (X >= 0.0) then
-         raise Argument_Error; -- CXA5A10
+         raise Argument_Error; -- RM A.5.1(22), CXA5A10
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
@@ -47,9 +47,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math and then not (X > 0.0) then
          if X = 0.0 then
-            raise Constraint_Error; -- CXG2011
+            raise Constraint_Error; -- RM A.5.1(29), CXG2011
          else
-            raise Argument_Error; -- CXA5A09
+            raise Argument_Error; -- RM A.5.1(22), CXA5A09
          end if;
       end if;
       if Float_Type'Digits <= Float'Digits then
@@ -80,7 +80,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if not Standard'Fast_Math
          and then not (Base > 0.0 and then Base /= 1.0)
       then
-         raise Argument_Error; -- CXA5A09
+         raise Argument_Error; -- RM A.5.1(21), CXA5A09
       end if;
       return Log (X) / Log (Base);
    end Log;
@@ -118,9 +118,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       if not Standard'Fast_Math then
          if not (Left > 0.0 or else (Left = 0.0 and then Right > 0.0)) then
             if Left = 0.0 and then Right < 0.0 then
-               raise Constraint_Error; -- CXG2012
+               raise Constraint_Error; -- RM A.5.1(30), CXG2012
             else
-               raise Argument_Error; -- CXA5A09
+               raise Argument_Error; -- RM A.5.1(23), CXA5A09
             end if;
          end if;
          --  CXG2012 requires high precision
@@ -202,7 +202,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error;
+            raise Argument_Error; -- RM A.5.1(20)
          end if;
          --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
          --  CXG2004 requires just result that is 0.5
@@ -271,7 +271,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error;
+            raise Argument_Error; -- RM A.5.1(20)
          end if;
          --  CXA5A02 requires just result that is 0.0, 1.0 or -1.0
          --  CXG2004 requires just result that is 0.5
@@ -340,7 +340,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error; -- CXA5A01
+            raise Argument_Error; -- RM A.5.1(20), CXA5A01
          end if;
          --  CXG2013 requires just result that is 0.0
          declare
@@ -355,6 +355,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             if R = 0.5 then
                return 0.0;
             end if;
+            --  RM A.5.1(31), raise Constraint_Error when R = 0.25 or R = 0.75
          end;
       else
          R := X / Cycle;
@@ -364,6 +365,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Cot (X : Float_Type'Base) return Float_Type'Base is
    begin
+      --  RM A.5.1(29), raise Constraint_Error when X = 0.0
       return 1.0 / Tan (X);
    end Cot;
 
@@ -372,7 +374,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error; -- CXA5A04
+            raise Argument_Error; -- RM A.5.1(20), CXA5A04
          end if;
          --  CXG2013 requires just result that is 0.0
          declare
@@ -389,6 +391,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
             elsif R = 0.75 then
                return 0.0;
             end if;
+            --  RM A.5.1(32), raise Constraint_Error when R = 0.0 or R = 0.5
          end;
       else
          R := X / Cycle;
@@ -399,7 +402,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arcsin (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (abs X <= 1.0) then
-         raise Argument_Error; -- CXA5A05
+         raise Argument_Error; -- RM A.5.1(24), CXA5A05
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
@@ -432,7 +435,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error; -- CXA5A05
+            raise Argument_Error; -- RM A.5.1(20), CXA5A05
          end if;
          --  CXG2015 requires
          if abs X = 1.0 then
@@ -445,7 +448,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arccos (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (abs X <= 1.0) then
-         raise Argument_Error; -- CXA5A06
+         raise Argument_Error; -- RM A.5.1(24), CXA5A06
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
@@ -478,7 +481,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Cycle > 0.0) then
-            raise Argument_Error; -- CXA5A06
+            raise Argument_Error; -- RM A.5.1(20), CXA5A06
          end if;
          --  CXG2015 requires
          if X = -1.0 then
@@ -492,7 +495,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (X /= 0.0 or else Y /= 0.0) then
-         raise Argument_Error; -- CXA5A07
+         raise Argument_Error; -- RM A.5.1(25), CXA5A07
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
@@ -529,7 +532,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (Cycle > 0.0) then
-         raise Argument_Error; -- CXA5A07
+         raise Argument_Error; -- RM A.5.1(20), CXA5A07
       end if;
       if not Standard'Fast_Math and then Y = 0.0 then
          --  CXG2016 requires
@@ -546,7 +549,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arccot (X : Float_Type'Base; Y : Float_Type'Base := 1.0)
       return Float_Type'Base is
    begin
-      return Arctan (Y, X);
+      return Arctan (Y, X); -- checking X and Y, RM A.5.1(25)
    end Arccot;
 
    function Arccot (
@@ -556,7 +559,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (Cycle > 0.0) then
-         raise Argument_Error; -- CXA5A08
+         raise Argument_Error; -- RM A.5.1(20), CXA5A08
       end if;
       return Arccot (X, Y) * Cycle / (2.0 * Pi);
    end Arccot;
@@ -667,6 +670,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
 
    function Coth (X : Float_Type'Base) return Float_Type'Base is
    begin
+      --  RM A.5.1(29), raise Constraint_Error when X = 0.0
       return 1.0 / Tanh (X);
    end Coth;
 
@@ -698,7 +702,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arccosh (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (X >= 1.0) then
-         raise Argument_Error; -- CXA5A06
+         raise Argument_Error; -- RM A.5.1(26), CXA5A06
       end if;
       if Float_Type'Digits <= Float'Digits then
          declare
@@ -726,8 +730,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arctanh (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (abs X <= 1.0) then
-         raise Argument_Error; -- CXA5A03
+         raise Argument_Error; -- RM A.5.1(24), CXA5A03
       end if;
+      --  RM A.5.1(33), raise Constraint_Error when abs X = 1.0
       if Float_Type'Digits <= Float'Digits then
          declare
             function atanhf (A1 : Float) return Float
@@ -754,8 +759,9 @@ package body Ada.Numerics.Generic_Elementary_Functions is
    function Arccoth (X : Float_Type'Base) return Float_Type'Base is
    begin
       if not Standard'Fast_Math and then not (abs X >= 1.0) then
-         raise Argument_Error; -- CXA5A04
+         raise Argument_Error; -- RM A.5.1(25), CXA5A04
       end if;
+      --  RM A.5.1(33), raise Constraint_Error when abs X = 1.0
       return Log ((X + 1.0) / (X - 1.0)) * 0.5;
    end Arccoth;
 
