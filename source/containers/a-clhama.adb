@@ -584,6 +584,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
       return Equivalent_Keys (Left.Key.all, Right);
    end Equivalent_Keys;
 
+   function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left, Right.Key.all);
+   end Equivalent_Keys;
+
    procedure Iterate (
       Container : Map'Class;
       Process : not null access procedure (Position : Cursor))
