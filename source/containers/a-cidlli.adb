@@ -283,13 +283,15 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    function Copy (Source : List) return List is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : List do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out List; Source : in out List) is

@@ -368,13 +368,15 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Copy (Source : Set; Capacity : Count_Type := 0) return Set is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : Set do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             Count_Type'Max (Capacity, Length (Source)),
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out Set; Source : in out Set) is

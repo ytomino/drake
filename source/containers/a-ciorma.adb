@@ -344,13 +344,15 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Copy (Source : Map) return Map is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : Map do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out Map; Source : in out Map) is

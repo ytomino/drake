@@ -118,7 +118,8 @@ package body Ada.Containers.Copy_On_Write is
       end if;
    end Clear;
 
-   function Copy (
+   procedure Copy (
+      Target : not null access Container;
       Source : not null access constant Container;
       Length : Count_Type;
       New_Capacity : Count_Type;
@@ -131,26 +132,24 @@ package body Ada.Containers.Copy_On_Write is
          Source : not null Data_Access;
          Length : Count_Type;
          Max_Length : Count_Type;
-         Capacity : Count_Type))
-      return Container is
+         Capacity : Count_Type)) is
    begin
-      return Result : Container := (null, null) do
-         if Source.Data /= null then
-            declare
-               New_Data : Data_Access;
-            begin
-               Copy (New_Data, Source.Data, Length, Length, New_Capacity);
-               Follow (Result'Unrestricted_Access, New_Data); -- no sync
-            end;
-         elsif New_Capacity > 0 then
-            declare
-               New_Data : Data_Access;
-            begin
-               Allocate (New_Data, Length, New_Capacity);
-               Follow (Result'Unrestricted_Access, New_Data); -- no sync
-            end;
-         end if;
-      end return;
+      pragma Assert (Target.all = (null, null));
+      if Source.Data /= null then
+         declare
+            New_Data : Data_Access;
+         begin
+            Copy (New_Data, Source.Data, Length, Length, New_Capacity);
+            Follow (Target, New_Data); -- no sync
+         end;
+      elsif New_Capacity > 0 then
+         declare
+            New_Data : Data_Access;
+         begin
+            Allocate (New_Data, Length, New_Capacity);
+            Follow (Target, New_Data); -- no sync
+         end;
+      end if;
    end Copy;
 
    procedure Move (

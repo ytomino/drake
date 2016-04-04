@@ -388,13 +388,15 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    function Copy (Source : Map; Capacity : Count_Type := 0) return Map is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : Map do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             Count_Type'Max (Capacity, Length (Source)),
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out Map; Source : in out Map) is

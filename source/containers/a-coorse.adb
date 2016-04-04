@@ -342,13 +342,15 @@ package body Ada.Containers.Ordered_Sets is
 
    function Copy (Source : Set) return Set is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : Set do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out Set; Source : in out Set) is
