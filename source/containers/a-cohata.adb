@@ -5,6 +5,18 @@ package body Ada.Containers.Hash_Tables is
 
    subtype Positive_Hash_Type is Hash_Type range 1 .. Hash_Type'Last;
 
+   procedure Allocate (
+      New_Container : out Table_Access;
+      Capacity : Count_Type);
+   procedure Allocate (
+      New_Container : out Table_Access;
+      Capacity : Count_Type) is
+   begin
+      New_Container := new Table'(
+         Last => Hash_Type (Capacity) - 1,
+         Entries => (others => (First => null, Last => null)));
+   end Allocate;
+
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
@@ -43,14 +55,12 @@ package body Ada.Containers.Hash_Tables is
       return null;
    end Find_Node;
 
-   --  implementation
-
    procedure Insert_No_Rebuild (
-      Container : Table_Access;
+      Container : not null Table_Access;
       Hash : Hash_Type;
       New_Item : not null Node_Access);
    procedure Insert_No_Rebuild (
-      Container : Table_Access;
+      Container : not null Table_Access;
       Hash : Hash_Type;
       New_Item : not null Node_Access)
    is
@@ -86,6 +96,8 @@ package body Ada.Containers.Hash_Tables is
          Container.Entries (Index).Last := New_Item;
       end if;
    end Insert_No_Rebuild;
+
+   --  implementation
 
    function First (Container : Table_Access) return Node_Access is
    begin
@@ -292,18 +304,20 @@ package body Ada.Containers.Hash_Tables is
          Target : out Node_Access;
          Source : not null Node_Access)) is
    begin
+      pragma Assert (New_Capacity > 0 or else First (Source) = null);
       Length := 0;
       if New_Capacity > 0 then
-         Target := new Table'(
-            Last => Hash_Type (New_Capacity) - 1,
-            Entries => (others => (First => null, Last => null)));
+         Allocate (Target, New_Capacity);
          declare
             Position : Node_Access := First (Source);
-            New_Node : Node_Access;
          begin
             while Position /= null loop
-               Copy (New_Node, Position);
-               Insert_No_Rebuild (Target, Position.Hash, New_Node);
+               declare
+                  New_Node : Node_Access;
+               begin
+                  Copy (New_Node, Position);
+                  Insert_No_Rebuild (Target, Position.Hash, New_Node);
+               end;
                Length := Length + 1;
                Position := Position.Next;
             end loop;
@@ -322,9 +336,7 @@ package body Ada.Containers.Hash_Tables is
             Free (Container);
             pragma Assert (New_Capacity > 0 or else Position = null);
             if New_Capacity > 0 then
-               Container := new Table'(
-                  Last => Hash_Type (New_Capacity) - 1,
-                  Entries => (others => (First => null, Last => null)));
+               Allocate (Container, New_Capacity);
                while Position /= null loop
                   declare
                      Next : constant Node_Access := Position.Next;
