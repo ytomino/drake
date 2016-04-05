@@ -17,7 +17,6 @@ private package Ada.Containers.Hash_Tables is
 
    type Entry_List is limited record
       First : Node_Access;
-      Last : Node_Access;
    end record;
 
    type Entry_Array is array (Hash_Type range <>) of Entry_List;
@@ -31,7 +30,6 @@ private package Ada.Containers.Hash_Tables is
    --  traversing
 
    function First (Container : Table_Access) return Node_Access;
-   function Last (Container : Table_Access) return Node_Access;
 
    procedure Iterate (
       Container : Table_Access;
