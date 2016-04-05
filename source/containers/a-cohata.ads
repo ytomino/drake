@@ -21,8 +21,9 @@ private package Ada.Containers.Hash_Tables is
 
    type Entry_Array is array (Hash_Type range <>) of Entry_List;
 
-   type Table (Last : Hash_Type) is limited record
-      Entries : Entry_Array (0 .. Last);
+   type Table (Last_Index : Hash_Type) is limited record
+      First : Node_Access;
+      Entries : Entry_Array (0 .. Last_Index);
    end record;
 
    type Table_Access is access Table;
