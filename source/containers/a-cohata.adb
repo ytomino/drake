@@ -15,7 +15,7 @@ package body Ada.Containers.Hash_Tables is
       New_Container := new Table'(
          Last_Index => Hash_Type (Capacity) - 1,
          First => null,
-         Entries => (others => (First => null)));
+         Entries => (others => (First => null, Previous => null)));
    end Allocate;
 
    function Find_Node (
@@ -56,28 +56,6 @@ package body Ada.Containers.Hash_Tables is
       return null;
    end Find_Node;
 
-   function Find_Previous (
-      Container : not null Table_Access;
-      Index : Hash_Type)
-      return Node_Access;
-   function Find_Previous (
-      Container : not null Table_Access;
-      Index : Hash_Type)
-      return Node_Access
-   is
-      I : Hash_Type := Index - 1;
-      Result : Node_Access := Container.Entries (I).First;
-   begin
-      while Result = null loop
-         I := I - 1;
-         Result := Container.Entries (I).First;
-      end loop;
-      while Result.Next /= null and then Result.Next.Index = Result.Index loop
-         Result := Result.Next;
-      end loop;
-      return Result;
-   end Find_Previous;
-
    procedure Insert_No_Rebuild (
       Container : not null Table_Access;
       Hash : Hash_Type;
@@ -93,21 +71,19 @@ package body Ada.Containers.Hash_Tables is
       New_Item.Hash := Hash;
       New_Item.Index := Index;
       if Container.Entries (Index).First /= null then
-         New_Item.Next := Container.Entries (Index).First.Next;
-         Container.Entries (Index).First.Next := New_Item;
-      else
-         if Container.First = null or else Index < Container.First.Index then
-            New_Item.Next := Container.First;
+         if Container.First = Container.Entries (Index).First then
             Container.First := New_Item;
          else
-            declare
-               Previous : constant Node_Access :=
-                  Find_Previous (Container, Index);
-            begin
-               New_Item.Next := Previous.Next;
-               Previous.Next := New_Item;
-            end;
+            Container.Entries (Index).Previous.Next := New_Item;
          end if;
+         New_Item.Next := Container.Entries (Index).First;
+         Container.Entries (Index).First := New_Item;
+      else
+         if Container.First /= null then
+            Container.Entries (Container.First.Index).Previous := New_Item;
+         end if;
+         New_Item.Next := Container.First;
+         Container.First := New_Item;
          Container.Entries (Index).First := New_Item;
       end if;
    end Insert_No_Rebuild;
@@ -375,15 +351,16 @@ package body Ada.Containers.Hash_Tables is
       Previous : Node_Access;
    begin
       if Container.Entries (Item.Index).First = Item then
+         Previous := Container.Entries (Item.Index).Previous;
          if Item.Next /= null and then Item.Next.Index = Item.Index then
             Container.Entries (Item.Index).First := Item.Next;
          else
             Container.Entries (Item.Index).First := null;
+            Container.Entries (Item.Index).Previous := null;
          end if;
-         if Item = Container.First then
+         if Previous = null then -- Item = Container.First
             Container.First := Item.Next;
-         else -- Item.Index > Container.First.Index
-            Previous := Find_Previous (Container, Item.Index);
+         else
             Previous.Next := Item.Next;
          end if;
       else
@@ -392,6 +369,9 @@ package body Ada.Containers.Hash_Tables is
             Previous := Previous.Next;
          end loop;
          Previous.Next := Item.Next;
+      end if;
+      if Item.Next /= null and then Item.Next.Index /= Item.Index then
+         Container.Entries (Item.Next.Index).Previous := Previous;
       end if;
       Length := Length - 1;
    end Remove;
