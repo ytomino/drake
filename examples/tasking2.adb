@@ -2,11 +2,9 @@ with Ada.Real_Time;
 with Ada.Synchronous_Barriers;
 with Ada.Synchronous_Task_Control;
 with Ada.Synchronous_Task_Control.EDF;
-with Interfaces;
 with System.Storage_Elements;
 with System.Tasks;
 procedure tasking2 is
-	use type Interfaces.Integer_8;
 begin
 	declare
 		ev : Ada.Synchronous_Task_Control.Suspension_Object;
@@ -37,7 +35,23 @@ begin
 		Task_Count : constant := 3;
 		Start : Ada.Synchronous_Task_Control.Suspension_Object;
 		Barrier : Ada.Synchronous_Barriers.Synchronous_Barrier (Task_Count);
-		Notified_Count : aliased Interfaces.Integer_8 := 0;
+		protected Notified_Count is
+			pragma Lock_Free;
+			procedure Increment;
+			function Get return Integer;
+		private
+			Value : Integer := 0;
+		end Notified_Count;
+		protected body Notified_Count is
+			procedure Increment is
+			begin
+				Value := Value + 1;
+			end Increment;
+			function Get return Integer is
+			begin
+				return Value;
+			end Get;
+		end Notified_Count;
 		procedure Process (Param : System.Address) is
 			N : constant System.Storage_Elements.Integer_Address :=
 				System.Storage_Elements.To_Integer (Param);
@@ -50,7 +64,7 @@ begin
 				& " : "
 				& Boolean'Image (Notified));
 			if Notified then
-				Interfaces.sync_add_and_fetch (Notified_Count'Access, 1);
+			   Notified_Count.Increment;
 			end if;
 		end Process;
 	begin
@@ -72,7 +86,7 @@ begin
 			Ada.Synchronous_Task_Control.Set_True (Start);
 		end loop;
 		delay 0.95; -- note, currently, Abort_Checking_Span = 1.0
-		pragma Assert (Notified_Count = Try_Count);
+		pragma Assert (Notified_Count.Get = Try_Count);
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end tasking2;

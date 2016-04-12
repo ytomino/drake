@@ -237,9 +237,7 @@ private
       Attributes_Length : Natural;
       --  activation / completion
       Activation_State : aliased Tasks.Activation_State;
-      pragma Atomic (Activation_State);
       Termination_State : aliased Tasks.Termination_State;
-      pragma Atomic (Termination_State);
       Master_Level : Tasks.Master_Level; -- level of self
       Master_Top : Master_Access; -- stack
       --  for sub task

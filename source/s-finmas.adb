@@ -6,6 +6,7 @@ with System.Startup;
 package body System.Finalization_Masters is
    pragma Suppress (All_Checks);
    use type Startup.Finalize_Library_Objects_Handler;
+   use type Storage_Barriers.Flag;
 
    procedure Finalize_Library_Objects;
    pragma Linker_Destructor (Finalize_Library_Objects); -- after atexit
@@ -16,15 +17,6 @@ package body System.Finalization_Masters is
          Startup.Finalize_Library_Objects.all;
       end if;
    end Finalize_Library_Objects;
-
-   function sync_bool_compare_and_swap (
-      A1 : not null access Finalization_State;
-      A2 : Finalization_State;
-      A3 : Finalization_State)
-      return Boolean
-      with Import,
-         Convention => Intrinsic,
-         External_Name => "__sync_bool_compare_and_swap_1";
 
    procedure Free is new Ada.Unchecked_Deallocation (FM_List, FM_List_Access);
 
@@ -154,7 +146,8 @@ package body System.Finalization_Masters is
    function Finalization_Started (Master : Finalization_Master'Class)
       return Boolean is
    begin
-      return Master.Finalization_State = FS_Finalization_Started;
+      return Storage_Barriers.atomic_load (
+         Master.Finalization_Started'Access) /= 0;
    end Finalization_Started;
 
    procedure Set_Finalize_Address_Unprotected (
@@ -177,6 +170,7 @@ package body System.Finalization_Masters is
 
    overriding procedure Initialize (Object : in out Finalization_Master) is
    begin
+      Storage_Barriers.atomic_clear (Object.Finalization_Started'Access);
       Initialize_List (Object.List'Unchecked_Access);
       Object.List.Finalize_Address := null;
       Object.List.Next := null;
@@ -184,10 +178,8 @@ package body System.Finalization_Masters is
 
    overriding procedure Finalize (Object : in out Finalization_Master) is
    begin
-      if sync_bool_compare_and_swap (
-         Object.Finalization_State'Access,
-         FS_Active,
-         FS_Finalization_Started)
+      if not Storage_Barriers.atomic_test_and_set (
+         Object.Finalization_Started'Access)
       then
          declare
             Raised : Boolean := False;

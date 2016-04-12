@@ -1,3 +1,4 @@
+with System.Storage_Barriers;
 with System.Synchronous_Control;
 package body System.Once is
    pragma Suppress (All_Checks);
@@ -6,34 +7,51 @@ package body System.Once is
    Start : constant := 1;
    Done : constant := 2;
 
-   function sync_val_compare_and_swap (
-      A1 : not null access Flag;
-      A2 : Flag;
-      A3 : Flag)
+   function atomic_load (
+      ptr : not null access constant Flag;
+      memorder : Integer := Storage_Barriers.ATOMIC_ACQUIRE)
       return Flag
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
+
+   procedure atomic_store (
+      ptr : not null access Flag;
+      val : Flag;
+      memorder : Integer := Storage_Barriers.ATOMIC_RELEASE)
+      with Import,
+         Convention => Intrinsic, External_Name => "__atomic_store_1";
+
+   function atomic_compare_exchange (
+      ptr : not null access Flag;
+      expected : not null access Flag;
+      desired : Flag;
+      weak : Boolean := False;
+      success_memorder : Integer := Storage_Barriers.ATOMIC_ACQ_REL;
+      failure_memorder : Integer := Storage_Barriers.ATOMIC_ACQUIRE)
+      return Boolean
       with Import,
          Convention => Intrinsic,
-         External_Name => "__sync_val_compare_and_swap_1";
+         External_Name => "__atomic_compare_exchange_1";
 
    --  implementation
 
    procedure Initialize (
       Flag : not null access Once.Flag;
-      Process : not null access procedure) is
+      Process : not null access procedure)
+   is
+      Expected : aliased Once.Flag := Yet;
    begin
-      case sync_val_compare_and_swap (Flag, Yet, Start) is
-         when Yet => -- succeeded to swap
-            pragma Assert (Flag.all = Start);
-            Process.all;
-            Flag.all := Done;
-         when Start => -- wait
-            loop
-               Synchronous_Control.Yield;
-               exit when Flag.all = Done;
-            end loop;
-         when others => -- done
-            null;
-      end case;
+      if atomic_compare_exchange (Flag, Expected'Access, Start) then
+         --  succeeded to swap
+         Process.all;
+         atomic_store (Flag, Done);
+      elsif Expected = Start then
+         --  wait until Flag = Done
+         loop
+            Synchronous_Control.Yield;
+            exit when atomic_load (Flag) = Done;
+         end loop;
+      end if;
+      --  Flag = Done
    end Initialize;
 
 end System.Once;

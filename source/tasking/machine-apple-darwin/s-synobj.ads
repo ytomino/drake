@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 private with System.Native_Calendar;
+private with System.Storage_Barriers;
 private with C.pthread;
 package System.Synchronous_Objects is
    pragma Preelaborate;
@@ -171,8 +172,7 @@ private
    type Event is limited record
       Mutex : Synchronous_Objects.Mutex;
       Condition_Variable : Synchronous_Objects.Condition_Variable;
-      Value : Boolean;
-      pragma Atomic (Value);
+      Value : aliased Storage_Barriers.Flag;
    end record;
    pragma Suppress_Initialization (Event);
 

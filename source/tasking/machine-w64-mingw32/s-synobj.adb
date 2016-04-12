@@ -8,6 +8,46 @@ package body System.Synchronous_Objects is
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
+   function atomic_load (
+      ptr : not null access constant Counter;
+      memorder : Integer := C.ATOMIC_ACQUIRE)
+      return Counter
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
+
+   procedure atomic_store (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := C.ATOMIC_RELEASE)
+      with Import,
+         Convention => Intrinsic, External_Name => "__atomic_store_4";
+
+   procedure atomic_add_fetch (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := C.ATOMIC_ACQ_REL)
+      with Import,
+         Convention => Intrinsic, External_Name => "__atomic_add_fetch_4";
+
+   function atomic_sub_fetch (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := C.ATOMIC_ACQ_REL)
+      return Counter
+      with Import,
+         Convention => Intrinsic, External_Name => "__atomic_sub_fetch_4";
+
+   function atomic_compare_exchange (
+      ptr : not null access Counter;
+      expected : not null access Counter;
+      desired : Counter;
+      weak : Boolean := False;
+      success_memorder : Integer := C.ATOMIC_ACQ_REL;
+      failure_memorder : Integer := C.ATOMIC_ACQUIRE)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_4";
+
    --  mutex
 
    procedure Initialize (Object : in out Mutex) is
@@ -43,7 +83,7 @@ package body System.Synchronous_Objects is
 
    procedure Initialize (Object : in out Condition_Variable) is
    begin
-      Object.Waiters := 0;
+      atomic_store (Object.Waiters'Access, 0);
       Initialize (Object.Event, Manual => True);
       Initialize (Object.Reset_Barrier, Manual => True);
    end Initialize;
@@ -64,7 +104,7 @@ package body System.Synchronous_Objects is
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex) is
    begin
-      sync_add_and_fetch (Object.Waiters'Access, 1);
+      atomic_add_fetch (Object.Waiters'Access, 1);
       case C.winbase.SignalObjectAndWait (
          hObjectToSignal => Mutex.Handle,
          hObjectToWaitOn => Object.Event.Handle,
@@ -76,7 +116,7 @@ package body System.Synchronous_Objects is
          when others =>
             Raise_Exception (Tasking_Error'Identity);
       end case;
-      if sync_sub_and_fetch (Object.Waiters'Access, 1) = 0 then
+      if atomic_sub_fetch (Object.Waiters'Access, 1) = 0 then
          Reset (Object.Event);
          Set (Object.Reset_Barrier);
       else
@@ -379,7 +419,7 @@ package body System.Synchronous_Objects is
 
    procedure Initialize (Object : in out RW_Lock) is
    begin
-      Object.State := 0;
+      atomic_store (Object.State'Access, 0);
       Initialize (Object.Reader_Barrier, Manual => True);
       Initialize (Object.Writer_Barrier, Manual => False);
    end Initialize;
@@ -394,13 +434,17 @@ package body System.Synchronous_Objects is
    begin
       loop
          declare
-            Current : constant Counter := Object.State;
+            Current : constant Counter := atomic_load (Object.State'Access);
          begin
             if Current >= 0 then
-               exit when sync_bool_compare_and_swap (
-                  Object.State'Access,
-                  Current,
-                  Current + 1);
+               declare
+                  Expected : aliased Counter := Current;
+               begin
+                  exit when atomic_compare_exchange (
+                     Object.State'Access,
+                     Expected'Access,
+                     Current + 1);
+               end;
             else
                Wait (Object.Reader_Barrier);
             end if;
@@ -410,21 +454,30 @@ package body System.Synchronous_Objects is
 
    procedure Enter_Writing (Object : in out RW_Lock) is
    begin
-      while not sync_bool_compare_and_swap (Object.State'Access, 0, -999) loop
+      loop
+         declare
+            Expected : aliased Counter := 0;
+         begin
+            exit when atomic_compare_exchange (
+               Object.State'Access,
+               Expected'Access,
+               -999);
+         end;
          Wait (Object.Writer_Barrier);
       end loop;
       Reset (Object.Reader_Barrier);
    end Enter_Writing;
 
    procedure Leave (Object : in out RW_Lock) is
+      Expected : aliased Counter := -999;
    begin
-      if sync_bool_compare_and_swap (Object.State'Access, -999, 0) then
+      if atomic_compare_exchange (Object.State'Access, Expected'Access, 0) then
          --  writer
          Set (Object.Reader_Barrier);
          Set (Object.Writer_Barrier);
       else
          --  reader
-         if sync_sub_and_fetch (Object.State'Access, 1) = 0 then
+         if atomic_sub_fetch (Object.State'Access, 1) = 0 then
             Reset (Object.Reader_Barrier);
             Set (Object.Writer_Barrier);
          end if;

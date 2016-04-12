@@ -2,15 +2,6 @@ with System.Synchronous_Objects.Abortable;
 with System.Tasks;
 package body Ada.Synchronous_Task_Control is
 
-   function sync_bool_compare_and_swap (
-      A1 : not null access Flag;
-      A2 : Flag;
-      A3 : Flag)
-      return Boolean
-      with Import,
-         Convention => Intrinsic,
-         External_Name => "__sync_bool_compare_and_swap_1";
-
    --  implementation
 
    procedure Set_True (S : in out Suspension_Object) is
@@ -34,7 +25,7 @@ package body Ada.Synchronous_Task_Control is
    is
       Aborted : Boolean;
    begin
-      if not sync_bool_compare_and_swap (S.Waiting'Access, 0, 1) then
+      if System.Storage_Barriers.atomic_test_and_set (S.Waiting'Access) then
          if not Multi then
             raise Program_Error; -- CXDA002, the waiter is limited to one
          end if;
@@ -43,13 +34,13 @@ package body Ada.Synchronous_Task_Control is
       System.Synchronous_Objects.Abortable.Wait (
          S.Object,
          Aborted => Aborted);
-      S.Waiting := 0;
+      System.Storage_Barriers.atomic_clear (S.Waiting'Access);
       System.Tasks.Disable_Abort (Aborted);
    end Suspend_Until_True;
 
    overriding procedure Initialize (Object : in out Suspension_Object) is
    begin
-      Object.Waiting := 0;
+      System.Storage_Barriers.atomic_clear (Object.Waiting'Access);
       System.Synchronous_Objects.Initialize (Object.Object);
    end Initialize;
 
