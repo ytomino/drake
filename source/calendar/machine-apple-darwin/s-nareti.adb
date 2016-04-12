@@ -1,19 +1,16 @@
 with System.Native_Time;
 package body System.Native_Real_Time is
 
-   function To_uint64_t (D : Duration) return C.stdint.uint64_t;
-   pragma Pure_Function (To_uint64_t);
-
-   function To_uint64_t (D : Duration) return C.stdint.uint64_t is
-   begin
-      return C.stdint.uint64_t'Integer_Value (D);
-   end To_uint64_t;
-
    --  implementation
 
-   function To_Duration (D : Native_Time) return Duration is
+   function To_Native_Time (T : Duration) return Native_Time is
    begin
-      return Duration'Fixed_Value (D);
+      return C.stdint.uint64_t'Integer_Value (T);
+   end To_Native_Time;
+
+   function To_Duration (T : Native_Time) return Duration is
+   begin
+      return Duration'Fixed_Value (T);
    end To_Duration;
 
    procedure Delay_Until (T : Native_Time) is
@@ -28,10 +25,5 @@ package body System.Native_Real_Time is
       end if;
       System.Native_Time.Delay_For (D);
    end Delay_Until;
-
-   procedure Generic_Delay_Until (T : Ada_Time) is
-   begin
-      Delay_Until (To_uint64_t (Duration (T)));
-   end Generic_Delay_Until;
 
 end System.Native_Real_Time;

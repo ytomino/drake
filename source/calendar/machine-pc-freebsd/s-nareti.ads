@@ -7,6 +7,8 @@ package System.Native_Real_Time is
 
    subtype Native_Time is C.time.struct_timespec;
 
+   function To_Native_Time (T : Duration) return Native_Time
+      renames System.Native_Time.To_timespec;
    function To_Duration (T : Native_Time) return Duration
       renames System.Native_Time.To_Duration;
 
@@ -32,10 +34,5 @@ package System.Native_Real_Time is
 
    procedure Delay_Until (T : Native_Time);
    pragma Inline (Delay_Until);
-
-   generic
-      type Ada_Time is new Duration;
-   procedure Generic_Delay_Until (T : Ada_Time);
-   pragma Inline (Generic_Delay_Until);
 
 end System.Native_Real_Time;

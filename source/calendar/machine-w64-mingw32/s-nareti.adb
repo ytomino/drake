@@ -8,23 +8,20 @@ package body System.Native_Real_Time is
    Performance_Counter_Enabled : Boolean;
    Frequency : aliased C.winnt.LARGE_INTEGER;
 
-   function To_LARGE_INTEGER (D : Duration) return C.winnt.LARGE_INTEGER;
-   pragma Pure_Function (To_LARGE_INTEGER);
+   --  implementation
 
-   function To_LARGE_INTEGER (D : Duration) return C.winnt.LARGE_INTEGER is
+   function To_Native_Time (T : Duration) return Native_Time is
    begin
       return (
          Unchecked_Tag => 255, -- any value in others
          QuadPart => C.winnt.LONGLONG (
-            System.Native_Time.Nanosecond_Number'Integer_Value (D)));
-   end To_LARGE_INTEGER;
+            System.Native_Time.Nanosecond_Number'Integer_Value (T)));
+   end To_Native_Time;
 
-   --  implementation
-
-   function To_Duration (D : Native_Time) return Duration is
+   function To_Duration (T : Native_Time) return Duration is
    begin
       return Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number (D.QuadPart));
+         System.Native_Time.Nanosecond_Number (T.QuadPart));
    end To_Duration;
 
    function Clock return Native_Time is
@@ -59,11 +56,6 @@ package body System.Native_Real_Time is
       end if;
       System.Native_Time.Delay_For (D);
    end Delay_Until;
-
-   procedure Generic_Delay_Until (T : Ada_Time) is
-   begin
-      Delay_Until (To_LARGE_INTEGER (Duration (T)));
-   end Generic_Delay_Until;
 
 begin
    Performance_Counter_Enabled :=
