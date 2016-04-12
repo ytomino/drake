@@ -7,6 +7,9 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    subtype Stream_Element_Offset is Streams.Stream_Element_Offset;
 
+   package Native
+      renames System.Native_Environment_Encoding;
+
    procedure Adjust_Buffer (
       Buffer : in out Buffer_Type;
       First : in out Streams.Stream_Element_Offset;
@@ -19,7 +22,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if First >= Buffer_Type'First + Half_Buffer_Length then
          --  shift
          declare
-            New_Last : constant Streams.Stream_Element_Offset :=
+            New_Last : constant Stream_Element_Offset :=
                Buffer_Type'First + Last - First;
          begin
             Buffer (Buffer_Type'First .. New_Last) := Buffer (First .. Last);
@@ -57,117 +60,140 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : Converter;
       Context : in out Reading_Context_Type)
    is
-      Read_Zero : Boolean := False;
+      I : Stream_Element_Offset := Item'First;
    begin
-      Last := Item'First - 1;
-      while Last /= Item'Last loop
-         --  filling
-         if Context.Status = Continuing then
-            Adjust_Buffer (Context.Buffer, Context.First, Context.Last);
-            if Context.Last /= Buffer_Type'Last then
-               declare
-                  Old_Context_Last : constant Stream_Element_Offset :=
-                     Context.Last;
-               begin
-                  Streams.Read (
-                     Stream.all,
-                     Context.Buffer (Context.Last + 1 .. Buffer_Type'Last),
-                     Context.Last);
-                  Read_Zero := Old_Context_Last = Context.Last;
-               exception
-                  when End_Error =>
-                     Context.Status := Finishing;
-               end;
-            end if;
-         end if;
-         --  converting
-         if Context.Status <= Finishing then
-            Adjust_Buffer (
-               Context.Converted_Buffer,
-               Context.Converted_First,
-               Context.Converted_Last);
-            --  try to convert subsequence
-            declare
-               Taken : Stream_Element_Offset;
-               Status :
-                  System.Native_Environment_Encoding.Subsequence_Status_Type;
-            begin
-               Convert_No_Check (
-                  Object,
-                  Context.Buffer (Context.First .. Context.Last),
-                  Taken,
-                  Context.Converted_Buffer (
-                     Context.Converted_Last + 1 ..
-                     Buffer_Type'Last),
-                  Context.Converted_Last,
-                  Finish => Context.Status > Continuing,
-                  Status => Status);
-               case Status is
-                  when System.Native_Environment_Encoding.Finished =>
-                     Context.Status := Ended;
-                  when System.Native_Environment_Encoding.Success =>
-                     null;
-                  when System.Native_Environment_Encoding.Overflow =>
-                     if Context.Converted_Last < Context.Converted_First then
-                        raise Constraint_Error; -- Converted is too smaller
-                     end if;
-                  when System.Native_Environment_Encoding.Truncated =>
-                     pragma Assert (Context.Status = Continuing);
-                     if Context.Converted_Last < Context.Converted_First then
-                        exit; -- wait tail-bytes
-                     end if;
-                  when System.Native_Environment_Encoding.Illegal_Sequence =>
-                     declare
-                        Is_Overflow : Boolean;
-                     begin
-                        Put_Substitute (
-                           Object,
-                           Context.Converted_Buffer (
-                              Context.Converted_Last + 1 ..
-                              Buffer_Type'Last),
-                           Context.Converted_Last,
-                           Is_Overflow);
-                        if Is_Overflow then
-                           exit; -- wait a next try
-                        end if;
-                     end;
-                     --  skip one element
-                     Taken := Stream_Element_Offset'Min (
-                        Context.Last,
-                        Context.First
-                           + Min_Size_In_From_Stream_Elements (Object)
-                           - 1);
-               end case;
-               --  drop converted subsequence
-               Context.First := Taken + 1;
-            end;
-         end if;
-         --  copy converted elements
+      if I > Item'Last then
+         Last := I - 1;
+      else
          declare
-            Move_Length : constant Stream_Element_Offset :=
-               Stream_Element_Offset'Min (
-                  Item'Last - Last,
-                  Context.Converted_Last - Context.Converted_First + 1);
-            New_Last : constant Stream_Element_Offset :=
-               Last + Move_Length;
-            New_Context_Converted_First : constant Stream_Element_Offset :=
-               Context.Converted_First + Move_Length;
+            Read_Zero : Boolean := False;
          begin
-            Item (Last + 1 .. New_Last) :=
-               Context.Converted_Buffer (
-                  Context.Converted_First ..
-                  New_Context_Converted_First - 1);
-            Last := New_Last;
-            Context.Converted_First := New_Context_Converted_First;
+            loop
+               --  filling
+               if Context.Status = Continuing then
+                  Adjust_Buffer (Context.Buffer, Context.First, Context.Last);
+                  if Context.Last /= Buffer_Type'Last then
+                     declare
+                        Old_Context_Last : constant Stream_Element_Offset :=
+                           Context.Last;
+                     begin
+                        Streams.Read (
+                           Stream.all,
+                           Context.Buffer (
+                              Context.Last + 1 .. Buffer_Type'Last),
+                           Context.Last);
+                        Read_Zero := Old_Context_Last = Context.Last;
+                     exception
+                        when End_Error =>
+                           Context.Status := Finishing;
+                     end;
+                  end if;
+               end if;
+               --  converting
+               if Context.Status <= Finishing then
+                  Adjust_Buffer (
+                     Context.Converted_Buffer,
+                     Context.Converted_First,
+                     Context.Converted_Last);
+                  --  try to convert subsequence
+                  declare
+                     Taken : Stream_Element_Offset;
+                     Status : Native.Subsequence_Status_Type;
+                  begin
+                     Convert_No_Check (
+                        Object,
+                        Context.Buffer (Context.First .. Context.Last),
+                        Taken,
+                        Context.Converted_Buffer (
+                           Context.Converted_Last + 1 .. Buffer_Type'Last),
+                        Context.Converted_Last,
+                        Finish => Context.Status > Continuing,
+                        Status => Status);
+                     case Status is
+                        when Native.Finished =>
+                           Context.Status := Ended;
+                        when Native.Success =>
+                           null;
+                        when Native.Overflow =>
+                           if Context.Converted_Last <
+                              Context.Converted_First
+                           then
+                              raise Constraint_Error;
+                              --  Converted_Buffer is too smaller
+                           end if;
+                        when Native.Truncated =>
+                           pragma Assert (Context.Status = Continuing);
+                           if Context.Converted_Last <
+                              Context.Converted_First
+                           then
+                              Last := I - 1; -- may underflow
+                              exit; -- wait tail-bytes
+                           end if;
+                        when Native.Illegal_Sequence =>
+                           declare
+                              Is_Overflow : Boolean;
+                           begin
+                              Put_Substitute (
+                                 Object,
+                                 Context.Converted_Buffer (
+                                    Context.Converted_Last + 1 ..
+                                    Buffer_Type'Last),
+                                 Context.Converted_Last,
+                                 Is_Overflow);
+                              if Is_Overflow then
+                                 Last := I - 1; -- may underflow
+                                 exit; -- wait a next try
+                              end if;
+                           end;
+                           --  skip one element
+                           Taken := Stream_Element_Offset'Min (
+                              Context.Last,
+                              Context.First
+                                 + Min_Size_In_From_Stream_Elements (Object)
+                                 - 1);
+                     end case;
+                     --  drop converted subsequence
+                     Context.First := Taken + 1;
+                  end;
+               end if;
+               --  copy converted elements
+               if Context.Converted_First <= Context.Converted_Last then
+                  declare
+                     Move_Length : constant Stream_Element_Offset :=
+                        Stream_Element_Offset'Min (
+                           Item'Last - I + 1,
+                           Context.Converted_Last
+                              - Context.Converted_First
+                              + 1);
+                     New_Last : constant Stream_Element_Offset :=
+                        I + (Move_Length - 1);
+                     New_Context_Converted_First : constant
+                        Stream_Element_Offset :=
+                        Context.Converted_First + Move_Length;
+                  begin
+                     Item (I .. New_Last) :=
+                        Context.Converted_Buffer (
+                           Context.Converted_First ..
+                           New_Context_Converted_First - 1);
+                     Context.Converted_First := New_Context_Converted_First;
+                     if New_Last >= Item'Last then
+                        Last := New_Last; -- valid
+                        exit;
+                     end if;
+                     I := New_Last + 1;
+                  end;
+               end if;
+               if Context.Converted_Last < Context.Converted_First then
+                  if Context.Status = Ended and then I <= Item'First then
+                     Raise_Exception (End_Error'Identity);
+                  end if;
+                  if Context.Status = Ended or else Read_Zero then
+                     Last := I - 1; -- may underflow
+                     exit;
+                  end if;
+               end if;
+            end loop;
          end;
-         exit when (Context.Status = Ended or else Read_Zero)
-            and then Context.Converted_Last < Context.Converted_First;
-      end loop;
-      if Last = Item'First - 1 -- do not use "<" since underflow
-         and then Context.Status = Ended
-         and then Context.Converted_Last < Context.Converted_First
-      then
-         Raise_Exception (End_Error'Identity);
       end if;
    end Read;
 
@@ -185,16 +211,14 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
    is
-      Substitute_Last : Streams.Stream_Element_Offset :=
-         Substitute'First - 1;
+      Substitute_Last : Stream_Element_Offset := Substitute'First - 1;
       S2 : Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
-      S2_Last : Streams.Stream_Element_Offset := S2'First - 1;
+      S2_Last : Stream_Element_Offset := S2'First - 1;
    begin
       --  convert substitute from internal to external
       loop
          declare
-            Status :
-               System.Native_Environment_Encoding.Substituting_Status_Type;
+            Status : Native.Substituting_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -205,11 +229,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                Finish => True,
                Status => Status);
             case Status is
-               when System.Native_Environment_Encoding.Finished =>
+               when Native.Finished =>
                   exit;
-               when System.Native_Environment_Encoding.Success =>
+               when Native.Success =>
                   null;
-               when System.Native_Environment_Encoding.Overflow =>
+               when Native.Overflow =>
                   raise Constraint_Error;
             end case;
          end;
@@ -230,27 +254,31 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : Converter;
       Context : in out Writing_Context_Type)
    is
-      Item_Last : Stream_Element_Offset := Item'First - 1;
+      I : Stream_Element_Offset := Item'First;
+      End_Of_Item : Boolean := I > Item'Last;
    begin
       loop
          --  filling
-         if Item_Last /= Item'Last then
+         if not End_Of_Item then
             Adjust_Buffer (Context.Buffer, Context.First, Context.Last);
             if Context.Last /= Buffer_Type'Last then
                declare
                   Rest : constant Stream_Element_Offset :=
                      Stream_Element_Offset'Min (
-                        Item'Last - Item_Last,
+                        Item'Last - I + 1,
                         Buffer_Type'Last - Context.Last);
                   New_Context_Last : constant Stream_Element_Offset :=
                      Context.Last + Rest;
                   New_Item_Last : constant Stream_Element_Offset :=
-                     Item_Last + Rest;
+                     I + (Rest - 1);
                begin
                   Context.Buffer (Context.Last + 1 .. New_Context_Last) :=
-                     Item (Item_Last + 1 .. New_Item_Last);
+                     Item (I .. New_Item_Last);
                   Context.Last := New_Context_Last;
-                  Item_Last := New_Item_Last;
+                  End_Of_Item := New_Item_Last >= Item'Last;
+                  if not End_Of_Item then
+                     I := New_Item_Last + 1;
+                  end if;
                end;
             end if;
          else
@@ -261,7 +289,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Taken : Stream_Element_Offset;
             Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
             Out_Last : Stream_Element_Offset;
-            Status : System.Native_Environment_Encoding.Continuing_Status_Type;
+            Status : Native.Continuing_Status_Type;
          begin
             Convert_No_Check (
                Object,
@@ -271,17 +299,17 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                Out_Last,
                Status => Status);
             case Status is
-               when System.Native_Environment_Encoding.Success =>
+               when Native.Success =>
                   null;
-               when System.Native_Environment_Encoding.Overflow =>
+               when Native.Overflow =>
                   if Out_Last < Out_Buffer'First then
                      raise Constraint_Error; -- Out_Buffer is too smaller
                   end if;
-               when System.Native_Environment_Encoding.Truncated =>
+               when Native.Truncated =>
                   if Out_Last < Out_Buffer'First then
                      exit; -- wait tail-bytes
                   end if;
-               when System.Native_Environment_Encoding.Illegal_Sequence =>
+               when Native.Illegal_Sequence =>
                   declare
                      Is_Overflow : Boolean;
                   begin
@@ -322,7 +350,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
    is
       Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
       Out_Last : Stream_Element_Offset := -1;
-      Status : System.Native_Environment_Encoding.Finishing_Status_Type;
+      Status : Native.Finishing_Status_Type;
    begin
       if Context.First <= Context.Last then
          --  put substitute instead of incomplete sequence in the buffer
@@ -349,11 +377,11 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Stream.all,
             Out_Buffer (Out_Buffer'First .. Out_Last));
          case Status is
-            when System.Native_Environment_Encoding.Finished =>
+            when Native.Finished =>
                exit;
-            when System.Native_Environment_Encoding.Success =>
+            when Native.Success =>
                null;
-            when System.Native_Environment_Encoding.Overflow =>
+            when Native.Overflow =>
                if Out_Last < Out_Buffer'First then
                   raise Constraint_Error; -- Out_Buffer is too smaller
                end if;
@@ -535,12 +563,12 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if Is_Open (Object.Reading_Converter) then
          Set_Substitute_To_Reading_Converter (
             Object.Reading_Converter,
-            Substitute);
+            Object.Substitute (1 .. Object.Substitute_Length));
       end if;
       if Is_Open (Object.Writing_Converter) then
          Set_Substitute_To_Writing_Converter (
             Object.Writing_Converter,
-            Substitute);
+            Object.Substitute (1 .. Object.Substitute_Length));
       end if;
    end Set_Substitute;
 
@@ -583,10 +611,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if not Is_Open (Object.Reading_Converter) then
          Open (
             Object.Reading_Converter,
-            From => System.Native_Environment_Encoding.Encoding_Id (
-               Object.External),
-            To => System.Native_Environment_Encoding.Encoding_Id (
-               Object.Internal));
+            From => Native.Encoding_Id (Object.External),
+            To => Native.Encoding_Id (Object.Internal));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Reading_Converter (
                Object.Reading_Converter,
@@ -612,10 +638,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if not Is_Open (Object.Writing_Converter) then
          Open (
             Object.Writing_Converter,
-            From => System.Native_Environment_Encoding.Encoding_Id (
-               Object.Internal),
-            To => System.Native_Environment_Encoding.Encoding_Id (
-               Object.External));
+            From => Native.Encoding_Id (Object.Internal),
+            To => Native.Encoding_Id (Object.External));
          if Object.Substitute_Length >= 0 then
             Set_Substitute_To_Writing_Converter (
                Object.Writing_Converter,

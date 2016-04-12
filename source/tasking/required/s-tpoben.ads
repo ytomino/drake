@@ -71,8 +71,7 @@ package System.Tasking.Protected_Objects.Entries is
    --  required by compiler
    procedure Set_Entry_Names (
       Object : not null access Protection_Entries'Class;
-      Names : access Protected_Entry_Names_Array) is
-      null;
+      Names : access Protected_Entry_Names_Array) is null;
 
    --  required by compiler
    procedure Lock_Entries (

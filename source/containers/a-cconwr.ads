@@ -40,7 +40,8 @@ private package Ada.Containers.Copy_On_Write is
       Target : not null access Container;
       Free : not null access procedure (Object : in out Data_Access));
 
-   function Copy (
+   procedure Copy (
+      Target : not null access Container;
       Source : not null access constant Container;
       Length : Count_Type;
       New_Capacity : Count_Type;
@@ -53,8 +54,7 @@ private package Ada.Containers.Copy_On_Write is
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
          Max_Length : Count_Type; -- new length
-         Capacity : Count_Type))
-      return Container;
+         Capacity : Count_Type));
 
    procedure Move (
       Target : not null access Container;

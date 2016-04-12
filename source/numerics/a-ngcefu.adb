@@ -65,6 +65,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Log (X : Complex) return Complex is
    begin
+      --  RM G.1.2(29), raise Constraint_Error when X = 0.0
       if Real'Digits <= Float'Digits then
          return From_Complex (
             System.Long_Long_Complex_Elementary_Functions.Fast_Log (
@@ -118,10 +119,12 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    begin
       if not Standard'Fast_Math then
          if not (Left.Re /= 0.0) and then not (Left.Im /= 0.0)
-            and then not (Right.Re /= 0.0) and then not (Right.Im /= 0.0)
+            and then not (Right.Re /= 0.0)
          then
-            raise Argument_Error; -- CXG1004
+            raise Argument_Error; -- RM G.1.2(27), CXG1004
          end if;
+         --  RM G.1.2(30), raise Constraint_Error
+         --    when Left = 0.0 and Right.Re < 0.0
          if Right.Re = 1.0 and then Right.Im = 0.0 then
             return Left; -- CXG1005
          end if;
@@ -207,6 +210,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Cot (X : Complex) return Complex is
    begin
+      --  RM G.1.2(29), raise Constraint_Error when X = 0.0
       return Cos (X) / Sin (X);
    end Cot;
 
@@ -246,6 +250,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arctan (X : Complex) return Complex is
    begin
+      --  RM G.1.2(31), raise Constraint_Error when X = I or X = -I
       if Real'Digits <= Float'Digits then
          return From_Complex (
             System.Long_Long_Complex_Elementary_Functions.Fast_Arctan (
@@ -263,6 +268,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arccot (X : Complex) return Complex is
    begin
+      --  RM G.1.2(31), raise Constraint_Error when X = I or X = -I
       return Pi / 2.0 - Arctan (X);
    end Arccot;
 
@@ -319,6 +325,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Coth (X : Complex) return Complex is
    begin
+      --  RM G.1.2(29), raise Constraint_Error when X = 0.0
       return Cosh (X) / Sinh (X);
    end Coth;
 
@@ -358,6 +365,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arctanh (X : Complex) return Complex is
    begin
+      --  RM G.1.2(32), raise Constraint_Error when X = 1.0 or X = -1.0
       if Real'Digits <= Float'Digits then
          return From_Complex (
             System.Long_Long_Complex_Elementary_Functions.Fast_Arctanh (
@@ -375,6 +383,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
 
    function Arccoth (X : Complex) return Complex is
    begin
+      --  RM G.1.2(32), raise Constraint_Error when X = 1.0 or X = -1.0
       if X.Re = 0.0 and then X.Im = 0.0 then
          return (0.0, Pi / 2.0);
       else

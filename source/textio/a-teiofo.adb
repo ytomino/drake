@@ -3,6 +3,8 @@ with Ada.Exceptions.Finally;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
+   use type System.Formatting.Unsigned;
+   use type System.Formatting.Longest_Unsigned;
 
    procedure Skip_Spaces (
       File : File_Type); -- Input_File_Type
@@ -111,7 +113,7 @@ package body Ada.Text_IO.Formatting is
       if Item < 0 then
          Last := Last + 1;
          To (Last) := '-';
-         Unsigned_Item := System.Formatting.Unsigned'Mod (-Item);
+         Unsigned_Item := -System.Formatting.Unsigned'Mod (Item);
       else
          Unsigned_Item := System.Formatting.Unsigned (Item);
       end if;
@@ -138,7 +140,7 @@ package body Ada.Text_IO.Formatting is
       if Item < 0 then
          Last := Last + 1;
          To (Last) := '-';
-         Unsigned_Item := System.Formatting.Longest_Unsigned'Mod (-Item);
+         Unsigned_Item := -System.Formatting.Longest_Unsigned'Mod (Item);
       else
          Unsigned_Item := System.Formatting.Longest_Unsigned (Item);
       end if;

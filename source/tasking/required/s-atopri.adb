@@ -1,4 +1,5 @@
 with System.Address_To_Named_Access_Conversions;
+with System.Storage_Barriers;
 package body System.Atomic_Primitives is
    use type Interfaces.Unsigned_8;
    use type Interfaces.Unsigned_16;
@@ -32,108 +33,143 @@ package body System.Atomic_Primitives is
    package uint64_Conv is
       new Address_To_Named_Access_Conversions (uint64, uint64_Access);
 
-   Acquire : constant := 2; -- gcc's intrinsic
+   --  Use sequentially consistent model for general purpose.
+   Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
+
+   function atomic_load (
+      ptr : not null access constant uint8;
+      memorder : Integer := Order)
+      return uint8
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_1";
+   function atomic_load (
+      ptr : not null access constant uint16;
+      memorder : Integer := Order)
+      return uint16
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_2";
+   function atomic_load (
+      ptr : not null access constant uint32;
+      memorder : Integer := Order)
+      return uint32
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
+   function atomic_load (
+      ptr : not null access constant uint64;
+      memorder : Integer := Order)
+      return uint64
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_8";
+
+   function atomic_compare_exchange (
+      ptr : not null access uint8;
+      expected : not null access uint8;
+      desired : uint8;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_1";
+   function atomic_compare_exchange (
+      ptr : not null access uint16;
+      expected : not null access uint16;
+      desired : uint16;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_2";
+   function atomic_compare_exchange (
+      ptr : not null access uint32;
+      expected : not null access uint32;
+      desired : uint32;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_4";
+   function atomic_compare_exchange (
+      ptr : not null access uint64;
+      expected : not null access uint64;
+      desired : uint64;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_8";
 
    --  implementation
 
    function Lock_Free_Read_8 (Ptr : Address) return Interfaces.Unsigned_8 is
    begin
-      return Interfaces.atomic_load (uint8_Conv.To_Pointer (Ptr), Acquire);
+      return atomic_load (uint8_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_8;
 
    function Lock_Free_Read_16 (Ptr : Address) return Interfaces.Unsigned_16 is
    begin
-      return Interfaces.atomic_load (uint16_Conv.To_Pointer (Ptr), Acquire);
+      return atomic_load (uint16_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_16;
 
    function Lock_Free_Read_32 (Ptr : Address) return Interfaces.Unsigned_32 is
    begin
-      return Interfaces.atomic_load (uint32_Conv.To_Pointer (Ptr), Acquire);
+      return atomic_load (uint32_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_32;
 
    function Lock_Free_Read_64 (Ptr : Address) return Interfaces.Unsigned_64 is
    begin
-      return Interfaces.atomic_load (uint64_Conv.To_Pointer (Ptr), Acquire);
+      return atomic_load (uint64_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_64;
 
    function Lock_Free_Try_Write_8 (
       Ptr : Address;
       Expected : in out Interfaces.Unsigned_8;
       Desired : Interfaces.Unsigned_8)
-      return Boolean
-   is
-      Actual : Interfaces.Unsigned_8;
+      return Boolean is
    begin
-      Actual := Interfaces.sync_val_compare_and_swap (
+      return atomic_compare_exchange (
          uint8_Conv.To_Pointer (Ptr),
-         Expected,
+         Expected'Unrestricted_Access,
          Desired);
-      if Actual = Expected then
-         return True;
-      else
-         Expected := Actual;
-         return False;
-      end if;
    end Lock_Free_Try_Write_8;
 
    function Lock_Free_Try_Write_16 (
       Ptr : Address;
       Expected : in out Interfaces.Unsigned_16;
       Desired : Interfaces.Unsigned_16)
-      return Boolean
-   is
-      Actual : Interfaces.Unsigned_16;
+      return Boolean is
    begin
-      Actual := Interfaces.sync_val_compare_and_swap (
+      return atomic_compare_exchange (
          uint16_Conv.To_Pointer (Ptr),
-         Expected,
+         Expected'Unrestricted_Access,
          Desired);
-      if Actual = Expected then
-         return True;
-      else
-         Expected := Actual;
-         return False;
-      end if;
    end Lock_Free_Try_Write_16;
 
    function Lock_Free_Try_Write_32 (
       Ptr : Address;
       Expected : in out Interfaces.Unsigned_32;
       Desired : Interfaces.Unsigned_32)
-      return Boolean
-   is
-      Actual : Interfaces.Unsigned_32;
+      return Boolean is
    begin
-      Actual := Interfaces.sync_val_compare_and_swap (
+      return atomic_compare_exchange (
          uint32_Conv.To_Pointer (Ptr),
-         Expected,
+         Expected'Unrestricted_Access,
          Desired);
-      if Actual = Expected then
-         return True;
-      else
-         Expected := Actual;
-         return False;
-      end if;
    end Lock_Free_Try_Write_32;
 
    function Lock_Free_Try_Write_64 (
       Ptr : Address;
       Expected : in out Interfaces.Unsigned_64;
       Desired : Interfaces.Unsigned_64)
-      return Boolean
-   is
-      Actual : Interfaces.Unsigned_64;
+      return Boolean is
    begin
-      Actual := Interfaces.sync_val_compare_and_swap (
+      return atomic_compare_exchange (
          uint64_Conv.To_Pointer (Ptr),
-         Expected,
+         Expected'Unrestricted_Access,
          Desired);
-      if Actual = Expected then
-         return True;
-      else
-         Expected := Actual;
-         return False;
-      end if;
    end Lock_Free_Try_Write_64;
 
 end System.Atomic_Primitives;

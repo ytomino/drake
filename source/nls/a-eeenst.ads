@@ -174,9 +174,7 @@ private
          System.Null_Address;
       --  substitute (encoded as internal)
       Substitute_Length : Streams.Stream_Element_Offset;
-      Substitute : Streams.Stream_Element_Array (
-         1 ..
-         Max_Substitute_Length);
+      Substitute : Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
       --  reading
       Reading_Converter : Converter;
       Reading_Context : Reading_Context_Type;

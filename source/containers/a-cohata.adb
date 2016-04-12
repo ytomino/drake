@@ -5,6 +5,19 @@ package body Ada.Containers.Hash_Tables is
 
    subtype Positive_Hash_Type is Hash_Type range 1 .. Hash_Type'Last;
 
+   procedure Allocate (
+      New_Container : out Table_Access;
+      Capacity : Count_Type);
+   procedure Allocate (
+      New_Container : out Table_Access;
+      Capacity : Count_Type) is
+   begin
+      New_Container := new Table'(
+         Last_Index => Hash_Type (Capacity) - 1,
+         First => null,
+         Entries => (others => (First => null, Previous => null)));
+   end Allocate;
+
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
@@ -33,8 +46,8 @@ package body Ada.Containers.Hash_Tables is
                   if Equivalent (Node, Position) then
                      return Position;
                   end if;
-                  exit when Position = Container.Entries (Index).Last;
-                  pragma Assert (Position.Next /= null);
+                  exit when Position.Next = null
+                     or else Position.Next.Index /= Index;
                   Position := Position.Next;
                end loop;
             end if;
@@ -43,14 +56,12 @@ package body Ada.Containers.Hash_Tables is
       return null;
    end Find_Node;
 
-   --  implementation
-
    procedure Insert_No_Rebuild (
-      Container : Table_Access;
+      Container : not null Table_Access;
       Hash : Hash_Type;
       New_Item : not null Node_Access);
    procedure Insert_No_Rebuild (
-      Container : Table_Access;
+      Container : not null Table_Access;
       Hash : Hash_Type;
       New_Item : not null Node_Access)
    is
@@ -59,65 +70,34 @@ package body Ada.Containers.Hash_Tables is
    begin
       New_Item.Hash := Hash;
       New_Item.Index := Index;
-      if Container.Entries (Index).Last /= null then
-         New_Item.Next := Container.Entries (Index).Last.Next;
-         Container.Entries (Index).Last.Next := New_Item;
-         Container.Entries (Index).Last := New_Item;
-      else
-         pragma Assert (Container.Entries (Index).First = null);
-         New_Item.Next := null;
-         if Index > 0 then
-            for J in reverse 0 .. Index - 1 loop
-               if Container.Entries (J).Last /= null then
-                  New_Item.Next := Container.Entries (J).Last.Next;
-                  Container.Entries (J).Last.Next := New_Item;
-                  goto Linked;
-               end if;
-            end loop;
+      if Container.Entries (Index).First /= null then
+         if Container.First = Container.Entries (Index).First then
+            Container.First := New_Item;
+         else
+            Container.Entries (Index).Previous.Next := New_Item;
          end if;
-         for J in Index + 1 .. Container.Entries'Last loop
-            if Container.Entries (J).First /= null then
-               New_Item.Next := Container.Entries (J).First;
-               exit;
-            end if;
-         end loop;
-      <<Linked>>
+         New_Item.Next := Container.Entries (Index).First;
          Container.Entries (Index).First := New_Item;
-         Container.Entries (Index).Last := New_Item;
+      else
+         if Container.First /= null then
+            Container.Entries (Container.First.Index).Previous := New_Item;
+         end if;
+         New_Item.Next := Container.First;
+         Container.First := New_Item;
+         Container.Entries (Index).First := New_Item;
       end if;
    end Insert_No_Rebuild;
+
+   --  implementation
 
    function First (Container : Table_Access) return Node_Access is
    begin
       if Container /= null then
-         for I in Container.Entries'Range loop
-            declare
-               Position : constant Node_Access := Container.Entries (I).First;
-            begin
-               if Position /= null then
-                  return Position;
-               end if;
-            end;
-         end loop;
+         return Container.First;
+      else
+         return null;
       end if;
-      return null;
    end First;
-
-   function Last (Container : Table_Access) return Node_Access is
-   begin
-      if Container /= null then
-         for I in reverse Container.Entries'Range loop
-            declare
-               Position : constant Node_Access := Container.Entries (I).Last;
-            begin
-               if Position /= null then
-                  return Position;
-               end if;
-            end;
-         end loop;
-      end if;
-      return null;
-   end Last;
 
    procedure Iterate (
       Container : Table_Access;
@@ -180,8 +160,8 @@ package body Ada.Containers.Hash_Tables is
                   if Equivalent (Position, Params) then
                      return Position;
                   end if;
-                  exit when Position = Container.Entries (Index).Last;
-                  pragma Assert (Position.Next /= null);
+                  exit when Position.Next = null
+                     or else Position.Next.Index /= Index;
                   Position := Position.Next;
                end loop;
             end if;
@@ -217,7 +197,7 @@ package body Ada.Containers.Hash_Tables is
          return False;
       else
          declare
-            Left_Position : Node_Access := First (Left);
+            Left_Position : Node_Access := Left.First;
          begin
             while Left_Position /= null loop
                if Find_Node (Right, Left_Position, Equivalent) /= null then
@@ -242,7 +222,7 @@ package body Ada.Containers.Hash_Tables is
          return Subset = null;
       else
          declare
-            Left_Position : Node_Access := First (Subset);
+            Left_Position : Node_Access := Subset.First;
          begin
             while Left_Position /= null loop
                if Find_Node (Of_Set, Left_Position, Equivalent) = null then
@@ -267,19 +247,23 @@ package body Ada.Containers.Hash_Tables is
    procedure Free (
       Container : in out Table_Access;
       Length : in out Count_Type;
-      Free : not null access procedure (Object : in out Node_Access))
-   is
-      Position : Node_Access := First (Container);
+      Free : not null access procedure (Object : in out Node_Access)) is
    begin
-      while Position /= null loop
+      if Container /= null then
          declare
-            Next : constant Node_Access := Position.Next;
+            Position : Node_Access := Container.First;
          begin
-            Free (Position);
-            Position := Next;
+            while Position /= null loop
+               declare
+                  Next : constant Node_Access := Position.Next;
+               begin
+                  Free (Position);
+                  Position := Next;
+               end;
+            end loop;
          end;
-      end loop;
-      Hash_Tables.Free (Container);
+         Hash_Tables.Free (Container);
+      end if;
       Length := 0;
    end Free;
 
@@ -292,18 +276,20 @@ package body Ada.Containers.Hash_Tables is
          Target : out Node_Access;
          Source : not null Node_Access)) is
    begin
+      pragma Assert (New_Capacity > 0 or else First (Source) = null);
       Length := 0;
       if New_Capacity > 0 then
-         Target := new Table'(
-            Last => Hash_Type (New_Capacity) - 1,
-            Entries => (others => (First => null, Last => null)));
+         Allocate (Target, New_Capacity);
          declare
             Position : Node_Access := First (Source);
-            New_Node : Node_Access;
          begin
             while Position /= null loop
-               Copy (New_Node, Position);
-               Insert_No_Rebuild (Target, Position.Hash, New_Node);
+               declare
+                  New_Node : Node_Access;
+               begin
+                  Copy (New_Node, Position);
+                  Insert_No_Rebuild (Target, Position.Hash, New_Node);
+               end;
                Length := Length + 1;
                Position := Position.Next;
             end loop;
@@ -317,14 +303,15 @@ package body Ada.Containers.Hash_Tables is
    begin
       if New_Capacity /= Capacity (Container) then
          declare
-            Position : Node_Access := First (Container);
+            Position : Node_Access;
          begin
-            Free (Container);
+            if Container /= null then
+               Position := Container.First;
+               Free (Container);
+            end if;
             pragma Assert (New_Capacity > 0 or else Position = null);
             if New_Capacity > 0 then
-               Container := new Table'(
-                  Last => Hash_Type (New_Capacity) - 1,
-                  Entries => (others => (First => null, Last => null)));
+               Allocate (Container, New_Capacity);
                while Position /= null loop
                   declare
                      Next : constant Node_Access := Position.Next;
@@ -364,21 +351,18 @@ package body Ada.Containers.Hash_Tables is
       Previous : Node_Access;
    begin
       if Container.Entries (Item.Index).First = Item then
+         Previous := Container.Entries (Item.Index).Previous;
          if Item.Next /= null and then Item.Next.Index = Item.Index then
             Container.Entries (Item.Index).First := Item.Next;
          else
             Container.Entries (Item.Index).First := null;
+            Container.Entries (Item.Index).Previous := null;
          end if;
-         if Item.Index > 0 then
-            for I in reverse 0 .. Item.Index - 1 loop
-               if Container.Entries (I).Last /= null then
-                  pragma Assert (Container.Entries (I).Last.Next = Item);
-                  Container.Entries (I).Last.Next := Item.Next;
-                  exit;
-               end if;
-            end loop;
+         if Previous = null then -- Item = Container.First
+            Container.First := Item.Next;
+         else
+            Previous.Next := Item.Next;
          end if;
-         Previous := null;
       else
          Previous := Container.Entries (Item.Index).First;
          while Previous.Next /= Item loop
@@ -386,8 +370,8 @@ package body Ada.Containers.Hash_Tables is
          end loop;
          Previous.Next := Item.Next;
       end if;
-      if Item = Container.Entries (Item.Index).Last then
-         Container.Entries (Item.Index).Last := Previous;
+      if Item.Next /= null and then Item.Next.Index /= Item.Index then
+         Container.Entries (Item.Next.Index).Previous := Previous;
       end if;
       Length := Length - 1;
    end Remove;
@@ -425,7 +409,7 @@ package body Ada.Containers.Hash_Tables is
             From_Right : Node_Access := null;
          begin
             if In_Only_Right then
-               I := First (Source);
+               I := Source.First;
                while I /= null loop
                   if Find_Node (Target, I, Equivalent) = null then
                      Copy (New_Node, I);
@@ -436,7 +420,7 @@ package body Ada.Containers.Hash_Tables is
                   I := I.Next;
                end loop;
             end if;
-            I := First (Target);
+            I := Target.First;
             while I /= null loop
                Next := I.Next;
                if Find_Node (Source, I, Equivalent) /= null then
@@ -501,7 +485,7 @@ package body Ada.Containers.Hash_Tables is
             I : Node_Access;
             New_Node : Node_Access;
          begin
-            I := First (Left);
+            I := Left.First;
             while I /= null loop
                if Find_Node (Right, I, Equivalent) /= null then
                   if In_Both then
@@ -517,7 +501,7 @@ package body Ada.Containers.Hash_Tables is
                I := I.Next;
             end loop;
             if In_Only_Right then
-               I := First (Right);
+               I := Right.First;
                while I /= null loop
                   if Find_Node (Left, I, Equivalent) = null then
                      Copy (New_Node, I);

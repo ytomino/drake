@@ -178,8 +178,7 @@ package body Ada.Containers.Indefinite_Holders is
       return Constant_Reference_Type is
    begin
       Unique (Container'Unrestricted_Access.all, False);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
+      return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Constant_Reference;
 
    function Reference (
@@ -187,8 +186,7 @@ package body Ada.Containers.Indefinite_Holders is
       return Reference_Type is
    begin
       Unique (Container, True);
-      return (Element =>
-         Downcast (Container.Super.Data).Element.all'Access);
+      return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Reference;
 
    procedure Assign (Target : in out Holder; Source : Holder) is
@@ -201,13 +199,15 @@ package body Ada.Containers.Indefinite_Holders is
 
    function Copy (Source : Holder) return Holder is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : Holder do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out Holder; Source : in out Holder) is

@@ -10,6 +10,7 @@ with System.Native_Tasks.Yield;
 with System.Runtime_Context;
 with System.Shared_Locking;
 with System.Standard_Allocators;
+with System.Storage_Barriers;
 with System.Synchronous_Control;
 with System.Synchronous_Objects.Abortable.Delays;
 with System.Termination;
@@ -22,29 +23,40 @@ package body System.Tasks is
 
    type Word is mod 2 ** Standard'Word_Size;
 
-   function sync_bool_compare_and_swap (
-      A1 : not null access Activation_State;
-      A2 : Activation_State;
-      A3 : Activation_State)
-      return Boolean
-      with Import,
-         Convention => Intrinsic,
-         External_Name => "__sync_bool_compare_and_swap_1";
-   function sync_bool_compare_and_swap (
-      A1 : not null access Termination_State;
-      A2 : Termination_State;
-      A3 : Termination_State)
-      return Boolean
-      with Import,
-         Convention => Intrinsic,
-         External_Name => "__sync_bool_compare_and_swap_1";
+   --  Use sequentially consistent model.
+   Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
 
-   function sync_add_and_fetch (
-      A1 : not null access Counter;
-      A2 : Counter)
+   function atomic_add_fetch (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := Order)
       return Counter
       with Import,
-         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
+         Convention => Intrinsic, External_Name => "__atomic_add_fetch_4";
+
+   function atomic_compare_exchange (
+      ptr : not null access Activation_State;
+      expected : not null access Activation_State;
+      desired : Activation_State;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_1";
+
+   function atomic_compare_exchange (
+      ptr : not null access Termination_State;
+      expected : not null access Termination_State;
+      desired : Termination_State;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
+      return Boolean
+      with Import,
+         Convention => Intrinsic,
+         External_Name => "__atomic_compare_exchange_1";
 
    --  shared lock
 
@@ -482,10 +494,14 @@ package body System.Tasks is
       --  cancel calling queue
       Cancel_Calls;
       --  deactivate and set 'Terminated to False
-      No_Detached := sync_bool_compare_and_swap (
-         T.Termination_State'Access,
-         TS_Active,
-         TS_Terminated);
+      declare
+         Expected : aliased Termination_State := TS_Active;
+      begin
+         No_Detached := atomic_compare_exchange (
+            T.Termination_State'Access,
+            Expected'Access,
+            TS_Terminated);
+      end;
       --  cleanup native stack info
       Native_Tasks.Finalize (T.Stack_Attribute);
       --  free
@@ -535,11 +551,12 @@ package body System.Tasks is
    procedure Execute (T : Task_Id; Error : out Execution_Error) is
       function To_Parameter is
          new Ada.Unchecked_Conversion (Address, Native_Tasks.Parameter_Type);
+      Expected : aliased Activation_State := AS_Suspended;
       Creation_Error : Boolean;
    begin
-      if not sync_bool_compare_and_swap (
+      if not atomic_compare_exchange (
          T.Activation_State'Access,
-         AS_Suspended,
+         Expected'Access,
          AS_Created)
       then
          Error := Done;
@@ -671,7 +688,7 @@ package body System.Tasks is
          Unchecked_Free (Item);
       end Free;
    begin
-      if sync_add_and_fetch (C.Release_Count'Access, 1) > C.Task_Count then
+      if atomic_add_fetch (C.Release_Count'Access, 1) > C.Task_Count then
          Free (C);
       end if;
    end Release;
@@ -973,34 +990,38 @@ package body System.Tasks is
    begin
       if T /= null then
          pragma Assert (T.Kind = Sub);
-         if sync_bool_compare_and_swap (
-            T.Termination_State'Access,
-            TS_Active,
-            TS_Detached)
-         then
-            if T.Master_Of_Parent /= null then
-               Synchronous_Objects.Enter (T.Master_Of_Parent.Mutex);
-               T.Auto_Detach := True;
-               Synchronous_Objects.Leave (T.Master_Of_Parent.Mutex);
+         declare
+            Expected : aliased Termination_State := TS_Active;
+         begin
+            if atomic_compare_exchange (
+               T.Termination_State'Access,
+               Expected'Access,
+               TS_Detached)
+            then
+               if T.Master_Of_Parent /= null then
+                  Synchronous_Objects.Enter (T.Master_Of_Parent.Mutex);
+                  T.Auto_Detach := True;
+                  Synchronous_Objects.Leave (T.Master_Of_Parent.Mutex);
+               else
+                  declare
+                     Orig_T : constant Task_Id := T;
+                     Error : Boolean;
+                  begin
+                     T := null;
+                     Native_Tasks.Detach (Orig_T.Handle, Error);
+                     if Error then
+                        Raise_Exception (Tasking_Error'Identity);
+                     end if;
+                  end;
+               end if;
             else
                declare
-                  Orig_T : constant Task_Id := T;
-                  Error : Boolean;
+                  Aborted : Boolean; -- ignored
                begin
-                  T := null;
-                  Native_Tasks.Detach (Orig_T.Handle, Error);
-                  if Error then
-                     Raise_Exception (Tasking_Error'Identity);
-                  end if;
+                  Wait (T, Aborted => Aborted); -- release by caller
                end;
             end if;
-         else
-            declare
-               Aborted : Boolean; -- ignored
-            begin
-               Wait (T, Aborted => Aborted); -- release by caller
-            end;
-         end if;
+         end;
       end if;
    end Detach;
 

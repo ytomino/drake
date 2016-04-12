@@ -55,7 +55,7 @@ package body Ada.Streams.Block_Transmission is
    begin
       Index_Type'Read (Stream, First);
       Index_Type'Read (Stream, Last);
-      if First < Index_Type'First or else Last < Index_Type'Pred (First) then
+      if First < Index_Type'First or else Last > Index_Type'Last then
          Raise_Exception (Data_Error'Identity);
       end if;
       return Result : Array_Type (First .. Last) do
@@ -78,19 +78,22 @@ package body Ada.Streams.Block_Transmission is
          Stream : not null access Root_Stream_Type'Class;
          Item : out Stream_Element_Array)
       is
-         Previous_Last : Stream_Element_Offset;
-         Last : Stream_Element_Offset := Item'First - 1;
+         I : Stream_Element_Offset := Item'First;
       begin
-         while Last < Item'Last loop
-            Previous_Last := Last;
-            Streams.Read (
-               Stream.all,
-               Item (Previous_Last + 1 .. Item'Last),
-               Last);
-            if Last <= Previous_Last then
-               Raise_Exception (End_Error'Identity);
-            end if;
-         end loop;
+         if I <= Item'Last then
+            loop
+               declare
+                  Last : Stream_Element_Offset;
+               begin
+                  Streams.Read (Stream.all, Item (I .. Item'Last), Last);
+                  exit when Last >= Item'Last;
+                  if Last < I then
+                     Raise_Exception (End_Error'Identity);
+                  end if;
+                  I := Last + 1;
+               end;
+            end loop;
+         end if;
       end Read;
 
       procedure Write (

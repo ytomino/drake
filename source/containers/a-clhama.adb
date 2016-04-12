@@ -396,6 +396,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
 
    procedure Move (Target : in out Map; Source : in out Map) is
    begin
@@ -522,13 +524,15 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Delete;
 
    procedure Delete (Container : in out Map; Position : in out Cursor) is
+      Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
 --  diff
       Hash_Tables.Remove (
          Container.Table,
          Container.Length,
-         Upcast (Position));
-      Free (Position);
+         Position_2);
+      Free_Node (Position_2);
+      Position := null;
    end Delete;
 
    function First (Container : Map) return Cursor is
@@ -578,6 +582,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean is
    begin
       return Equivalent_Keys (Left.Key.all, Right);
+   end Equivalent_Keys;
+
+   function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Equivalent_Keys (Left, Right.Key.all);
    end Equivalent_Keys;
 
    procedure Iterate (

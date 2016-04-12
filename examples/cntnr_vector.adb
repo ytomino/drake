@@ -72,8 +72,11 @@ procedure cntnr_Vector is
 		use type Ada.Containers.Count_Type;
 		use type Vectors.Vector;
 		X : aliased Vectors.Vector := 'A' & 'B' & 'C' & 'D';
+		Position : Vectors.Cursor;
 	begin
-		Vectors.Delete (X, 2, 2);
+		Position := Vectors.To_Cursor (X, 2);
+		Vectors.Delete (X, Position, 2);
+		pragma Assert (Position = Vectors.No_Element);
 		pragma Assert (X.Length = 2);
 		pragma Assert (X.Element (X.First) = 'A');
 		pragma Assert (X.Element (X.Last) = 'D');
@@ -90,6 +93,7 @@ procedure cntnr_Vector is
 		X : aliased IVectors.Vector := 'A' & 'B' & 'C';
 		Y : aliased IVectors.Vector;
 		Z : aliased IVectors.Vector;
+		Position : IVectors.Cursor;
 	begin
 		pragma Assert (X.Length = 3);
 		pragma Assert (X.Element (X.Last) = 'C');
@@ -104,7 +108,9 @@ procedure cntnr_Vector is
 		pragma Assert (X.Constant_Reference (1).Element /=
 			Z.Constant_Reference (1).Element);
 		X := 'A' & 'B' & 'C' & 'D';
-		IVectors.Delete (X, 2, 2);
+		Position := IVectors.To_Cursor (X, 2);
+		IVectors.Delete (X, Position, 2);
+		pragma Assert (Position = IVectors.No_Element);
 		pragma Assert (X.Length = 2);
 		pragma Assert (X.Element (X.First) = 'A');
 		pragma Assert (X.Element (X.Last) = 'D');

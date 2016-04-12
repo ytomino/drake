@@ -6,24 +6,24 @@ package Ada.Streams.Block_Transmission is
    pragma Pure;
 
    generic
-      type Element_Type is (<>);
       type Index_Type is (<>);
+      type Element_Type is (<>);
       type Array_Type is array (Index_Type range <>) of Element_Type;
    procedure Read (
       Stream : not null access Root_Stream_Type'Class;
       Item : out Array_Type);
 
    generic
-      type Element_Type is (<>);
       type Index_Type is (<>);
+      type Element_Type is (<>);
       type Array_Type is array (Index_Type range <>) of Element_Type;
    procedure Write (
       Stream : not null access Root_Stream_Type'Class;
       Item : Array_Type);
 
    generic
-      type Element_Type is (<>);
       type Index_Type is (<>);
+      type Element_Type is (<>);
       type Array_Type is array (Index_Type range <>) of Element_Type;
       with procedure Read (
          Stream : not null access Root_Stream_Type'Class;
@@ -33,8 +33,8 @@ package Ada.Streams.Block_Transmission is
       return Array_Type;
 
    generic
-      type Element_Type is (<>);
       type Index_Type is (<>);
+      type Element_Type is (<>);
       type Array_Type is array (Index_Type range <>) of Element_Type;
       with procedure Write (
          Stream : not null access Root_Stream_Type'Class;

@@ -14,9 +14,7 @@ package body System.Native_Text_IO is
    use type C.winnt.WCHAR;
 
    package LPSTR_Conv is
-      new Address_To_Named_Access_Conversions (
-         C.winnt.CCHAR,
-         C.winnt.LPSTR);
+      new Address_To_Named_Access_Conversions (C.winnt.CCHAR, C.winnt.LPSTR);
 
    procedure Read_Buffer_Trailing_From_Terminal (
       Handle : Handle_Type;
@@ -52,8 +50,7 @@ package body System.Native_Text_IO is
                lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
                nNumberOfCharsToRead => 1,
                lpNumberOfCharsRead => Read_Size'Access,
-               lpReserved =>
-                  C.windef.LPVOID (Null_Address)) /= 0
+               lpReserved => C.windef.LPVOID (Null_Address)) /= 0
             and then Read_Size > 0
          then
             W_Buffer_Length := W_Buffer_Length + Natural (Read_Size);
@@ -120,11 +117,7 @@ package body System.Native_Text_IO is
       Rect.Top := 0;
       Rect.Right := Info.dwMaximumWindowSize.X - 1;
       Rect.Bottom := Info.dwMaximumWindowSize.Y - 1;
-      if C.wincon.SetConsoleWindowInfo (
-         ConsoleOutput,
-         1,
-         Rect'Access) = 0
-      then
+      if C.wincon.SetConsoleWindowInfo (ConsoleOutput, 1, Rect'Access) = 0 then
          Raise_Exception (Device_Error'Identity);
       end if;
    end SetConsoleScreenBufferSize_With_Adjusting;
@@ -143,9 +136,10 @@ package body System.Native_Text_IO is
       W_Buffer_Length : C.signed_int;
       DBCS_Seq : Natural;
    begin
-      DBCS_Seq := 1 + Boolean'Pos (
-         C.winnls.IsDBCSLeadByte (
-            C.windef.BYTE'(Character'Pos (Buffer (1)))) /= 0);
+      DBCS_Seq := 1
+         + Boolean'Pos (
+            C.winnls.IsDBCSLeadByte (
+               C.windef.BYTE'(Character'Pos (Buffer (1)))) /= 0);
       if Last = DBCS_Seq then
          W_Buffer_Length := C.winnls.MultiByteToWideChar (
             C.winnls.CP_ACP,
@@ -209,11 +203,11 @@ package body System.Native_Text_IO is
       Read_Size : aliased C.windef.DWORD;
    begin
       if C.wincon.ReadConsole (
-            hConsoleInput => Handle,
-            lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
-            nNumberOfCharsToRead => 1,
-            lpNumberOfCharsRead => Read_Size'Access,
-            lpReserved => C.windef.LPVOID (Null_Address)) = 0
+         hConsoleInput => Handle,
+         lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
+         nNumberOfCharsToRead => 1,
+         lpNumberOfCharsRead => Read_Size'Access,
+         lpReserved => C.windef.LPVOID (Null_Address)) = 0
       then
          Out_Length := -1; -- error
       elsif Read_Size = 0 then
@@ -248,16 +242,16 @@ package body System.Native_Text_IO is
       elsif Event_Count = 0 then
          Out_Length := 0; -- no data
       elsif C.wincon.ReadConsoleInput (
-            hConsoleInput => Handle,
-            lpBuffer => Event'Access,
-            nLength => 1,
-            lpNumberOfEventsRead => Read_Size'Access) = 0
+         hConsoleInput => Handle,
+         lpBuffer => Event'Access,
+         nLength => 1,
+         lpNumberOfEventsRead => Read_Size'Access) = 0
       then
          Out_Length := -1; -- error
       elsif not (
-            Read_Size > 0
-            and then Event.EventType = C.wincon.KEY_EVENT
-            and then Event.Event.KeyEvent.bKeyDown /= 0)
+         Read_Size > 0
+         and then Event.EventType = C.wincon.KEY_EVENT
+         and then Event.Event.KeyEvent.bKeyDown /= 0)
       then
          Out_Length := 0; -- no data
       else
@@ -404,10 +398,7 @@ package body System.Native_Text_IO is
             Raise_Exception (Device_Error'Identity);
          end if;
       end;
-      if C.wincon.SetConsoleCursorPosition (
-         Handle,
-         (X => 0, Y => 0)) = 0
-      then
+      if C.wincon.SetConsoleCursorPosition (Handle, (X => 0, Y => 0)) = 0 then
          Raise_Exception (Device_Error'Identity);
       end if;
    end Terminal_Clear;
@@ -425,9 +416,10 @@ package body System.Native_Text_IO is
          Saved_Settings'Access) = 0
          or else C.wincon.SetConsoleMode (
             Handle,
-            Saved_Settings and not (
-               C.wincon.ENABLE_ECHO_INPUT
-               or C.wincon.ENABLE_LINE_INPUT)) = 0
+            Saved_Settings
+               and not (
+                  C.wincon.ENABLE_ECHO_INPUT
+                  or C.wincon.ENABLE_LINE_INPUT)) = 0
       then
          Raise_Exception (Device_Error'Identity);
       end if;

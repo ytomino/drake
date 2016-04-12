@@ -516,9 +516,7 @@ package body Ada.Directories is
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled.Reference (Directory_Entry).all;
    begin
-      return Compose (
-         NC_Directory_Entry.Path.all,
-         Name);
+      return Compose (NC_Directory_Entry.Path.all, Name);
    end Full_Name;
 
    function Kind (

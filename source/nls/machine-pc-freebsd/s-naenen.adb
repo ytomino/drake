@@ -226,11 +226,11 @@ package body System.Native_Environment_Encoding is
          Status := Success;
       end if;
       Last := Item'First
-         + (Item'Length - Ada.Streams.Stream_Element_Offset (Size))
-         - 1;
+         + (Item'Length - Ada.Streams.Stream_Element_Offset (Size) - 1);
       Out_Last := Out_Item'First
-         + (Out_Item'Length - Ada.Streams.Stream_Element_Offset (Out_Size))
-         - 1;
+         + (Out_Item'Length
+            - Ada.Streams.Stream_Element_Offset (Out_Size)
+            - 1);
    end Convert_No_Check;
 
    procedure Convert_No_Check (
@@ -267,8 +267,9 @@ package body System.Native_Environment_Encoding is
          Status := Finished;
       end if;
       Out_Last := Out_Item'First
-         + (Out_Item'Length - Ada.Streams.Stream_Element_Offset (Out_Size))
-         - 1;
+         + (Out_Item'Length
+            - Ada.Streams.Stream_Element_Offset (Out_Size)
+            - 1);
    end Convert_No_Check;
 
    procedure Convert_No_Check (
@@ -282,18 +283,18 @@ package body System.Native_Environment_Encoding is
    is
       NC_Object : Non_Controlled_Converter
          renames Controlled.Reference (Object).all;
+      Index : Ada.Streams.Stream_Element_Offset := Item'First;
+      Out_Index : Ada.Streams.Stream_Element_Offset := Out_Item'First;
    begin
-      Last := Item'First - 1;
-      Out_Last := Out_Item'First - 1;
       loop
          declare
             Subsequence_Status : Subsequence_Status_Type;
          begin
             Convert_No_Check (
                Object,
-               Item (Last + 1 .. Item'Last),
+               Item (Index .. Item'Last),
                Last,
-               Out_Item (Out_Last + 1 .. Out_Item'Last),
+               Out_Item (Out_Index .. Out_Item'Last),
                Out_Last,
                Finish => Finish,
                Status => Subsequence_Status);
@@ -335,6 +336,8 @@ package body System.Native_Environment_Encoding is
                      end if;
                      Last := New_Last;
                   end;
+                  Index := Last + 1;
+                  Out_Index := Out_Last + 1;
             end case;
          end;
       end loop;
@@ -349,12 +352,12 @@ package body System.Native_Environment_Encoding is
       NC_Object : Non_Controlled_Converter
          renames Controlled.Reference (Object).all;
    begin
-      Out_Last := Out_Item'First - 1;
       Is_Overflow := Out_Item'Length < NC_Object.Substitute_Length;
       if Is_Overflow then
+         Out_Last := Out_Item'First - 1;
          return;
       end if;
-      Out_Last := Out_Last + NC_Object.Substitute_Length;
+      Out_Last := Out_Item'First + (NC_Object.Substitute_Length - 1);
       Out_Item (Out_Item'First .. Out_Last) :=
          NC_Object.Substitute (1 .. NC_Object.Substitute_Length);
    end Put_Substitute;

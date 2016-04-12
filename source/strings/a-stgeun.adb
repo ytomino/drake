@@ -387,8 +387,10 @@ package body Ada.Strings.Generic_Unbounded is
       return Unbounded_String is
    begin
       return Result : Unbounded_String do
-         Reallocate (Result, 0, Left'Length + Right.Length);
-         Append (Result, Left);
+         if Left'Length > 0 then
+            Reallocate (Result, 0, Left'Length + Right.Length);
+            Append (Result, Left);
+         end if;
          Append (Result, Right);
       end return;
    end "&";

@@ -19,7 +19,9 @@ package Ada.Containers.Generic_Arrays is
 
    function Length (Container : Array_Access) return Count_Type;
 
-   procedure Set_Length (Container : in out Array_Access; Length : Count_Type);
+   procedure Set_Length (
+      Container : in out Array_Access;
+      Length : Count_Type);
 
    procedure Clear (Container : in out Array_Access)
       renames Free;
@@ -27,7 +29,9 @@ package Ada.Containers.Generic_Arrays is
    procedure Assign (Target : in out Array_Access; Source : Array_Access);
    procedure Assign (Target : in out Array_Access; Source : New_Array);
 
-   procedure Move (Target : in out Array_Access; Source : in out Array_Access);
+   procedure Move (
+      Target : in out Array_Access;
+      Source : in out Array_Access);
 
    procedure Insert (
       Container : in out Array_Access;

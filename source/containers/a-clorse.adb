@@ -350,6 +350,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
 
    procedure Move (Target : in out Set; Source : in out Set) is
    begin
@@ -775,7 +777,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function "<" (Left, Right : Cursor) return Boolean is
    begin
-      return Left.Element.all < Right.Element.all;
+      return Left /= Right and then Left.Element.all < Right.Element.all;
    end "<";
 
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
@@ -830,7 +832,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
-      if Actual_Last < Actual_First then
+      if Actual_First = No_Element
+         or else Actual_Last = No_Element
+         or else Actual_Last < Actual_First
+      then
          Actual_First := No_Element;
          Actual_Last := No_Element;
       end if;

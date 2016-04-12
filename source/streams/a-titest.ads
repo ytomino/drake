@@ -22,7 +22,6 @@ package Ada.Text_IO.Text_Streams is
       Overwrite : Boolean := True;
       External : IO_Modes.File_External_Spec := IO_Modes.By_Target;
       New_Line : IO_Modes.File_New_Line_Spec := IO_Modes.By_Target);
-   pragma Inline (Open);
 
    function Stream (
       File : File_Type) -- Open_File_Type

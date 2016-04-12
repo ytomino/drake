@@ -80,7 +80,10 @@ package Ada.Containers.Limited_Vectors is
 
    procedure Clear (Container : in out Vector);
 
-   function To_Cursor (Container : Vector; Index : Extended_Index)
+   --  modified
+   function To_Cursor (
+      Container : Vector'Class; -- not primitive
+      Index : Extended_Index)
       return Cursor;
 
    function To_Index (Position : Cursor) return Extended_Index
@@ -114,16 +117,16 @@ package Ada.Containers.Limited_Vectors is
 --    Position : Cursor;
 --    Process : not null access procedure (Element : Element_Type));
 
+--  procedure Update_Element (
+--    Container : in out Vector;
+--    Index : Index_Type;
+--    Process : not null access procedure (Element : in out Element_Type));
+
    --  modified
    procedure Update_Element (
       Container : in out Vector'Class; -- not primitive
-      Index : Index_Type;
+      Position : Cursor;
       Process : not null access procedure (Element : in out Element_Type));
-
---  procedure Update_Element (
---    Container : in out Vector;
---    Position : Cursor;
---    Process : not null access procedure (Element : in out Element_Type));
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is private
@@ -133,25 +136,25 @@ package Ada.Containers.Limited_Vectors is
       Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Index : Index_Type)
-      return Constant_Reference_Type;
-
-   function Reference (
-      Container : aliased in out Vector;
-      Index : Index_Type)
-      return Reference_Type;
-
 --  function Constant_Reference (
---    Container : aliased in Vector;
---    Position : Cursor)
+--    Container : aliased Vector;
+--    Index : Index_Type)
 --    return Constant_Reference_Type;
 
 --  function Reference (
 --    Container : aliased in out Vector;
---    Position : Cursor)
+--    Index : Index_Type)
 --    return Reference_Type;
+
+   function Constant_Reference (
+      Container : aliased Vector;
+      Position : Cursor)
+      return Constant_Reference_Type;
+
+   function Reference (
+      Container : aliased in out Vector;
+      Position : Cursor)
+      return Reference_Type;
 
 --  diff (Assign)
 
@@ -223,8 +226,9 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 
+   --  modified
    procedure Insert_Space (
-      Container : in out Vector;
+      Container : in out Vector'Class; -- not primitive
       Before : Extended_Index;
       Count : Count_Type := 1);
 
@@ -234,15 +238,15 @@ package Ada.Containers.Limited_Vectors is
       Position : out Cursor;
       Count : Count_Type := 1);
 
-   procedure Delete (
-      Container : in out Vector;
-      Index : Extended_Index;
-      Count : Count_Type := 1);
-
 --  procedure Delete (
 --    Container : in out Vector;
---    Position : in out Cursor;
+--    Index : Extended_Index;
 --    Count : Count_Type := 1);
+
+   procedure Delete (
+      Container : in out Vector;
+      Position : in out Cursor;
+      Count : Count_Type := 1);
 
    --  modified
    procedure Delete_First (
@@ -256,11 +260,14 @@ package Ada.Containers.Limited_Vectors is
 
    procedure Reverse_Elements (Container : in out Vector);
 
-   procedure Swap (Container : in out Vector; I, J : Index_Type);
+--  procedure Swap (Container : in out Vector; I, J : Index_Type);
 
---  procedure Swap (Container : in out Vector; I, J : Cursor);
+   procedure Swap (Container : in out Vector; I, J : Cursor);
 
-   function First_Index (Container : Vector) return Index_Type;
+   --  modified
+   function First_Index (Container : Vector'Class) -- not primitive
+      return Index_Type;
+   pragma Inline (First_Index);
 
    function First (Container : Vector) return Cursor;
 
@@ -268,10 +275,12 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 
-   function Last_Index (Container : Vector) return Extended_Index;
+   --  modified
+   function Last_Index (Container : Vector'Class) -- not primitive
+      return Extended_Index;
+   pragma Inline (Last_Index);
 
-   function Last (Container : Vector) return Cursor
-      renames Last_Index;
+   function Last (Container : Vector) return Cursor;
 
 --  diff (Last_Element)
 --
@@ -286,6 +295,7 @@ package Ada.Containers.Limited_Vectors is
 --  procedure Previous (Position : in out Cursor);
 
 --  diff (Find_Index)
+--
 --
 --
 --
@@ -312,6 +322,7 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Reverse_Find)
 --
@@ -330,6 +341,7 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Contains)
+--
 
    --  modified
    procedure Iterate (

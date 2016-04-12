@@ -1,6 +1,7 @@
 with System.Native_Time;
 with System.Tasks;
 package body System.Synchronous_Objects.Abortable is
+   use type Storage_Barriers.Flag;
 
    --  condition variable
 
@@ -120,7 +121,7 @@ package body System.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Enter (Object.Mutex);
-      if Object.Value then
+      if Storage_Barriers.atomic_load (Object.Value'Access) /= 0 then
          Aborted := Tasks.Is_Aborted;
       else
          loop
@@ -134,7 +135,8 @@ package body System.Synchronous_Objects.Abortable is
                   Notified => Notified,
                   Aborted => Aborted);
             end;
-            exit when Object.Value or else Aborted;
+            exit when Storage_Barriers.atomic_load (Object.Value'Access) /= 0
+               or else Aborted;
          end loop;
       end if;
       Leave (Object.Mutex);
@@ -147,7 +149,7 @@ package body System.Synchronous_Objects.Abortable is
       Aborted : out Boolean) is
    begin
       Enter (Object.Mutex);
-      if Object.Value then
+      if Storage_Barriers.atomic_load (Object.Value'Access) /= 0 then
          Value := True;
          Aborted := Tasks.Is_Aborted;
       else

@@ -7,15 +7,7 @@ package body System.Storage_Pools.Subpools is
    pragma Suppress (All_Checks);
    use type Finalization_Masters.Finalization_Master_Ptr;
    use type Finalization_Masters.Finalize_Address_Ptr;
-
-   function sync_bool_compare_and_swap (
-      A1 : not null access Finalization_State;
-      A2 : Finalization_State;
-      A3 : Finalization_State)
-      return Boolean
-      with Import,
-         Convention => Intrinsic,
-         External_Name => "__sync_bool_compare_and_swap_1";
+   use type Storage_Barriers.Flag;
 
    package FM_Node_Ptr_Conv is
       new Address_To_Named_Access_Conversions (
@@ -162,7 +154,8 @@ package body System.Storage_Pools.Subpools is
       To : in out Root_Storage_Pool_With_Subpools'Class) is
    begin
       if Subpool.Owner /= null
-         or else To.Finalization_State = FS_Finalization_Started
+         or else Storage_Barriers.atomic_load (
+            To.Finalization_Started'Access) /= 0
       then
          raise Program_Error;
       else
@@ -216,20 +209,17 @@ package body System.Storage_Pools.Subpools is
    end Unchecked_Deallocate_Subpool;
 
    overriding procedure Initialize (
-      Object : in out Root_Storage_Pool_With_Subpools)
-   is
-      pragma Unreferenced (Object);
+      Object : in out Root_Storage_Pool_With_Subpools) is
    begin
+      Storage_Barriers.atomic_clear (Object.Finalization_Started'Access);
       Setup_Allocation_Hook := Setup_Allocation_With_Subpools'Access;
    end Initialize;
 
    overriding procedure Finalize (
       Object : in out Root_Storage_Pool_With_Subpools) is
    begin
-      if sync_bool_compare_and_swap (
-         Object.Finalization_State'Access,
-         FS_Active,
-         FS_Finalization_Started)
+      if not Storage_Barriers.atomic_test_and_set (
+         Object.Finalization_Started'Access)
       then
          declare
             X : Ada.Exceptions.Exception_Occurrence;

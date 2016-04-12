@@ -205,7 +205,7 @@ package body System.Formatting.Literals is
          Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
             Error => Error);
          if not Error then
-            if Unsigned_Result <= Unsigned'Mod (-Integer'First) then
+            if Unsigned_Result <= -Unsigned'Mod (Integer'First) then
                Result := -Integer (Unsigned_Result);
             else
                Error := True;
@@ -243,7 +243,7 @@ package body System.Formatting.Literals is
             Error => Error);
          if not Error then
             if Unsigned_Result <=
-               Longest_Unsigned'Mod (-Long_Long_Integer'First)
+               -Longest_Unsigned'Mod (Long_Long_Integer'First)
             then
                Result := -Long_Long_Integer (Unsigned_Result);
             else

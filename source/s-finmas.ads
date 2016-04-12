@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 with Ada.Finalization;
 with System.Storage_Elements;
 with System.Storage_Pools;
+private with System.Storage_Barriers;
 package System.Finalization_Masters is
    pragma Preelaborate;
 
@@ -15,6 +16,7 @@ package System.Finalization_Masters is
    Header_Offset : constant Storage_Elements.Storage_Offset;
 
    subtype Any_Storage_Pool_Ptr is Storage_Pools.Storage_Pool_Access;
+   pragma Suppress (Access_Check, Any_Storage_Pool_Ptr);
 
    type Finalization_Master is
       limited new Ada.Finalization.Limited_Controlled with private;
@@ -74,19 +76,12 @@ private
    end record;
    pragma Suppress_Initialization (FM_List);
 
-   type Finalization_State is range 0 .. 1;
-   for Finalization_State'Size use 8;
-   pragma Atomic (Finalization_State);
-   FS_Active : constant Finalization_State := 0;
-   FS_Finalization_Started : constant Finalization_State := 1;
-
    type Finalization_Master is
       limited new Ada.Finalization.Limited_Controlled with
    record
       List : aliased FM_List;
       Base_Pool : Any_Storage_Pool_Ptr := null;
-      Finalization_State : aliased Finalization_Masters.Finalization_State :=
-         FS_Active;
+      Finalization_Started : aliased Storage_Barriers.Flag;
    end record;
 
    overriding procedure Initialize (Object : in out Finalization_Master);

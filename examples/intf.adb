@@ -23,16 +23,6 @@ begin
 		U := strtoull ("100" & ASCII.NUL, null, 10);
 		pragma Assert (U = 100);
 	end;
-	-- Interfaces
-	declare
-		use type Interfaces.Integer_32;
-		I : aliased Interfaces.Integer_32 := 10;
-	begin
-		pragma Assert (Interfaces.sync_sub_and_fetch (I'Access, 1) = 9);
-		Interfaces.sync_add_and_fetch (I'Access, 1);
-		pragma Assert (Interfaces.sync_bool_compare_and_swap (I'Access, 10, 11));
-		pragma Assert (not Interfaces.sync_bool_compare_and_swap (I'Access, 12, 13));
-	end;
 	-- Interfaces.C
 	declare
 		use type Interfaces.C.size_t;

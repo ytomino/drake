@@ -4,6 +4,7 @@ with System.Native_Time;
 with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
+   use type Storage_Barriers.Flag;
    use type C.signed_int;
    use type C.signed_long;
    use type C.pthread.pthread_cond_t;
@@ -315,7 +316,7 @@ package body System.Synchronous_Objects is
    begin
       Initialize (Object.Mutex);
       Initialize (Object.Condition_Variable);
-      Object.Value := False;
+      Storage_Barriers.atomic_clear (Object.Value'Access);
    end Initialize;
 
    procedure Finalize (Object : in out Event) is
@@ -326,13 +327,13 @@ package body System.Synchronous_Objects is
 
    function Get (Object : Event) return Boolean is
    begin
-      return Object.Value; -- atomic, is it ok?
+      return Storage_Barriers.atomic_load (Object.Value'Access) /= 0;
    end Get;
 
    procedure Set (Object : in out Event) is
    begin
       Enter (Object.Mutex);
-      Object.Value := True;
+      Storage_Barriers.atomic_store (Object.Value'Access, 1);
       Notify_All (Object.Condition_Variable);
       Leave (Object.Mutex);
    end Set;
@@ -340,21 +341,16 @@ package body System.Synchronous_Objects is
    procedure Reset (Object : in out Event) is
    begin
       Enter (Object.Mutex);
-      Object.Value := False;
+      Storage_Barriers.atomic_store (Object.Value'Access, 0);
       Leave (Object.Mutex);
    end Reset;
 
    procedure Wait (Object : in out Event) is
    begin
       Enter (Object.Mutex);
-      if not Object.Value then
-         loop
-            Wait (
-               Object.Condition_Variable,
-               Object.Mutex);
-            exit when Object.Value;
-         end loop;
-      end if;
+      while Storage_Barriers.atomic_load (Object.Value'Access) = 0 loop
+         Wait (Object.Condition_Variable, Object.Mutex);
+      end loop;
       Leave (Object.Mutex);
    end Wait;
 
@@ -364,7 +360,7 @@ package body System.Synchronous_Objects is
       Value : out Boolean) is
    begin
       Enter (Object.Mutex);
-      if Object.Value then
+      if Storage_Barriers.atomic_load (Object.Value'Access) /= 0 then
          Value := True;
       else
          Wait (

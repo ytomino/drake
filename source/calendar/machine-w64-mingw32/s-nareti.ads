@@ -5,7 +5,10 @@ package System.Native_Real_Time is
 
    subtype Native_Time is C.winnt.LARGE_INTEGER;
 
-   function To_Duration (D : Native_Time) return Duration;
+   function To_Native_Time (T : Duration) return Native_Time;
+   function To_Duration (T : Native_Time) return Duration;
+
+   pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Duration);
 
    function Clock return Native_Time;
@@ -20,10 +23,5 @@ package System.Native_Real_Time is
    --  for delay until
 
    procedure Delay_Until (T : Native_Time); -- no hook for Windows
-
-   generic
-      type Ada_Time is new Duration;
-   procedure Generic_Delay_Until (T : Ada_Time);
-   pragma Inline (Generic_Delay_Until);
 
 end System.Native_Real_Time;

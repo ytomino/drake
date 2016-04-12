@@ -62,7 +62,9 @@ package System.Tasks is
    pragma Discard_Names (Free_Mode);
 
    function Preferred_Free_Mode (T : not null Task_Id) return Free_Mode;
-   procedure Set_Preferred_Free_Mode (T : not null Task_Id; Mode : Free_Mode);
+   procedure Set_Preferred_Free_Mode (
+      T : not null Task_Id;
+      Mode : Free_Mode);
 
    procedure Get_Stack (
       T : not null Task_Id;
@@ -235,9 +237,7 @@ private
       Attributes_Length : Natural;
       --  activation / completion
       Activation_State : aliased Tasks.Activation_State;
-      pragma Atomic (Activation_State);
       Termination_State : aliased Tasks.Termination_State;
-      pragma Atomic (Termination_State);
       Master_Level : Tasks.Master_Level; -- level of self
       Master_Top : Master_Access; -- stack
       --  for sub task

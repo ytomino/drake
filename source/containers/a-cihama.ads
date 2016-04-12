@@ -156,7 +156,8 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    --  modified
    function Element (
       Container : Map'Class; -- not primitive
-      Key : Key_Type) return Element_Type;
+      Key : Key_Type)
+      return Element_Type;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
@@ -164,7 +165,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
 
    function Equivalent_Keys (Left : Cursor; Right : Key_Type) return Boolean;
 
---  function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean;
+   function Equivalent_Keys (Left : Key_Type; Right : Cursor) return Boolean;
 
    --  modified
    procedure Iterate (

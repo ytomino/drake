@@ -334,26 +334,38 @@ package Interfaces.C is
    function Length (Item : char16_array) return size_t;
    pragma Inline (Length); -- renamed
 
-   function To_C (Item : Wide_String; Append_Nul : Boolean := True)
+   --  modified
+   function To_C (
+      Item : Wide_String;
+      Append_Nul : Boolean := True;
+      Substitute : char16_array := "?") -- additional, and unreferenced
       return char16_array;
    pragma Inline (To_C);
 
-   function To_Ada (Item : char16_array; Trim_Nul : Boolean := True)
+   --  modified
+   function To_Ada (
+      Item : char16_array;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_String := "?") -- additional, and unreferenced
       return Wide_String;
    pragma Inline (To_Ada);
 
+   --  modified
    procedure To_C (
       Item : Wide_String;
       Target : out char16_array;
       Count : out size_t;
-      Append_Nul : Boolean := True);
+      Append_Nul : Boolean := True;
+      Substitute : char16_array := "?"); -- additional, and unreferenced
    pragma Inline (To_C);
 
+   --  modified
    procedure To_Ada (
       Item : char16_array;
       Target : out Wide_String;
       Count : out Natural;
-      Trim_Nul : Boolean := True);
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_String := "?"); -- additional, and unreferenced
    pragma Inline (To_Ada);
 
    type char32_t is
@@ -378,26 +390,38 @@ package Interfaces.C is
    function Length (Item : char32_array) return size_t;
    pragma Inline (Length); -- renamed
 
-   function To_C (Item : Wide_Wide_String; Append_Nul : Boolean := True)
+   --  modified
+   function To_C (
+      Item : Wide_Wide_String;
+      Append_Nul : Boolean := True;
+      Substitute : char32_array := "?") -- additional, and unreferenced
       return char32_array;
    pragma Inline (To_C);
 
-   function To_Ada (Item : char32_array; Trim_Nul : Boolean := True)
+   --  modified
+   function To_Ada (
+      Item : char32_array;
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_String := "?") -- additional, and unreferenced
       return Wide_Wide_String;
    pragma Inline (To_Ada);
 
+   --  modified
    procedure To_C (
       Item : Wide_Wide_String;
       Target : out char32_array;
       Count : out size_t;
-      Append_Nul : Boolean := True);
+      Append_Nul : Boolean := True;
+      Substitute : char32_array := "?"); -- additional, and unreferenced
    pragma Inline (To_C);
 
+   --  modified
    procedure To_Ada (
       Item : char32_array;
       Target : out Wide_Wide_String;
       Count : out Natural;
-      Trim_Nul : Boolean := True);
+      Trim_Nul : Boolean := True;
+      Substitute : Wide_Wide_String := "?"); -- additional, and unreferenced
    pragma Inline (To_Ada);
 
    Terminator_Error : exception;

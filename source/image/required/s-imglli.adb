@@ -1,6 +1,7 @@
 with System.Formatting;
 with System.Unsigned_Types;
 package body System.Img_LLI is
+   use type Unsigned_Types.Long_Long_Unsigned;
 
    procedure Image_Long_Long_Integer (
       V : Long_Long_Integer;
@@ -13,7 +14,7 @@ package body System.Img_LLI is
       pragma Assert (S'Length >= 1);
       if V < 0 then
          S (S'First) := '-';
-         X := Unsigned_Types.Long_Long_Unsigned'Mod (-V);
+         X := -Unsigned_Types.Long_Long_Unsigned'Mod (V);
       else
          S (S'First) := ' ';
          X := Unsigned_Types.Long_Long_Unsigned (V);

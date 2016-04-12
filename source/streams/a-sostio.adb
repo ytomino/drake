@@ -1,4 +1,6 @@
+with Ada.Exception_Identification.From_Here;
 package body Ada.Streams.Overlaps_Storage_IO is
+   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    function Create (
@@ -8,6 +10,11 @@ package body Ada.Streams.Overlaps_Storage_IO is
    begin
       return (Address, Size, 1);
    end Create;
+
+   procedure Reset (Object : in out Overlay) is
+   begin
+      Object.Index := 1;
+   end Reset;
 
    function Stream (Object : Overlay)
       return not null access Root_Stream_Type'Class is
@@ -20,19 +27,27 @@ package body Ada.Streams.Overlaps_Storage_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
-      Rest : constant System.Storage_Elements.Storage_Count :=
-         Object.Size - Object.Index + 1;
       Size : System.Storage_Elements.Storage_Count := Item'Length;
    begin
-      if Size > Rest then
-         Size := Rest;
+      if Size > 0 then
+         declare
+            Rest : constant System.Storage_Elements.Storage_Count :=
+               Object.Size - Object.Index + 1;
+         begin
+            if Size > Rest then
+               if Rest = 0 then
+                  Raise_Exception (End_Error'Identity);
+               end if;
+               Size := Rest;
+            end if;
+         end;
       end if;
-      Last := Item'First + Stream_Element_Count (Size) - 1;
+      Last := Item'First + (Stream_Element_Count (Size) - 1);
       declare
          Source : Stream_Element_Array (1 .. Stream_Element_Offset (Size));
          for Source'Address use Object.Address + Object.Index - 1;
       begin
-         Item := Source;
+         Item (Item'First .. Last) := Source;
       end;
       Object.Index := Object.Index + Size;
    end Read;
@@ -46,7 +61,7 @@ package body Ada.Streams.Overlaps_Storage_IO is
          Object.Index + Size;
    begin
       if Next_Index > Object.Size + 1 then
-         raise Constraint_Error;
+         raise Storage_Error;
       end if;
       declare
          Target : Stream_Element_Array (1 .. Stream_Element_Offset (Size));

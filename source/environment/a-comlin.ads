@@ -41,7 +41,7 @@ private
       renames System.Native_Command_Line.Argument_Count;
 
    type Iterator is new Iterator_Interfaces.Reversible_Iterator with record
-      First : Positive;
+      First : Natural; -- 0 means an empty range
       Last : Natural;
    end record;
 

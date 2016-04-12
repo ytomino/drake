@@ -20,6 +20,7 @@ package Ada.Streams.Stream_IO.Sockets is
 --       Predicate_Failure => raise Status_Error;
 
    function Is_Assigned (Peer : End_Point) return Boolean;
+   pragma Inline (Is_Assigned);
 
    function Resolve (Host_Name : String; Service : String)
       return End_Point;
@@ -43,6 +44,7 @@ package Ada.Streams.Stream_IO.Sockets is
 --       Predicate_Failure => raise Status_Error;
 
    function Is_Open (Server : Listener) return Boolean;
+   pragma Inline (Is_Open);
 
    function Listen (Port : Port_Number) return Listener;
    procedure Close (Server : in out Listener);

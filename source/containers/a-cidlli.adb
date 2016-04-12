@@ -283,13 +283,15 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    function Copy (Source : List) return List is
    begin
-      return (Finalization.Controlled with
-         Super => Copy_On_Write.Copy (
+      return Result : List do
+         Copy_On_Write.Copy (
+            Result.Super'Access,
             Source.Super'Access,
             0, -- Length is unused
             0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
-            Copy => Copy_Data'Access));
+            Copy => Copy_Data'Access);
+      end return;
    end Copy;
 
    procedure Move (Target : in out List; Source : in out List) is
@@ -323,28 +325,38 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
-      Unique (Container, True);
-      for I in 1 .. Count loop
-         declare
+      Position := Before;
+      if Count > 0 then
+         Unique (Container, True);
+         for I in 1 .. Count loop
+            declare
 --  diff
 --  diff
-            X : Cursor;
-         begin
-            Allocate_Node (X, New_Item);
+               New_Node : Cursor;
+            begin
+               Allocate_Node (New_Node, New_Item);
 --  diff
 --  diff
-            Base.Insert (
-               Downcast (Container.Super.Data).First,
-               Downcast (Container.Super.Data).Last,
-               Downcast (Container.Super.Data).Length,
-               Before => Upcast (Before),
-               New_Item => Upcast (X));
-            Position := X;
-         end;
-      end loop;
+               Base.Insert (
+                  Downcast (Container.Super.Data).First,
+                  Downcast (Container.Super.Data).Last,
+                  Downcast (Container.Super.Data).Length,
+                  Before => Upcast (Position),
+                  New_Item => Upcast (New_Node));
+               Position := New_Node;
+            end;
+         end loop;
+      end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -385,24 +397,29 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    procedure Delete (
       Container : in out List;
       Position : in out Cursor;
-      Count : Count_Type := 1)
-   is
-      X : Linked_Lists.Node_Access;
-      Next : Linked_Lists.Node_Access;
+      Count : Count_Type := 1) is
    begin
-      Unique (Container, True);
-      for I in 1 .. Count loop
-         X := Upcast (Position);
-         Next := Position.Super.Next;
-         Base.Remove (
-            Downcast (Container.Super.Data).First,
-            Downcast (Container.Super.Data).Last,
-            Downcast (Container.Super.Data).Length,
-            Position => X,
-            Next => Next);
-         Free_Node (X);
-         Position := Downcast (Next);
-      end loop;
+      if Count > 0 then
+         Unique (Container, True);
+         for I in 1 .. Count loop
+            declare
+               X : Linked_Lists.Node_Access;
+               Next : Linked_Lists.Node_Access;
+            begin
+               X := Upcast (Position);
+               Next := Position.Super.Next;
+               Base.Remove (
+                  Downcast (Container.Super.Data).First,
+                  Downcast (Container.Super.Data).Last,
+                  Downcast (Container.Super.Data).Length,
+                  Position => X,
+                  Next => Next);
+               Free_Node (X);
+               Position := Downcast (Next);
+            end;
+         end loop;
+         Position := No_Element;
+      end if;
    end Delete;
 
    procedure Delete_First (
@@ -707,7 +724,10 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
-      if Actual_Last < Actual_First then
+      if Actual_First = No_Element
+         or else Actual_Last = No_Element
+         or else Actual_Last < Actual_First
+      then
          Actual_First := No_Element;
          Actual_Last := No_Element;
       end if;
@@ -767,7 +787,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          else
             Unique (Container'Unrestricted_Access.all, False);
             return Linked_Lists.Is_Sorted (
-               Downcast (Container.Super.Data).Last, LT'Access);
+               Downcast (Container.Super.Data).Last,
+               LT'Access);
          end if;
       end Is_Sorted;
 

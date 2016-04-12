@@ -28,7 +28,8 @@ package System.Tasking.Stages is
    procedure Complete_Task;
 
    --  required for task by compiler (s-tassta.ads)
-   procedure Activate_Tasks (Chain_Access : not null access Activation_Chain);
+   procedure Activate_Tasks (
+      Chain_Access : not null access Activation_Chain);
 
    --  required for dynamic allocation of task by compiler (s-tassta.ads)
    procedure Expunge_Unactivated_Tasks (Chain : in out Activation_Chain) is

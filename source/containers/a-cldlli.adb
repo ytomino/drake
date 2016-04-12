@@ -291,6 +291,8 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
+--
 
    procedure Move (Target : in out List; Source : in out List) is
    begin
@@ -323,28 +325,38 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
+      Position := Before;
+      if Count > 0 then
 --  diff
-      for I in 1 .. Count loop
-         declare
-            package Holder is
-               new Exceptions.Finally.Scoped_Holder (Cursor, Free);
-            X : aliased Cursor := new Node;
-         begin
-            Holder.Assign (X);
-            X.Element := new Element_Type'(New_Item.all);
-            Holder.Clear;
-            Base.Insert (
-               Container.First,
-               Container.Last,
-               Container.Length,
-               Before => Upcast (Before),
-               New_Item => Upcast (X));
-            Position := X;
-         end;
-      end loop;
+         for I in 1 .. Count loop
+            declare
+               package Holder is
+                  new Exceptions.Finally.Scoped_Holder (Cursor, Free);
+               New_Node : aliased Cursor := new Node;
+            begin
+               Holder.Assign (New_Node);
+               New_Node.Element := new Element_Type'(New_Item.all);
+               Holder.Clear;
+               Base.Insert (
+                  Container.First,
+                  Container.Last,
+                  Container.Length,
+                  Before => Upcast (Position),
+                  New_Item => Upcast (New_Node));
+               Position := New_Node;
+            end;
+         end loop;
+      end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -385,24 +397,29 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Delete (
       Container : in out List;
       Position : in out Cursor;
-      Count : Count_Type := 1)
-   is
-      X : Linked_Lists.Node_Access;
-      Next : Linked_Lists.Node_Access;
+      Count : Count_Type := 1) is
    begin
+      if Count > 0 then
 --  diff
-      for I in 1 .. Count loop
-         X := Upcast (Position);
-         Next := Position.Super.Next;
-         Base.Remove (
-            Container.First,
-            Container.Last,
-            Container.Length,
-            Position => X,
-            Next => Next);
-         Free_Node (X);
-         Position := Downcast (Next);
-      end loop;
+         for I in 1 .. Count loop
+            declare
+               X : Linked_Lists.Node_Access;
+               Next : Linked_Lists.Node_Access;
+            begin
+               X := Upcast (Position);
+               Next := Position.Super.Next;
+               Base.Remove (
+                  Container.First,
+                  Container.Last,
+                  Container.Length,
+                  Position => X,
+                  Next => Next);
+               Free_Node (X);
+               Position := Downcast (Next);
+            end;
+         end loop;
+         Position := No_Element;
+      end if;
    end Delete;
 
    procedure Delete_First (
@@ -707,7 +724,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
    begin
-      if Actual_Last < Actual_First then
+      if Actual_First = No_Element
+         or else Actual_Last = No_Element
+         or else Actual_Last < Actual_First
+      then
          Actual_First := No_Element;
          Actual_Last := No_Element;
       end if;
@@ -762,10 +782,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 
       function Is_Sorted (Container : List) return Boolean is
       begin
+--  diff
+--  diff
+--  diff
+--  diff
          return Linked_Lists.Is_Sorted (Container.Last, LT'Access);
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff

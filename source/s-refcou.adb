@@ -1,73 +1,91 @@
+with System.Storage_Barriers;
 package body System.Reference_Counting is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
-   procedure sync_add_and_fetch_32 (
-      A1 : not null access Counter;
-      A2 : Counter)
-      with Import,
-         Convention => Intrinsic, External_Name => "__sync_add_and_fetch_4";
+   function atomic_load (
+      ptr : not null access constant Counter;
+      memorder : Integer := Storage_Barriers.ATOMIC_ACQUIRE)
+      return Counter
+      with Import, Convention => Intrinsic, External_Name => "__atomic_load_4";
 
-   function sync_sub_and_fetch_32 (
-      A1 : not null access Counter;
-      A2 : Counter)
+   procedure atomic_add_fetch (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := Storage_Barriers.ATOMIC_ACQ_REL)
+      with Import,
+         Convention => Intrinsic, External_Name => "__atomic_add_fetch_4";
+
+   function atomic_sub_fetch (
+      ptr : not null access Counter;
+      val : Counter;
+      memorder : Integer := Storage_Barriers.ATOMIC_ACQ_REL)
       return Counter
       with Import,
-         Convention => Intrinsic, External_Name => "__sync_sub_and_fetch_4";
+         Convention => Intrinsic, External_Name => "__atomic_sub_fetch_4";
 
-   function sync_bool_compare_and_swap (
-      A1 : not null access Length_Type;
-      A2 : Length_Type;
-      A3 : Length_Type)
+   function atomic_compare_exchange (
+      ptr : not null access Length_Type;
+      expected : not null access Length_Type;
+      desired : Length_Type)
       return Boolean
       with Convention => Intrinsic;
-   pragma Inline_Always (sync_bool_compare_and_swap);
+   pragma Inline_Always (atomic_compare_exchange);
 
-   function sync_bool_compare_and_swap (
-      A1 : not null access Length_Type;
-      A2 : Length_Type;
-      A3 : Length_Type)
+   function atomic_compare_exchange (
+      ptr : not null access Length_Type;
+      expected : not null access Length_Type;
+      desired : Length_Type)
       return Boolean
    is
       pragma Compile_Time_Error (
          Storage_Elements.Storage_Offset'Size /= 32
          and then Storage_Elements.Storage_Offset'Size /= 64,
          "Storage_Elements.Storage_Offset'Size is neither 32 nor 64");
+      --  Use sequentially consistent model because an object's length and
+      --    contents should be synchronized.
+      Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
    begin
       if Storage_Elements.Storage_Offset'Size = 32 then
          declare
-            function sync_bool_compare_and_swap_32 (
-               A1 : not null access Storage_Elements.Storage_Count;
-               A2 : Storage_Elements.Storage_Offset;
-               A3 : Storage_Elements.Storage_Offset)
+            function atomic_compare_exchange_4 (
+               ptr : not null access Length_Type;
+               expected : not null access Length_Type;
+               desired : Length_Type;
+               weak : Boolean := False;
+               success_memorder : Integer := Order;
+               failure_memorder : Integer := Order)
                return Boolean;
-            pragma Import (Intrinsic, sync_bool_compare_and_swap_32,
-               "__sync_bool_compare_and_swap_4");
+            pragma Import (Intrinsic, atomic_compare_exchange_4,
+               "__atomic_compare_exchange_4");
             --  [gcc-4.9] cannot import it with aspect
          begin
-            return sync_bool_compare_and_swap_32 (A1, A2, A3);
+            return atomic_compare_exchange_4 (ptr, expected, desired);
          end;
       else
          declare
-            function sync_bool_compare_and_swap_64 (
-               A1 : not null access Storage_Elements.Storage_Count;
-               A2 : Storage_Elements.Storage_Offset;
-               A3 : Storage_Elements.Storage_Offset)
+            function atomic_compare_exchange_8 (
+               ptr : not null access Length_Type;
+               expected : not null access Length_Type;
+               desired : Length_Type;
+               weak : Boolean := False;
+               success_memorder : Integer := Order;
+               failure_memorder : Integer := Order)
                return Boolean;
-            pragma Import (Intrinsic, sync_bool_compare_and_swap_64,
-               "__sync_bool_compare_and_swap_8");
+            pragma Import (Intrinsic, atomic_compare_exchange_8,
+               "__atomic_compare_exchange_8");
             --  [gcc-4.9] same above
          begin
-            return sync_bool_compare_and_swap_64 (A1, A2, A3);
+            return atomic_compare_exchange_8 (ptr, expected, desired);
          end;
       end if;
-   end sync_bool_compare_and_swap;
+   end atomic_compare_exchange;
 
    --  implementation
 
    function Shared (Data : not null Data_Access) return Boolean is
    begin
-      return Data.all > 1; -- static is True
+      return atomic_load (Data) > 1; -- static is True
    end Shared;
 
    --  not null because using sentinel (that means empty data block)
@@ -77,8 +95,8 @@ package body System.Reference_Counting is
    is
       Reference_Count : constant not null Data_Access := Target.all;
    begin
-      if Reference_Count.all /= Static then
-         sync_add_and_fetch_32 (Reference_Count, 1);
+      if atomic_load (Reference_Count) /= Static then
+         atomic_add_fetch (Reference_Count, 1);
       end if;
    end Adjust;
 
@@ -100,10 +118,10 @@ package body System.Reference_Counting is
    is
       Reference_Count : constant not null Data_Access := Target.all;
    begin
-      if Reference_Count.all /= Static then
-         if sync_sub_and_fetch_32 (Reference_Count, 1) = 0 then
-            Free (Target.all);
-         end if;
+      if atomic_load (Reference_Count) /= Static
+         and then atomic_sub_fetch (Reference_Count, 1) = 0
+      then
+         Free (Target.all);
       end if;
    end Clear;
 
@@ -189,15 +207,16 @@ package body System.Reference_Counting is
             Failure := True; -- should be reallocated
          else
             --  try to use reserved area
-            if sync_bool_compare_and_swap (
-               Target_Max_Length'Access,
-               Target_Length,
-               New_Length)
-            then
-               Failure := False; -- success
-            elsif Shared (Target_Data) then
-               Failure := True; -- should be copied
-            else -- reference count = 1
+            declare
+               Expected : aliased Length_Type := Target_Length;
+            begin
+               Failure := not atomic_compare_exchange (
+                  Target_Max_Length'Access,
+                  Expected'Access,
+                  New_Length);
+            end;
+            if Failure and then not Shared (Target_Data) then
+               --  reference count = 1
                Target_Max_Length := New_Length;
                Failure := False; -- success
             end if;

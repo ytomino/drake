@@ -14,7 +14,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       function Sqrt (X : Float_Type'Base) return Float_Type'Base is
       begin
          if not Standard'Fast_Math and then not (X >= 0.0) then
-            raise Argument_Error; -- CXA5A10
+            raise Argument_Error; -- RM A.5.1(22), CXA5A10
          end if;
          if Float_Type'Digits <= Float'Digits then
             declare

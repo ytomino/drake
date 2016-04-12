@@ -1,6 +1,7 @@
 with System.Formatting;
 with System.Unsigned_Types;
 package body System.Img_Int is
+   use type Unsigned_Types.Unsigned;
 
    procedure Image_Integer (
       V : Integer;
@@ -13,7 +14,7 @@ package body System.Img_Int is
       pragma Assert (S'Length >= 1);
       if V < 0 then
          S (S'First) := '-';
-         X := Unsigned_Types.Unsigned'Mod (-V);
+         X := -Unsigned_Types.Unsigned'Mod (V);
       else
          S (S'First) := ' ';
          X := Unsigned_Types.Unsigned (V);

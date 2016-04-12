@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  Ada 2012
 private with System.Finalization_Masters;
+private with System.Storage_Barriers;
 package System.Storage_Pools.Subpools is
    pragma Preelaborate;
 
@@ -74,19 +75,11 @@ package System.Storage_Pools.Subpools is
 private
    use type Storage_Elements.Storage_Offset;
 
-   type Finalization_State is range 0 .. 1;
-   for Finalization_State'Size use 8;
-   pragma Atomic (Finalization_State);
-   FS_Active : constant Finalization_State := 0;
-   FS_Finalization_Started : constant Finalization_State := 1;
-
    type Root_Storage_Pool_With_Subpools is
       abstract limited new Root_Storage_Pool with
    record
       Last : Subpool_Handle := null;
-      --  state
-      Finalization_State : aliased Subpools.Finalization_State := FS_Active;
-      pragma Atomic (Finalization_State);
+      Finalization_Started : aliased Storage_Barriers.Flag;
    end record;
 
    overriding procedure Initialize (

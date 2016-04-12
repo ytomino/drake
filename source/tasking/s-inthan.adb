@@ -1,21 +1,80 @@
 with Ada.Unchecked_Conversion;
+with System.Storage_Barriers;
 package body System.Interrupt_Handlers is
 
    type Node;
    type Node_Access is access Node;
    pragma Atomic (Node_Access);
    type Node is record
-      Next : Node_Access;
-      pragma Atomic (Next);
+      Next : aliased Node_Access;
       Code_Address : Address;
-      pragma Atomic (Code_Address);
       Is_Static : Boolean;
-      pragma Atomic (Is_Static);
+      pragma Atomic (Is_Static); -- because it's mutable
    end record;
    pragma Suppress_Initialization (Node);
 
+   pragma Compile_Time_Error (
+      Standard'Address_Size /= 32 and then Standard'Address_Size /= 64,
+      "Standard'Address_Size is neither 32 nor 64");
+
+   --  Use sequentially consistent model because the list and each node's
+   --    components should be synchronized.
+   Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
+
+   function atomic_compare_exchange (
+      ptr : not null access Node_Access;
+      expected : not null access Node_Access;
+      desired : Node_Access)
+      return Boolean
+      with Convention => Intrinsic;
+   pragma Inline_Always (atomic_compare_exchange);
+
+   function atomic_compare_exchange (
+      ptr : not null access Node_Access;
+      expected : not null access Node_Access;
+      desired : Node_Access)
+      return Boolean is
+   begin
+      if Standard'Address_Size = 32 then
+         declare
+            function atomic_compare_exchange_4 (
+               ptr : not null access Node_Access;
+               expected : not null access Node_Access;
+               desired : Node_Access;
+               weak : Boolean := False;
+               success_memorder : Integer := Order;
+               failure_memorder : Integer := Order)
+               return Boolean;
+            pragma Import (Intrinsic, atomic_compare_exchange_4,
+               "__atomic_compare_exchange_4");
+            --  [gcc-4.9] cannot import it with aspect
+            pragma Warnings (Off, atomic_compare_exchange_4);
+            --  [gcc-4.8/4.9/5] excessive prototype checking
+         begin
+            return atomic_compare_exchange_4 (ptr, expected, desired);
+         end;
+      else
+         declare
+            function atomic_compare_exchange_8 (
+               ptr : not null access Node_Access;
+               expected : not null access Node_Access;
+               desired : Node_Access;
+               weak : Boolean := False;
+               success_memorder : Integer := Order;
+               failure_memorder : Integer := Order)
+               return Boolean;
+            pragma Import (Intrinsic, atomic_compare_exchange_8,
+               "__atomic_compare_exchange_8");
+            --  [gcc-4.9] same above
+            pragma Warnings (Off, atomic_compare_exchange_8);
+            --  [gcc-4.8/4.9/5] excessive prototype checking
+         begin
+            return atomic_compare_exchange_8 (ptr, expected, desired);
+         end;
+      end if;
+   end atomic_compare_exchange;
+
    List : aliased Node_Access := null;
-   pragma Atomic (List);
 
    function Find (Code_Address : Address) return Node_Access;
    function Find (Code_Address : Address) return Node_Access is
@@ -32,48 +91,14 @@ package body System.Interrupt_Handlers is
 
    procedure Add (New_Node : not null Node_Access);
    procedure Add (New_Node : not null Node_Access) is
-      Node_Access_Size : constant Integer := Node_Access'Size;
-      pragma Warnings (Off, Node_Access_Size);
+      Expected : aliased Node_Access := List;
    begin
       loop
-         New_Node.Next := List;
-         if Node_Access_Size = 32 then
-            declare
-               function sync_bool_compare_and_swap_32 (
-                  A1 : not null access Node_Access;
-                  A2 : Node_Access;
-                  A3 : Node_Access)
-                  return Boolean
-                  with Import,
-                     Convention => Intrinsic,
-                     External_Name => "__sync_bool_compare_and_swap_4";
-               pragma Warnings (Off, sync_bool_compare_and_swap_32);
-               --  [gcc-4.8] excessive prototype checking
-            begin
-               exit when sync_bool_compare_and_swap_32 (
-                  List'Access,
-                  New_Node.Next,
-                  New_Node);
-            end;
-         else
-            declare
-               function sync_bool_compare_and_swap_64 (
-                  A1 : not null access Node_Access;
-                  A2 : Node_Access;
-                  A3 : Node_Access)
-                  return Boolean
-                  with Import,
-                     Convention => Intrinsic,
-                     External_Name => "__sync_bool_compare_and_swap_8";
-               pragma Warnings (Off, sync_bool_compare_and_swap_64);
-               --  [gcc-4.8] excessive prototype checking
-            begin
-               exit when sync_bool_compare_and_swap_64 (
-                  List'Access,
-                  New_Node.Next,
-                  New_Node);
-            end;
-         end if;
+         New_Node.Next := Expected;
+         exit when atomic_compare_exchange (
+            List'Access,
+            Expected'Access,
+            New_Node);
       end loop;
    end Add;
 
@@ -87,6 +112,7 @@ package body System.Interrupt_Handlers is
             New_Node : constant not null Node_Access := new Node;
          begin
             New_Node.Code_Address := Code_Address;
+            New_Node.Is_Static := False;
             Add (New_Node);
          end;
       end if;
@@ -116,9 +142,11 @@ package body System.Interrupt_Handlers is
       if Node = null then
          Node := new Interrupt_Handlers.Node;
          Node.Code_Address := Code_Address;
+         Node.Is_Static := True;
          Add (Node);
+      else
+         Node.Is_Static := True;
       end if;
-      Node.Is_Static := True;
    end Set_Static_Handler;
 
    procedure Set_Static_Handler (

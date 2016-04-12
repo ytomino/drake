@@ -14,7 +14,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       function Sqrt (X : Float_Type'Base) return Float_Type'Base is
       begin
          if not Standard'Fast_Math and then not (X >= 0.0) then
-            raise Argument_Error; -- CXA5A10
+            raise Argument_Error; -- RM A.5.1(22), CXA5A10
          end if;
          if Float_Type'Digits <= Float'Digits then
             declare
@@ -161,7 +161,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
    function Unit_Vector (
       Index : Integer;
       Order : Positive;
-      First : Integer := 1) return Real_Vector
+      First : Integer := 1)
+      return Real_Vector
    is
       function Unit_Vector_Body is
          new Generic_Arrays.Unit_Vector (

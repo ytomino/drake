@@ -61,11 +61,14 @@ package body Interfaces.C.Generic_Strings is
                declare
                   I : size_t := Item'First;
                begin
+                  if I > Item'Last then
+                     raise Terminator_Error; -- Item'Length = 0
+                  end if;
                   loop
-                     if I <= Item'Last then
+                     exit when Item (I) = Element'Val (0);
+                     if I >= Item'Last then
                         raise Terminator_Error;
                      end if;
-                     exit when Item (I) = Element'Val (0);
                      I := I + 1;
                   end loop;
                end;
