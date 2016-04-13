@@ -351,7 +351,7 @@ package body System.Synchronous_Objects is
       Value : out Boolean)
    is
       Milliseconds : constant C.windef.DWORD :=
-         C.windef.DWORD (Duration'Max (0.0, Timeout) * 1000);
+         C.windef.DWORD (Duration'Max (0.0, Timeout) * 1_000);
    begin
       case C.winbase.WaitForSingleObject (Object.Handle, Milliseconds) is
          when C.winbase.WAIT_OBJECT_0 =>

@@ -103,7 +103,7 @@ package body Ada.Calendar.Formatting is
    begin
       System.Long_Long_Integer_Divisions.Divide (
          System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
-         1000000000, -- unit is 1-second
+         1_000_000_000, -- unit is 1-second
          System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
          System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
       Sub_Second := Duration'Fixed_Value (R);
@@ -255,8 +255,8 @@ package body Ada.Calendar.Formatting is
       return Duration'Fixed_Value (
          (System.Native_Time.Nanosecond_Number'Integer_Value (Date)
             + System.Native_Time.Nanosecond_Number (Time_Zone)
-               * (60 * 1000000000))
-         mod 1000000000);
+               * (60 * 1_000_000_000))
+         mod 1_000_000_000);
    end Sub_Second;
 
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
@@ -265,8 +265,8 @@ package body Ada.Calendar.Formatting is
       return Duration'Fixed_Value (
          (System.Native_Time.Nanosecond_Number'Integer_Value (Date)
             + System.Native_Time.Nanosecond_Number (Time_Zone)
-               * (60 * 1000000000))
-         mod (24 * 60 * 60 * 1000000000));
+               * (60 * 1_000_000_000))
+         mod (24 * 60 * 60 * 1_000_000_000));
    end Seconds;
 
    function Seconds_Of (

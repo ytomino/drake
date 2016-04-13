@@ -103,7 +103,7 @@ package body System.Synchronous_Objects.Abortable is
                Object.Handle,
                Attr.Event);
             Milliseconds : constant C.windef.DWORD :=
-               C.windef.DWORD (Timeout * 1000);
+               C.windef.DWORD (Timeout * 1_000);
          begin
             case C.winbase.WaitForMultipleObjects (
                2,

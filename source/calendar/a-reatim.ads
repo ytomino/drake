@@ -92,8 +92,8 @@ package Ada.Real_Time is
    pragma Inline (Seconds);
 
    type Seconds_Count is range
-      -(2 ** (Duration'Size - 1)) / 1000000000 ..
-      (2 ** (Duration'Size - 1) - 1) / 1000000000; -- implementation-defined
+      -(2 ** (Duration'Size - 1)) / 1_000_000_000 ..
+      (2 ** (Duration'Size - 1) - 1) / 1_000_000_000; -- implementation-defined
 
 --  procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
 --  function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;

@@ -61,7 +61,7 @@ package body System.Native_Calendar is
       Local_Date := Date + Duration (Time_Zone * 60);
       Sub_Second := Duration'Fixed_Value (
          System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
-         mod 1000_000_000);
+         mod 1_000_000_000);
       Local_Date := Local_Date - Sub_Second;
       FileTime := To_Native_Time (Local_Date);
       Error := C.winbase.FileTimeToSystemTime (

@@ -36,7 +36,7 @@ package body System.Native_Real_Time is
                return (
                   Unchecked_Tag => 255, -- any value in others
                   QuadPart =>
-                     Count.QuadPart * 1000_000_000 / Frequency.QuadPart);
+                     Count.QuadPart * 1_000_000_000 / Frequency.QuadPart);
             end if;
          end;
       else

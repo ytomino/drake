@@ -15,7 +15,7 @@ package body System.Native_Time is
 
    procedure Simple_Delay_For (D : Duration) is
    begin
-      C.winbase.Sleep (C.windef.DWORD (D * 1000.0));
+      C.winbase.Sleep (C.windef.DWORD (D * 1_000.0));
    end Simple_Delay_For;
 
    procedure Delay_For (D : Duration) is

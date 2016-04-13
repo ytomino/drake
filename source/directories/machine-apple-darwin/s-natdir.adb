@@ -246,7 +246,7 @@ package body System.Native_Directories is
       begin
          return (
             tv_sec => X.tv_sec,
-            tv_usec => C.sys.types.suseconds_t (X.tv_nsec / 1000));
+            tv_usec => C.sys.types.suseconds_t (X.tv_nsec / 1_000));
       end To_timeval;
       C_Name : C.char_array (
          0 ..

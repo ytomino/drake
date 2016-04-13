@@ -9,17 +9,17 @@ package body System.Native_Time is
    begin
       return (
          tv_sec => D.tv_sec,
-         tv_nsec => C.signed_long (D.tv_usec) * 1000);
+         tv_nsec => C.signed_long (D.tv_usec) * 1_000);
    end To_timespec;
 
    function To_timespec (D : Duration) return C.time.struct_timespec is
       Nanosecond : constant Nanosecond_Number :=
          Nanosecond_Number'Integer_Value (D);
-      Sub_Second : constant Nanosecond_Number := Nanosecond mod 1000_000_000;
+      Sub_Second : constant Nanosecond_Number := Nanosecond mod 1_000_000_000;
    begin
       return (
          tv_sec =>
-            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1000_000_000),
+            C.sys.types.time_t ((Nanosecond - Sub_Second) / 1_000_000_000),
          tv_nsec =>
             C.signed_long (Sub_Second));
    end To_timespec;
@@ -39,7 +39,7 @@ package body System.Native_Time is
    function To_Duration (D : C.sys.types.time_t) return Duration is
    begin
       return Duration'Fixed_Value (
-         (Nanosecond_Number (D)) * 1000_000_000);
+         (Nanosecond_Number (D)) * 1_000_000_000);
    end To_Duration;
 
    procedure Simple_Delay_For (D : Duration) is
