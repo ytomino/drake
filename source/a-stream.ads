@@ -8,7 +8,7 @@ package Ada.Streams is
    type Stream_Element is
       mod 2 ** Standard'Storage_Unit; -- implementation-defined
    type Stream_Element_Offset is
-      range -(2 ** (64 - 1)) .. +(2 ** (64 - 1)) - 1; -- implementation-defined
+      range -(2 ** 63) .. 2 ** 63 - 1; -- implementation-defined
    subtype Stream_Element_Count is
       Stream_Element_Offset range 0 .. Stream_Element_Offset'Last;
    type Stream_Element_Array is

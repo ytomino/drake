@@ -4,7 +4,7 @@ package System.Storage_Elements is
 
    type Storage_Offset is range
       -(2 ** (Standard'Address_Size - 1)) ..
-      +(2 ** (Standard'Address_Size - 1)) - 1; -- implementation-defined
+      2 ** (Standard'Address_Size - 1) - 1; -- implementation-defined
 
    subtype Storage_Count is Storage_Offset range 0 .. Storage_Offset'Last;
 

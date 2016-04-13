@@ -123,7 +123,7 @@ package System.Synchronous_Objects is
 
 private
 
-   type Counter is range -2**31 .. 2**31 - 1;
+   type Counter is range -(2 ** 31) .. 2 ** 31 - 1;
    for Counter'Size use 32;
    pragma Atomic (Counter);
 

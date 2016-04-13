@@ -5,7 +5,7 @@ package System.Compare_Array_Signed_8 is
    pragma Preelaborate;
       --  It can not be Pure, subprograms would become __attribute__((const)).
 
-   type Integer_8 is range -2 ** 7 .. 2 ** 7 - 1;
+   type Integer_8 is range -(2 ** 7) .. 2 ** 7 - 1;
    for Integer_8'Size use 8;
 
    package Ordering is new Packed_Arrays.Ordering (Integer_8);

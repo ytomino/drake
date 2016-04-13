@@ -29,7 +29,7 @@ package Interfaces.C is
 
    type ptrdiff_t is range
       -(2 ** (Standard'Address_Size - 1)) ..
-      +(2 ** (Standard'Address_Size - 1) - 1); -- implementation-defined
+      2 ** (Standard'Address_Size - 1) - 1; -- implementation-defined
 
    type size_t is mod 2 ** Standard'Address_Size; -- implementation-defined
 

@@ -5,7 +5,7 @@ package System.Compare_Array_Signed_16 is
    pragma Preelaborate;
       --  It can not be Pure, subprograms would become __attribute__((const)).
 
-   type Integer_16 is range -2 ** 15 .. 2 ** 15 - 1;
+   type Integer_16 is range -(2 ** 15) .. 2 ** 15 - 1;
    for Integer_16'Size use 16;
    for Integer_16'Alignment use 1;
 
