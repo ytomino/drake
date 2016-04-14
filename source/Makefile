@@ -582,6 +582,7 @@ $(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 ifneq ($(findstring darwin,$(TARGET)),)
 ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
+$(LIBGNAT_BUILDDIR)/a-excfin.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 $(LIBGNAT_BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 $(LIBGNAT_BUILDDIR)/a-stream.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 endif
