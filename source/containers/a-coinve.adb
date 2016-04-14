@@ -927,11 +927,8 @@ package body Ada.Containers.Indefinite_Vectors is
    is
       pragma Check (Pre,
          Check =>
-            (First in
-               Index_Type'First ..
-               Indefinite_Vectors.Last (Vector (Container)) + 1
+            (First <= Indefinite_Vectors.Last (Vector (Container)) + 1
                and then Last <= Indefinite_Vectors.Last (Vector (Container)))
-            or else (First = No_Element and then Last = No_Element)
             or else raise Constraint_Error);
       Actual_First : Cursor := First;
       Actual_Last : Cursor := Last;
