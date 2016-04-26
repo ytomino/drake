@@ -11,10 +11,12 @@ procedure filename is
 begin
 	pragma Assert (AD.Containing_Directory ("", Raise_On_Error => False) = "");
 	pragma Assert (AD.Containing_Directory ("A", Raise_On_Error => False) = "");
+	pragma Assert (AD.Containing_Directory ("A/") = "A");
 	pragma Assert (AD.Containing_Directory ("A/B") = "A");
 	pragma Assert (AD.Containing_Directory ("A/B/") = "A/B");
 	pragma Assert (Windows or else AD.Containing_Directory ("A//B") = "A");
 	pragma Assert (AD.Containing_Directory ("/") = "/");
+	pragma Assert (Windows or else AD.Containing_Directory ("//") = "/");
 	pragma Assert (AD.Containing_Directory ("/A") = "/");
 	pragma Assert (AD.Containing_Directory ("/A/B") = "/A");
 	pragma Assert (AD.Containing_Directory ("/A/B/") = "/A/B");
@@ -31,10 +33,12 @@ begin
 	end if;
 	pragma Assert (AD.Simple_Name ("") = "");
 	pragma Assert (AD.Simple_Name ("A") = "A");
+	pragma Assert (AD.Simple_Name ("A/") = "");
 	pragma Assert (AD.Simple_Name ("A/B") = "B");
 	pragma Assert (AD.Simple_Name ("A/B/") = "");
 	pragma Assert (AD.Simple_Name ("A//B") = "B");
 	pragma Assert (AD.Simple_Name ("/") = "");
+	pragma Assert (AD.Simple_Name ("//") = "");
 	pragma Assert (AD.Simple_Name ("/A") = "A");
 	pragma Assert (AD.Simple_Name ("/A/B") = "B");
 	pragma Assert (AD.Simple_Name ("/A/B/") = "");
@@ -70,21 +74,25 @@ begin
 		null;
 	end if;
 	pragma Assert (ADH.Initial_Directory ("") = "");
-	pragma Assert (ADH.Initial_Directory ("A") = "");
+	pragma Assert (ADH.Initial_Directory ("A") = "A");
+	pragma Assert (ADH.Initial_Directory ("A/") = "A");
 	pragma Assert (ADH.Initial_Directory ("A/B") = "A");
 	pragma Assert (ADH.Initial_Directory ("A/B/") = "A");
 	pragma Assert (ADH.Initial_Directory ("A//B") = "A");
 	pragma Assert (ADH.Initial_Directory ("/") = "/");
+	pragma Assert (Windows or else ADH.Initial_Directory ("//") = "/");
 	pragma Assert (ADH.Initial_Directory ("/A") = "/");
 	pragma Assert (ADH.Initial_Directory ("/A/B") = "/");
 	pragma Assert (ADH.Initial_Directory ("/A/B/") = "/");
 	pragma Assert (ADH.Initial_Directory ("/A//B") = "/");
 	pragma Assert (ADH.Relative_Name ("") = "");
-	pragma Assert (ADH.Relative_Name ("A") = "A");
+	pragma Assert (ADH.Relative_Name ("A") = "");
+	pragma Assert (ADH.Relative_Name ("A/") = "");
 	pragma Assert (ADH.Relative_Name ("A/B") = "B");
 	pragma Assert (ADH.Relative_Name ("A/B/") = "B/");
 	pragma Assert (Windows or else ADH.Relative_Name ("A//B") = "B");
 	pragma Assert (ADH.Relative_Name ("/") = "");
+	pragma Assert (Windows or else ADH.Relative_Name ("//") = "");
 	pragma Assert (ADH.Relative_Name ("/A") = "A");
 	pragma Assert (ADH.Relative_Name ("/A/B") = "A/B");
 	pragma Assert (ADH.Relative_Name ("/A/B/") = "A/B/");
@@ -107,6 +115,7 @@ begin
 	pragma Assert (ADH.Compose ("", "", "") = "");
 	pragma Assert (ADH.Compose (".", "A") = "A");
 	pragma Assert (ADH.Compose ("./", "A") = "A");
+	pragma Assert (ADH.Compose ("A", "..") = ".");
 	pragma Assert (ADH.Compose ("A", "../B") = "B");
 	if Windows then
 		pragma Assert (ADH.Compose ("", "../A") = "..\A");

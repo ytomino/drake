@@ -22,6 +22,12 @@ package body Ada.Hierarchical_File_Names is
       end return;
    end Parent_Directory_Name;
 
+   function Current_Directory_Name return String;
+   function Current_Directory_Name return String is
+   begin
+      return ".";
+   end Current_Directory_Name;
+
    procedure Containing_Root_Directory (Name : String; Last : out Natural);
    procedure Containing_Root_Directory (Name : String; Last : out Natural) is
    begin
@@ -371,7 +377,7 @@ package body Ada.Hierarchical_File_Names is
       Containing_Root_Directory (Name, Last => Last);
       First := Name'First;
       if First > Last then -- relative
-         Last := First - 1;
+         Last := Name'Last;
          for I in Name'Range loop
             if Is_Path_Delimiter (Name (I)) then
                Last := I - 1;
@@ -388,12 +394,12 @@ package body Ada.Hierarchical_File_Names is
    is
       Root_Last : Natural;
    begin
-      Last := Name'Last;
       Containing_Root_Directory (Name, Last => Root_Last);
+      Last := Name'Last;
       if Name'First <= Root_Last then -- full
          First := Root_Last + 1; -- skip root
       else -- relative
-         First := Name'First;
+         First := Name'Last + 1;
          for I in Name'Range loop
             if Is_Path_Delimiter (Name (I)) then
                First := I + 1;
@@ -462,6 +468,12 @@ package body Ada.Hierarchical_File_Names is
             Relative_Name (R_R_First .. R_R_Last),
             Extension,
             Path_Delimiter => Path_Delimiter);
+      elsif Directory'First > C_D_Last
+         and then R_R_First > R_R_Last
+         and then (Directory'Length > 0 or else Relative_Name'Length > 0)
+         and then Extension'Length = 0
+      then
+         return Current_Directory_Name;
       else
          return Unfolded_Compose (
             Directory (Directory'First .. C_D_Last),
@@ -511,41 +523,21 @@ package body Ada.Hierarchical_File_Names is
                      Name (R_N_First .. R_N_Last),
                      First => I_N_First,
                      Last => I_N_Last);
-                  if I_N_First > I_N_Last then
-                     I_N_Last := R_N_Last;
-                  end if;
                   Initial_Directory (
                      From (R_N_First .. R_F_Last),
                      First => I_F_First,
                      Last => I_F_Last);
-                  if I_F_First > I_F_Last then
-                     I_F_Last := R_F_Last;
-                  end if;
                   if Name (I_N_First .. I_N_Last) =
                      From (I_F_First .. I_F_Last)
                   then
-                     declare
-                        Old_R_N_First : constant Positive := R_F_First;
-                     begin
-                        Relative_Name (
-                           Name (R_N_First .. R_N_Last),
-                           First => R_N_First,
-                           Last => R_N_Last);
-                        if R_N_First = Old_R_N_First then
-                           R_N_First := R_N_Last + 1;
-                        end if;
-                     end;
-                     declare
-                        Old_R_F_First : constant Positive := R_F_First;
-                     begin
-                        Relative_Name (
-                           Name (R_F_First .. R_F_Last),
-                           First => R_F_First,
-                           Last => R_F_Last);
-                        if R_F_First = Old_R_F_First then
-                           R_F_First := R_F_Last + 1;
-                        end if;
-                     end;
+                     Relative_Name (
+                        Name (R_N_First .. R_N_Last),
+                        First => R_N_First,
+                        Last => R_N_Last);
+                     Relative_Name (
+                        Name (R_F_First .. R_F_Last),
+                        First => R_F_First,
+                        Last => R_F_Last);
                   else
                      exit;
                   end if;
@@ -556,24 +548,17 @@ package body Ada.Hierarchical_File_Names is
                declare
                   I_N_First : Positive; -- Initial_Directory (Name)
                   I_N_Last : Natural;
-                  Old_R_N_First : constant Positive := R_N_First;
                begin
                   Initial_Directory (
                      Name (R_N_First .. R_N_Last),
                      First => I_N_First,
                      Last => I_N_Last);
-                  if I_N_First > I_N_Last then
-                     I_N_Last := R_N_Last;
-                  end if;
                   exit when not Is_Current_Directory_Name (
                      Name (I_N_First .. I_N_Last));
                   Relative_Name (
                      Name (R_N_First .. R_N_Last),
                      First => R_N_First,
                      Last => R_N_Last);
-                  if R_N_First = Old_R_N_First then
-                     R_N_First := R_N_Last + 1;
-                  end if;
                end;
             end loop;
             --  remainder of From
@@ -581,15 +566,11 @@ package body Ada.Hierarchical_File_Names is
                declare
                   I_F_First : Positive; -- Initial_Directory (From)
                   I_F_Last : Natural;
-                  Old_R_F_First : constant Positive := R_F_First;
                begin
                   Initial_Directory (
                      From (R_F_First .. R_F_Last),
                      First => I_F_First,
                      Last => I_F_Last);
-                  if I_F_First > I_F_Last then
-                     I_F_Last := R_F_Last;
-                  end if;
                   if Is_Current_Directory_Name (
                      From (I_F_First .. I_F_Last))
                   then
@@ -610,7 +591,6 @@ package body Ada.Hierarchical_File_Names is
                      From (R_F_First .. R_F_Last),
                      First => R_F_First,
                      Last => R_F_Last);
-                  exit when R_F_First = Old_R_F_First; -- last one
                end;
             end loop;
             if Parent_Count > 0 then
@@ -627,7 +607,7 @@ package body Ada.Hierarchical_File_Names is
                      Path_Delimiter => Path_Delimiter);
                end if;
             elsif R_N_First > R_N_Last then
-               return ".";
+               return Current_Directory_Name;
             else
                return Name (R_N_First .. R_N_Last);
             end if;
@@ -653,7 +633,7 @@ package body Ada.Hierarchical_File_Names is
          if First <= Last then
             return Directory (First .. Last);
          else
-            return ".";
+            return Current_Directory_Name;
          end if;
       else
          if First <= Last then -- Is_Full_Name (Directory)
