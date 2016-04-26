@@ -27,12 +27,16 @@ package Ada.Hierarchical_File_Names is
    --  operations in Ada.Directories
 
    function Simple_Name (Name : String) return String;
+   --  extended
+   --  This function returns null string instead of Name_Error,
+   --    if Name has no simple name part.
+   function Unchecked_Simple_Name (Name : String) return String;
 
-   --  modified
-   function Containing_Directory (
-      Name : String;
-      Raise_On_Error : Boolean := True) -- additional
-      return String;
+   function Containing_Directory (Name : String) return String;
+   --  extended
+   --  This function returns null string instead of Use_Error,
+   --     if Name has no directory part.
+   function Unchecked_Containing_Directory (Name : String) return String;
 
    function Extension (Name : String) return String;
 
@@ -80,6 +84,10 @@ package Ada.Hierarchical_File_Names is
    function Initial_Directory (Name : String) return String;
 
    function Relative_Name (Name : String) return String;
+   --  extended
+   --  This function returns null string instead of Name_Error,
+   --    if Name has no directory part.
+   function Unchecked_Relative_Name (Name : String) return String;
 
    --  extended
    --  There are procedure version.

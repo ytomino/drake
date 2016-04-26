@@ -77,15 +77,7 @@ package Ada.Directories is
    function Simple_Name (Name : String) return String
       renames Hierarchical_File_Names.Simple_Name;
 
-   --  modified
-   --  It's specified that Containing_Directory raises Use_Error
-   --    when Name is a simple name.
-   --  If the additional parameter Raise_On_Error = False,
-   --    Containing_Directory returns null string when Name is a simple name.
-   function Containing_Directory (
-      Name : String;
-      Raise_On_Error : Boolean := True) -- additional
-      return String
+   function Containing_Directory (Name : String) return String
       renames Hierarchical_File_Names.Containing_Directory;
 
    function Extension (Name : String) return String

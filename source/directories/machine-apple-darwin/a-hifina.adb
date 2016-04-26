@@ -113,23 +113,50 @@ package body Ada.Hierarchical_File_Names is
       Last : Natural;
    begin
       Simple_Name (Name, First => First, Last => Last);
+      if First > Last then
+         Raise_Exception (Name_Error'Identity); -- CXAG002
+      end if;
       return Name (First .. Last);
    end Simple_Name;
 
-   function Containing_Directory (
-      Name : String;
-      Raise_On_Error : Boolean := True)
-      return String
-   is
+   function Unchecked_Simple_Name (Name : String) return String is
       First : Positive;
       Last : Natural;
    begin
+      Simple_Name (Name, First => First, Last => Last);
+      return Name (First .. Last);
+   end Unchecked_Simple_Name;
+
+   function Containing_Directory (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+      Error : Boolean;
+   begin
       Containing_Directory (Name, First => First, Last => Last);
-      if First > Last and then Raise_On_Error then
+      Error := First > Last;
+      if not Error then
+         --  ignore trailing delimiters on error-checking
+         Error := True;
+         for I in reverse Last + 1 .. Name'Last loop
+            if not Is_Path_Delimiter (Name (I)) then
+               Error := False;
+               exit;
+            end if;
+         end loop;
+      end if;
+      if Error then
          Raise_Exception (Use_Error'Identity); -- RM A.16.1 (38/3)
       end if;
       return Name (First .. Last);
    end Containing_Directory;
+
+   function Unchecked_Containing_Directory (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Containing_Directory (Name, First => First, Last => Last);
+      return Name (First .. Last);
+   end Unchecked_Containing_Directory;
 
    function Extension (Name : String) return String is
       First : Positive;
@@ -277,8 +304,19 @@ package body Ada.Hierarchical_File_Names is
       Last : Natural;
    begin
       Relative_Name (Name, First => First, Last => Last);
+      if First > Last or else First = Name'First then
+         Raise_Exception (Name_Error'Identity); -- CXAG002
+      end if;
       return Name (First .. Last);
    end Relative_Name;
+
+   function Unchecked_Relative_Name (Name : String) return String is
+      First : Positive;
+      Last : Natural;
+   begin
+      Relative_Name (Name, First => First, Last => Last);
+      return Name (First .. Last);
+   end Unchecked_Relative_Name;
 
    procedure Initial_Directory (
       Name : String;
