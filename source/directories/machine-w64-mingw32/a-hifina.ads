@@ -57,13 +57,6 @@ package Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural);
 
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
-      Extension : String := "";
-      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
-      return String;
-
    --  operations in Ada.Directories.Hierarchical_File_Names
 
    function Is_Simple_Name (Name : String) return Boolean;
@@ -98,6 +91,13 @@ package Ada.Hierarchical_File_Names is
       Name : String;
       First : out Positive;
       Last : out Natural);
+
+   function Unfolded_Compose (
+      Containing_Directory : String := "";
+      Name : String;
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String;
 
    function Compose (
       Directory : String := "";

@@ -224,44 +224,6 @@ package body Ada.Hierarchical_File_Names is
       end if;
    end Base_Name;
 
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
-      Extension : String := "";
-      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
-      return String
-   is
-      pragma Unreferenced (Path_Delimiter);
-      --  this is Directories.Compose
-      --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
-      Containing_Directory_Length : constant Natural :=
-         Containing_Directory'Length;
-      Name_Length : constant Natural := Name'Length;
-      Extension_Length : constant Natural := Extension'Length;
-      Result : String (
-         1 ..
-         Containing_Directory_Length + Name_Length + Extension_Length + 2);
-      Last : Natural;
-   begin
-      --  append directory
-      Last := Containing_Directory_Length;
-      if Last > 0 then
-         Result (1 .. Last) := Containing_Directory;
-         Include_Trailing_Path_Delimiter (Result, Last => Last);
-      end if;
-      --  append name
-      Result (Last + 1 .. Last + Name_Length) := Name;
-      Last := Last + Name_Length;
-      --  append extension
-      if Extension_Length /= 0 then
-         Last := Last + 1;
-         Result (Last) := '.';
-         Result (Last + 1 .. Last + Extension_Length) := Extension;
-         Last := Last + Extension_Length;
-      end if;
-      return Result (1 .. Last);
-   end Unfolded_Compose;
-
    --  operations in Ada.Directories.Hierarchical_File_Names
 
    function Is_Simple_Name (Name : String) return Boolean is
@@ -355,6 +317,44 @@ package body Ada.Hierarchical_File_Names is
          end if;
       end loop;
    end Relative_Name;
+
+   function Unfolded_Compose (
+      Containing_Directory : String := "";
+      Name : String;
+      Extension : String := "";
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
+      return String
+   is
+      pragma Unreferenced (Path_Delimiter);
+      --  this is Directories.Compose
+      --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
+      Containing_Directory_Length : constant Natural :=
+         Containing_Directory'Length;
+      Name_Length : constant Natural := Name'Length;
+      Extension_Length : constant Natural := Extension'Length;
+      Result : String (
+         1 ..
+         Containing_Directory_Length + Name_Length + Extension_Length + 2);
+      Last : Natural;
+   begin
+      --  append directory
+      Last := Containing_Directory_Length;
+      if Last > 0 then
+         Result (1 .. Last) := Containing_Directory;
+         Include_Trailing_Path_Delimiter (Result, Last => Last);
+      end if;
+      --  append name
+      Result (Last + 1 .. Last + Name_Length) := Name;
+      Last := Last + Name_Length;
+      --  append extension
+      if Extension_Length /= 0 then
+         Last := Last + 1;
+         Result (Last) := '.';
+         Result (Last + 1 .. Last + Extension_Length) := Extension;
+         Last := Last + Extension_Length;
+      end if;
+      return Result (1 .. Last);
+   end Unfolded_Compose;
 
    function Compose (
       Directory : String := "";
