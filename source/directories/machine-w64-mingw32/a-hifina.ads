@@ -92,14 +92,17 @@ package Ada.Hierarchical_File_Names is
       First : out Positive;
       Last : out Natural);
 
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
+   function Compose (
+      Directory : String := "";
+      Relative_Name : String;
       Extension : String := "";
       Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String;
 
-   function Compose (
+   --  extended
+   --  This function folds current/parent directory names.
+   --  For example: Normalized_Compose ("A/B", "../C") = "A/C".
+   function Normalized_Compose (
       Directory : String := "";
       Relative_Name : String;
       Extension : String := "";
@@ -137,10 +140,9 @@ package Ada.Hierarchical_File_Names is
 
    --  exceptions
 
+   Name_Error : exception
+      renames IO_Exceptions.Name_Error;
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
-
-   --  Note: In RM A.16.1 (37/3), these subprograms does not raise Name_Error
-   --    since no accessing any real external file.
 
 end Ada.Hierarchical_File_Names;

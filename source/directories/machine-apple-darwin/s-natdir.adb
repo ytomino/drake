@@ -176,9 +176,7 @@ package body System.Native_Directories is
    function Full_Name (Name : String) return String is
    begin
       if Ada.Hierarchical_File_Names.Is_Relative_Name (Name) then
-         return Ada.Hierarchical_File_Names.Unfolded_Compose (
-            Current_Directory,
-            Name);
+         return Ada.Hierarchical_File_Names.Compose (Current_Directory, Name);
       else
          return Name;
       end if;

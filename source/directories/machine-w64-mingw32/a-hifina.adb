@@ -369,36 +369,36 @@ package body Ada.Hierarchical_File_Names is
       end if;
    end Relative_Name;
 
-   function Unfolded_Compose (
-      Containing_Directory : String := "";
-      Name : String;
+   function Compose (
+      Directory : String := "";
+      Relative_Name : String;
       Extension : String := "";
       Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)
       return String
    is
-      --  this is Directories.Compose
-      --  if you want to fold '.' or '..', use Hierarchical_File_Names.Compose
-      Containing_Directory_Length : constant Natural :=
-         Containing_Directory'Length;
-      Name_Length : constant Natural := Name'Length;
+      pragma Check (Pre,
+         Check => Directory'Length = 0
+            or else Is_Relative_Name (Relative_Name)
+            or else raise Name_Error); -- CXAG002
+      Directory_Length : constant Natural := Directory'Length;
+      Relative_Name_Length : constant Natural := Relative_Name'Length;
       Extension_Length : constant Natural := Extension'Length;
       Result : String (
-         1 ..
-         Containing_Directory_Length + Name_Length + Extension_Length + 2);
+         1 .. Directory_Length + Relative_Name_Length + Extension_Length + 2);
       Last : Natural;
    begin
       --  append directory
-      Last := Containing_Directory_Length;
+      Last := Directory_Length;
       if Last > 0 then
-         Result (1 .. Last) := Containing_Directory;
+         Result (1 .. Last) := Directory;
          Include_Trailing_Path_Delimiter (
             Result,
             Last => Last,
             Path_Delimiter => Path_Delimiter);
       end if;
       --  append name
-      Result (Last + 1 .. Last + Name_Length) := Name;
-      Last := Last + Name_Length;
+      Result (Last + 1 .. Last + Relative_Name_Length) := Relative_Name;
+      Last := Last + Relative_Name_Length;
       --  append extension
       if Extension_Length /= 0 then
          Last := Last + 1;
@@ -407,9 +407,9 @@ package body Ada.Hierarchical_File_Names is
          Last := Last + Extension_Length;
       end if;
       return Result (1 .. Last);
-   end Unfolded_Compose;
+   end Compose;
 
-   function Compose (
+   function Normalized_Compose (
       Directory : String := "";
       Relative_Name : String;
       Extension : String := "";
@@ -458,8 +458,8 @@ package body Ada.Hierarchical_File_Names is
          Last => C_D_Last,
          Level => Parent_Count);
       if Parent_Count > 0 then
-         return Unfolded_Compose (
-            Unfolded_Compose (
+         return Compose (
+            Compose (
                Directory (Directory'First .. C_D_Last),
                Parent_Directory_Name (
                   Parent_Count,
@@ -475,13 +475,13 @@ package body Ada.Hierarchical_File_Names is
       then
          return Current_Directory_Name;
       else
-         return Unfolded_Compose (
+         return Compose (
             Directory (Directory'First .. C_D_Last),
             Relative_Name (R_R_First .. R_R_Last),
             Extension,
             Path_Delimiter => Path_Delimiter);
       end if;
-   end Compose;
+   end Normalized_Compose;
 
    function Relative_Name (
       Name : String;
@@ -599,7 +599,7 @@ package body Ada.Hierarchical_File_Names is
                      Parent_Count,
                      Path_Delimiter => Path_Delimiter);
                else
-                  return Unfolded_Compose (
+                  return Compose (
                      Parent_Directory_Name (
                         Parent_Count,
                         Path_Delimiter => Path_Delimiter),
@@ -638,7 +638,7 @@ package body Ada.Hierarchical_File_Names is
       else
          if First <= Last then -- Is_Full_Name (Directory)
             --  raise Use_Error ?
-            return Unfolded_Compose (
+            return Compose (
                Directory (First .. Last),
                Parent_Directory_Name (
                   Parent_Count,

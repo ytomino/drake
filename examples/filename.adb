@@ -97,37 +97,46 @@ begin
 	pragma Assert (ADH.Relative_Name ("/A/B") = "A/B");
 	pragma Assert (ADH.Relative_Name ("/A/B/") = "A/B/");
 	pragma Assert (ADH.Relative_Name ("/A//B") = "A//B");
-	pragma Assert (AD.Compose ("", "", "") = "");
-	pragma Assert (AD.Compose ("", "../A") = "../A");
-	pragma Assert (AD.Compose ("/", "../A") = "/../A");
-	pragma Assert (AD.Compose ("./", "../A") = "./../A");
+	begin
+		declare
+			X : constant String := AD.Compose ("A", "B/C");
+		begin
+			raise Program_Error; -- NG
+		end;
+	exception
+		when AD.Name_Error => null; -- OK
+	end;
+	pragma Assert (ADH.Compose ("", "", "") = "");
+	pragma Assert (ADH.Compose ("", "../A") = "../A");
+	pragma Assert (ADH.Compose ("/", "../A") = "/../A");
+	pragma Assert (ADH.Compose ("./", "../A") = "./../A");
 	if Windows then
-		pragma Assert (AD.Compose ("A", "B", "C") = "A\B.C");
-		pragma Assert (AD.Compose ("A", "../B") = "A\../B");
-		pragma Assert (AD.Compose ("A/B", "../C") = "A/B\../C");
+		pragma Assert (ADH.Compose ("A", "B", "C") = "A\B.C");
+		pragma Assert (ADH.Compose ("A", "../B") = "A\../B");
+		pragma Assert (ADH.Compose ("A/B", "../C") = "A/B\../C");
 		null;
 	else
-		pragma Assert (AD.Compose ("A", "B", "C") = "A/B.C");
-		pragma Assert (AD.Compose ("A", "../B") = "A/../B");
-		pragma Assert (AD.Compose ("A/B", "../C") = "A/B/../C");
+		pragma Assert (ADH.Compose ("A", "B", "C") = "A/B.C");
+		pragma Assert (ADH.Compose ("A", "../B") = "A/../B");
+		pragma Assert (ADH.Compose ("A/B", "../C") = "A/B/../C");
 		null;
 	end if;
-	pragma Assert (ADH.Compose ("", "", "") = "");
-	pragma Assert (ADH.Compose (".", "A") = "A");
-	pragma Assert (ADH.Compose ("./", "A") = "A");
-	pragma Assert (ADH.Compose ("A", "..") = ".");
-	pragma Assert (ADH.Compose ("A", "../B") = "B");
+	pragma Assert (AH.Normalized_Compose ("", "", "") = "");
+	pragma Assert (AH.Normalized_Compose (".", "A") = "A");
+	pragma Assert (AH.Normalized_Compose ("./", "A") = "A");
+	pragma Assert (AH.Normalized_Compose ("A", "..") = ".");
+	pragma Assert (AH.Normalized_Compose ("A", "../B") = "B");
 	if Windows then
-		pragma Assert (ADH.Compose ("", "../A") = "..\A");
-		pragma Assert (ADH.Compose ("A", "B", "C") = "A\B.C");
-		pragma Assert (ADH.Compose ("A/B", "../C") = "A\C");
-		pragma Assert (ADH.Compose ("/", "../A") = "/..\A");
+		pragma Assert (AH.Normalized_Compose ("", "../A") = "..\A");
+		pragma Assert (AH.Normalized_Compose ("A", "B", "C") = "A\B.C");
+		pragma Assert (AH.Normalized_Compose ("A/B", "../C") = "A\C");
+		pragma Assert (AH.Normalized_Compose ("/", "../A") = "/..\A");
 		null;
 	else
-		pragma Assert (ADH.Compose ("", "../A") = "../A");
-		pragma Assert (ADH.Compose ("A", "B", "C") = "A/B.C");
-		pragma Assert (ADH.Compose ("A/B", "../C") = "A/C");
-		pragma Assert (ADH.Compose ("/", "../A") = "/../A");
+		pragma Assert (AH.Normalized_Compose ("", "../A") = "../A");
+		pragma Assert (AH.Normalized_Compose ("A", "B", "C") = "A/B.C");
+		pragma Assert (AH.Normalized_Compose ("A/B", "../C") = "A/C");
+		pragma Assert (AH.Normalized_Compose ("/", "../A") = "/../A");
 		null;
 	end if;
 	pragma Assert (AH.Relative_Name ("A", "A") = ".");

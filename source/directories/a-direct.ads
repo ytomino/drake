@@ -101,8 +101,8 @@ package Ada.Directories is
       Extension : String := "";
       Path_Delimiter : Hierarchical_File_Names.Path_Delimiter_Type :=
          Hierarchical_File_Names.Default_Path_Delimiter) -- additional
-      return String
-      renames Hierarchical_File_Names.Unfolded_Compose;
+      return String;
+   pragma Inline (Compose);
 
 --  type Name_Case_Kind is
 --    (Unknown, Case_Sensitive, Case_Insensitive, Case_Preserving);

@@ -516,8 +516,30 @@ package body Ada.Directories is
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled.Reference (Directory_Entry).all;
    begin
-      return Compose (NC_Directory_Entry.Path.all, Name);
+      return Hierarchical_File_Names.Compose (
+         NC_Directory_Entry.Path.all,
+         Name);
    end Full_Name;
+
+   function Compose (
+      Containing_Directory : String := "";
+      Name : String;
+      Extension : String := "";
+      Path_Delimiter : Hierarchical_File_Names.Path_Delimiter_Type :=
+         Hierarchical_File_Names.Default_Path_Delimiter)
+      return String
+   is
+      pragma Check (Pre,
+         Check => Containing_Directory'Length = 0
+            or else Hierarchical_File_Names.Is_Simple_Name (Name)
+            or else raise Name_Error); -- RM A.16(82/3)
+   begin
+      return Hierarchical_File_Names.Compose (
+         Containing_Directory,
+         Name,
+         Extension,
+         Path_Delimiter => Path_Delimiter);
+   end Compose;
 
    function Kind (
       Directory_Entry : Directory_Entry_Type)
