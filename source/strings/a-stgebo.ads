@@ -73,7 +73,7 @@ package Ada.Strings.Generic_Bounded is
       Low : Positive;
       High : Natural);
 
-   function "=" (Left, Right : Bounded_String) return Boolean;
+   overriding function "=" (Left, Right : Bounded_String) return Boolean;
    function "=" (Left : Bounded_String; Right : String_Type) return Boolean;
    function "=" (Left : String_Type; Right : Bounded_String) return Boolean;
 
