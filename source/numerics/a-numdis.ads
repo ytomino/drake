@@ -30,7 +30,7 @@ package Ada.Numerics.Distributions is
    function Linear_Float_Greater_Than_0_To_Less_Than_1 (X : Source)
       return Target'Base;
 
-   --  -log(0,1] = [0,inf), there is a note in RM A.5.2(53/2)
+   --  -log(0,1] = [0,inf), RM A.5.2(53/2)
    generic
       type Source is mod <>;
       type Target is digits <>;

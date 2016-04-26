@@ -235,7 +235,7 @@ package body Ada.Numerics.Distributions is
                   X : constant Unsigned_64 := Unsigned_64_Random (Gen);
                begin
                   if Unsigned_1_Random (Gen) = 1 then
-                     if X = 0 then -- 16#1_0000000000000000#
+                     if X = 0 then -- a 128 bit random value = 2 ** 64
                         return 1.0;
                      end if;
                   else

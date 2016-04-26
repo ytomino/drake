@@ -6,7 +6,7 @@ package Ada.Strings.Naked_Maps.General_Category is
    --  General_Category=Unassigned (Cn)
    function Unassigned return not null Character_Set_Access;
    function All_Unassigned return not null Character_Set_Access;
-      --  Contains Unassigned + (16#110000# .. Wide_Wide_Character'Last).
+      --  Contains Unassigned + [16#110000# .. Wide_Wide_Character'Last].
 
    --  General_Category=Uppercase_Letter (Lu)
    function Uppercase_Letter return not null Character_Set_Access;

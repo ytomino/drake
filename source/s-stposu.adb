@@ -167,7 +167,7 @@ package body System.Storage_Pools.Subpools is
       Pool : Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle is
    begin
-      --  RM 13.11.4 (35/3)
+      --  RM 13.11.4(35/3)
       --  The pool implementor should override Default_Subpool_For_Pool
       --  if the pool is to support a default subpool for the pool.
       raise Program_Error;

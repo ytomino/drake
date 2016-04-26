@@ -319,7 +319,7 @@ package body Ada.Directories is
       pragma Unmodified (Directory_Entry); -- modified via Reference
    begin
       if not More_Entries (Search) then -- checking the predicate
-         Raise_Exception (Use_Error'Identity); -- RM A.16 (110/3)
+         Raise_Exception (Use_Error'Identity); -- RM A.16(110/3)
       else
          --  current buffer
          declare

@@ -23,7 +23,8 @@ package System.Storage_Pools.Standard_Pools is
    overriding function Storage_Size (Pool : Standard_Pool)
       return Storage_Elements.Storage_Count;
 
-   --  the "standard storage pool" object defined in RM
+   --  The "standard storage pool" object, is implementation-defined,
+   --    but mentioned in RM 13.11(17).
    Standard_Storage_Pool : constant not null access Standard_Pool;
 
 private

@@ -52,7 +52,7 @@ package Ada.Strings.Maps.Constants is
    function Base_Set return Character_Set;
    pragma Inline (Base_Set);
 
-   --  The relation of constants for Latin-1 in RM A.3.2:
+   --  The relation of constants for Latin-1, RM A.3.2:
    --
    --  + all characters
    --     + Graphic
@@ -60,16 +60,16 @@ package Ada.Strings.Maps.Constants is
    --           + Letter
    --              + Lower
    --              + Upper
-   --           + Decimal_Digit ('0' .. '9')
-   --        + Special (Graphic - Alphanumeric)
+   --           + Decimal_Digit = ['0' .. '9']
+   --        + Special = Graphic - Alphanumeric
    --     + Control
-   --  * Hexadecimal_Digit = Decimal_Digit + ('A' .. 'F' | 'a' .. 'f')
+   --  * Hexadecimal_Digit = Decimal_Digit + ['A' .. 'F' | 'a' .. 'f']
    --  * Basic = Letter without modifier(s)
    --
    --  They are extended for Unicode:
    --
    --  + all characters
-   --     + Unassigned (Cn + (16#110000# .. Character'Last))
+   --     + Unassigned = Cn + [16#110000# .. Wide_Wide_Character'Last]
    --     + Graphic
    --        + Alphanumeric
    --           + Letter
@@ -79,7 +79,7 @@ package Ada.Strings.Maps.Constants is
    --              + Modifier_Letter (Lm)
    --              + Other_Letter (Lo)
    --           + Decimal_Number (Nd)
-   --              + Decimal_Digit ('0' .. '9')
+   --              + Decimal_Digit = ['0' .. '9']
    --           + Letter_Number (Nl)
    --           + Other_Number (No)
    --        + Special
@@ -90,7 +90,7 @@ package Ada.Strings.Maps.Constants is
    --     + Format (Cf)
    --     + Private_Use (Co)
    --     + Surrogate (Cs)
-   --  * Hexadecimal_Digit = Decimal_Digit + ('A' .. 'F' | 'a' .. 'f')
+   --  * Hexadecimal_Digit = Decimal_Digit + ['A' .. 'F' | 'a' .. 'f']
    --  * Base = not decomposable
    --  * Basic = Letter * Base
    --

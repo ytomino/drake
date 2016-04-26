@@ -165,7 +165,7 @@ package body System.Tasking.Protected_Objects.Operations is
             else
                Synchronous_Objects.Set (Node.Waiting);
                if Object.Raised_On_Barrier then
-                  --  cancel all current callers, RM 9.5.3 (7/3)
+                  --  cancel all current callers, RM 9.5.3(7/3)
                   Object.Raised_On_Barrier := False;
                   Entries.Unlock_Entries (Object);
                   Entries.Cancel_Calls (Object.all);

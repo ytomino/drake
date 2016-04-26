@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  AARM A.16 (124.b/2), specialized for Windows
+--  AARM A.16(124.b/2), specialized for Windows
 private with C.windef;
 package Ada.Directories.Information is
    --  System-specific directory information.

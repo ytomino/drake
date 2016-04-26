@@ -40,7 +40,7 @@ package body System.Native_Processes is
       case C.winbase.WaitForSingleObject (Handle, Milliseconds) is
          when C.winbase.WAIT_OBJECT_0 =>
             declare
-               Max : constant := C.windef.DWORD'Modulus / 2; -- 16#8000_0000#
+               Max : constant := C.windef.DWORD'Modulus / 2; -- 2 ** 31
                Exit_Code : aliased C.windef.DWORD;
                R : C.windef.WINBOOL;
             begin

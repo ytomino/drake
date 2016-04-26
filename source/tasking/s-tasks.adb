@@ -1235,7 +1235,7 @@ package body System.Tasks is
          when None =>
             null;
          when Elaboration_Error =>
-            raise Program_Error; -- C39008A, RM 3.11 (14)
+            raise Program_Error; -- C39008A, RM 3.11(14)
          when Any_Exception =>
             Raise_Exception (Tasking_Error'Identity); -- C93004A
       end case;

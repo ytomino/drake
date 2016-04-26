@@ -463,7 +463,7 @@ package body Ada.Text_IO.Formatting is
          exit when End_Of_Line;
          Skip_Ahead (File);
          if Item (I) = Character'Val (9) then
-            Item (I) := ' '; -- treat tab as space, defined by RM A.10.6 (5/2)
+            Item (I) := ' '; -- treat tab as space, RM A.10.6(5/2)
          elsif Item (I) /= ' ' then
             Has_Data := True;
          end if;
