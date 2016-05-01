@@ -4,7 +4,7 @@ with Interfaces.C.Pointers;
 generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
-   type Element is new Character_Type;
+   type Element is (<>);
    type Element_Array is array (size_t range <>) of aliased Element;
    with package Pointers is
       new C.Pointers (
