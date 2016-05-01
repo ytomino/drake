@@ -13,7 +13,6 @@ package System.Finalization_Masters is
    type FM_Node_Ptr is access all FM_Node;
 
    Header_Size : constant Storage_Elements.Storage_Offset;
-   Header_Offset : constant Storage_Elements.Storage_Offset;
 
    subtype Any_Storage_Pool_Ptr is Storage_Pools.Storage_Pool_Access;
    pragma Suppress (Access_Check, Any_Storage_Pool_Ptr);
@@ -63,8 +62,6 @@ private
    pragma Suppress_Initialization (FM_Node);
 
    Header_Size : constant Storage_Elements.Storage_Offset :=
-      FM_Node'Size / Standard'Storage_Unit;
-   Header_Offset : constant Storage_Elements.Storage_Offset :=
       FM_Node'Size / Standard'Storage_Unit;
 
    type FM_List;

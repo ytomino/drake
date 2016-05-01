@@ -311,7 +311,7 @@ package body System.Storage_Pools.Subpools is
                FM_Node_Ptr_Conv.To_Pointer (
                   Actual_Storage_Address
                   + Header_And_Padding
-                  - Finalization_Masters.Header_Offset);
+                  - Finalization_Masters.Header_Size);
          begin
             Finalization_Masters.Attach_Unprotected (
                N_Ptr,
@@ -350,7 +350,7 @@ package body System.Storage_Pools.Subpools is
                Header_Size_With_Padding (Alignment);
             N_Ptr : constant Finalization_Masters.FM_Node_Ptr :=
                FM_Node_Ptr_Conv.To_Pointer (
-                  Addr - Finalization_Masters.Header_Offset);
+                  Addr - Finalization_Masters.Header_Size);
          begin
             Finalization_Masters.Detach_Unprotected (N_Ptr);
             Actual_Storage_Address := Addr - Header_And_Padding;
