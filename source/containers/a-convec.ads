@@ -420,6 +420,19 @@ package Ada.Containers.Vectors is
 --
 --
 
+   --  non-overloaded subprograms
+   function Constant_Indexing (
+      Container : aliased Vector'Class;
+      Index : Index_Type)
+      return Constant_Reference_Type;
+   function Indexing (
+      Container : aliased in out Vector'Class;
+      Index : Index_Type)
+      return Reference_Type;
+
+   pragma Inline (Constant_Indexing);
+   pragma Inline (Indexing);
+
 private
 
 --  diff (Element_Access)
@@ -465,19 +478,6 @@ private
    overriding function Last (Object : Vector_Iterator) return Cursor;
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
-
-   --  non-overloaded subprograms
-   function Constant_Indexing (
-      Container : aliased Vector'Class;
-      Index : Index_Type)
-      return Constant_Reference_Type;
-   function Indexing (
-      Container : aliased in out Vector'Class;
-      Index : Index_Type)
-      return Reference_Type;
-
-   pragma Inline (Constant_Indexing);
-   pragma Inline (Indexing);
 
    package Streaming is
 

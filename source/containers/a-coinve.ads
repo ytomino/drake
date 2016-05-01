@@ -420,6 +420,19 @@ package Ada.Containers.Indefinite_Vectors is
 --
 --
 
+   --  non-overloaded subprograms
+--  diff (Constant_Indexing)
+--
+--
+--
+--  diff (Indexing)
+--
+--
+--
+
+--  diff (pragma Inline)
+--  diff (pragma Inline)
+
 private
 
    type Element_Access is access Element_Type;
@@ -465,19 +478,6 @@ private
    overriding function Last (Object : Vector_Iterator) return Cursor;
    overriding function Previous (Object : Vector_Iterator; Position : Cursor)
       return Cursor;
-
-   --  non-overloaded subprograms
---  diff (Constant_Indexing)
---
---
---
---  diff (Indexing)
---
---
---
-
---  diff (pragma Inline)
---  diff (pragma Inline)
 
    package Streaming is
 
