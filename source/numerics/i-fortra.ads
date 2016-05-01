@@ -110,21 +110,25 @@ package Interfaces.Fortran is
    type Logical_Kind_1 is new Boolean
       with Convention => Fortran;
    for Logical_Kind_1'Size use 8;
+   for Logical_Kind_1'Alignment use 1;
    type Logical_Kind_2 is new Boolean
       with Convention => Fortran;
    for Logical_Kind_2'Size use 16;
+   for Logical_Kind_2'Alignment use 2;
    type Logical_Kind_4 is new Boolean
       with Convention => Fortran;
    for Logical_Kind_4'Size use 32;
+   for Logical_Kind_4'Alignment use 4;
    type Logical_Kind_8 is new Boolean
       with Convention => Fortran;
    for Logical_Kind_8'Size use 64;
+   for Logical_Kind_8'Alignment use 8;
 --  type Logical_Kind_16 is ...; -- supported in gfortran, but not in GNAT
 
    subtype Logical_Star_1 is Logical_Kind_1;
    subtype Logical_Star_2 is Logical_Kind_2;
---  subtype Logical_Star_4 is Logical_Kind_4; -- [gcc-4.9] rejects
---  subtype Logical_Star_8 is Logical_Kind_8; -- [gcc-4.9] rejects
+   subtype Logical_Star_4 is Logical_Kind_4;
+   subtype Logical_Star_8 is Logical_Kind_8;
 --  subtype Logical_Star_16 is Logical_Kind_16;
 
    --  Complex_Star_n and Complex_Kind_n
