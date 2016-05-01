@@ -89,8 +89,6 @@ package System.Pool_Size is
    end record;
    pragma Finalize_Storage_Only (Stack_Bounded_Pool);
 
-   overriding procedure Initialize (Pool : in out Stack_Bounded_Pool) is null;
-
    overriding procedure Allocate (
       Pool : in out Stack_Bounded_Pool;
       Storage_Address : out Address;
