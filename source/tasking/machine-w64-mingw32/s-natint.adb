@@ -22,7 +22,7 @@ package body System.Native_Interrupts is
          new Ada.Unchecked_Conversion (
             Ada.Exceptions.Exception_Occurrence,
             Unwind.Exception_Occurrence);
-      Name_Prefix : constant String := "interrupt ";
+      Name_Prefix : constant String := "Interrupt ";
       Name : String (1 .. Name_Prefix'Length + Interrupt_Id'Width);
       Name_Last : Natural;
       Error : Boolean;

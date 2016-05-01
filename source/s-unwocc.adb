@@ -324,45 +324,33 @@ package body System.Unwind.Occurrences is
          Last := Last + S'Length;
          Buffer (First .. Last) := S;
       end Put;
-      procedure Put_Upper (
-         Buffer : in out Buffer_Type;
-         Last : out Natural;
-         Where : String);
-      procedure Put_Upper (
-         Buffer : in out Buffer_Type;
-         Last : out Natural;
-         Where : String)
-      is
-         type Character_Code is mod 2 ** Character'Size;
-      begin
-         Last := 0;
-         if Where'Length > 0 then
-            Put (Buffer, Last, Where);
-            Buffer (1) := Character'Val (
-               Character_Code'(Character'Pos (Buffer (1)))
-               and not 16#20#); -- upper-case
-         else
-            Put (Buffer, Last, "Execution");
-         end if;
-      end Put_Upper;
       subtype Fixed_String is String (Positive);
       Full_Name : Fixed_String;
       for Full_Name'Address use X.Id.Full_Name;
+      By_Abort : constant Boolean :=
+         Full_Name (1) = '_'; -- Standard'Abort_Signal
+      Backtrace : constant Boolean :=
+         X.Num_Tracebacks > 0
+         and then Report_Backtrace'Address /= Null_Address;
       Buffer : Buffer_Type;
       Last : Natural;
    begin
       Termination.Error_Put_Line ("");
-      if Full_Name (1) = '_' then -- Standard'Abort_Signal
-         Put_Upper (Buffer, Last, Where);
+      if By_Abort or else Backtrace then
+         Last := 0;
+         if Where'Length > 0 then
+            Put (Buffer, Last, Where);
+         else
+            Put (Buffer, Last, "Execution");
+         end if;
+      end if;
+      if By_Abort then
          Put (Buffer, Last, " terminated by abort");
          if Where'Length = 0 then
             Put (Buffer, Last, " of environment task");
          end if;
          Termination.Error_Put_Line (Buffer (1 .. Last));
-      elsif X.Num_Tracebacks > 0
-         and then Report_Backtrace'Address /= Null_Address
-      then
-         Put_Upper (Buffer, Last, Where);
+      elsif Backtrace then
          Put (Buffer, Last, " terminated by unhandled exception");
          Termination.Error_Put_Line (Buffer (1 .. Last));
          Report_Backtrace (X);
@@ -370,7 +358,15 @@ package body System.Unwind.Occurrences is
          Last := 0;
          if Where'Length > 0 then
             Put (Buffer, Last, "in ");
-            Put (Buffer, Last, Where);
+            declare
+               type Character_Code is mod 2 ** Character'Size;
+               I : constant Positive := Last + 1;
+            begin
+               Put (Buffer, Last, Where);
+               Buffer (I) := Character'Val (
+                  Character_Code'(Character'Pos (Buffer (I)))
+                  or 16#20#); -- lower-case
+            end;
             Put (Buffer, Last, ", ");
          end if;
          Put (Buffer, Last, "raised ");

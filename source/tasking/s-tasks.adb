@@ -393,7 +393,7 @@ package body System.Tasks is
          new Ada.Unchecked_Conversion (
             Ada.Exceptions.Exception_Occurrence,
             Unwind.Exception_Occurrence);
-      Name_Prefix : constant String := "task ";
+      Name_Prefix : constant String := "Task ";
       Name : String (
          1 ..
          Name_Prefix'Length

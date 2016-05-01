@@ -75,8 +75,13 @@ package body System.Unwind.Raising is
       Machine_Occurrence :
          not null Representation.Machine_Occurrence_Access) is
    begin
-      Occurrences.Backtrace (Machine_Occurrence.Occurrence);
-      Debug_Raise_Exception (Machine_Occurrence.Occurrence.Id); -- for gdb
+      declare
+         X : Exception_Occurrence
+            renames Machine_Occurrence.Occurrence;
+      begin
+         Occurrences.Backtrace (X);
+         Debug_Raise_Exception (X.Id); -- for gdb
+      end;
       Separated.Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Machine_Occurrence;
 
