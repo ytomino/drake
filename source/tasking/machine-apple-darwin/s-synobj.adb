@@ -1,15 +1,23 @@
 with Ada.Exception_Identification.From_Here;
 with System.Debug;
 with System.Native_Time;
+with System.Storage_Elements;
 with C.errno;
 package body System.Synchronous_Objects is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Barriers.Flag;
+   use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
    use type C.signed_long;
    use type C.pthread.pthread_cond_t;
    use type C.pthread.pthread_mutex_t;
    use type C.pthread.pthread_rwlock_t;
+
+   function memcmp (s1, s2 : Address; n : Storage_Elements.Storage_Count)
+      return Integer
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memcmp";
+      --  [gcc-5] cannot compare Unchecked_Union
 
    --  mutex
 
@@ -26,7 +34,10 @@ package body System.Synchronous_Objects is
          Check => R = 0
             or else (
                R = C.errno.EINVAL
-               and then Object.Handle = C.pthread.PTHREAD_MUTEX_INITIALIZER)
+               and then memcmp (
+                  Object.Handle'Address,
+                  C.pthread.PTHREAD_MUTEX_INITIALIZER'Address,
+                  C.pthread.pthread_mutex_t'Size / Standard'Storage_Unit) = 0)
             or else Debug.Runtime_Error ("pthread_mutex_destroy failed"));
    end Finalize;
 
@@ -59,7 +70,10 @@ package body System.Synchronous_Objects is
          Check => R = 0
             or else (
                R = C.errno.EINVAL
-               and then Object.Handle = C.pthread.PTHREAD_COND_INITIALIZER)
+               and then memcmp (
+                  Object.Handle'Address,
+                  C.pthread.PTHREAD_COND_INITIALIZER'Address,
+                  C.pthread.pthread_cond_t'Size / Standard'Storage_Unit) = 0)
             or else Debug.Runtime_Error ("pthread_cond_destroy failed"));
    end Finalize;
 
@@ -433,7 +447,10 @@ package body System.Synchronous_Objects is
          Check => R = 0
             or else (
                R = C.errno.EINVAL
-               and then Object.Handle = C.pthread.PTHREAD_RWLOCK_INITIALIZER)
+               and then memcmp (
+                  Object.Handle'Address,
+                  C.pthread.PTHREAD_RWLOCK_INITIALIZER'Address,
+                  C.pthread.pthread_rwlock_t'Size / Standard'Storage_Unit) = 0)
             or else Debug.Runtime_Error ("pthread_rwlock_destroy failed"));
    end Finalize;
 
