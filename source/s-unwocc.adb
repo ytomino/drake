@@ -288,11 +288,12 @@ package body System.Unwind.Occurrences is
       Full_Name : Fixed_String;
       for Full_Name'Address use X.Id.Full_Name;
    begin
-      Put ("Exception name: ", Params);
+      Put ("raised ", Params);
       Put (Full_Name (1 .. X.Id.Name_Length - 1), Params);
-      New_Line (Params);
-      Put ("Message: ", Params);
-      Put (X.Msg (1 .. X.Msg_Length), Params);
+      if X.Msg_Length > 0 then
+         Put (" : ", Params);
+         Put (X.Msg (1 .. X.Msg_Length), Params);
+      end if;
       New_Line (Params);
       if X.Pid /= 0 then
          null; -- output X.Pid is unimplemented
@@ -336,13 +337,11 @@ package body System.Unwind.Occurrences is
       Last : Natural;
    begin
       Termination.Error_Put_Line ("");
-      if By_Abort or else Backtrace then
-         Last := 0;
-         if Where'Length > 0 then
-            Put (Buffer, Last, Where);
-         else
-            Put (Buffer, Last, "Execution");
-         end if;
+      Last := 0;
+      if Where'Length > 0 then
+         Put (Buffer, Last, Where);
+      elsif By_Abort or else Backtrace then
+         Put (Buffer, Last, "Execution");
       end if;
       if By_Abort then
          Put (Buffer, Last, " terminated by abort");
@@ -350,32 +349,12 @@ package body System.Unwind.Occurrences is
             Put (Buffer, Last, " of environment task");
          end if;
          Termination.Error_Put_Line (Buffer (1 .. Last));
-      elsif Backtrace then
-         Put (Buffer, Last, " terminated by unhandled exception");
-         Termination.Error_Put_Line (Buffer (1 .. Last));
-         Report_Backtrace (X);
       else
-         Last := 0;
-         if Where'Length > 0 then
-            Put (Buffer, Last, "in ");
-            declare
-               type Character_Code is mod 2 ** Character'Size;
-               I : constant Positive := Last + 1;
-            begin
-               Put (Buffer, Last, Where);
-               Buffer (I) := Character'Val (
-                  Character_Code'(Character'Pos (Buffer (I)))
-                  or 16#20#); -- lower-case
-            end;
-            Put (Buffer, Last, ", ");
+         if Last > 0 then
+            Put (Buffer, Last, " terminated by unhandled exception");
+            Termination.Error_Put_Line (Buffer (1 .. Last));
          end if;
-         Put (Buffer, Last, "raised ");
-         Put (Buffer, Last, Full_Name (1 .. X.Id.Name_Length - 1));
-         if X.Msg_Length > 0 then
-            Put (Buffer, Last, " : ");
-            Put (Buffer, Last, X.Msg (1 .. X.Msg_Length));
-         end if;
-         Termination.Error_Put_Line (Buffer (1 .. Last));
+         Report_Backtrace (X);
       end if;
    end Default_Report;
 
