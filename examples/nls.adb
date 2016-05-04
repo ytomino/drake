@@ -1,3 +1,4 @@
+with Ada.IO_Exceptions;
 with Ada.Environment_Encoding.Encoding_Streams;
 with Ada.Environment_Encoding.Names;
 with Ada.Environment_Encoding.Strings;
@@ -130,7 +131,7 @@ begin
 				One_Element);
 			raise Program_Error;
 		exception
-			when Ada.Environment_Encoding.Encoding_Streams.End_Error =>
+			when Ada.IO_Exceptions.End_Error =>
 				null;
 		end;
 	end;

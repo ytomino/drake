@@ -92,11 +92,6 @@ package Ada.Environment_Encoding.Encoding_Streams is
    procedure Finish (
       Object : in out Inout_Type); -- Open_Inout_Type
 
-   --  exceptions
-
-   End_Error : exception
-      renames IO_Exceptions.End_Error;
-
 private
    use type Streams.Stream_Element_Offset;
 

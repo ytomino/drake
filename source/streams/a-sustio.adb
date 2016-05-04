@@ -1,11 +1,9 @@
-with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Native_Allocators.Allocated_Size;
 with System.Standard_Allocators;
 package body Ada.Streams.Unbounded_Storage_IO is
-   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    procedure Free is
@@ -308,11 +306,11 @@ package body Ada.Streams.Unbounded_Storage_IO is
       Rest : constant Stream_Element_Count :=
          Stream.Buffer.Last - Stream.Buffer.Index + 1;
    begin
-      if Length > 0 and then Rest = 0 then
-         Raise_Exception (End_Error'Identity);
-      end if;
       if Length > Rest then
          Length := Rest;
+         if Length = 0 and then Item'First = Stream_Element_Offset'First then
+            raise Constraint_Error; -- AARM 13.13.1(11/2)
+         end if;
       end if;
       Last := Item'First + (Length - 1);
       declare

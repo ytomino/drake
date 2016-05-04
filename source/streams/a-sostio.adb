@@ -1,6 +1,4 @@
-with Ada.Exception_Identification.From_Here;
 package body Ada.Streams.Overlaps_Storage_IO is
-   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    function Create (
@@ -27,20 +25,15 @@ package body Ada.Streams.Overlaps_Storage_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
+      Rest : constant System.Storage_Elements.Storage_Count :=
+         Object.Size - Object.Index + 1;
       Size : System.Storage_Elements.Storage_Count := Item'Length;
    begin
-      if Size > 0 then
-         declare
-            Rest : constant System.Storage_Elements.Storage_Count :=
-               Object.Size - Object.Index + 1;
-         begin
-            if Size > Rest then
-               if Rest = 0 then
-                  Raise_Exception (End_Error'Identity);
-               end if;
-               Size := Rest;
-            end if;
-         end;
+      if Size > Rest then
+         Size := Rest;
+         if Size = 0 and then Item'First = Stream_Element_Offset'First then
+            raise Constraint_Error; -- AARM 13.13.1(11/2)
+         end if;
       end if;
       Last := Item'First + (Stream_Element_Count (Size) - 1);
       declare

@@ -1,6 +1,4 @@
-with Ada.Exception_Identification.From_Here;
 package body Ada.Environment_Encoding.Encoding_Streams is
-   use Exception_Identification.From_Here;
    use type Streams.Stream_Element;
    use type Streams.Stream_Element_Array;
    use type System.Address;
@@ -65,135 +63,138 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       if I > Item'Last then
          Last := I - 1;
       else
-         declare
-            Read_Zero : Boolean := False;
-         begin
-            loop
-               --  filling
-               if Context.Status = Continuing then
-                  Adjust_Buffer (Context.Buffer, Context.First, Context.Last);
-                  if Context.Last /= Buffer_Type'Last then
-                     declare
-                        Old_Context_Last : constant Stream_Element_Offset :=
-                           Context.Last;
-                     begin
-                        Streams.Read (
-                           Stream.all,
-                           Context.Buffer (
-                              Context.Last + 1 .. Buffer_Type'Last),
-                           Context.Last);
-                        Read_Zero := Old_Context_Last = Context.Last;
-                     exception
-                        when End_Error =>
-                           Context.Status := Finishing;
-                     end;
-                  end if;
-               end if;
-               --  converting
-               if Context.Status <= Finishing then
-                  Adjust_Buffer (
-                     Context.Converted_Buffer,
-                     Context.Converted_First,
-                     Context.Converted_Last);
-                  --  try to convert subsequence
+         loop
+            --  filling
+            if Context.Status = Continuing then
+               Adjust_Buffer (Context.Buffer, Context.First, Context.Last);
+               if Context.Last /= Buffer_Type'Last then
                   declare
-                     Taken : Stream_Element_Offset;
-                     Status : Native.Subsequence_Status_Type;
+                     Old_Context_Last : constant Stream_Element_Offset :=
+                        Context.Last;
                   begin
-                     Convert_No_Check (
-                        Object,
-                        Context.Buffer (Context.First .. Context.Last),
-                        Taken,
-                        Context.Converted_Buffer (
-                           Context.Converted_Last + 1 .. Buffer_Type'Last),
-                        Context.Converted_Last,
-                        Finish => Context.Status > Continuing,
-                        Status => Status);
-                     case Status is
-                        when Native.Finished =>
-                           Context.Status := Ended;
-                        when Native.Success =>
-                           null;
-                        when Native.Overflow =>
-                           if Context.Converted_Last <
-                              Context.Converted_First
-                           then
-                              raise Constraint_Error;
-                              --  Converted_Buffer is too smaller
-                           end if;
-                        when Native.Truncated =>
-                           pragma Assert (Context.Status = Continuing);
-                           if Context.Converted_Last <
-                              Context.Converted_First
-                           then
-                              Last := I - 1; -- may underflow
-                              exit; -- wait tail-bytes
-                           end if;
-                        when Native.Illegal_Sequence =>
-                           declare
-                              Is_Overflow : Boolean;
-                           begin
-                              Put_Substitute (
-                                 Object,
-                                 Context.Converted_Buffer (
-                                    Context.Converted_Last + 1 ..
-                                    Buffer_Type'Last),
-                                 Context.Converted_Last,
-                                 Is_Overflow);
-                              if Is_Overflow then
-                                 Last := I - 1; -- may underflow
-                                 exit; -- wait a next try
-                              end if;
-                           end;
-                           --  skip one element
-                           Taken := Stream_Element_Offset'Min (
-                              Context.Last,
-                              Context.First
-                                 + Min_Size_In_From_Stream_Elements (Object)
-                                 - 1);
-                     end case;
-                     --  drop converted subsequence
-                     Context.First := Taken + 1;
-                  end;
-               end if;
-               --  copy converted elements
-               if Context.Converted_First <= Context.Converted_Last then
-                  declare
-                     Move_Length : constant Stream_Element_Offset :=
-                        Stream_Element_Offset'Min (
-                           Item'Last - I + 1,
-                           Context.Converted_Last
-                              - Context.Converted_First
-                              + 1);
-                     New_Last : constant Stream_Element_Offset :=
-                        I + (Move_Length - 1);
-                     New_Context_Converted_First : constant
-                        Stream_Element_Offset :=
-                        Context.Converted_First + Move_Length;
-                  begin
-                     Item (I .. New_Last) :=
-                        Context.Converted_Buffer (
-                           Context.Converted_First ..
-                           New_Context_Converted_First - 1);
-                     Context.Converted_First := New_Context_Converted_First;
-                     if New_Last >= Item'Last then
-                        Last := New_Last; -- valid
-                        exit;
+                     Streams.Read (
+                        Stream.all,
+                        Context.Buffer (Context.Last + 1 .. Buffer_Type'Last),
+                        Context.Last);
+                     if Old_Context_Last = Context.Last then -- read zero
+                        Context.Status := Finishing;
                      end if;
-                     I := New_Last + 1;
+                  exception
+                     when IO_Exceptions.End_Error =>
+                        Context.Status := Finishing;
                   end;
                end if;
-               if Context.Converted_Last < Context.Converted_First then
-                  if Context.Status = Ended and then I <= Item'First then
-                     Raise_Exception (End_Error'Identity);
-                  end if;
-                  if Context.Status = Ended or else Read_Zero then
-                     Last := I - 1; -- may underflow
+            end if;
+            --  converting
+            if Context.Status <= Finishing then
+               Adjust_Buffer (
+                  Context.Converted_Buffer,
+                  Context.Converted_First,
+                  Context.Converted_Last);
+               --  try to convert subsequence
+               declare
+                  Taken : Stream_Element_Offset;
+                  Status : Native.Subsequence_Status_Type;
+               begin
+                  Convert_No_Check (
+                     Object,
+                     Context.Buffer (Context.First .. Context.Last),
+                     Taken,
+                     Context.Converted_Buffer (
+                        Context.Converted_Last + 1 .. Buffer_Type'Last),
+                     Context.Converted_Last,
+                     Finish => Context.Status > Continuing,
+                     Status => Status);
+                  case Status is
+                     when Native.Finished =>
+                        Context.Status := Ended;
+                     when Native.Success =>
+                        null;
+                     when Native.Overflow =>
+                        if Context.Converted_Last <
+                           Context.Converted_First
+                        then
+                           raise Constraint_Error;
+                           --  Converted_Buffer is too smaller
+                        end if;
+                     when Native.Truncated =>
+                        pragma Assert (Context.Status = Continuing);
+                        if Context.Converted_Last <
+                           Context.Converted_First
+                        then
+                           if I = Stream_Element_Offset'First then
+                              raise Constraint_Error; -- AARM 13.13.1(11/2)
+                           end if;
+                           Last := I - 1;
+                           exit; -- wait tail-bytes
+                        end if;
+                     when Native.Illegal_Sequence =>
+                        declare
+                           Is_Overflow : Boolean;
+                        begin
+                           Put_Substitute (
+                              Object,
+                              Context.Converted_Buffer (
+                                 Context.Converted_Last + 1 ..
+                                 Buffer_Type'Last),
+                              Context.Converted_Last,
+                              Is_Overflow);
+                           if Is_Overflow then
+                              if I = Stream_Element_Offset'First then
+                                 raise Constraint_Error; -- same as above
+                              end if;
+                              Last := I - 1;
+                              exit; -- wait a next try
+                           end if;
+                        end;
+                        --  skip one element
+                        Taken := Stream_Element_Offset'Min (
+                           Context.Last,
+                           Context.First
+                              + Min_Size_In_From_Stream_Elements (Object)
+                              - 1);
+                  end case;
+                  --  drop converted subsequence
+                  Context.First := Taken + 1;
+               end;
+            end if;
+            --  copy converted elements
+            if Context.Converted_First <= Context.Converted_Last then
+               declare
+                  Move_Length : constant Stream_Element_Offset :=
+                     Stream_Element_Offset'Min (
+                        Item'Last - I + 1,
+                        Context.Converted_Last
+                           - Context.Converted_First
+                           + 1);
+                  New_Last : constant Stream_Element_Offset :=
+                     I + (Move_Length - 1);
+                  New_Context_Converted_First : constant
+                     Stream_Element_Offset :=
+                     Context.Converted_First + Move_Length;
+               begin
+                  Item (I .. New_Last) :=
+                     Context.Converted_Buffer (
+                        Context.Converted_First ..
+                        New_Context_Converted_First - 1);
+                  Context.Converted_First := New_Context_Converted_First;
+                  if New_Last >= Item'Last then
+                     Last := New_Last;
                      exit;
                   end if;
+                  I := New_Last + 1;
+               end;
+            end if;
+            if Context.Converted_Last < Context.Converted_First then
+               if Context.Status = Ended and then I <= Item'First then
+                  if I = Stream_Element_Offset'First then
+                     raise Constraint_Error; -- same as above
+                  end if;
+                  Last := I - 1;
+                  exit;
                end if;
-            end loop;
-         end;
+            end if;
+         end loop;
       end if;
    end Read;
 

@@ -803,12 +803,13 @@ package body Ada.Streams.Naked_Stream_IO is
                end;
             end if;
          end if;
-         if Index <= Item'First
-            and then (Error
-               or else (
-                  Buffer_Length > 0 and then End_Of_Ordinary_File (File)))
-         then
-            Raise_Exception (End_Error'Identity);
+         if Index <= Item'First then
+            --  RM 13.13.1(8/2), Item'First - 1 is returned in Last for EOF.
+            if Error then
+               Raise_Exception (End_Error'Identity); -- ???
+            elsif Index = Stream_Element_Offset'First then
+               raise Constraint_Error; -- AARM 13.13.1(11/2)
+            end if;
          end if;
       end;
       Last := Index - 1;

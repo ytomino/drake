@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  extended unit
-with Ada.IO_Exceptions;
 with System.Storage_Elements;
 private with Ada.Finalization;
 private with System.Reference_Counting;
@@ -38,9 +37,6 @@ package Ada.Streams.Unbounded_Storage_IO is
    function Stream (Object : Buffer_Type)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
-
-   End_Error : exception
-      renames IO_Exceptions.End_Error;
 
 private
 
