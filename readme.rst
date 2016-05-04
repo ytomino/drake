@@ -32,14 +32,14 @@ translated headers
 Downloads
 ---------
 
-for gcc-5 ::
+Clone this repository. ::
 
  $ git clone git://github.com/ytomino/drake.git
 
-for old gcc (from 4.5 until 4.9) ::
+The *master* branch is targeted for gcc 6.
+Please checkout a branch corresponds to the version of your gcc. ::
 
- $ VERSION=$(expr $(gcc -dumpversion) : '^\([0-9]*\.[0-9]*\)') # X.Y
- $ git clone git://github.com/ytomino/drake.git -b gcc-$VERSION
+ $ git checkout gcc-5 # for example
 
 How to build
 ------------
