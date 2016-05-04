@@ -10,25 +10,21 @@ package System.Shared_Storage is
 
    type Lock_Handler is access procedure (Key : String);
 
-   Lock_Hook : Lock_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Lock_Hook); -- not null
+   Lock_Hook : not null Lock_Handler := Nop'Access;
 
    type Unlock_Handler is access procedure (Key : String);
 
-   Unlock_Hook : Unlock_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Unlock_Hook); -- not null
+   Unlock_Hook : not null Unlock_Handler := Nop'Access;
 
    type Read_Handler is access function (Key : String)
       return access Ada.Streams.Root_Stream_Type'Class;
 
-   Read_Hook : Read_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Read_Hook); -- not null
+   Read_Hook : not null Read_Handler := Nop'Access;
 
    type Write_Handler is access function (Key : String)
       return access Ada.Streams.Root_Stream_Type'Class;
 
-   Write_Hook : Write_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Write_Hook); -- not null
+   Write_Hook : not null Write_Handler := Nop'Access;
 
    --  required for a protected in a package with pragma Shared_Passive
    --    by compiler (s-shasto.ads)

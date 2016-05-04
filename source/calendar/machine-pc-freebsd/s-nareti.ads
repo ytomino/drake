@@ -26,11 +26,10 @@ package System.Native_Real_Time is
    procedure Simple_Delay_Until (T : Native_Time);
 
    type Delay_Until_Handler is access procedure (T : Native_Time);
-   pragma Suppress (Access_Check, Delay_Until_Handler);
 
    --  equivalent to Timed_Delay (s-soflin.ads)
-   Delay_Until_Hook : Delay_Until_Handler := Simple_Delay_Until'Access;
-   pragma Suppress (Access_Check, Delay_Until_Hook); -- not null
+   Delay_Until_Hook : not null Delay_Until_Handler :=
+      Simple_Delay_Until'Access;
 
    procedure Delay_Until (T : Native_Time);
    pragma Inline (Delay_Until);

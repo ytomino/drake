@@ -86,13 +86,11 @@ package System.Unwind.Occurrences is
 
    type Report_Handler is
       access procedure (X : Exception_Occurrence; Where : String);
-   pragma Suppress (Access_Check, Report_Handler);
 
-   Report_Hook : Report_Handler := Default_Report'Access -- not null
+   Report_Hook : not null Report_Handler := Default_Report'Access
       with Export,
          Convention => Ada,
          External_Name => "__drake_report_exception_occurrence_hook";
-   pragma Suppress (Access_Check, Report_Hook);
 
    procedure Report (X : Exception_Occurrence; Where : String);
 

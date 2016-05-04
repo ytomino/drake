@@ -10,9 +10,9 @@ package System.Soft_Links is
    function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access;
    Get_Current_Excep : constant
-      access function return Ada.Exceptions.Exception_Occurrence_Access :=
+      not null access
+         function return Ada.Exceptions.Exception_Occurrence_Access :=
       Do_Get_Current_Excep'Access;
-   pragma Suppress (Access_Check, Get_Current_Excep); -- not null
 
    --  required for entry call by compiler (s-soflin.ads)
    --  the result would passed to Exceptional_Complete_Rendezvous,
@@ -31,31 +31,23 @@ package System.Soft_Links is
       renames Synchronous_Control.Nop;
 
    type Current_Master_Handler is access function return Integer;
-   pragma Suppress (Access_Check, Current_Master_Handler);
    type Enter_Master_Handler is access procedure;
-   pragma Suppress (Access_Check, Enter_Master_Handler);
    type Complete_Master_Handler is access procedure;
-   pragma Suppress (Access_Check, Complete_Master_Handler);
 
    --  required for controlled types and task by compiler (s-soflin.ads)
-   Current_Master : Current_Master_Handler := Zero'Access;
-   pragma Suppress (Access_Check, Current_Master); -- not null
+   Current_Master : not null Current_Master_Handler := Zero'Access;
 
    --  required for task by compiler (s-soflin.ads)
-   Enter_Master : Enter_Master_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Enter_Master); -- not null
-   Complete_Master : Complete_Master_Handler := Nop'Access;
-   pragma Suppress (Access_Check, Complete_Master); -- not null
+   Enter_Master : not null Enter_Master_Handler := Nop'Access;
+   Complete_Master : not null Complete_Master_Handler := Nop'Access;
 
    --  required for many times by compiler (s-soflin.ads)
    Abort_Defer : Synchronous_Control.Lock_Abort_Handler
       renames Synchronous_Control.Lock_Abort_Hook;
-   pragma Suppress (Access_Check, Abort_Defer); -- not null
 
    --  required for exception handler by compiler (s-soflin.ads)
    Abort_Undefer : Synchronous_Control.Unlock_Abort_Handler
       renames Synchronous_Control.Unlock_Abort_Hook;
-   pragma Suppress (Access_Check, Abort_Undefer); -- not null
 
    --  required for limited interface by compiler (s-soflin.ads)
    type Dummy_Communication_Block is record
