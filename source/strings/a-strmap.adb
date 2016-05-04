@@ -860,8 +860,8 @@ package body Ada.Strings.Maps is
          New_Data := new Map_Data'(
             Length => Sorted_Last,
             Reference_Count => 1,
-            From => Sorted_From,
-            To => Sorted_To);
+            From => Sorted_From (1 .. Sorted_Last),
+            To => Sorted_To (1 .. Sorted_Last));
       end if;
       pragma Check (Validate, Naked_Maps.Debug.Valid (New_Data.all));
       return Create (New_Data);
