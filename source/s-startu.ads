@@ -64,6 +64,8 @@ package System.Startup is
    Leap_Seconds_Support : Integer := 0
       with Export,
          Convention => C, External_Name => "__gl_leap_seconds_support";
+   Bind_Env_Addr : Address := Null_Address
+      with Export, Convention => C, External_Name => "__gl_bind_env_addr";
 
    --  initialize Ada runtime (rtinit.c)
 

@@ -266,7 +266,9 @@ package System.Unwind.Raising is
    --  in drake, only the simple form of "catch exception" is supported.
 
    --  (s-excdeb.ads)
-   procedure Debug_Raise_Exception (E : not null Exception_Data_Access)
+   procedure Debug_Raise_Exception (
+      E : not null Exception_Data_Access;
+      Message : String)
       with Export,
          Convention => Ada, External_Name => "__gnat_debug_raise_exception";
 

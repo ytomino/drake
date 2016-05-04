@@ -329,7 +329,7 @@ package body Ada.Containers.Ordered_Sets is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element'Access);
+      return (Element => Position.all.Element'Access); -- [gcc-6] .all
    end Constant_Reference;
 
    procedure Assign (Target : in out Set; Source : Set) is
@@ -1025,7 +1025,7 @@ package body Ada.Containers.Ordered_Sets is
       begin
          Unique (Container, True);
 --  diff
-         return (Element => Position.Element'Access);
+         return (Element => Position.all.Element'Access); -- [gcc-6] .all
       end Reference_Preserving_Key;
 
       function Constant_Reference (

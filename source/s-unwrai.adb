@@ -80,7 +80,7 @@ package body System.Unwind.Raising is
             renames Machine_Occurrence.Occurrence;
       begin
          Occurrences.Backtrace (X);
-         Debug_Raise_Exception (X.Id); -- for gdb
+         Debug_Raise_Exception (X.Id, X.Msg (1 .. X.Msg_Length)); -- for gdb
       end;
       Separated.Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Machine_Occurrence;
@@ -558,8 +558,12 @@ package body System.Unwind.Raising is
       return Code'Address;
    end ZZZ;
 
-   procedure Debug_Raise_Exception (E : not null Exception_Data_Access) is
+   procedure Debug_Raise_Exception (
+      E : not null Exception_Data_Access;
+      Message : String)
+   is
       pragma Inspection_Point (E);
+      pragma Inspection_Point (Message);
    begin
       null;
    end Debug_Raise_Exception;

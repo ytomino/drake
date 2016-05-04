@@ -295,6 +295,11 @@ private
       Position : Positive;
       Value : Prim_Op_Kind);
 
+   --  required by compiler (a-tags.ads)
+   --  for Generic_Dispatching_Constructor (exp_intr.adb)
+   function Type_Is_Abstract (T : Tag) return Boolean
+      renames Is_Abstract;
+
    --  optionally required by compiler (a-tags.ads)
    --  for finalizers (exp_ch7.adb, exp_util.adb)
 --  procedure Unregister_Tag (T : Tag) is null; -- unimplemented

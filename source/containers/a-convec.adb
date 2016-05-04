@@ -408,7 +408,7 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         return (Element => Data.Items (Position)'Access);
+         return (Element => Data.all.Items (Position)'Access); -- [gcc-6] .all
       end;
    end Constant_Reference;
 
@@ -425,7 +425,7 @@ package body Ada.Containers.Vectors is
       declare
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
-         return (Element => Data.Items (Position)'Access);
+         return (Element => Data.all.Items (Position)'Access); -- [gcc-6] .all
       end;
    end Reference;
 

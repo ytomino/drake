@@ -305,7 +305,7 @@ package body Ada.Containers.Ordered_Maps is
    is
       pragma Unreferenced (Container);
    begin
-      return (Element => Position.Element'Access);
+      return (Element => Position.all.Element'Access); -- [gcc-6] .all
    end Constant_Reference;
 
    function Reference (
@@ -315,7 +315,7 @@ package body Ada.Containers.Ordered_Maps is
    begin
       Unique (Container, True);
 --  diff
-      return (Element => Position.Element'Access);
+      return (Element => Position.all.Element'Access); -- [gcc-6] .all
    end Reference;
 
    function Constant_Reference (

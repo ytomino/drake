@@ -153,7 +153,6 @@ private
    subtype Code_Loc is System.Address;
 
    --  not required for gcc (a-except-2005.ads)
---  function Current_Target_Exception return Exception_Occurrence;
 --  procedure Poll;
 
 end Ada.Exceptions;

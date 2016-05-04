@@ -65,7 +65,4 @@ package System.Soft_Links is
    end record;
    pragma Suppress_Initialization (Dummy_Communication_Block);
 
-   --  not required for gcc (s-soflin.ads)
---  procedure Update_Exception_NT (X : EO := Current_Target_Exception);
-
 end System.Soft_Links;
