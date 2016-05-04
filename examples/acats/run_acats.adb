@@ -250,7 +250,18 @@ procedure run_acats is
 					Simple_Name : constant String := Ada.Directories.Simple_Name (Dir_Entry);
 				begin
 					if Simple_Name (Simple_Name'First) /= '.' then
-						Ada.Directories.Delete_File (Ada.Directories.Full_Name (Dir_Entry));
+						declare
+							Full_Name : constant String :=
+								Ada.Directories.Full_Name (Dir_Entry);
+						begin
+							case Ada.Directories.Kind (Dir_Entry) is
+								when Ada.Directories.Ordinary_File
+									| Ada.Directories.Special_File =>
+									Ada.Directories.Delete_File (Full_Name);
+								when Ada.Directories.Directory =>
+									Ada.Directories.Delete_Tree (Full_Name);
+							end case;
+						end;
 					end if;
 				end Process;
 			begin
@@ -278,25 +289,25 @@ procedure run_acats is
 		end Copy;
 	begin
 		if Ada.Strings.Equal_Case_Insensitive (Name, "c94001a") then
-			Shell_Execute ("patch -i ../c94001a.patch");
+			Shell_Execute ("patch -i ../c94001a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001b") then
-			Shell_Execute ("patch -i ../c94001b.patch");
+			Shell_Execute ("patch -i ../c94001b.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001c") then
-			Shell_Execute ("patch -i ../c94001c.patch");
+			Shell_Execute ("patch -i ../c94001c.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94002a") then
-			Shell_Execute ("patch -i ../c94002a.patch");
+			Shell_Execute ("patch -i ../c94002a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004a") then
-			Shell_Execute ("patch -i ../c94004a.patch");
+			Shell_Execute ("patch -i ../c94004a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004b") then
-			Shell_Execute ("patch -i ../c94004b.patch");
+			Shell_Execute ("patch -i ../c94004b.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94005b") then
-			Shell_Execute ("patch -i ../c94005b.patch");
+			Shell_Execute ("patch -i ../c94005b.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94010a") then
-			Shell_Execute ("patch -i ../c94010a.patch");
+			Shell_Execute ("patch -i ../c94010a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95012a") then
-			Shell_Execute ("patch -i ../c95012a.patch");
+			Shell_Execute ("patch -i ../c95012a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95021a") then
-			Shell_Execute ("patch -i ../c95021a.patch");
+			Shell_Execute ("patch -i ../c95021a.diff");
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
 			Delete ("ca1020e_func1.adb");
 			Delete ("ca1020e_func2.adb");
@@ -415,13 +426,13 @@ procedure run_acats is
 		end if;
 		Ada.Strings.Unbounded.Append (Command, " ");
 		Ada.Strings.Unbounded.Append (Command, Name);
-		if Link_With /= "" then
-			Ada.Strings.Unbounded.Append (Command, " -largs ");
-			Ada.Strings.Unbounded.Append (Command, Link_With);
-		end if;
 		if RTS /= "" then
 			Ada.Strings.Unbounded.Append (Command, " --RTS=");
 			Ada.Strings.Unbounded.Append (Command, RTS);
+		end if;
+		if Link_With /= "" then
+			Ada.Strings.Unbounded.Append (Command, " -largs ");
+			Ada.Strings.Unbounded.Append (Command, Link_With);
 		end if;
 		if Save_Log then
 			Ada.Strings.Unbounded.Append (Command, " 2>&1 | tee log.txt");

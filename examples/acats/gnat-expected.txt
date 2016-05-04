@@ -43,7 +43,7 @@ cxd2007 C Asynchronous_Task_Control is not supported
 cxd2008 F failed to queue priority control
 cxd3001 F pragma Locking_Policy is not working
 cxd3002 F pragma Locking_Policy is not working
-cxd6001 F failed to abort
+cxd6001 F failed to abort (by timing)
 cxd6002 F failed to abort
 cxdb001 C Asynchronous_Task_Control is not supported
 cxdb002 C Asynchronous_Task_Control is not supported
