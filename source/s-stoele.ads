@@ -50,9 +50,6 @@ package System.Storage_Elements is
    pragma Inline_Always (To_Address);
    pragma Inline_Always (To_Integer);
 
-   --  ...and so on for all language-defined subprograms declared in this
-   --  package.
-
    --  extended
    function Shift_Left (Value : Storage_Element; Amount : Natural)
       return Storage_Element
