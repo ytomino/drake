@@ -24,12 +24,7 @@ package body Ada.Calendar.Formatting is
 --    Hour at 0 range 56 .. 63; -- 2 ** 5 = 32 > 24
 --  end record;
 
-   function Shift_Left (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
+   pragma Provide_Shift_Operators (Packed_Split_Time);
 
    function Packed_Split (
       Date : Time;

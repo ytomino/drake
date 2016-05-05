@@ -351,7 +351,10 @@ procedure ext_doc is
 													Ada.Strings.Unbounded.Append (Document, "| " & Ex_Line (Ex_F + 4 .. Ex_Line'Last));
 												end if;
 												State := Comment;
-											elsif Ex_F > 0 and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma") then
+											elsif Ex_F > 0
+												and then Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma")
+												and then not Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "pragma Provide_Shift_Operators (")
+											then
 												Skip_F := Ex_F;
 											elsif Ex_F > 0
 												and then (Start_With (Ex_Line (Ex_F .. Ex_Line'Last), "with Import")

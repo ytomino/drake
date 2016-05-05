@@ -5,15 +5,11 @@ package System.Exponentiations is
 
    generic
       type Integer_Type is range <>;
-      with function Shift_Left (Value : Integer_Type; Amount : Natural)
-         return Integer_Type is <>;
    function Generic_Exp_Integer (Left : Integer_Type; Right : Natural)
       return Integer_Type;
 
    generic
       type Integer_Type is range <>;
-      with function Shift_Left (Value : Integer_Type; Amount : Natural)
-         return Integer_Type is <>;
    function Generic_Exp_Integer_No_Check (Left : Integer_Type; Right : Natural)
       return Integer_Type;
 

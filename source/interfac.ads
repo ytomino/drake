@@ -20,69 +20,20 @@ package Interfaces is
    type Unsigned_64 is mod 2 ** 64;
    for Unsigned_64'Size use 64;
 
-   function Shift_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8
-      with Import, Convention => Intrinsic;
-   function Shift_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16
-      with Import, Convention => Intrinsic;
-   function Shift_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32
-      with Import, Convention => Intrinsic;
-   function Shift_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64
-      with Import, Convention => Intrinsic;
-
-   function Shift_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64
-      with Import, Convention => Intrinsic;
-
-   function Shift_Right_Arithmetic (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8
-      with Import, Convention => Intrinsic;
-   function Shift_Right_Arithmetic (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16
-      with Import, Convention => Intrinsic;
-   function Shift_Right_Arithmetic (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32
-      with Import, Convention => Intrinsic;
-   function Shift_Right_Arithmetic (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64
-      with Import, Convention => Intrinsic;
-
-   function Rotate_Left (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8
-      with Import, Convention => Intrinsic;
-   function Rotate_Left (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16
-      with Import, Convention => Intrinsic;
-   function Rotate_Left (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32
-      with Import, Convention => Intrinsic;
-   function Rotate_Left (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64
-      with Import, Convention => Intrinsic;
-
-   function Rotate_Right (Value : Unsigned_8; Amount : Natural)
-      return Unsigned_8
-      with Import, Convention => Intrinsic;
-   function Rotate_Right (Value : Unsigned_16; Amount : Natural)
-      return Unsigned_16
-      with Import, Convention => Intrinsic;
-   function Rotate_Right (Value : Unsigned_32; Amount : Natural)
-      return Unsigned_32
-      with Import, Convention => Intrinsic;
-   function Rotate_Right (Value : Unsigned_64; Amount : Natural)
-      return Unsigned_64
-      with Import, Convention => Intrinsic;
+--  function Shift_Left  (Value : Unsigned_n; Amount : Natural)
+--    return Unsigned_n;
+--  function Shift_Right (Value : Unsigned_n; Amount : Natural)
+--    return Unsigned_n;
+--  function Shift_Right_Arithmetic (Value : Unsigned_n; Amount : Natural)
+--    return Unsigned_n;
+--  function Rotate_Left  (Value : Unsigned_n; Amount : Natural)
+--    return Unsigned_n;
+--  function Rotate_Right (Value : Unsigned_n; Amount : Natural)
+--    return Unsigned_n;
+--  ...
+   pragma Provide_Shift_Operators (Unsigned_8);
+   pragma Provide_Shift_Operators (Unsigned_16);
+   pragma Provide_Shift_Operators (Unsigned_32);
+   pragma Provide_Shift_Operators (Unsigned_64);
 
 end Interfaces;

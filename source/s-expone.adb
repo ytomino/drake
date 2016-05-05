@@ -10,7 +10,13 @@ package body System.Exponentiations is
          if Right >= Integer_Type'Size then
             Unwind.Raising.Overflow;
          else
-            return Shift_Left (1, Right);
+            declare
+               function Shift_Left (Value : Integer_Type; Amount : Natural)
+                  return Integer_Type
+                  with Import, Convention => Intrinsic;
+            begin
+               return Shift_Left (1, Right);
+            end;
          end if;
       elsif Left = 0 then
          if Right > 0 then
@@ -120,7 +126,13 @@ package body System.Exponentiations is
          if Right >= Integer_Type'Size then
             return 0;
          else
-            return Shift_Left (1, Right);
+            declare
+               function Shift_Left (Value : Integer_Type; Amount : Natural)
+                  return Integer_Type
+                  with Import, Convention => Intrinsic;
+            begin
+               return Shift_Left (1, Right);
+            end;
          end if;
       else
          declare

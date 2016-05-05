@@ -27,12 +27,7 @@ package body Ada.Calendar is
 --    Year at 0 range 16 .. 31; -- 2 ** 9 = 512 > 2399 - 1901 + 1 = 499
 --  end record;
 
-   function Shift_Left (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
+   pragma Provide_Shift_Operators (Packed_Split_Time);
 
    function Packed_Split (Date : Time) return Packed_Split_Time;
       --  The callings of this function will be unified since pure attribute

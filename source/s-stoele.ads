@@ -51,17 +51,9 @@ package System.Storage_Elements is
    pragma Inline_Always (To_Integer);
 
    --  extended
-   function Shift_Left (Value : Storage_Element; Amount : Natural)
-      return Storage_Element
-      with Import, Convention => Intrinsic;
-   function Shift_Left (Value : Integer_Address; Amount : Natural)
-      return Integer_Address
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Storage_Element; Amount : Natural)
-      return Storage_Element
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Integer_Address; Amount : Natural)
-      return Integer_Address
-      with Import, Convention => Intrinsic;
+   --  Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left,
+   --    and Rotate_Right.
+   pragma Provide_Shift_Operators (Storage_Element);
+   pragma Provide_Shift_Operators (Integer_Address);
 
 end System.Storage_Elements;
