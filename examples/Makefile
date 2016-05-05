@@ -127,6 +127,9 @@ cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/
 			echo rm $$I ; \
 			rm $(BUILDDIR)/$$I ; \
 			rm $(BUILDDIR)/adalib/libgnat.build/$$I ; \
+			if [[ -f $(BUILDDIR)/adalib/$$I ]] ; then \
+				rm -f $(BUILDDIR)/adalib/$$I ; \
+			fi ; \
 			REMOVED_A=1 ; \
 			if [[ $$I =~ ^c- ]] ; then \
 				REMOVED_C=1 ; \
@@ -164,7 +167,7 @@ clean:
 	-rm -rf $(BINLN) *.build
 
 xfind:
-	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's/^$(subst /,\/,$(PWD))\///'
+	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's|^$(PWD)/||'
 
 xfindall: xfind
 xfindall: FFLAGS_ALL+=-r

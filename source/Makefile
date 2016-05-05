@@ -24,12 +24,14 @@ export MAKEFLAGS+=r
 HOST=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
 ifeq ($(TARGET),$(HOST))
-GCC=$(dir $(shell which gnatmake))gcc
+GCC=gcc
 AR=ar
 else
 GCC=$(TARGET)-gcc
 AR=$(TARGET)-ar
 endif
+
+LIBGCCDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
 
 ifeq ($(INSTALL),)
 INSTALL=install -m 444
@@ -330,8 +332,8 @@ $(NOSIG_BUILDDIR):
 $(NOTB_BUILDDIR):
 	mkdir -p $@
 
-$(RTSDIR)/adainclude/system.ads: | $(RTSDIR)/adainclude
-	ln -s $(dir $(shell $(GCC) -print-libgcc-file-name))adainclude/system.ads $@
+$(RTSDIR)/adainclude/system.ads: | $(LIBGCCDIR)/adainclude/system.ads $(RTSDIR)/adainclude
+	ln -s $(LIBGCCDIR)/adainclude/system.ads $@
 
 $(RTSDIR)/adainclude/%.ads: %.ads
 	$(INSTALL) $(abspath $<) $@
