@@ -28,47 +28,47 @@
 #include <sys/types.h> /* before other system headers */
 #include <sys/ucontext.h> /* before signal.h */
 #include <signal.h> /* before unistd.h and time.h */
-#include <time.h> /* time and sleep */
-#include <sys/resource.h> /* get CPU time, before sys/time.h */
-#include <sys/time.h> /* get current time */
+#include <time.h>
+#include <sys/resource.h> /* before sys/time.h */
+#include <sys/time.h>
 #include <sys/uio.h>
-#include <string.h> /* strsignal */
-#include <sys/syscall.h> /* sigreturn */
+#include <string.h>
+#include <sys/syscall.h>
 #if defined(__APPLE__)
 #include <sys/vm.h> /* before sys/sysctl.h */
 #include <sys/attr.h> /* before unistd.h */
 #endif
 #include <sys/sysctl.h>
-#include <sys/mman.h> /* low-level memory op */
-#include <unistd.h> /* low-level I/O */
-#include <stdlib.h> /* abort, atexit, lldiv, getenv/setenv and memory op */
-#include <sys/wait.h> /* waitpid */
+#include <sys/mman.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 #if defined(__linux__)
-#include <sys/stat.h> /* low-level file info, before fcntl.h */
-#include <fcntl.h> /* low-level file op */
+#include <sys/stat.h> /* before fcntl.h */
+#include <fcntl.h>
 #else
-#include <fcntl.h> /* low-level file op, before sys/stat.h */
-#include <sys/stat.h> /* low-level file info */
+#include <fcntl.h> /* before sys/stat.h */
+#include <sys/stat.h>
 #endif
-#include <sys/file.h> /* flock */
+#include <sys/file.h>
 #if defined(__linux__)
 #define _SYS_SOCKET_H
 #include <bits/socket.h> /* before netinet/in.h */
-#include <netinet/in.h> /* protocols, before sys/socket.h */
+#include <netinet/in.h> /* before sys/socket.h */
 #undef _SYS_SOCKET_H
 #endif
-#include <sys/socket.h> /* socket, before sys/mount.h */
-#include <netdb.h> /* getaddrinfo */
+#include <sys/socket.h> /* before sys/mount.h */
+#include <netdb.h>
 #if !defined(__linux__)
-#include <netinet/in.h> /* protocols, after netdb.h in FreeBSD */
+#include <netinet/in.h> /* after netdb.h in FreeBSD */
 #endif
-#include <sys/mount.h> /* filesystem */
+#include <sys/mount.h>
 #if defined(__linux__)
 #include <sys/statfs.h>
 #endif
-#include <dirent.h> /* directory searching */
-#include <fnmatch.h> /* wildcard */
-#include <termios.h> /* terminal control */
+#include <dirent.h>
+#include <fnmatch.h>
+#include <termios.h>
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #define _SYS_SOCKIO_H_ /* sys/sockio.h has many bad macros */
 #endif
@@ -76,16 +76,16 @@
 #if defined(__APPLE__) || defined(__FreeBSD__)
 #undef _SYS_SOCKIO_H_
 #endif
-#include <pthread.h> /* tasking */
+#include <pthread.h>
 #include <dlfcn.h>
-#include <spawn.h> /* spawn */
+#include <spawn.h>
 #if !defined(__linux__)
 #if defined(__FreeBSD__)
 #include <stdio.h> /* before wchar.h in FreeBSD */
 #endif
 #include <wchar.h> /* before iconv.h in FreeBSD, after malloc.h in Linux */
-#include <pwd.h> /* user info, after stdio.h in Linux */
-#include <grp.h> /* group info */
+#include <pwd.h>
+#include <grp.h>
 #endif
 #include <iconv.h>
 #endif
@@ -97,13 +97,13 @@
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
-#include <malloc/malloc.h> /* malloc_size */
-#include <copyfile.h> /* copyfile */
-#include <mach/mach_time.h> /* mach_absolute_time */
+#include <malloc/malloc.h>
+#include <copyfile.h>
+#include <mach/mach_time.h>
 #define _ARCHITECTURE_BYTE_ORDER_H_ /* headmaster can not translate some inline functions */
 #include <mach-o/dyld.h>
 #undef _ARCHITECTURE_BYTE_ORDER_H_
-#include <crt_externs.h> /* environment variable, after mach-o/dyld.h */
+#include <crt_externs.h> /* after mach-o/dyld.h */
 #elif defined(__FreeBSD__)
 #undef _DONT_USE_CTYPE_INLINE_
 #undef d_fileno
@@ -115,24 +115,24 @@
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
-#include <sys/param.h> /* PAGE_SIZE */
-#include <malloc_np.h> /* malloc_usable_size */
-#include <pthread_np.h> /* pthread_attr_get_np */
+#include <sys/param.h>
+#include <malloc_np.h>
+#include <pthread_np.h>
 #include <link.h>
 #elif defined(__linux__)
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
-#include <sys/statvfs.h> /* filesystem */
+#include <sys/statvfs.h>
 #include <link.h>
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
 #undef __USE_XOPEN2K8 /* avoiding circular dependency between wchar.h and stdio.h */
 #include <libio.h> /* before stdio.h */
 #undef _SC_NPROCESSORS_ONLN
-#include <malloc.h> /* malloc_usable_size */
-#include <pwd.h> /* user info */
-#include <grp.h> /* group info */
+#include <malloc.h>
+#include <pwd.h> /* after stdio.h in Linux */
+#include <grp.h>
 #undef _FILE_OFFSET_BITS
 #endif
 
@@ -161,14 +161,14 @@
 #undef h_errno /* headmaster can not translate it */
 #include <windows.h>
 #include <winternl.h> /* before wincrypt.h */
-#include <wincrypt.h> /* random */
+#include <wincrypt.h>
 #include <ws2tcpip.h>
 #undef _S6_un /* false positive warning of gcc */
 #undef s6_addr /* use _S6_un */
 #define RC_INVOKED /* headmaster can not translate some inline functions */
 #include <malloc.h>
 #undef RC_INVOKED
-#include <stdlib.h> /* abort, atexit, lldiv */
+#include <stdlib.h>
 #include <signal.h>
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
