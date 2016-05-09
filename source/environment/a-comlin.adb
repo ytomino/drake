@@ -48,6 +48,30 @@ package body Ada.Command_Line is
       System.Startup.Exit_Status := Integer (Code);
    end Set_Exit_Status;
 
+   --  implementation of the non-abstract iterator
+
+   overriding function First (Object : Concrete_Iterator) return Natural is
+      pragma Unreferenced (Object);
+   begin
+      if Argument_Count = 0 then
+         return 0;
+      else
+         return 1;
+      end if;
+   end First;
+
+   overriding function Next (Object : Concrete_Iterator; Position : Natural)
+      return Natural
+   is
+      pragma Unreferenced (Object);
+   begin
+      if Position >= Argument_Count then
+         return 0;
+      else
+         return Position + 1;
+      end if;
+   end Next;
+
    --  implementation of the iterator
 
    overriding function First (Object : Iterator) return Natural is
