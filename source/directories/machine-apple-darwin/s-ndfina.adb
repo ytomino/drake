@@ -12,12 +12,12 @@ with System.Storage_Elements;
 with System.UTF_Conversions;
 with C.hfs_casetables;
 with C.vfs_utfconvdata;
-package body Ada.Directories.File_Names is
-   use type System.Formatting.Digit;
-   use type System.Storage_Elements.Integer_Address;
-   use type System.Storage_Elements.Storage_Offset;
-   use type System.UTF_Conversions.From_Status_Type;
-   use type System.UTF_Conversions.UCS_4;
+package body System.Native_Directories.File_Names is
+   use type Formatting.Digit;
+   use type Storage_Elements.Integer_Address;
+   use type Storage_Elements.Storage_Offset;
+   use type UTF_Conversions.From_Status_Type;
+   use type UTF_Conversions.UCS_4;
    use type C.signed_int;
    use type C.size_t;
    use type C.unsigned_char; -- implies u_int8_t
@@ -25,7 +25,7 @@ package body Ada.Directories.File_Names is
    use type C.unsigned_short_ptr;
    use type C.unsigned_int;
 
-   Flag : aliased System.Once.Flag := 0;
+   Flag : aliased Once.Flag := 0;
 
    --  equivalent to UncompressStructure (hfs_compare.c)
    function UncompressStructure (
@@ -40,18 +40,18 @@ package body Ada.Directories.File_Names is
       return C.unsigned_short_ptr
    is
       package unsigned_short_ptr_Conv is
-         new System.Address_To_Named_Access_Conversions (
+         new Address_To_Named_Access_Conversions (
             C.unsigned_short,
             C.unsigned_short_ptr);
       package compressed_block_const_ptr_Conv is
-         new System.Address_To_Constant_Access_Conversions (
+         new Address_To_Constant_Access_Conversions (
             C.hfs_casetables.compressed_block,
             C.hfs_casetables.compressed_block_const_ptr);
       m_bp : not null C.hfs_casetables.compressed_block_const_ptr := bp;
       l_out : constant C.unsigned_short_ptr :=
          unsigned_short_ptr_Conv.To_Pointer (
-            System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Offset (size)));
+            Standard_Allocators.Allocate (
+               Storage_Elements.Storage_Offset (size)));
       op : C.unsigned_short_ptr := l_out;
       data : C.unsigned_short;
    begin
@@ -61,7 +61,8 @@ package body Ada.Directories.File_Names is
             op.all := data;
             op := unsigned_short_ptr_Conv.To_Pointer (
                unsigned_short_ptr_Conv.To_Address (op)
-               + C.unsigned_short'Size / Standard'Storage_Unit);
+               + Storage_Elements.Storage_Offset'(
+                  C.unsigned_short'Size / Standard'Storage_Unit));
             if m_bp.f_type = C.hfs_casetables.kTypeAscending then
                data := data + 1;
             elsif m_bp.f_type = C.hfs_casetables.kTypeAscending256 then
@@ -70,7 +71,9 @@ package body Ada.Directories.File_Names is
          end loop;
          m_bp := compressed_block_const_ptr_Conv.To_Pointer (
             compressed_block_const_ptr_Conv.To_Address (m_bp)
-            + C.hfs_casetables.compressed_block'Size / Standard'Storage_Unit);
+            + Storage_Elements.Storage_Offset'(
+               C.hfs_casetables.compressed_block'Size
+               / Standard'Storage_Unit));
       end loop;
       return l_out;
    end UncompressStructure;
@@ -90,10 +93,10 @@ package body Ada.Directories.File_Names is
    end InitCompareTables;
 
    --  a part of FastUnicodeCompare (hfs_compare.c)
-   function To_Lower (Item : System.UTF_Conversions.UCS_4)
-      return System.UTF_Conversions.UCS_4;
-   function To_Lower (Item : System.UTF_Conversions.UCS_4)
-      return System.UTF_Conversions.UCS_4 is
+   function To_Lower (Item : UTF_Conversions.UCS_4)
+      return UTF_Conversions.UCS_4;
+   function To_Lower (Item : UTF_Conversions.UCS_4)
+      return UTF_Conversions.UCS_4 is
    begin
       if Item > 16#ffff# then
          return Item; -- out of gCompareTable
@@ -106,7 +109,7 @@ package body Ada.Directories.File_Names is
             temp : constant C.unsigned_short := Table (C.size_t (cn / 256));
          begin
             if temp /= 0 then
-               return System.UTF_Conversions.UCS_4 (
+               return UTF_Conversions.UCS_4 (
                   Table (C.size_t (temp + cn rem 256)));
             else
                return Item;
@@ -178,12 +181,12 @@ package body Ada.Directories.File_Names is
 
    --  equivalent to getmappedvalue16 (vfs_utfconv.c)
    function getmappedvalue16 (
---    theTable : System.Address; -- CFUniCharDecompositionTable
+--    theTable : Address; -- CFUniCharDecompositionTable
 --    numElem : C.size_t; -- CFUniCharDecompositionTable'Length / 2
       character : C.vfs_utfconvdata.u_int16_t)
       return C.vfs_utfconvdata.u_int16_t;
    function getmappedvalue16 (
---    theTable : System.Address;
+--    theTable : Address;
 --    numElem : C.size_t;
       character : C.vfs_utfconvdata.u_int16_t)
       return C.vfs_utfconvdata.u_int16_t
@@ -225,7 +228,7 @@ package body Ada.Directories.File_Names is
    type u_int16_t_ptr is access constant C.vfs_utfconvdata.u_int16_t;
 
    package u_int16_t_ptr_Conv is
-      new System.Address_To_Constant_Access_Conversions (
+      new Address_To_Constant_Access_Conversions (
          C.vfs_utfconvdata.u_int16_t,
          u_int16_t_ptr);
 
@@ -257,7 +260,7 @@ package body Ada.Directories.File_Names is
       else
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             C.vfs_utfconvdata.CFUniCharMultipleDecompositionTable'Address
-            + System.Storage_Elements.Storage_Offset (firstChar)
+            + Storage_Elements.Storage_Offset (firstChar)
                * (C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
       end if;
       usedLength := 0;
@@ -272,13 +275,15 @@ package body Ada.Directories.File_Names is
          end if;
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             u_int16_t_ptr_Conv.To_Address (bmpMappings)
-            + (C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
+            + Storage_Elements.Storage_Offset'(
+               C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
       end if;
       for I in 0 .. length - 1 loop
          convertedChars (usedLength + I) := bmpMappings.all;
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             u_int16_t_ptr_Conv.To_Address (bmpMappings)
-            + (C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
+            + Storage_Elements.Storage_Offset'(
+               C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
       end loop;
       usedLength := usedLength + length;
    end unicode_recursive_decompose;
@@ -330,8 +335,7 @@ package body Ada.Directories.File_Names is
       end if;
    end unicode_decompose;
 
-   type Stack_Type is
-      array (Positive range <>) of System.UTF_Conversions.UCS_4;
+   type Stack_Type is array (Positive range <>) of UTF_Conversions.UCS_4;
    pragma Suppress_Initialization (Stack_Type);
 
    --  a part of utf8_decodestr (vfs_utfconv.c)
@@ -347,15 +351,15 @@ package body Ada.Directories.File_Names is
       Top : in out Natural)
    is
       Last : Natural;
-      Code : System.UTF_Conversions.UCS_4;
-      From_Status : System.UTF_Conversions.From_Status_Type;
+      Code : UTF_Conversions.UCS_4;
+      From_Status : UTF_Conversions.From_Status_Type;
    begin
-      System.UTF_Conversions.From_UTF_8 (
+      UTF_Conversions.From_UTF_8 (
          S (Index .. S'Last),
          Last,
          Code,
          From_Status);
-      if From_Status /= System.UTF_Conversions.Success then
+      if From_Status /= UTF_Conversions.Success then
          --  an illegal sequence is replaced to %XX at HFS
          declare
             Illegal : Character;
@@ -363,15 +367,15 @@ package body Ada.Directories.File_Names is
          begin
             Illegal := S (Index);
             Stack (3) := Wide_Wide_Character'Pos ('%');
-            System.Formatting.Image (
+            Formatting.Image (
                Character'Pos (Illegal) / 16,
                D,
-               Set => System.Formatting.Upper_Case);
+               Set => Formatting.Upper_Case);
             Stack (2) := Character'Pos (D);
-            System.Formatting.Image (
+            Formatting.Image (
                Character'Pos (Illegal) rem 16,
                D,
-               Set => System.Formatting.Upper_Case);
+               Set => Formatting.Upper_Case);
             Stack (1) := Character'Pos (D);
             Top := 3;
          end;
@@ -382,15 +386,15 @@ package body Ada.Directories.File_Names is
          while Last < S'Last loop
             declare
                Trailing_Last : Natural;
-               Trailing_Code : System.UTF_Conversions.UCS_4;
-               Trailing_From_Status : System.UTF_Conversions.From_Status_Type;
+               Trailing_Code : UTF_Conversions.UCS_4;
+               Trailing_From_Status : UTF_Conversions.From_Status_Type;
             begin
-               System.UTF_Conversions.From_UTF_8 (
+               UTF_Conversions.From_UTF_8 (
                   S (Last + 1 .. S'Last),
                   Trailing_Last,
                   Trailing_Code,
                   Trailing_From_Status);
-               if Trailing_From_Status = System.UTF_Conversions.Success
+               if Trailing_From_Status = UTF_Conversions.Success
                   and then Trailing_Code < 16#FFFF#
                   and then get_combining_class (
                      C.vfs_utfconvdata.u_int16_t (Trailing_Code)) /= 0
@@ -406,7 +410,7 @@ package body Ada.Directories.File_Names is
          --  reverse trailing composable characters
          for I in 0 .. Top / 2 - 1 loop
             declare
-               Temp : constant System.UTF_Conversions.UCS_4 :=
+               Temp : constant UTF_Conversions.UCS_4 :=
                   Stack (Stack'First + I);
             begin
                Stack (Stack'First + I) := Stack (Top - I);
@@ -430,7 +434,7 @@ package body Ada.Directories.File_Names is
                for i in reverse 0 .. count - 1 loop
                   ucs_ch := sequence (i);
                   Top := Top + 1;
-                  Stack (Top) := System.UTF_Conversions.UCS_4 (ucs_ch);
+                  Stack (Top) := UTF_Conversions.UCS_4 (ucs_ch);
                end loop;
             end;
          else
@@ -441,7 +445,7 @@ package body Ada.Directories.File_Names is
          --  equivalent to priortysort (vfs_utfconv.c) except reverse order
          for I in reverse 1 .. Top - 2 loop
             declare
-               Item : constant System.UTF_Conversions.UCS_4 := Stack (I);
+               Item : constant UTF_Conversions.UCS_4 := Stack (I);
                Item_Class : constant C.vfs_utfconvdata.u_int8_t :=
                   get_combining_class (
                      C.vfs_utfconvdata.u_int16_t (Stack (I)));
@@ -492,8 +496,8 @@ package body Ada.Directories.File_Names is
             Push (Right, R_Index, R_Stack, R_Top);
          end if;
          declare
-            L_Code : System.UTF_Conversions.UCS_4 := L_Stack (L_Top);
-            R_Code : System.UTF_Conversions.UCS_4 := R_Stack (R_Top);
+            L_Code : UTF_Conversions.UCS_4 := L_Stack (L_Top);
+            R_Code : UTF_Conversions.UCS_4 := R_Stack (R_Top);
          begin
             if not Case_Sensitive then
                L_Code := To_Lower (L_Code);
@@ -515,29 +519,31 @@ package body Ada.Directories.File_Names is
    --  implementation
 
    function Equal_File_Names (
-      FS : Volumes.File_System;
+      FS : Ada.Directories.Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if Volumes.Is_HFS (FS) then
-         System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-         return HFS_Compare (Left, Right, Volumes.Case_Sensitive (FS)) = 0;
+      if Ada.Directories.Volumes.Is_HFS (FS) then
+         Once.Initialize (Flag'Access, InitCompareTables'Access);
+         return HFS_Compare (Left, Right,
+            Case_Sensitive => Ada.Directories.Volumes.Case_Sensitive (FS)) = 0;
       else
          return Left = Right;
       end if;
    end Equal_File_Names;
 
    function Less_File_Names (
-      FS : Volumes.File_System;
+      FS : Ada.Directories.Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if Volumes.Is_HFS (FS) then
-         System.Once.Initialize (Flag'Access, InitCompareTables'Access);
-         return HFS_Compare (Left, Right, Volumes.Case_Sensitive (FS)) < 0;
+      if Ada.Directories.Volumes.Is_HFS (FS) then
+         Once.Initialize (Flag'Access, InitCompareTables'Access);
+         return HFS_Compare (Left, Right,
+            Case_Sensitive => Ada.Directories.Volumes.Case_Sensitive (FS)) < 0;
       else
          return Left < Right;
       end if;
    end Less_File_Names;
 
-end Ada.Directories.File_Names;
+end System.Native_Directories.File_Names;

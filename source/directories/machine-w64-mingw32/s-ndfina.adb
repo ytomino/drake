@@ -2,7 +2,7 @@ with System.Zero_Terminated_WStrings;
 with C.string;
 with C.winnls;
 with C.winnt;
-package body Ada.Directories.File_Names is
+package body System.Native_Directories.File_Names is
    use type C.size_t;
 
    --  see http://blogs.msdn.com/b/michkap/archive/2005/10/17/481600.aspx
@@ -22,19 +22,17 @@ package body Ada.Directories.File_Names is
       else
          declare
             W_Left : aliased C.winnt.WCHAR_array (
-               0 ..
-               Left'Length * System.Zero_Terminated_WStrings.Expanding);
+               0 .. Left'Length * Zero_Terminated_WStrings.Expanding);
             W_Right : aliased C.winnt.WCHAR_array (
-               0 ..
-               Right'Length * System.Zero_Terminated_WStrings.Expanding);
+               0 .. Right'Length * Zero_Terminated_WStrings.Expanding);
             W_Left_Length : C.size_t;
             W_Right_Length : C.size_t;
          begin
-            System.Zero_Terminated_WStrings.To_C (
+            Zero_Terminated_WStrings.To_C (
                Left,
                W_Left (0)'Access,
                W_Left_Length);
-            System.Zero_Terminated_WStrings.To_C (
+            Zero_Terminated_WStrings.To_C (
                Right,
                W_Right (0)'Access,
                W_Right_Length);
@@ -66,11 +64,11 @@ package body Ada.Directories.File_Names is
    --  implementation
 
    function Equal_File_Names (
-      FS : Volumes.File_System;
+      FS : Ada.Directories.Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if not Volumes.Case_Sensitive (FS) then
+      if not Ada.Directories.Volumes.Case_Sensitive (FS) then
          return NTFS_Compare (Left, Right) = 0;
       else
          return Left = Right;
@@ -78,15 +76,15 @@ package body Ada.Directories.File_Names is
    end Equal_File_Names;
 
    function Less_File_Names (
-      FS : Volumes.File_System;
+      FS : Ada.Directories.Volumes.File_System;
       Left, Right : String)
       return Boolean is
    begin
-      if not Volumes.Case_Sensitive (FS) then
+      if not Ada.Directories.Volumes.Case_Sensitive (FS) then
          return NTFS_Compare (Left, Right) < 0;
       else
          return Left < Right;
       end if;
    end Less_File_Names;
 
-end Ada.Directories.File_Names;
+end System.Native_Directories.File_Names;
