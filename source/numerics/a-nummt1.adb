@@ -1,5 +1,5 @@
 pragma Check_Policy (Validate => Ignore);
-with Ada.Numerics.Initiators;
+with System.Random_Initiators;
 with System.Storage_Elements;
 with System.Formatting;
 package body Ada.Numerics.MT19937 is
@@ -80,7 +80,9 @@ package body Ada.Numerics.MT19937 is
    function Initialize return State is
       Init : Cardinal_Vector (N_Range);
    begin
-      Initiators.Get (Init'Address, Init'Size / Standard'Storage_Unit);
+      System.Random_Initiators.Get (
+         Init'Address,
+         Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 

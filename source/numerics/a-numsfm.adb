@@ -1,6 +1,6 @@
-with Ada.Numerics.Initiators;
 with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
+with System.Random_Initiators;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT is
    pragma Check_Policy (Validate => Ignore);
@@ -356,7 +356,9 @@ package body Ada.Numerics.SFMT is
    function Initialize return State is
       Init : Unsigned_32_Array (0 .. N32 - 1);
    begin
-      Initiators.Get (Init'Address, Init'Size / Standard'Storage_Unit);
+      System.Random_Initiators.Get (
+         Init'Address,
+         Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 

@@ -2,16 +2,16 @@ pragma License (Unrestricted);
 --  implementation unit specialized for Windows
 with Ada.IO_Exceptions;
 with System.Storage_Elements;
-private package Ada.Numerics.Initiators is
+package System.Random_Initiators is
    pragma Preelaborate;
 
    procedure Get (
-      Item : System.Address;
-      Size : System.Storage_Elements.Storage_Count);
+      Item : Address;
+      Size : Storage_Elements.Storage_Count);
 
    --  Exceptions
 
    Use_Error : exception
-      renames IO_Exceptions.Use_Error;
+      renames Ada.IO_Exceptions.Use_Error;
 
-end Ada.Numerics.Initiators;
+end System.Random_Initiators;

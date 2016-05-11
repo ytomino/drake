@@ -4,17 +4,17 @@ with C.winbase;
 with C.wincrypt;
 with C.windef;
 with C.winerror;
-package body Ada.Numerics.Initiators is
-   use Exception_Identification.From_Here;
+package body System.Random_Initiators is
+   use Ada.Exception_Identification.From_Here;
    use type C.windef.WINBOOL;
    use type C.windef.DWORD; -- error code
 
    procedure Get (
-      Item : System.Address;
-      Size : System.Storage_Elements.Storage_Count)
+      Item : Address;
+      Size : Storage_Elements.Storage_Count)
    is
       package BYTE_ptr_Conv is
-         new System.Address_To_Named_Access_Conversions (
+         new Address_To_Named_Access_Conversions (
             C.windef.BYTE,
             C.windef.BYTE_ptr);
       Context : aliased C.wincrypt.HCRYPTPROV;
@@ -46,4 +46,4 @@ package body Ada.Numerics.Initiators is
       end if;
    end Get;
 
-end Ada.Numerics.Initiators;
+end System.Random_Initiators;

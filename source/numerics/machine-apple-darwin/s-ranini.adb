@@ -2,8 +2,8 @@ with Ada.Exception_Identification.From_Here;
 with C.fcntl;
 with C.sys.types;
 with C.unistd;
-package body Ada.Numerics.Initiators is
-   use Exception_Identification.From_Here;
+package body System.Random_Initiators is
+   use Ada.Exception_Identification.From_Here;
    use type C.char_array;
    use type C.signed_int; -- ssize_t is signed int or signed long
    use type C.signed_long;
@@ -12,8 +12,8 @@ package body Ada.Numerics.Initiators is
    Random_File_Name : constant C.char_array := "/dev/random" & C.char'Val (0);
 
    procedure Get (
-      Item : System.Address;
-      Size : System.Storage_Elements.Storage_Count)
+      Item : Address;
+      Size : Storage_Elements.Storage_Count)
    is
       F : C.signed_int;
       Read_Size : C.sys.types.ssize_t;
@@ -32,4 +32,4 @@ package body Ada.Numerics.Initiators is
       end if;
    end Get;
 
-end Ada.Numerics.Initiators;
+end System.Random_Initiators;
