@@ -1,7 +1,6 @@
-with System.Native_Text_IO;
 with C.wincon;
 with C.windef;
-package body System.Terminal_Colors is
+package body System.Native_Text_IO.Terminal_Colors is
    use type C.windef.WINBOOL;
    use type C.windef.WORD;
 
@@ -81,11 +80,11 @@ package body System.Terminal_Colors is
       pragma Unreferenced (Blink);
       pragma Unreferenced (Reversed_Changing);
       pragma Unreferenced (Reversed);
-      State : Native_Text_IO.Output_State;
+      State : Output_State;
       Attributes : C.windef.WORD;
    begin
       --  getting
-      Native_Text_IO.Save_State (Handle, State);
+      Save_State (Handle, State);
       if not Initial_Attributes_Assigned then
          Initial_Attributes_Assigned := True;
          Initial_Attributes := State.Attributes;
@@ -114,7 +113,7 @@ package body System.Terminal_Colors is
       end if;
       --  setting
       if Attributes /= State.Attributes then
-         Native_Text_IO.Set_Terminal_Attributes (Handle, Attributes);
+         Set_Terminal_Attributes (Handle, Attributes);
       end if;
    end Set;
 
@@ -122,8 +121,8 @@ package body System.Terminal_Colors is
       Handle : Native_IO.Handle_Type) is
    begin
       if Initial_Attributes_Assigned then
-         Native_Text_IO.Set_Terminal_Attributes (Handle, Initial_Attributes);
+         Set_Terminal_Attributes (Handle, Initial_Attributes);
       end if;
    end Reset;
 
-end System.Terminal_Colors;
+end System.Native_Text_IO.Terminal_Colors;

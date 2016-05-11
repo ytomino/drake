@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.Colors;
-private with System.Terminal_Colors;
+private with System.Native_Text_IO.Terminal_Colors;
 package Ada.Text_IO.Terminal.Colors is
    --  Additional terminal-color handling subprograms.
 
@@ -47,7 +47,7 @@ package Ada.Text_IO.Terminal.Colors is
 
 private
 
-   type Color is new System.Terminal_Colors.Color;
+   type Color is new System.Native_Text_IO.Terminal_Colors.Color;
 
    function To_Color (Item : Ada.Colors.RGB) return Color
       renames RGB_To_Color;

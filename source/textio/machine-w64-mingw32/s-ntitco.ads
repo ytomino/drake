@@ -1,8 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
 with Ada.Colors;
-with System.Native_IO;
-package System.Terminal_Colors is
+package System.Native_Text_IO.Terminal_Colors is
    pragma Preelaborate;
 
    type Color is mod 16;
@@ -13,7 +12,7 @@ package System.Terminal_Colors is
    function RGB_To_Color (Item : Ada.Colors.RGB) return Color;
 
    procedure Set (
-      Handle : Native_IO.Handle_Type;
+      Handle : Handle_Type;
       Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
@@ -28,6 +27,6 @@ package System.Terminal_Colors is
       Background_Changing : Boolean;
       Background : Color);
    procedure Reset (
-      Handle : Native_IO.Handle_Type);
+      Handle : Handle_Type);
 
-end System.Terminal_Colors;
+end System.Native_Text_IO.Terminal_Colors;

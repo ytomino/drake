@@ -1,10 +1,9 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
-with System.Native_Text_IO;
 with System.Once;
 with C.stdlib;
 with C.string;
-package body System.Terminal_Colors is
+package body System.Native_Text_IO.Terminal_Colors is
    use type C.char_array;
    use type C.char_ptr;
    use type C.signed_int;
@@ -268,7 +267,7 @@ package body System.Terminal_Colors is
       if Last > 2 then
          Last := Last + 1;
          Seq (Last) := 'm';
-         Native_Text_IO.Write_Just (Handle, Seq (1 .. Last));
+         Write_Just (Handle, Seq (1 .. Last));
       end if;
    end Set;
 
@@ -278,7 +277,7 @@ package body System.Terminal_Colors is
       Seq : constant String (1 .. 4) :=
          (Character'Val (16#1b#), '[', '0', 'm');
    begin
-      Native_Text_IO.Write_Just (Handle, Seq);
+      Write_Just (Handle, Seq);
    end Reset;
 
-end System.Terminal_Colors;
+end System.Native_Text_IO.Terminal_Colors;
