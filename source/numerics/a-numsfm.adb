@@ -1,4 +1,4 @@
-with Ada.Numerics.Initiator;
+with Ada.Numerics.Initiators;
 with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
 with System.Storage_Elements;
@@ -356,7 +356,7 @@ package body Ada.Numerics.SFMT is
    function Initialize return State is
       Init : Unsigned_32_Array (0 .. N32 - 1);
    begin
-      Initiator (Init'Address, Init'Size / Standard'Storage_Unit);
+      Initiators.Get (Init'Address, Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 

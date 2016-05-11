@@ -1,7 +1,17 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
+with Ada.IO_Exceptions;
 with System.Storage_Elements;
-private procedure Ada.Numerics.Initiator (
-   Item : System.Address;
-   Size : System.Storage_Elements.Storage_Count);
-pragma Preelaborate (Ada.Numerics.Initiator);
+private package Ada.Numerics.Initiators is
+   pragma Preelaborate;
+
+   procedure Get (
+      Item : System.Address;
+      Size : System.Storage_Elements.Storage_Count);
+
+   --  Exceptions
+
+   Use_Error : exception
+      renames IO_Exceptions.Use_Error;
+
+end Ada.Numerics.Initiators;
