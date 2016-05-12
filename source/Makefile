@@ -157,7 +157,6 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-foradd.o \
 	s-format.o \
 	s-maccod.o \
-	s-natall.o \
 	s-runcon.o \
 	s-staall.o \
 	s-stack.o \
@@ -166,6 +165,7 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-stoele.o \
 	s-stomap.o \
 	s-syncon.o \
+	s-sysall.o \
 	s-termin.o \
 	s-unstyp.o \
 	s-unwbac.o \

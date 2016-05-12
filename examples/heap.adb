@@ -1,8 +1,9 @@
 with Ada.Unchecked_Deallocation;
 with System.Formatting;
-with System.Native_Allocators.Allocated_Size;
 with System.Storage_Elements;
+with System.System_Allocators.Allocated_Size;
 procedure heap is
+	package System_Allocators renames System.System_Allocators;
 	procedure Put (X : System.Storage_Elements.Integer_Address) is
 		S : String (1 .. Standard'Address_Size / 4);
 		Last : Natural;
@@ -40,21 +41,21 @@ begin
 		x := new Integer;
 		y := new Integer;
 		Put (System.Storage_Elements.To_Integer (x'Pool_Address));
-		Put (System.Native_Allocators.Allocated_Size (x'Pool_Address));
+		Put (System_Allocators.Allocated_Size (x'Pool_Address));
 		Put (System.Storage_Elements.To_Integer (y'Pool_Address));
-		Put (System.Native_Allocators.Allocated_Size (y'Pool_Address));
+		Put (System_Allocators.Allocated_Size (y'Pool_Address));
 		Free (x);
 		Free (y);
 	end;
 	declare -- low-level
 		x : System.Address;
 	begin
-		x := System.Native_Allocators.Allocate (3);
+		x := System_Allocators.Allocate (3);
 		Put (System.Storage_Elements.To_Integer (x));
-		Put (System.Native_Allocators.Allocated_Size (x));
-		x := System.Native_Allocators.Reallocate (x, 33);
+		Put (System_Allocators.Allocated_Size (x));
+		x := System_Allocators.Reallocate (x, 33);
 		Put (System.Storage_Elements.To_Integer (x));
-		Put (System.Native_Allocators.Allocated_Size (x));
-		System.Native_Allocators.Free (x);
+		Put (System_Allocators.Allocated_Size (x));
+		System_Allocators.Free (x);
 	end;
 end heap;

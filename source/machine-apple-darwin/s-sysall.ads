@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with System.Storage_Elements;
-package System.Native_Allocators is
+package System.System_Allocators is
    pragma Preelaborate;
 
    --  heap
@@ -32,4 +32,7 @@ package System.Native_Allocators is
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count);
 
-end System.Native_Allocators;
+   --  Note: This package name comes from GNAT's implementation-defined
+   --    attribute Standard'System_Allocator_Alignment.
+
+end System.System_Allocators;

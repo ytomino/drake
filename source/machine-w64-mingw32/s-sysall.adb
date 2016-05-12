@@ -3,7 +3,7 @@ with C.basetsd;
 with C.winbase;
 with C.windef;
 with C.winnt;
-package body System.Native_Allocators is
+package body System.System_Allocators is
    pragma Suppress (All_Checks);
    use type C.windef.WINBOOL;
 --  use type C.basetsd.SIZE_T;
@@ -137,4 +137,4 @@ package body System.Native_Allocators is
       end;
    end Unmap;
 
-end System.Native_Allocators;
+end System.System_Allocators;

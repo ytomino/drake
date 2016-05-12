@@ -1,8 +1,8 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Allocators.Allocated_Size;
 with System.Standard_Allocators;
 with System.Storage_Elements;
+with System.System_Allocators.Allocated_Size;
 package body Ada.Strings.Generic_Unbounded is
    use type Streams.Stream_Element_Offset;
    use type System.Address;
@@ -62,10 +62,8 @@ package body Ada.Strings.Generic_Unbounded is
       Header_Size : constant System.Storage_Elements.Storage_Count :=
          Generic_Unbounded.Data'Size / Standard'Storage_Unit;
       M : constant System.Address := Data_Cast.To_Address (Data);
-      Usable_Size : constant
-         System.Storage_Elements.Storage_Count :=
-         System.Native_Allocators.Allocated_Size (M)
-         - Header_Size;
+      Usable_Size : constant System.Storage_Elements.Storage_Count :=
+         System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
       if String_Type'Component_Size
          rem Standard'Storage_Unit = 0

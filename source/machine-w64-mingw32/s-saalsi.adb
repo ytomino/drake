@@ -1,6 +1,6 @@
 with C.winbase;
 with C.windef;
-function System.Native_Allocators.Allocated_Size (
+function System.System_Allocators.Allocated_Size (
    Storage_Address : Address)
    return Storage_Elements.Storage_Count
 is
@@ -11,4 +11,4 @@ begin
          C.winbase.GetProcessHeap,
          0,
          C.windef.LPCVOID (Storage_Address)));
-end System.Native_Allocators.Allocated_Size;
+end System.System_Allocators.Allocated_Size;

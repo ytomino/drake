@@ -5,9 +5,10 @@ with Ada.Text_IO.Text_Streams;
 with Ada.Wide_Text_IO;
 with Ada.Wide_Wide_Text_IO;
 with System.Form_Parameters;
-with System.Native_Allocators;
+with System.System_Allocators;
 procedure textio is
 	use type Ada.Streams.Stream_Element_Offset;
+	package System_Allocators renames System.System_Allocators;
 	subtype C is Character;
 	subtype WC is Wide_Character;
 	subtype WWC is Wide_Wide_Character;
@@ -61,7 +62,7 @@ begin
 	-- check Append_File
 	declare
 		Page_Size : constant Ada.Streams.Stream_Element_Positive_Count :=
-			Ada.Streams.Stream_Element_Offset (System.Native_Allocators.Page_Size);
+			Ada.Streams.Stream_Element_Offset (System_Allocators.Page_Size);
 		Test_File_Name : constant String := Ada.Directories.Temporary.Create_Temporary_File;
 		File : Ada.Text_IO.File_Type;
 	begin

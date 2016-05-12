@@ -4,7 +4,7 @@ with System.Debug;
 with C.stdlib;
 with C.sys.mman;
 with C.unistd;
-package body System.Native_Allocators is
+package body System.System_Allocators is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
@@ -95,4 +95,4 @@ package body System.Native_Allocators is
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Unmap;
 
-end System.Native_Allocators;
+end System.System_Allocators;
