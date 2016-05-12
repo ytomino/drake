@@ -2,7 +2,7 @@ with System.Debug;
 with System.Storage_Elements;
 with C.sys.syscall;
 with C.unistd;
-package body System.Native_Stack is
+package body System.Stack is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
@@ -33,4 +33,4 @@ package body System.Native_Stack is
                "syscall (SYS_sigreturn, ...) failed"));
    end Fake_Return_From_Signal_Handler;
 
-end System.Native_Stack;
+end System.Stack;

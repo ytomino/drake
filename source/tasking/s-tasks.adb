@@ -5,10 +5,10 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Stack;
 with System.Native_Tasks.Yield;
 with System.Runtime_Context;
 with System.Shared_Locking;
+with System.Stack;
 with System.Standard_Allocators;
 with System.Storage_Barriers;
 with System.Synchronous_Control;
@@ -1068,10 +1068,8 @@ package body System.Tasks is
    is
       Top, Bottom : Address;
    begin
-      Native_Stack.Get (
-         Native_Tasks.Info_Block (T.Handle, T.Stack_Attribute),
-         Top,
-         Bottom);
+      Stack.Get (Native_Tasks.Info_Block (T.Handle, T.Stack_Attribute),
+         Top => Top, Bottom => Bottom);
       Addr := Top;
       Size := Bottom - Top;
    end Get_Stack;

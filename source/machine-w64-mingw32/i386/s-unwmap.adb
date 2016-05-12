@@ -2,8 +2,8 @@ pragma Check_Policy (Trace => Ignore);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Stack;
 with System.Runtime_Context;
+with System.Stack;
 with System.Storage_Map;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -85,7 +85,7 @@ package body System.Unwind.Mapping is
                   System'To_Address (
                      Exception_Record.ExceptionInformation (1));
             begin
-               Native_Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
+               Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
                if AV_Address >= Stack_Top - 4096
                   and then AV_Address < Stack_Bottom
                then -- stack overflow
@@ -113,7 +113,7 @@ package body System.Unwind.Mapping is
             declare
                Dummy : Address;
             begin
-               Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+               Stack.Get (Top => Stack_Guard, Bottom => Dummy);
             end;
             Stack_Guard := Stack_Guard + 4096;
             --  Storage_Error

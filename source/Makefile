@@ -158,9 +158,9 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-format.o \
 	s-maccod.o \
 	s-natall.o \
-	s-natsta.o \
 	s-runcon.o \
 	s-staall.o \
+	s-stack.o \
 	s-stalib.o \
 	s-startu.o \
 	s-stoele.o \

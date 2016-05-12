@@ -1,7 +1,6 @@
 with System.Debug;
 with System.Storage_Elements;
-with C.pthread_np;
-package body System.Native_Stack is
+package body System.Stack is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
    use type C.signed_int;
@@ -16,7 +15,7 @@ package body System.Native_Stack is
       OK : Boolean := False;
    begin
       if C.pthread.pthread_attr_init (Attr'Access) = 0 then
-         OK := C.pthread_np.pthread_attr_get_np (Thread, Attr'Access) = 0
+         OK := C.pthread.pthread_getattr_np (Thread, Attr'Access) = 0
             and then C.pthread.pthread_attr_getstack (
                Attr'Access,
                C_Addr'Access,
@@ -26,7 +25,7 @@ package body System.Native_Stack is
          begin
             R := C.pthread.pthread_attr_destroy (Attr'Access);
             pragma Check (Debug,
-               Check => R = 0
+               Check => not (R < 0)
                   or else Debug.Runtime_Error ("pthread_attr_destroy failed"));
          end;
       end if;
@@ -39,4 +38,4 @@ package body System.Native_Stack is
       end if;
    end Get;
 
-end System.Native_Stack;
+end System.Stack;

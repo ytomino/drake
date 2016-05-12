@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for Darwin
 with C.pthread;
-package System.Native_Stack is
+package System.Stack is
    pragma Preelaborate;
 
    procedure Get (
@@ -10,4 +10,4 @@ package System.Native_Stack is
 
    procedure Fake_Return_From_Signal_Handler;
 
-end System.Native_Stack;
+end System.Stack;

@@ -1,5 +1,5 @@
 with Ada.Unchecked_Conversion;
-package body System.Native_Stack is
+package body System.Stack is
    pragma Suppress (All_Checks);
 
    --  implementation
@@ -16,4 +16,4 @@ package body System.Native_Stack is
       Bottom := Address (TIB.StackBase);
    end Get;
 
-end System.Native_Stack;
+end System.Stack;

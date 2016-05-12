@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for Linux
 with C.pthread;
-package System.Native_Stack is
+package System.Stack is
    pragma Preelaborate;
 
    procedure Get (
@@ -12,4 +12,4 @@ package System.Native_Stack is
       --  Linux does not have UC_RESET_ALT_STACK,
       --    and 64bit Linux does not have SYS_sigreturn.
 
-end System.Native_Stack;
+end System.Stack;
