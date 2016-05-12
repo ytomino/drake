@@ -3,6 +3,7 @@ with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
 with System.Native_Stack;
+with System.Storage_Map;
 with System.Unwind.Occurrences;
 with System.Unwind.Standard;
 with C.basetsd;
@@ -88,7 +89,6 @@ package body System.Unwind.Mapping is
       end case;
       if Eexception_Id /= null then
          declare
-            NTDLL_Handle : constant C.windef.HMODULE := Native_Stack.NTDLL;
             Message : String (1 .. 256);
             Message_Last : Natural;
             C_Wide_Buf : aliased C.winnt.LPWSTR;
@@ -98,7 +98,7 @@ package body System.Unwind.Mapping is
                dwFlags => C.winbase.FORMAT_MESSAGE_FROM_HMODULE
                   or C.winbase.FORMAT_MESSAGE_ARGUMENT_ARRAY
                   or C.winbase.FORMAT_MESSAGE_ALLOCATE_BUFFER,
-               lpSource => Cast (NTDLL_Handle),
+               lpSource => Cast (Storage_Map.NTDLL),
                dwMessageId => Code,
                dwLanguageId => C.winnt.LANG_USER_DEFAULT,
                lpBuffer => Cast (C_Wide_Buf'Unchecked_Access),
