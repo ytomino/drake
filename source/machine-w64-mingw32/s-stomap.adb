@@ -4,7 +4,7 @@ with C.winbase;
 with C.windef;
 with C.winnt;
 with C.winternl;
-package body System.Runtime_Information is
+package body System.Storage_Map is
    pragma Suppress (All_Checks);
    use type C.char_array;
    use type C.windef.ULONG;
@@ -58,4 +58,4 @@ package body System.Runtime_Information is
       end if;
    end Load_Address;
 
-end System.Runtime_Information;
+end System.Storage_Map;

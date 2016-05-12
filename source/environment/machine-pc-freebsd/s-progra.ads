@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit specialized for FreeBSD
-private with System.Runtime_Information;
+private with System.Storage_Map;
 package System.Program is
    --  Probing information of the program itself.
    pragma Preelaborate;
@@ -15,6 +15,6 @@ package System.Program is
 private
 
    function Load_Address return Address
-      renames Runtime_Information.Load_Address;
+      renames Storage_Map.Load_Address;
 
 end System.Program;

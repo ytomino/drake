@@ -1,6 +1,6 @@
 with C.elf;
 with C.link;
-package body System.Runtime_Information is
+package body System.Storage_Map is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.size_t;
@@ -83,4 +83,4 @@ package body System.Runtime_Information is
       return R.First_Load_Address;
    end Load_Address;
 
-end System.Runtime_Information;
+end System.Storage_Map;

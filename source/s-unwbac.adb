@@ -1,7 +1,7 @@
 pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Formatting.Address;
-with System.Runtime_Information;
+with System.Storage_Map;
 with System.Termination;
 with System.Unwind.Occurrences;
 with System.Unwind.Raising;
@@ -86,7 +86,7 @@ package body System.Unwind.Backtrace is
    begin
       Put ("Load address: 0x", Params);
       declare
-         Item : constant Address := Runtime_Information.Load_Address;
+         Item : constant Address := Storage_Map.Load_Address;
       begin
          Formatting.Address.Image (
             Item,
