@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace => Ignore);
-with System.Startup;
 with System.Storage_Elements;
 with System.Synchronous_Control;
 with System.Unwind.Occurrences;
@@ -226,24 +225,6 @@ package body System.Unwind.Raising is
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
       renames Separated.Propagate_Machine_Occurrence;
 
-   procedure Reraise_Library_Exception_If_Any is
-   begin
-      if Startup.Library_Exception_Set then
-         declare
-            X : Exception_Occurrence
-               renames Startup.Library_Exception.X;
-         begin
-            if X.Id = null then
-               Raise_Exception_No_Defer (
-                  Unwind.Standard.Program_Error'Access,
-                  Message => From_Finalize);
-            else
-               Reraise_From_Controlled_Operation (X);
-            end if;
-         end;
-      end if;
-   end Reraise_Library_Exception_If_Any;
-
    procedure Raise_Program_Error is
       Message : constant String := "not supported";
    begin
@@ -432,6 +413,13 @@ package body System.Unwind.Raising is
          Line,
          Message => From_Finalize);
    end rcheck_23;
+
+   procedure Finalize_Raised_Exception is
+   begin
+      Raise_Exception_No_Defer (
+         Unwind.Standard.Program_Error'Access,
+         Message => From_Finalize);
+   end Finalize_Raised_Exception;
 
    procedure rcheck_24 (File : not null access Character; Line : Integer) is
       Message : constant String := "implicit return with No_Return";

@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  runtime unit
-with System.Unwind;
 package System.Startup is
    pragma Preelaborate;
 
@@ -99,13 +98,5 @@ package System.Startup is
       with Export,
          Convention => Ada, External_Name => "__gnat_finalize_library_objects";
    pragma Suppress (Access_Check, Finalize_Library_Objects);
-
-   type Uninitialized_Exception_Occurrence is record
-      X : Unwind.Exception_Occurrence;
-   end record;
-   pragma Suppress_Initialization (Uninitialized_Exception_Occurrence);
-
-   Library_Exception : Uninitialized_Exception_Occurrence;
-   Library_Exception_Set : Boolean := False;
 
 end System.Startup;

@@ -153,6 +153,7 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	$(EH_OBJS) \
 	s-debug.o \
 	s-exctab.o \
+	s-finall.o \
 	s-foradd.o \
 	s-format.o \
 	s-maccod.o \

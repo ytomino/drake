@@ -76,12 +76,6 @@ package System.Unwind.Raising is
       Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
       with Export, Convention => C, External_Name => "__gnat_reraise_zcx";
 
-   --  implementation for raising from finalize_library (a-except-2005.adb)
-   procedure Reraise_Library_Exception_If_Any
-      with Export,
-         Convention => Ada,
-         External_Name => "__gnat_reraise_library_exception_if_any";
-
    --  utility for implementing a dummy subprogram
    procedure Raise_Program_Error
       with Export, Convention => Ada, External_Name => "__drake_program_error";
@@ -178,6 +172,10 @@ package System.Unwind.Raising is
          Convention => C,
          External_Name => "__gnat_rcheck_PE_Finalize_Raised_Exception";
    pragma No_Return (rcheck_23);
+
+   --  equivalent to rcheck_23
+   procedure Finalize_Raised_Exception;
+   pragma No_Return (Finalize_Raised_Exception);
 
    procedure rcheck_24 (File : not null access Character; Line : Integer)
       with Export,

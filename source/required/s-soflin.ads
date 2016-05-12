@@ -23,7 +23,10 @@ package System.Soft_Links is
 
    --  required for library-level controlled object by compiler (s-soflin.ads)
    procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence_Access);
+      E : Ada.Exceptions.Exception_Occurrence_Access)
+      with Import,
+         Convention => Ada,
+         External_Name => "system__soft_links__save_library_occurrence";
 
    --  no-operation
    function Zero return Integer; -- always return 0
