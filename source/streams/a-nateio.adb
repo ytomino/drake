@@ -1067,8 +1067,9 @@ package body Ada.Naked_Text_IO is
             return True;
          when others =>
             return End_Of_File (File) -- End_Of_File calls Read_Buffer
-               or else (File.Last > 0 -- page mark is ASCII
+               or else (File.Last > 0
                   and then File.Buffer (1) = Character'Val (16#0c#));
+                  --  page mark is ASCII
       end case;
    end End_Of_Page;
 

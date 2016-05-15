@@ -88,9 +88,10 @@ package System.Tasks is
    --  for manual activation (Chain /= null)
    function Elaborated (T : not null Task_Id) return Boolean;
    procedure Accept_Activation (Aborted : out Boolean);
-   procedure Activate ( -- activate all task
+   procedure Activate (
       Chain : not null Activation_Chain_Access;
       Aborted : out Boolean);
+      --  activate all task
    procedure Activate (T : not null Task_Id); -- activate single task
    procedure Move (
       From, To : not null Activation_Chain_Access;

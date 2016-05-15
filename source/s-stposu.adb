@@ -302,8 +302,8 @@ package body System.Storage_Pools.Subpools is
       end if;
       --  fix address
       if Is_Controlled
-         and then -- for System.Storage_Pools.Overlaps
-            Actual_Storage_Address /= Overlaid_Allocation
+         and then Actual_Storage_Address /=
+            Overlaid_Allocation -- for System.Storage_Pools.Overlaps
       then
          Shared_Locking.Enter;
          declare
@@ -341,8 +341,9 @@ package body System.Storage_Pools.Subpools is
    begin
       --  fix address
       if Is_Controlled
-         and then -- for System.Storage_Pools.Overlaps
-            Runtime_Context.Get_Task_Local_Storage.Overlaid_Allocation /= Addr
+         and then Addr /=
+            Runtime_Context.Get_Task_Local_Storage.Overlaid_Allocation
+               --  for System.Storage_Pools.Overlaps
       then
          Shared_Locking.Enter;
          declare

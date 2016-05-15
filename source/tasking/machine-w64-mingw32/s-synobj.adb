@@ -237,7 +237,7 @@ package body System.Synchronous_Objects is
       Leave (Object.Mutex.all);
    end Add;
 
-   procedure Take ( -- no waiting
+   procedure Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;

@@ -73,11 +73,12 @@ package System.Synchronous_Objects is
       Object : in out Queue;
       Item : not null Queue_Node_Access;
       Canceled : out Boolean);
-   procedure Take ( -- no waiting
+   procedure Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
       Filter : Queue_Filter);
+      --  no waiting
    procedure Unsynchronized_Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;

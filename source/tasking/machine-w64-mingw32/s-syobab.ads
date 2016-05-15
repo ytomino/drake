@@ -14,12 +14,13 @@ package System.Synchronous_Objects.Abortable is
 
    --  queue
 
-   procedure Take ( -- waiting
+   procedure Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
       Filter : Queue_Filter;
       Aborted : out Boolean);
+      --  waiting
 
    --  event
 
