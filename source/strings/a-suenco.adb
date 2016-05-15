@@ -399,12 +399,13 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          BOM_Table (Output_Scheme);
       Item_Last : Natural := Item'First - 1;
    begin
-      if Item'Length >= In_BOM_Length
-         and then Item (Item_Last + 1 .. Item_Last + In_BOM_Length) =
-            In_BOM.all
-      then
-         Item_Last := Item_Last + In_BOM_Length;
-      end if;
+      declare
+         L : constant Natural := Item_Last + In_BOM_Length;
+      begin
+         if L <= Item'Last and then Item (Item_Last + 1 .. L) = In_BOM.all then
+            Item_Last := L;
+         end if;
+      end;
       Last := Result'First - 1;
       if Output_BOM then
          Last := Last + Out_BOM'Length;

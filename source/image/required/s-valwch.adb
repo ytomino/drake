@@ -51,12 +51,10 @@ package body System.Val_WChar is
       else
          declare
             S : String := Str (First .. Last);
+            L : constant Natural := First + (Val_Char.HEX_Prefix'Length - 1);
          begin
             Val_Enum.To_Upper (S);
-            if S'First + (Val_Char.HEX_Prefix'Length - 1) <= Last
-               and then S (First .. First + (Val_Char.HEX_Prefix'Length - 1)) =
-                  Val_Char.HEX_Prefix
-            then
+            if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
                   Result : Formatting.Unsigned;
@@ -129,12 +127,10 @@ package body System.Val_WChar is
       else
          declare
             S : String := Str (First .. Last);
+            L : constant Natural := First + (Val_Char.HEX_Prefix'Length - 1);
          begin
             Val_Enum.To_Upper (S);
-            if First + (Val_Char.HEX_Prefix'Length - 1) <= Last
-               and then S (First .. First + (Val_Char.HEX_Prefix'Length - 1)) =
-                  Val_Char.HEX_Prefix
-            then
+            if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
                   Result : Formatting.Unsigned;

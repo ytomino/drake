@@ -18,12 +18,10 @@ package body System.Val_Char is
       else
          declare
             S : String := Str (First .. Last);
+            L : constant Natural := First + (HEX_Prefix'Length - 1);
          begin
             Val_Enum.To_Upper (S);
-            if First + (HEX_Prefix'Length - 1) <= Last
-               and then S (First .. First + (HEX_Prefix'Length - 1)) =
-                  HEX_Prefix
-            then
+            if L <= Last and then S (First .. L) = HEX_Prefix then
                declare
                   Used_Last : Natural;
                   Result : Formatting.Unsigned;

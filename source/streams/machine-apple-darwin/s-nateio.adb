@@ -87,12 +87,11 @@ package body System.Native_Text_IO is
    is
       P : Natural;
       Error : Boolean;
+      L : constant Natural := Item'First + (Prefix'Length - 1);
    begin
-      if Item'Length >= Prefix'Length
-         and then Item (Item'First .. Item'First + Prefix'Length - 1) = Prefix
-      then
+      if L <= Item'Last and then Item (Item'First .. L) = Prefix then
          Formatting.Value (
-            Item (Item'First + Prefix'Length .. Item'Last),
+            Item (L + 1 .. Item'Last),
             P,
             X1,
             Error => Error);
