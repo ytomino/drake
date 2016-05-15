@@ -67,7 +67,7 @@ package body System.Native_IO is
       Out_Length := Full_Path_Length;
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (Out_Length + 1) -- NUL
+            (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
@@ -88,9 +88,7 @@ package body System.Native_IO is
    begin
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (
-               Item'Length * Zero_Terminated_WStrings.Expanding
-               + 2) -- '*' & NUL
+            (Item'Length * Zero_Terminated_WStrings.Expanding + 2) -- '*' & NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
@@ -149,7 +147,7 @@ package body System.Native_IO is
       Out_Length := C.string.wcslen (Temp_Name (0)'Access);
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (Out_Length + 1)
+            (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
@@ -573,7 +571,7 @@ package body System.Native_IO is
          Raise_Exception (Use_Error'Identity);
       end if;
       Mapping.Storage_Address := Address (Mapped_Address);
-      Mapping.Storage_Size := Storage_Elements.Storage_Count (Size);
+      Mapping.Storage_Size := Storage_Elements.Storage_Offset (Size);
       Mapping.File_Mapping := File_Mapping;
    end Map;
 

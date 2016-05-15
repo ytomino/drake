@@ -325,7 +325,7 @@ package body Ada.Directories.Information is
       Buffer_Length : C.size_t := 1024;
       Buffer : aliased C.char_ptr := Conv.To_Pointer (
          System.Standard_Allocators.Allocate (
-            System.Storage_Elements.Storage_Count (Buffer_Length)));
+            System.Storage_Elements.Storage_Offset (Buffer_Length)));
    begin
       Holder.Assign (Buffer);
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
@@ -356,7 +356,7 @@ package body Ada.Directories.Information is
             Buffer := Conv.To_Pointer (
                System.Standard_Allocators.Reallocate (
                   Conv.To_Address (Buffer),
-                  System.Storage_Elements.Storage_Count (Buffer_Length)));
+                  System.Storage_Elements.Storage_Offset (Buffer_Length)));
          end;
       end loop;
    end Read_Symbolic_Link;

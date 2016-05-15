@@ -25,7 +25,7 @@ package body System.Packed_Arrays is
                Result : constant Integer := memcmp (
                   Left,
                   Right,
-                  Storage_Elements.Storage_Count (
+                  Storage_Elements.Storage_Offset (
                      Integer'Min (Left_Len, Right_Len)));
             begin
                if Result /= 0 then

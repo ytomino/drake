@@ -109,7 +109,7 @@ package body System.Unbounded_Stack_Allocators is
       declare
          Default_Block_Size : constant := 10 * 1024;
          Aligned_Header_Size : constant Storage_Elements.Storage_Count :=
-            Storage_Elements.Storage_Count (
+            Storage_Elements.Storage_Offset (
                (Storage_Elements.Integer_Address (Header_Size) + Mask)
                and not Mask);
          Block_Size : constant Storage_Elements.Storage_Count :=

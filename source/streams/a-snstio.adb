@@ -316,7 +316,7 @@ package body Ada.Streams.Naked_Stream_IO is
             File.Buffer_Index := 0;
          else
             File.Buffer := System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Count (File.Buffer_Length));
+               System.Storage_Elements.Storage_Offset (File.Buffer_Length));
             File.Buffer_Index := File.Buffer_Index
                rem Stream_Element_Positive_Count (File.Buffer_Length);
          end if;

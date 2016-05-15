@@ -77,7 +77,7 @@ package body System.System_Allocators is
       Info : aliased C.winbase.SYSTEM_INFO;
    begin
       C.winbase.GetSystemInfo (Info'Access);
-      return Storage_Elements.Storage_Count (Info.dwPageSize);
+      return Storage_Elements.Storage_Offset (Info.dwPageSize);
    end Page_Size;
 
    function Map (

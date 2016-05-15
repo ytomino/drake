@@ -37,7 +37,7 @@ package body System.System_Allocators is
 
    function Page_Size return Storage_Elements.Storage_Count is
    begin
-      return Storage_Elements.Storage_Count (C.unistd.getpagesize);
+      return Storage_Elements.Storage_Offset (C.unistd.getpagesize);
    end Page_Size;
 
    function Map (

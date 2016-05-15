@@ -79,12 +79,12 @@ package body System.Native_Directories.Searching is
       Result : constant Directory_Entry_Access :=
          dirent_ptr_Conv.To_Pointer (
             Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Count (Source.d_reclen)));
+               Storage_Elements.Storage_Offset (Source.d_reclen)));
    begin
       memcpy (
          Result,
          Source,
-         Storage_Elements.Storage_Count (Source.d_reclen));
+         Storage_Elements.Storage_Offset (Source.d_reclen));
       return Result;
    end New_Directory_Entry;
 
@@ -121,8 +121,8 @@ package body System.Native_Directories.Searching is
       Search.Filter := Filter;
       Search.Pattern := char_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (
-               Pattern'Length * Zero_Terminated_Strings.Expanding)
+            Storage_Elements.Storage_Offset (Pattern'Length)
+               * Zero_Terminated_Strings.Expanding
             + 1)); -- NUL
       Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);

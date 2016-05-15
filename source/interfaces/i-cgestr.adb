@@ -106,7 +106,7 @@ package body Interfaces.C.Generic_Strings is
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
-         (System.Storage_Elements.Storage_Count (Length) + 1) -- appending nul
+         (System.Storage_Elements.Storage_Offset (Length) + 1) -- appending nul
          * (Element_Array'Component_Size / Standard'Storage_Unit);
       Result : constant chars_ptr := libc.malloc (C.size_t (Size));
    begin

@@ -25,7 +25,7 @@ package body System.Program is
       Buffer_Length : C.windef.DWORD := 1024;
       Buffer : aliased C.winnt.LPWSTR := Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Count (Buffer_Length)
+            Storage_Elements.Storage_Offset (Buffer_Length)
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
    begin
       Holder.Assign (Buffer);
@@ -47,7 +47,7 @@ package body System.Program is
          Buffer := Conv.To_Pointer (
             Standard_Allocators.Reallocate (
                Conv.To_Address (Buffer),
-               Storage_Elements.Storage_Count (Buffer_Length)
+               Storage_Elements.Storage_Offset (Buffer_Length)
                   * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       end loop;
    end Full_Name;

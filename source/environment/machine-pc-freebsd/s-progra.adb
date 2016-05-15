@@ -30,7 +30,7 @@ package body System.Program is
       Buffer_Length : C.size_t := 1024;
       Buffer : aliased C.char_ptr := Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Count (Buffer_Length)));
+            Storage_Elements.Storage_Offset (Buffer_Length)));
    begin
       Holder.Assign (Buffer);
       loop
@@ -59,7 +59,7 @@ package body System.Program is
          Buffer := Conv.To_Pointer (
             Standard_Allocators.Reallocate (
                Conv.To_Address (Buffer),
-               Storage_Elements.Storage_Count (Buffer_Length)));
+               Storage_Elements.Storage_Offset (Buffer_Length)));
       end loop;
    end Full_Name;
 

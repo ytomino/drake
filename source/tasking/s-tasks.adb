@@ -107,7 +107,7 @@ package body System.Tasks is
             Data := AA_Conv.To_Pointer (
                Standard_Allocators.Reallocate (
                   AA_Conv.To_Address (Data),
-                  Storage_Elements.Storage_Count (New_Length)
+                  Storage_Elements.Storage_Offset (New_Length)
                      * (Array_Type'Component_Size / Standard'Storage_Unit)));
             for I in Length .. New_Length - 1 loop
                Data (I) := New_Item;

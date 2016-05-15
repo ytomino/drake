@@ -282,7 +282,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       NC_Object : Non_Controlled_Buffer_Type
          renames Controlled.Reference (Object).all;
    begin
-      return System.Storage_Elements.Storage_Count (NC_Object.Last);
+      return System.Storage_Elements.Storage_Offset (NC_Object.Last);
    end Storage_Size;
 
    function Stream (Object : Buffer_Type)

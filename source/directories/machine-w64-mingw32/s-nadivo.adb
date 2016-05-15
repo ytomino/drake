@@ -98,7 +98,7 @@ package body System.Native_Directories.Volumes is
          pragma Suppress (Alignment_Check);
          Dest : constant Address :=
             Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Count (Root_Path_Length + 1)
+               (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
          Dest_A : C.winnt.WCHAR_array (C.size_t);
          for Dest_A'Address use Dest;
