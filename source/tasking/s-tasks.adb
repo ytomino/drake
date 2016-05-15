@@ -1090,8 +1090,9 @@ package body System.Tasks is
       Current_Task_Id : constant Task_Id := TLS_Current_Task_Id;
       Error : Boolean;
    begin
-      pragma Check (Trace, Ada.Debug.Put (
-         Name (Current_Task_Id).all & " aborts " & Name (T).all));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put (
+            Name (Current_Task_Id).all & " aborts " & Name (T).all));
       if T = Current_Task_Id then
          Set_Abort_Recursively (T);
          raise Standard'Abort_Signal;
@@ -1123,9 +1124,11 @@ package body System.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T /= null then
-         pragma Check (Trace, Ada.Debug.Put (Name (T).all
-            & Natural'Image (T.Abort_Locking) & " =>"
-            & Natural'Image (T.Abort_Locking - 1)));
+         pragma Check (Trace,
+            Check => Ada.Debug.Put (
+               Name (T).all
+               & Natural'Image (T.Abort_Locking) & " =>"
+               & Natural'Image (T.Abort_Locking - 1)));
          pragma Assert (T.Abort_Locking > 0);
          T.Abort_Locking := T.Abort_Locking - 1;
          if T.Kind = Sub then
@@ -1140,9 +1143,11 @@ package body System.Tasks is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T /= null then
-         pragma Check (Trace, Ada.Debug.Put (Name (T).all
-            & Natural'Image (T.Abort_Locking) & " =>"
-            & Natural'Image (T.Abort_Locking + 1)));
+         pragma Check (Trace,
+            Check => Ada.Debug.Put (
+               Name (T).all
+               & Natural'Image (T.Abort_Locking) & " =>"
+               & Natural'Image (T.Abort_Locking + 1)));
          if T.Kind = Sub then
             pragma Assert (T.Abort_Locking = 0);
             Native_Tasks.Block_Abort_Signal (T.Abort_Attribute);
@@ -1157,18 +1162,22 @@ package body System.Tasks is
    procedure Lock_Abort is
       T : constant Task_Id := Current_Task_Id; -- and register
    begin
-      pragma Check (Trace, Ada.Debug.Put (Name (T).all
-         & Natural'Image (T.Abort_Locking) & " =>"
-         & Natural'Image (T.Abort_Locking + 1)));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put (
+            Name (T).all
+            & Natural'Image (T.Abort_Locking) & " =>"
+            & Natural'Image (T.Abort_Locking + 1)));
       T.Abort_Locking := T.Abort_Locking + 1;
    end Lock_Abort;
 
    procedure Unlock_Abort is
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
-      pragma Check (Trace, Ada.Debug.Put (Name (T).all
-         & Natural'Image (T.Abort_Locking) & " =>"
-         & Natural'Image (T.Abort_Locking - 1)));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put (
+            Name (T).all
+            & Natural'Image (T.Abort_Locking) & " =>"
+            & Natural'Image (T.Abort_Locking - 1)));
       T.Abort_Locking := T.Abort_Locking - 1;
    end Unlock_Abort;
 
@@ -1218,7 +1227,7 @@ package body System.Tasks is
       --  cleanup
       Release (C);
       pragma Check (Trace,
-         Ada.Debug.Put ("aborted = " & Boolean'Image (Aborted)));
+         Check => Ada.Debug.Put ("aborted = " & Boolean'Image (Aborted)));
    end Accept_Activation;
 
    procedure Activate (
