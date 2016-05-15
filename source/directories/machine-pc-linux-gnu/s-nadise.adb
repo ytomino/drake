@@ -188,11 +188,11 @@ package body System.Native_Directories.Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
    is
       Dummy_dirent : C.bits.dirent.struct_dirent; -- to use 'Position
-      Record_Length : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Offset'Max (
+      Record_Length : constant Storage_Elements.Storage_Count :=
+         Storage_Elements.Storage_Offset'Max (
             C.bits.dirent.struct_dirent'Size / Standard'Storage_Unit,
             Dummy_dirent.d_name'Position
-               + System.Storage_Elements.Storage_Offset (Name'Length + 1));
+               + Storage_Elements.Storage_Offset (Name'Length + 1));
       errno : C.signed_int;
    begin
       --  allocation
@@ -201,9 +201,7 @@ package body System.Native_Directories.Searching is
       --  filling components
       Directory_Entry.d_off := 0; -- ?
       Directory_Entry.d_reclen := C.stdint.uint16_t (Record_Length);
-      System.Zero_Terminated_Strings.To_C (
-         Name,
-         Directory_Entry.d_name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, Directory_Entry.d_name (0)'Access);
       Get_Information (Directory, Directory_Entry, Additional.Information,
          errno => errno);
       if errno /= 0 then

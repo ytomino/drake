@@ -50,7 +50,7 @@ package body System.Native_Directories.Volumes is
             declare
                type WCHAR_const_ptr is access constant C.winnt.WCHAR;
                package WCHAR_const_ptr_Conv is
-                  new System.Address_To_Constant_Access_Conversions (
+                  new Address_To_Constant_Access_Conversions (
                      C.winnt.WCHAR,
                      WCHAR_const_ptr);
                FileSystem_A : C.winnt.WCHAR_array (C.size_t);
