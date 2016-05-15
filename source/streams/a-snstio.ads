@@ -181,12 +181,12 @@ private
 
       pragma Compile_Time_Error (
          Seekable_Dispatcher'Size /= Root_Dispatcher'Size
-         or else Dispatcher'Size /= Root_Dispatcher'Size,
+            or else Dispatcher'Size /= Root_Dispatcher'Size,
          "size mismatch");
 
       pragma Compile_Time_Error (
          Seekable_Dispatcher'Alignment /= Root_Dispatcher'Alignment
-         or else Dispatcher'Alignment /= Root_Dispatcher'Alignment,
+            or else Dispatcher'Alignment /= Root_Dispatcher'Alignment,
          "misaligned");
 
    end Dispatchers;

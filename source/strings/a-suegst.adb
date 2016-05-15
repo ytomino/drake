@@ -27,8 +27,8 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       --  Expanding_From_N is not static because formal object of generic
       pragma Compile_Time_Error (
          UTF_Character_Type'Size /= 8
-         and then UTF_Character_Type'Size /= 16
-         and then UTF_Character_Type'Size /= 32,
+            and then UTF_Character_Type'Size /= 16
+            and then UTF_Character_Type'Size /= 32,
          "bad UTF_Character_Type'Size");
       Expanding : Positive;
    begin
@@ -109,8 +109,8 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       --  Expanding_To_N is not static because formal object of generic
       pragma Compile_Time_Error (
          UTF_Character_Type'Size /= 8
-         and then UTF_Character_Type'Size /= 16
-         and then UTF_Character_Type'Size /= 32,
+            and then UTF_Character_Type'Size /= 16
+            and then UTF_Character_Type'Size /= 32,
          "bad UTF_Character_Type'Size");
       Expanding : Positive;
    begin

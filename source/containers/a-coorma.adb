@@ -213,8 +213,8 @@ package body Ada.Containers.Ordered_Maps is
          return Boolean is
       begin
          return Equivalent_Keys (
-            Downcast (Left).Key,
-            Downcast (Right).Key)
+               Downcast (Left).Key,
+               Downcast (Right).Key)
             and then Downcast (Left).Element =
                Downcast (Right).Element;
       end Equivalent;

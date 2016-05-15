@@ -40,7 +40,7 @@ package body System.Reference_Counting is
    is
       pragma Compile_Time_Error (
          Storage_Elements.Storage_Offset'Size /= 32
-         and then Storage_Elements.Storage_Offset'Size /= 64,
+            and then Storage_Elements.Storage_Offset'Size /= 64,
          "Storage_Elements.Storage_Offset'Size is neither 32 nor 64");
       --  Use sequentially consistent model because an object's length and
       --    contents should be synchronized.

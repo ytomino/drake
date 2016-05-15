@@ -36,7 +36,7 @@ package body Ada.Interrupts is
    begin
       Old_Handler := Current_Handler (Interrupt);
       if (Old_Handler /= null
-         and then System.Interrupt_Handlers.Is_Static_Handler (Old_Handler))
+            and then System.Interrupt_Handlers.Is_Static_Handler (Old_Handler))
          or else (
             New_Handler /= null
             and then System.Interrupt_Handlers.Is_Static_Handler (New_Handler))

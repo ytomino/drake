@@ -73,8 +73,8 @@ package body System.Native_Interrupts is
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
    begin
       return Interrupt not in
-         Ada.Interrupts.Names.First_Interrupt_Id ..
-         Ada.Interrupts.Names.Last_Interrupt_Id
+            Ada.Interrupts.Names.First_Interrupt_Id ..
+            Ada.Interrupts.Names.Last_Interrupt_Id
          or else Interrupt = C.signal.SIGKILL
          or else Interrupt = C.signal.SIGSTOP;
    end Is_Reserved;

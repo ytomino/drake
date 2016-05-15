@@ -91,8 +91,8 @@ package Interfaces.Fortran is
 
    pragma Compile_Time_Error (
       Long_Long_Float'Model_Mantissa /= 64
-      and then Long_Long_Float'Size /= 80
-      and then Long_Long_Float'Size /= 96,
+         and then Long_Long_Float'Size /= 80
+         and then Long_Long_Float'Size /= 96,
       "Long_Long_Float is not Real_Kind_10.");
 
    subtype Real_Kind_4 is Real;

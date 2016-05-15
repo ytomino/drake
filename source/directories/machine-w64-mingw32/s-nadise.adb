@@ -76,7 +76,7 @@ package body System.Native_Directories.Searching is
          Wildcard : C.winnt.WCHAR_array (
             0 ..
             (Directory'Length + Pattern'Length)
-               * Zero_Terminated_WStrings.Expanding
+                  * Zero_Terminated_WStrings.Expanding
                + 1); -- '/'
          Wildcard_Length : C.size_t;
       begin

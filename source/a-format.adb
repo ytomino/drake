@@ -175,11 +175,11 @@ package body Ada.Formatting is
       Result : String (
          1 ..
          Integer'Max (
-            System.Formatting.Float.Fore_Width (
-               Long_Long_Float (T'First),
-               Long_Long_Float (T'Last),
-               Base => Base),
-            Fore_Width + 1)
+               System.Formatting.Float.Fore_Width (
+                  Long_Long_Float (T'First),
+                  Long_Long_Float (T'Last),
+                  Base => Base),
+               Fore_Width + 1)
             + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
       Last : Natural;
    begin
@@ -227,10 +227,10 @@ package body Ada.Formatting is
       Result : String (
          1 ..
          Integer'Max (
-            System.Formatting.Float.Fore_Width (
-               Long_Long_Float (T'First),
-               Long_Long_Float (T'Last)),
-            Fore_Width + 1)
+               System.Formatting.Float.Fore_Width (
+                  Long_Long_Float (T'First),
+                  Long_Long_Float (T'Last)),
+               Fore_Width + 1)
             + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
       Last : Natural;
    begin

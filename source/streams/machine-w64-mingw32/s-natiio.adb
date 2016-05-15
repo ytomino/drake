@@ -580,7 +580,7 @@ package body System.Native_IO is
       Raise_On_Error : Boolean) is
    begin
       if C.winbase.UnmapViewOfFile (
-         C.windef.LPCVOID (Mapping.Storage_Address)) = 0
+            C.windef.LPCVOID (Mapping.Storage_Address)) = 0
          or else C.winbase.CloseHandle (Mapping.File_Mapping) = 0
       then
          if Raise_On_Error then
