@@ -322,8 +322,8 @@ package body System.C_Encoding is
                      Ada_Item_Used,
                      Code,
                      From_Status);
-                  Item_Used := Item'First
-                     + C.size_t (Ada_Item_Used - Ada_Item'First);
+                  Item_Used :=
+                     Item'First + C.size_t (Ada_Item_Used - Ada_Item'First);
                   case From_Status is
                      when UTF_Conversions.Success =>
                         UTF_Conversions.To_UTF_32 (

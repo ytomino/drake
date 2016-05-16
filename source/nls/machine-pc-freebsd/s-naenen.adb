@@ -228,7 +228,8 @@ package body System.Native_Environment_Encoding is
       Last := Item'First
          + (Item'Length - Ada.Streams.Stream_Element_Offset (Size) - 1);
       Out_Last := Out_Item'First
-         + (Out_Item'Length
+         + (
+            Out_Item'Length
             - Ada.Streams.Stream_Element_Offset (Out_Size)
             - 1);
    end Convert_No_Check;
@@ -267,7 +268,8 @@ package body System.Native_Environment_Encoding is
          Status := Finished;
       end if;
       Out_Last := Out_Item'First
-         + (Out_Item'Length
+         + (
+            Out_Item'Length
             - Ada.Streams.Stream_Element_Offset (Out_Size)
             - 1);
    end Convert_No_Check;
@@ -298,9 +300,10 @@ package body System.Native_Environment_Encoding is
                Out_Last,
                Finish => Finish,
                Status => Subsequence_Status);
-            pragma Assert (Subsequence_Status in
-               Subsequence_Status_Type (Status_Type'First) ..
-               Subsequence_Status_Type (Status_Type'Last));
+            pragma Assert (
+               Subsequence_Status in
+                  Subsequence_Status_Type (Status_Type'First) ..
+                  Subsequence_Status_Type (Status_Type'Last));
             case Status_Type (Subsequence_Status) is
                when Finished =>
                   Status := Finished;
@@ -375,8 +378,8 @@ package body System.Native_Environment_Encoding is
       begin
          R := C.iconv.iconv_close (Object.Data.iconv);
          pragma Check (Debug,
-            Check => not (R < 0)
-               or else Debug.Runtime_Error ("iconv_close failed"));
+            Check =>
+               not (R < 0) or else Debug.Runtime_Error ("iconv_close failed"));
       end Finalize;
 
    end Controlled;

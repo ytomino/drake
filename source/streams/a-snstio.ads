@@ -9,10 +9,8 @@ package Ada.Streams.Naked_Stream_IO is
 
    --  the parameter Form
 
-   Default_Form : constant System.Native_IO.Packed_Form := (
-      Shared => IO_Modes.By_Mode,
-      Wait => False,
-      Overwrite => True);
+   Default_Form : constant System.Native_IO.Packed_Form :=
+      (Shared => IO_Modes.By_Mode, Wait => False, Overwrite => True);
 
    subtype Form_String is String (1 .. 256);
 
@@ -220,9 +218,8 @@ private
       Reading_Index : Stream_Element_Offset;
       Writing_Index : Stream_Element_Offset;
       Closer : Close_Handler;
-      Dispatcher : aliased Dispatchers.Dispatcher := (
-         Tag => Tags.No_Tag,
-         File => null);
+      Dispatcher : aliased Dispatchers.Dispatcher :=
+         (Tag => Tags.No_Tag, File => null);
    end record;
    pragma Suppress_Initialization (Stream_Type);
 

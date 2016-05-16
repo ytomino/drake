@@ -66,9 +66,8 @@ package body System.Synchronous_Objects.Abortable is
    begin
       if Attr /= null and then not Attr.Blocked then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Object.Handle,
-               Attr.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Object.Handle, Attr.Event);
          begin
             case C.winbase.WaitForMultipleObjects (
                2,
@@ -99,9 +98,8 @@ package body System.Synchronous_Objects.Abortable is
    begin
       if Attr /= null and then not Attr.Blocked then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Object.Handle,
-               Attr.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Object.Handle, Attr.Event);
             Milliseconds : constant C.windef.DWORD :=
                C.windef.DWORD (Timeout * 1_000);
          begin

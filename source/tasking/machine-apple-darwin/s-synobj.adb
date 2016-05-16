@@ -31,7 +31,8 @@ package body System.Synchronous_Objects is
    begin
       R := C.pthread.pthread_mutex_destroy (Object.Handle'Access);
       pragma Check (Debug,
-         Check => R = 0
+         Check =>
+            R = 0
             or else (
                R = C.errno.EINVAL
                and then memcmp (
@@ -67,7 +68,8 @@ package body System.Synchronous_Objects is
    begin
       R := C.pthread.pthread_cond_destroy (Object.Handle'Access);
       pragma Check (Debug,
-         Check => R = 0
+         Check =>
+            R = 0
             or else (
                R = C.errno.EINVAL
                and then memcmp (
@@ -317,7 +319,8 @@ package body System.Synchronous_Objects is
       Item : not null Queue_Node_Access) is
    begin
       if Object.Waiting
-         and then (Object.Filter = null
+         and then (
+            Object.Filter = null
             or else Object.Filter (Item, Object.Params))
       then
          Notify_All (Object.Condition_Variable);
@@ -444,7 +447,8 @@ package body System.Synchronous_Objects is
    begin
       R := C.pthread.pthread_rwlock_destroy (Object.Handle'Access);
       pragma Check (Debug,
-         Check => R = 0
+         Check =>
+            R = 0
             or else (
                R = C.errno.EINVAL
                and then memcmp (

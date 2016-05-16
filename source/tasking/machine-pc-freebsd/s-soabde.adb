@@ -140,7 +140,8 @@ package body System.Synchronous_Objects.Abortable.Delays is
             begin
                R := C.pthread.pthread_condattr_destroy (condattr'Access);
                pragma Check (Debug,
-                  Check => R = 0
+                  Check =>
+                     R = 0
                      or else Debug.Runtime_Error (
                         "pthread_condattr_destroy failed"));
             end;

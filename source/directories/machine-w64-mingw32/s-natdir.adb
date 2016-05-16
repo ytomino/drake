@@ -248,7 +248,8 @@ package body System.Native_Directories is
       if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
          return Directory;
       elsif (Attributes
-         and (C.winnt.FILE_ATTRIBUTE_DEVICE
+         and (
+            C.winnt.FILE_ATTRIBUTE_DEVICE
             or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
             or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
       then
@@ -309,7 +310,8 @@ package body System.Native_Directories is
             dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
             lpSecurityAttributes => null,
             dwCreationDisposition => C.winbase.OPEN_EXISTING,
-            dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+            dwFlagsAndAttributes =>
+               C.winbase.FILE_FLAG_BACKUP_SEMANTICS
                or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
             hTemplateFile => C.windef.LPVOID (Null_Address));
          if Handle = C.winbase.INVALID_HANDLE_VALUE then

@@ -32,9 +32,7 @@ package body Ada.Containers.Ordered_Sets.Debug is
          Container := Downcast (Source.Super.Data).Root;
          Length := Downcast (Source.Super.Data).Length;
       end if;
-      return Base.Debug.Valid (
-         Container => Container,
-         Length => Length);
+      return Base.Debug.Valid (Container => Container, Length => Length);
    end Valid;
 
 end Ada.Containers.Ordered_Sets.Debug;

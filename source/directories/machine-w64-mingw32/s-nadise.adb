@@ -56,8 +56,7 @@ package body System.Native_Directories.Searching is
 
    procedure Free (X : in out Directory_Entry_Access) is
    begin
-      Standard_Allocators.Free (
-         WIN32_FIND_DATA_ptr_Conv.To_Address (X));
+      Standard_Allocators.Free (WIN32_FIND_DATA_ptr_Conv.To_Address (X));
       X := null;
    end Free;
 

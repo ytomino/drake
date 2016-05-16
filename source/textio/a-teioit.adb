@@ -49,8 +49,8 @@ package body Ada.Text_IO.Iterators is
       return References.Strings.Constant_Reference_Type
    is
       pragma Check (Pre,
-         Check => Integer (Position) = Container.Count
-            or else raise Status_Error);
+         Check =>
+            Integer (Position) = Container.Count or else raise Status_Error);
    begin
       return (Element => Container.Item);
    end Constant_Reference;
@@ -76,7 +76,8 @@ package body Ada.Text_IO.Iterators is
       return Line_Cursor
    is
       pragma Check (Pre,
-         Check => Integer (Position) = Object.Lines.Count
+         Check =>
+            Integer (Position) = Object.Lines.Count
             or else raise Status_Error);
    begin
       return Unchecked_Next (Object);

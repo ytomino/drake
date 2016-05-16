@@ -30,7 +30,8 @@ package body System.Unwind.Handling is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       pragma Check (Trace,
-         Check => Machine_Occurrence = null
+         Check =>
+            Machine_Occurrence = null
             or else Ada.Debug.Put ("Machine_Occurrence = null, reraised"));
       if Machine_Occurrence /= null then
          Occurrences.Free (Machine_Occurrence);

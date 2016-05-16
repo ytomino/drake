@@ -26,7 +26,8 @@ package body Ada.Command_Line is
       return Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Check (Pre,
-         Check => (First <= Argument_Count + 1 and then Last <= Argument_Count)
+         Check =>
+            (First <= Argument_Count + 1 and then Last <= Argument_Count)
             or else raise Constraint_Error);
       Actual_First : Natural := First;
       Actual_Last : Natural := Last;

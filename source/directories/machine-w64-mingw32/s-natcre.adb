@@ -10,10 +10,7 @@ package body System.Native_Credentials is
       Result : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Length : aliased C.windef.DWORD := Result'Size;
    begin
-      if C.winbase.GetUserName (
-         Result (0)'Access,
-         Length'Access) = 0
-      then
+      if C.winbase.GetUserName (Result (0)'Access, Length'Access) = 0 then
          raise Constraint_Error; -- ???
       end if;
       return Zero_Terminated_WStrings.Value (

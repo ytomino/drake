@@ -545,9 +545,8 @@ package body System.Native_IO is
       Size : Ada.Streams.Stream_Element_Count;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Protects : constant array (Boolean) of C.signed_int :=
+         (C.sys.mman.PROT_READ, C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
       Mapped_Offset : constant C.sys.types.off_t :=
          C.sys.types.off_t (Offset) - 1;
       Mapped_Size : constant C.size_t := C.size_t (Size);

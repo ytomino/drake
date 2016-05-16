@@ -85,7 +85,8 @@ package body Ada.Containers.Generic_Arrays is
       New_Item : Array_Type)
    is
       pragma Check (Pre,
-         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+         Check =>
+            Before in Index_Type'First .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if New_Item'Length > 0 then
@@ -119,7 +120,8 @@ package body Ada.Containers.Generic_Arrays is
       New_Item : Array_Access)
    is
       pragma Check (Pre,
-         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+         Check =>
+            Before in Index_Type'First .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if New_Item /= null then
@@ -148,7 +150,8 @@ package body Ada.Containers.Generic_Arrays is
       Count : Count_Type := 1)
    is
       pragma Check (Pre,
-         Check => Before in Index_Type'First .. Last_Index (Container) + 1
+         Check =>
+            Before in Index_Type'First .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if Count > 0 then
@@ -459,7 +462,8 @@ package body Ada.Containers.Generic_Arrays is
          Before : Extended_Index)
       is
          pragma Check (Pre,
-            Check => Before in Index_Type'First .. Last_Index (Container) + 1
+            Check =>
+               Before in Index_Type'First .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
@@ -477,7 +481,8 @@ package body Ada.Containers.Generic_Arrays is
          Before : Extended_Index)
       is
          pragma Check (Pre,
-            Check => Before in Index_Type'First .. Last_Index (Container) + 1
+            Check =>
+               Before in Index_Type'First .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
@@ -525,12 +530,11 @@ package body Ada.Containers.Generic_Arrays is
          Context : Context_Type := (Container => Container);
       begin
          return Container = null
-            or else
-               Array_Sorting.Is_Sorted (
-                  Index_Type'Pos (Container'First),
-                  Index_Type'Pos (Container'Last),
-                  Context'Address,
-                  LT => LT'Access);
+            or else Array_Sorting.Is_Sorted (
+               Index_Type'Pos (Container'First),
+               Index_Type'Pos (Container'Last),
+               Context'Address,
+               LT => LT'Access);
       end Is_Sorted;
 
       procedure Insertion_Sort (Container : in out Array_Access) is

@@ -29,8 +29,7 @@ package body System.Storage_Pools.Unbounded is
       X : Address;
    begin
       X := Standard_Allocators.Allocate (
-         Header'Size / Standard'Storage_Unit
-         + Size_In_Storage_Elements);
+         Header'Size / Standard'Storage_Unit + Size_In_Storage_Elements);
       Storage_Address := X
          + Storage_Elements.Storage_Offset'(
             Header'Size / Standard'Storage_Unit);

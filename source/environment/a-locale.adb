@@ -54,9 +54,8 @@ package body Ada.Locales is
 
    type Language_Table_Array_Access is access Language_Table_Array;
 
-   unde : constant Alpha_2_NP := (
-      1 => ISO_639_Alpha_2_Unknown (1),
-      2 => ISO_639_Alpha_2_Unknown (2));
+   unde : constant Alpha_2_NP :=
+      (1 => ISO_639_Alpha_2_Unknown (1), 2 => ISO_639_Alpha_2_Unknown (2));
 
    Language_Table : constant Language_Table_Array := (
       ("aar", "aa"), --  "Afar", "afar"

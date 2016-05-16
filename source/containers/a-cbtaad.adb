@@ -132,9 +132,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          Count := Count + 1;
          if Level_Check then
             if Downcast (Position).Level > 0 then
-               if Position.Left = null
-                  or else Position.Right = null
-               then
+               if Position.Left = null or else Position.Right = null then
                   return False;
                end if;
             else

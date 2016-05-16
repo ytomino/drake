@@ -241,8 +241,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
       return Result : Encoder do
          Open (
             Converter (Result),
-            From => System.Native_Environment_Encoding.Encoding_Id (
-               Current_Id),
+            From =>
+               System.Native_Environment_Encoding.Encoding_Id (Current_Id),
             To => System.Native_Environment_Encoding.Encoding_Id (Id));
       end return;
    end To;

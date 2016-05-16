@@ -116,8 +116,7 @@ package body Ada.Strings.Maps is
    Full_Set_Data : aliased constant Set_Data := (
       Length => 1,
       Reference_Count => System.Reference_Counting.Static,
-      Items => (
-         1 => (Wide_Wide_Character'First, Wide_Wide_Character'Last)));
+      Items => (1 => (Wide_Wide_Character'First, Wide_Wide_Character'Last)));
 
    --  implementation of sets
 
@@ -651,10 +650,11 @@ package body Ada.Strings.Maps is
       Position : Positive;
    begin
       for I in Set_Data.Items'Range loop
-         Length := Length + (
-            Wide_Wide_Character'Pos (Set_Data.Items (I).High)
-            - Wide_Wide_Character'Pos (Set_Data.Items (I).Low)
-            + 1);
+         Length := Length
+            + (
+               Wide_Wide_Character'Pos (Set_Data.Items (I).High)
+               - Wide_Wide_Character'Pos (Set_Data.Items (I).Low)
+               + 1);
       end loop;
       return Result : Wide_Wide_String (1 .. Length) do
          Position := 1;

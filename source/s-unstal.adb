@@ -170,7 +170,8 @@ package body System.Unbounded_Stack_Allocators is
                   Cast (Top).Used := Mark.Used;
                   exit;
                elsif Cast (Top).Previous = Mark.Top
-                  and then (Mark.Top = Null_Address
+                  and then (
+                     Mark.Top = Null_Address
                      or else Mark.Used = Cast (Mark.Top).Used)
                then
                   --  leave Limit unused block

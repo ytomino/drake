@@ -128,10 +128,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Root => null, Length => 0);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;

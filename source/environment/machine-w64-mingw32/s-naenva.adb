@@ -262,7 +262,8 @@ package body System.Native_Environment_Variables is
    begin
       R := C.winbase.FreeEnvironmentStrings (LPWCH_Conv.To_Pointer (Block));
       pragma Check (Debug,
-         Check => R /= 0
+         Check =>
+            R /= 0
             or else Debug.Runtime_Error ("FreeEnvironmentStrings failed"));
    end Release_Block;
 

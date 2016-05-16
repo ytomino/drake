@@ -380,8 +380,8 @@ package body System.Native_Text_IO is
             Attributes => Info.wAttributes);
          Buffer : aliased constant array (
             0 .. Info.dwSize.Y - 1,
-            0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO := (
-               others => (others => Clear_Char_Info));
+            0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO :=
+            (others => (others => Clear_Char_Info));
          Region : aliased C.wincon.SMALL_RECT;
       begin
          Region.Left := 0;
@@ -411,9 +411,7 @@ package body System.Native_Text_IO is
       pragma Unreferenced (Wait);
    begin
       --  get and unset line-input mode
-      if C.wincon.GetConsoleMode (
-         Handle,
-         Saved_Settings'Access) = 0
+      if C.wincon.GetConsoleMode (Handle, Saved_Settings'Access) = 0
          or else C.wincon.SetConsoleMode (
             Handle,
             Saved_Settings

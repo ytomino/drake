@@ -165,9 +165,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Reading_Index => 0,
          Writing_Index => 0,
          Closer => Closer,
-         Dispatcher => (
-            Tag => Tags.No_Tag,
-            File => null));
+         Dispatcher => (Tag => Tags.No_Tag, File => null));
    end Allocate;
 
    procedure Free (File : in out Non_Controlled_File_Type);
@@ -521,9 +519,9 @@ package body Ada.Streams.Naked_Stream_IO is
          --  close explicitly in below
          Scoped.Handle := System.Native_IO.Invalid_Handle;
          Freeing_File.Closer (
-               Freeing_File.Handle,
-               Freeing_File.Name,
-               Raise_On_Error => Raise_On_Error);
+            Freeing_File.Handle,
+            Freeing_File.Name,
+            Raise_On_Error => Raise_On_Error);
       end if;
    end Close_And_Deallocate;
 
@@ -1061,7 +1059,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Last : out Stream_Element_Offset)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.Out_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.Out_File
                or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
@@ -1072,7 +1071,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Item : Stream_Element_Array)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.In_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.In_File
                or else raise Mode_Error);
       begin
          Write (Stream.File, Item);
@@ -1084,7 +1084,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Last : out Stream_Element_Offset)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.Out_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.Out_File
                or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
@@ -1095,7 +1096,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Item : Stream_Element_Array)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.In_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.In_File
                or else raise Mode_Error);
       begin
          Write (Stream.File, Item);

@@ -159,7 +159,8 @@ package body System.Arith_64 is
                   Q := Q + Interfaces.Shift_Left (Temp_Q, Scaling_W);
                   Temp_XH := Interfaces.Shift_Right (Temp_R, 64 - Scaling_W);
                   Temp_XL := Interfaces.Shift_Left (Temp_R, Scaling_W)
-                     or (Temp_XL
+                     or (
+                        Temp_XL
                         and (Interfaces.Shift_Left (1, Scaling_W) - 1));
                end;
             end if;

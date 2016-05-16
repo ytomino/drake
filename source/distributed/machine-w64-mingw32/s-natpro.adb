@@ -307,7 +307,8 @@ package body System.Native_Processes is
             begin
                R := C.winbase.CloseHandle (Object.Handle);
                pragma Check (Debug,
-                  Check => R /= 0
+                  Check =>
+                     R /= 0
                      or else Debug.Runtime_Error ("CloseHandle failed"));
             end;
          end if;

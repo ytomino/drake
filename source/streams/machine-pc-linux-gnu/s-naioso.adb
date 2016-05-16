@@ -43,10 +43,10 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => 0,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype => C.sys.socket.enum_socket_type'Enum_Rep (
-            C.sys.socket.SOCK_STREAM),
-         ai_protocol => C.netinet.in_h.Cast (
-            C.netinet.in_h.IPPROTO_TCP),
+         ai_socktype =>
+            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_protocol =>
+            C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
          ai_addr => null,
@@ -69,10 +69,9 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => C.netdb.AI_NUMERICSERV,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype => C.sys.socket.enum_socket_type'Enum_Rep (
-            C.sys.socket.SOCK_STREAM),
-         ai_protocol => C.netinet.in_h.Cast (
-            C.netinet.in_h.IPPROTO_TCP),
+         ai_socktype =>
+            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_protocol => C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
          ai_addr => null,
@@ -115,8 +114,8 @@ package body System.Native_IO.Sockets is
                Handle,
                C.sys.socket.CONST_SOCKADDR_ARG'(
                   Unchecked_Tag => 0,
-                  sockaddr => C.bits.socket.struct_sockaddr_const_ptr (
-                     I.ai_addr)),
+                  sockaddr =>
+                     C.bits.socket.struct_sockaddr_const_ptr (I.ai_addr)),
                I.ai_addrlen) = 0
             then
                --  connected

@@ -96,9 +96,7 @@ package body Ada.Sequential_IO is
       Size : constant Streams.Stream_Element_Count :=
          (Item'Size + Unit - 1) / Unit;
    begin
-      if not Element_Type'Definite
-         or else Element_Type'Has_Discriminants
-      then
+      if not Element_Type'Definite or else Element_Type'Has_Discriminants then
          --  indefinite (or unconstrained) types
          declare
             Read_Size : Streams.Stream_Element_Count;
@@ -145,9 +143,7 @@ package body Ada.Sequential_IO is
       Size : constant Streams.Stream_Element_Count :=
          (Item'Size + Unit - 1) / Unit;
    begin
-      if not Element_Type'Definite
-         or else Element_Type'Has_Discriminants
-      then
+      if not Element_Type'Definite or else Element_Type'Has_Discriminants then
          --  indefinite (or unconstrained) types
          Streams.Stream_Element_Count'Write (
             Stream (File), -- checking the predicate, or below

@@ -294,11 +294,13 @@ package body Ada.Directories.Information is
       Handle := C.winbase.CreateFile (
          W_Name (0)'Access,
          dwDesiredAccess => 0,
-         dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE
+         dwShareMode =>
+            C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE
             or C.winnt.FILE_SHARE_DELETE, -- only for query
          lpSecurityAttributes => null,
          dwCreationDisposition => C.winbase.OPEN_EXISTING,
-         dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+         dwFlagsAndAttributes =>
+            C.winbase.FILE_FLAG_BACKUP_SEMANTICS
             or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
          hTemplateFile => C.windef.LPVOID (System.Null_Address));
       if Handle = C.winbase.INVALID_HANDLE_VALUE then

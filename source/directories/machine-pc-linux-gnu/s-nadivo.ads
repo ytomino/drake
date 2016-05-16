@@ -42,9 +42,7 @@ package System.Native_Directories.Volumes is
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 
    type File_System is record
-      Data : aliased Non_Controlled_File_System := (
-         f_type => 0,
-         others => <>);
+      Data : aliased Non_Controlled_File_System := (f_type => 0, others => <>);
    end record;
 
    function Reference (Item : File_System)

@@ -28,7 +28,8 @@ package body System.Stack is
          C.void_ptr (Null_Address),
          UC_RESET_ALT_STACK);
       pragma Check (Debug,
-         Check => not (R < 0)
+         Check =>
+            not (R < 0)
             or else Debug.Runtime_Error (
                "syscall (SYS_sigreturn, ...) failed"));
    end Fake_Return_From_Signal_Handler;

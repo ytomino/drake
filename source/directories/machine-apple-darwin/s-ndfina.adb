@@ -131,8 +131,7 @@ package body System.Native_Directories.File_Names is
    begin
       if value /= 0 then
          return bitmap (
-            C.size_t (value) * 256
-            + C.size_t (character and 16#00FF#));
+            C.size_t (value) * 256 + C.size_t (character and 16#00FF#));
       end if;
       return 0;
    end get_combining_class;
@@ -169,8 +168,7 @@ package body System.Native_Directories.File_Names is
    function EXTRACT_COUNT (value : C.vfs_utfconvdata.u_int16_t)
       return C.size_t is
    begin
-      return C.size_t (
-         C.Shift_Right (value, 12) and 16#0007#);
+      return C.size_t (C.Shift_Right (value, 12) and 16#0007#);
    end EXTRACT_COUNT;
 
    type unicode_mappings16 is record

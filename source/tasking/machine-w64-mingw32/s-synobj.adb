@@ -292,8 +292,8 @@ package body System.Synchronous_Objects is
       Item : not null Queue_Node_Access) is
    begin
       if Object.Waiting
-         and then (Object.Filter = null
-            or else Object.Filter (Item, Object.Params))
+         and then (
+            Object.Filter = null or else Object.Filter (Item, Object.Params))
       then
          Set (Object.Event);
       end if;

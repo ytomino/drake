@@ -285,8 +285,8 @@ package body System.Native_IO is
                Ada.IO_Modes.Deny) of C.windef.DWORD := (
                   Ada.IO_Modes.Read_Only => 0,
                   Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
-            Overlapped : aliased C.winbase.OVERLAPPED := (
-               0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
+            Overlapped : aliased C.winbase.OVERLAPPED :=
+               (0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
          begin
             if C.winbase.LockFileEx (
                hFile => Handle,
@@ -534,12 +534,10 @@ package body System.Native_IO is
       Writable : Boolean)
    is
       use type C.winnt.HANDLE;
-      Protects : constant array (Boolean) of C.windef.DWORD := (
-         C.winnt.PAGE_READONLY,
-         C.winnt.PAGE_READWRITE);
-      Accesses : constant array (Boolean) of C.windef.DWORD := (
-         C.winbase.FILE_MAP_READ,
-         C.winbase.FILE_MAP_WRITE);
+      Protects : constant array (Boolean) of C.windef.DWORD :=
+         (C.winnt.PAGE_READONLY, C.winnt.PAGE_READWRITE);
+      Accesses : constant array (Boolean) of C.windef.DWORD :=
+         (C.winbase.FILE_MAP_READ, C.winbase.FILE_MAP_WRITE);
       Mapped_Offset : C.winnt.ULARGE_INTEGER;
       Mapped_Size : C.winnt.ULARGE_INTEGER;
       Mapped_Address : C.windef.LPVOID;

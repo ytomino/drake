@@ -40,8 +40,9 @@ package body System.Bit_Ops is
                      when High_Order_First =>
                         declare
                            Mask : constant Storage_Elements.Storage_Element :=
-                              not (Storage_Elements.
-                                 Shift_Left (1, 8 - Remainder) - 1);
+                              not (
+                                 Storage_Elements.Shift_Left (1, 8 - Remainder)
+                                 - 1);
                         begin
                            return (L_Rem and Mask) = (R_Rem and Mask);
                         end;

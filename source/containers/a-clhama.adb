@@ -118,12 +118,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
---
---
 
 --  diff (Copy_Data)
---
---
 --
 --
 --
@@ -450,9 +446,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Insert;
 
 --  diff (Insert)
---
---
---
 --
 --
 --

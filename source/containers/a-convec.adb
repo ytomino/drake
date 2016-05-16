@@ -334,7 +334,8 @@ package body Ada.Containers.Vectors is
       return Cursor
    is
       pragma Check (Pre,
-         Check => Index <= Last_Index (Container) + 1
+         Check =>
+            Index <= Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if Index = Index_Type'First + Index_Type'Base (Container.Length) then
@@ -360,7 +361,8 @@ package body Ada.Containers.Vectors is
       New_Item : Element_Type)
    is
       pragma Check (Pre,
-         Check => Position in Index_Type'First .. Last (Container)
+         Check =>
+            Position in Index_Type'First .. Last (Container)
             or else raise Constraint_Error);
    begin
       Unique (Container, True);
@@ -401,7 +403,8 @@ package body Ada.Containers.Vectors is
       return Constant_Reference_Type
    is
       pragma Check (Pre,
-         Check => Position in Index_Type'First .. Last (Container)
+         Check =>
+            Position in Index_Type'First .. Last (Container)
             or else raise Constraint_Error);
    begin
       Unique (Container'Unrestricted_Access.all, False);
@@ -418,7 +421,8 @@ package body Ada.Containers.Vectors is
       return Reference_Type
    is
       pragma Check (Pre,
-         Check => Position in Index_Type'First .. Last (Container)
+         Check =>
+            Position in Index_Type'First .. Last (Container)
             or else raise Constraint_Error);
    begin
       Unique (Container, True);
@@ -476,8 +480,8 @@ package body Ada.Containers.Vectors is
       Position : out Cursor)
    is
       pragma Check (Pre,
-         Check => Before <= Last (Container) + 1
-            or else raise Constraint_Error);
+         Check =>
+            Before <= Last (Container) + 1 or else raise Constraint_Error);
       New_Item_Length : constant Count_Type := New_Item.Length;
    begin
       if Container.Length = 0 then
@@ -641,8 +645,8 @@ package body Ada.Containers.Vectors is
       Count : Count_Type := 1)
    is
       pragma Check (Pre,
-         Check => Before <= Last (Container) + 1
-            or else raise Constraint_Error);
+         Check =>
+            Before <= Last (Container) + 1 or else raise Constraint_Error);
       Old_Length : constant Count_Type := Container.Length;
       After_Last : constant Index_Type'Base :=
          Index_Type'First + Index_Type'Base (Old_Length);

@@ -468,9 +468,10 @@ package body System.Native_Environment_Encoding is
          Out_Last,
          False,
          Subsequence_Status);
-      pragma Assert (Subsequence_Status in
-         Subsequence_Status_Type (Continuing_Status_Type'First) ..
-         Subsequence_Status_Type (Continuing_Status_Type'Last));
+      pragma Assert (
+         Subsequence_Status in
+            Subsequence_Status_Type (Continuing_Status_Type'First) ..
+            Subsequence_Status_Type (Continuing_Status_Type'Last));
       Status := Continuing_Status_Type (Subsequence_Status);
    end Convert_No_Check;
 

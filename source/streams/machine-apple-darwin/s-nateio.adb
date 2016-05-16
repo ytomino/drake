@@ -95,10 +95,7 @@ package body System.Native_Text_IO is
             P,
             X1,
             Error => Error);
-         if not Error
-            and then P < Item'Last
-            and then Item (P + 1) = ';'
-         then
+         if not Error and then P < Item'Last and then Item (P + 1) = ';' then
             Formatting.Value (
                Item (P + 2 .. Item'Last),
                P,
@@ -193,8 +190,8 @@ package body System.Native_Text_IO is
       Handle : Handle_Type;
       Col, Line : out Positive)
    is
-      Seq : constant String (1 .. 4) := (
-         Character'Val (16#1b#), '[', '6', 'n');
+      Seq : constant String (1 .. 4) :=
+         (Character'Val (16#1b#), '[', '6', 'n');
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
@@ -321,8 +318,7 @@ package body System.Native_Text_IO is
    end Restore;
 
    procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
-      Seq : constant String (1 .. 2) := (
-         Character'Val (16#1b#), '7');
+      Seq : constant String (1 .. 2) := (Character'Val (16#1b#), '7');
    begin
       State_Stack_Count := State_Stack_Count + 1;
       To_State := State_Stack_Count;
@@ -332,8 +328,7 @@ package body System.Native_Text_IO is
    procedure Reset_State (Handle : Handle_Type; From_State : Output_State) is
       pragma Check (Pre,
          Check => From_State = State_Stack_Count or else raise Status_Error);
-      Seq : constant String (1 .. 2) := (
-         Character'Val (16#1b#), '8');
+      Seq : constant String (1 .. 2) := (Character'Val (16#1b#), '8');
    begin
       State_Stack_Count := State_Stack_Count - 1;
       Write_Just (Handle, Seq);

@@ -25,7 +25,8 @@ package body System.Stack is
          begin
             R := C.pthread.pthread_attr_destroy (Attr'Access);
             pragma Check (Debug,
-               Check => not (R < 0)
+               Check =>
+                  not (R < 0)
                   or else Debug.Runtime_Error ("pthread_attr_destroy failed"));
          end;
       end if;

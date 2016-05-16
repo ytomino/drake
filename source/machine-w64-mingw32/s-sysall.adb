@@ -119,7 +119,8 @@ package body System.System_Allocators is
             C.basetsd.SIZE_T (Size),
             C.winnt.MEM_DECOMMIT);
          pragma Check (Debug,
-            Check => R /= 0
+            Check =>
+               R /= 0
                or else Debug.Runtime_Error (
                   "VirtualFree (..., MEM_DECOMMIT) failed"));
       end;
@@ -131,7 +132,8 @@ package body System.System_Allocators is
             0,
             C.winnt.MEM_RELEASE);
          pragma Check (Debug,
-            Check => R /= 0
+            Check =>
+               R /= 0
                or else Debug.Runtime_Error (
                   "VirtualFree (..., MEM_RELEASE) failed"));
       end;

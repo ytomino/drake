@@ -106,11 +106,7 @@ package body System.Native_IO.Sockets is
             I.ai_socktype,
             I.ai_protocol);
          if Handle >= 0 then
-            if C.sys.socket.connect (
-               Handle,
-               I.ai_addr,
-               I.ai_addrlen) = 0
-            then
+            if C.sys.socket.connect (Handle, I.ai_addr, I.ai_addrlen) = 0 then
                --  connected
                Set_Close_On_Exec (Handle);
                return;

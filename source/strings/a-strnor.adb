@@ -50,8 +50,8 @@ package body Ada.Strings.Normalization is
                   L : constant UCD.UCS_4 :=
                      UCD.Hangul.LBase + SIndex / UCD.Hangul.NCount;
                   V : constant UCD.UCS_4 :=
-                     UCD.Hangul.VBase + SIndex rem UCD.Hangul.NCount
-                     / UCD.Hangul.TCount;
+                     UCD.Hangul.VBase
+                     + SIndex rem UCD.Hangul.NCount / UCD.Hangul.TCount;
                   T : constant UCD.UCS_4 :=
                      UCD.Hangul.TBase + SIndex rem UCD.Hangul.TCount;
                begin

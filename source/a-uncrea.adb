@@ -140,10 +140,10 @@ begin
       Check => Debug.Put ("new X'Last =" & Index_Type'Base'Image (X'Last)));
    pragma Check (Trace,
       Check => Debug.Put (
-         "new X.all'Address = " &
-         System.Storage_Elements.Formatting.Image (X.all'Address)));
+         "new X.all'Address = "
+         & System.Storage_Elements.Formatting.Image (X.all'Address)));
    pragma Check (Trace,
       Check => Debug.Put (
-         "new X'Pool_Address = " &
-         System.Storage_Elements.Formatting.Image (X'Pool_Address)));
+         "new X'Pool_Address = "
+         & System.Storage_Elements.Formatting.Image (X'Pool_Address)));
 end Ada.Unchecked_Reallocation;

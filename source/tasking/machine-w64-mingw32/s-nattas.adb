@@ -38,9 +38,8 @@ package body System.Native_Tasks is
       Error := False;
       if Abort_Current /= null and then not Abort_Current.Blocked then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Handle,
-               Abort_Current.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Handle, Abort_Current.Event);
          begin
             R := C.winbase.WaitForMultipleObjects (
                2,
@@ -127,8 +126,8 @@ package body System.Native_Tasks is
       begin
          R := C.winbase.CloseHandle (Closing_Handle);
          pragma Check (Debug,
-            Check => R /= 0
-               or else Debug.Runtime_Error ("CloseHandle failed"));
+            Check =>
+               R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
       end;
    end Finalize;
 

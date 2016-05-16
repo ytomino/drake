@@ -122,10 +122,8 @@ package System.Native_Environment_Encoding is
       type Converter is
          limited new Ada.Finalization.Limited_Controlled with
       record
-         Data : aliased Non_Controlled_Converter := (
-            From_uconv => null,
-            To_uconv => null,
-            others => <>);
+         Data : aliased Non_Controlled_Converter :=
+            (From_uconv => null, To_uconv => null, others => <>);
       end record;
 
       overriding procedure Finalize (Object : in out Converter);

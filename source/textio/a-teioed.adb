@@ -416,8 +416,8 @@ package body Ada.Text_IO.Editing is
                                        Pic_Index < Pic.Expanded'First
                                        or else (
                                           Pic.Expanded (Pic_Index) /= '#'
-                                          and then
-                                          Pic.Expanded (Pic_Index) /= '_'))
+                                          and then Pic.Expanded (Pic_Index) /=
+                                             '_'))
                                  then
                                     Error := True;
                                     return; -- Layout_Error
@@ -493,7 +493,8 @@ package body Ada.Text_IO.Editing is
                if (Item < 0
                      and then not Sign_Filled
                      and then not Paren_Filled) -- minus is not presented
-                  or else (Pic.Has_Dollar = Previous
+                  or else (
+                     Pic.Has_Dollar = Previous
                      and then not Dollar_Used) -- all $ used for item
                then
                   Error := True;

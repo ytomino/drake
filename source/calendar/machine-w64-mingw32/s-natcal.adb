@@ -106,10 +106,7 @@ package body System.Native_Calendar is
          SystemTime'Access,
          FileTime'Access) = 0;
       if not Error then
-         Result :=
-            To_Time (FileTime)
-            - Duration (Time_Zone * 60)
-            + Seconds;
+         Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Seconds;
       end if;
    end Time_Of;
 

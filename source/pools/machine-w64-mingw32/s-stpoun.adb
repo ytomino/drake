@@ -19,8 +19,7 @@ package body System.Storage_Pools.Unbounded is
    begin
       R := C.winbase.HeapDestroy (Object.Heap);
       pragma Check (Debug,
-         Check => R /= 0
-            or else Debug.Runtime_Error ("HeapDestroy failed"));
+         Check => R /= 0 or else Debug.Runtime_Error ("HeapDestroy failed"));
    end Finalize;
 
    overriding procedure Allocate (

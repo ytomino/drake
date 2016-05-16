@@ -173,7 +173,8 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
    begin
       pragma Assert (Container /= null and then Length > 0);
       if Length = 1 then
-         pragma Assert (Container = Position
+         pragma Assert (
+            Container = Position
             and then Position.Left = null
             and then Position.Right = null
             and then Position.Parent = null);
@@ -227,12 +228,15 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
             --  rebalance
             loop
                if (Current.Left = null and then Downcast (Current).Level > 0)
-                  or else (Current.Left /= null
+                  or else (
+                     Current.Left /= null
                      and then Downcast (Current).Level >
                         Downcast (Current.Left).Level + 1)
-                  or else (Current.Right = null
+                  or else (
+                     Current.Right = null
                      and then Downcast (Current).Level > 0)
-                  or else (Current.Right /= null
+                  or else (
+                     Current.Right /= null
                      and then Downcast (Current).Level >
                         Downcast (Current.Right).Level + 1)
                then

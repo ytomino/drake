@@ -95,7 +95,8 @@ package body System.Unwind.Mapping is
             R : C.windef.DWORD;
          begin
             R := C.winbase.FormatMessage (
-               dwFlags => C.winbase.FORMAT_MESSAGE_FROM_HMODULE
+               dwFlags =>
+                  C.winbase.FORMAT_MESSAGE_FROM_HMODULE
                   or C.winbase.FORMAT_MESSAGE_ARGUMENT_ARRAY
                   or C.winbase.FORMAT_MESSAGE_ALLOCATE_BUFFER,
                lpSource => Cast (Storage_Map.NTDLL),
@@ -103,8 +104,8 @@ package body System.Unwind.Mapping is
                dwLanguageId => C.winnt.LANG_USER_DEFAULT,
                lpBuffer => Cast (C_Wide_Buf'Unchecked_Access),
                nSize => 0,
-               Arguments => Cast (
-                  Exception_Record.ExceptionInformation (0)'Access));
+               Arguments =>
+                  Cast (Exception_Record.ExceptionInformation (0)'Access));
             declare
                Wide_Message : Wide_String (Positive);
                for Wide_Message'Address use C_Wide_Buf.all'Address;

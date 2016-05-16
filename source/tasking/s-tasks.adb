@@ -309,8 +309,8 @@ package body System.Tasks is
       pragma Check (Trace, Ada.Debug.Put ("enter"));
       --  environment task id
       if Environment_Task_Record.Master_Top /= null then
-         pragma Assert (Environment_Task_Record.Master_Top.Within =
-            Library_Task_Level);
+         pragma Assert (
+            Environment_Task_Record.Master_Top.Within = Library_Task_Level);
          Leave_Master;
          pragma Assert (Environment_Task_Record.Master_Top = null);
       end if;

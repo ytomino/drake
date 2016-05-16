@@ -112,12 +112,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
 
 --  diff (Copy_Data)
---
---
 --
 --
 --

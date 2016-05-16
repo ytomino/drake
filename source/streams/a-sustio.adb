@@ -67,8 +67,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       if Dividable then -- optimized for packed
          Allocated_Capacity := Stream_Element_Offset (
             Usable_Size
-            / (Stream_Element_Array'Component_Size
-               / Standard'Storage_Unit));
+            / (Stream_Element_Array'Component_Size / Standard'Storage_Unit));
       else -- unpacked
          Allocated_Capacity := Stream_Element_Offset (
             Usable_Size

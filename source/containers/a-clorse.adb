@@ -133,8 +133,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
 
 --  diff (Copy_Data)
 --

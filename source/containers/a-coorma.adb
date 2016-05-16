@@ -124,10 +124,8 @@ package body Ada.Containers.Ordered_Maps is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Root => null, Length => 0);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;
@@ -417,10 +415,7 @@ package body Ada.Containers.Ordered_Maps is
    begin
       if Before = null or else Key < Before.Key then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Key => Key,
-            Element => <>);
+         Position := new Node'(Super => <>, Key => Key, Element => <>);
          Base.Insert (
             Downcast (Container.Super.Data).Root,
             Downcast (Container.Super.Data).Length,

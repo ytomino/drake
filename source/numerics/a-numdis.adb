@@ -20,9 +20,7 @@ package body Ada.Numerics.Distributions is
          return Target'First;
       elsif Source_W = Target_W then
          --  1:1 mapping
-         return Target'Val (
-            Longest_Unsigned (X)
-            + Target'Pos (Target'First));
+         return Target'Val (Longest_Unsigned (X) + Target'Pos (Target'First));
       elsif Longest_Unsigned'Max (Source_W, Target_W) < Longest_Unsigned'Last
          and then (Source_W + 1) * (Target_W + 1) >= Source_W
          and then (Source_W + 1) * (Target_W + 1) >= Target_W
@@ -128,9 +126,7 @@ package body Ada.Numerics.Distributions is
          declare
             X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
          begin
-            return Target'Val (
-               X
-               + Target'Pos (Target'First));
+            return Target'Val (X + Target'Pos (Target'First));
          end;
       elsif Source_W > Target_W
          and then (
@@ -174,9 +170,7 @@ package body Ada.Numerics.Distributions is
                end if;
                if Target_W = Longest_Unsigned'Last then
                   --  Source'Range_Length < Target'RL = Longest_Unsigned'RL
-                  return Target'Val (
-                     X
-                     + Target'Pos (Target'First));
+                  return Target'Val (X + Target'Pos (Target'First));
                else
                   declare
                      --  (Max + 1) mod (Target_W + 1)
@@ -186,8 +180,7 @@ package body Ada.Numerics.Distributions is
                      --  (Max - R + 1) mod (Target_W + 1) = 0
                      if R = 0 or else X <= Max - R then
                         return Target'Val (
-                           X mod (Target_W + 1)
-                           + Target'Pos (Target'First));
+                           X mod (Target_W + 1) + Target'Pos (Target'First));
                      end if;
                   end;
                end if;

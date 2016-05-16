@@ -818,11 +818,13 @@ package body Ada.Naked_Text_IO is
       pragma Check (Pre,
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Pre,
-         Check => not Streams.Naked_Stream_IO.Is_Standard (File.File)
+         Check =>
+            not Streams.Naked_Stream_IO.Is_Standard (File.File)
             or else Naked_Text_IO.Mode (File) = Mode
             or else raise Mode_Error);
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
       Current_Mode : constant IO_Modes.File_Mode := Naked_Text_IO.Mode (File);
    begin
@@ -920,8 +922,7 @@ package body Ada.Naked_Text_IO is
          File.Col := File.Col + File.Ahead_Col;
       end if;
       if Streams.Naked_Stream_IO.Is_Open (File.File)
-         and then File.External /=
-            IO_Modes.Terminal -- console can not flush
+         and then File.External /= IO_Modes.Terminal -- console can not flush
       then
          Streams.Naked_Stream_IO.Flush (File.File);
       end if;
@@ -1067,7 +1068,8 @@ package body Ada.Naked_Text_IO is
             return True;
          when others =>
             return End_Of_File (File) -- End_Of_File calls Read_Buffer
-               or else (File.Last > 0
+               or else (
+                  File.Last > 0
                   and then File.Buffer (1) = Character'Val (16#0c#));
                   --  page mark is ASCII
       end case;
@@ -1504,7 +1506,8 @@ package body Ada.Naked_Text_IO is
 
    procedure Skip_Ahead (File : Non_Controlled_File_Type) is
       pragma Check (Pre,
-         Check => File.Looked_Ahead_Last /= 0
+         Check =>
+            File.Looked_Ahead_Last /= 0
             or else raise Status_Error); -- Look_Ahead should be called before
    begin
       if File.Ahead_Last = 0 then -- File.End_Of_File = True
@@ -1620,7 +1623,8 @@ package body Ada.Naked_Text_IO is
          Streams.Naked_Stream_IO.Non_Controlled_File_Type
    is
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
    begin
       return File.File'Access;
@@ -1630,7 +1634,8 @@ package body Ada.Naked_Text_IO is
       return System.Native_IO.Handle_Type
    is
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
    begin
       if File.External /= IO_Modes.Terminal then

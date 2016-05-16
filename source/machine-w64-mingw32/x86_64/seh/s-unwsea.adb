@@ -370,8 +370,8 @@ package body System.Unwind.Searching is
                               else
                                  is_handled :=
                                     choice = Cast (GCC_Exception.Occurrence.Id)
-                                    or else
-                                       (choice = Cast (Others_Value'Access)
+                                    or else (
+                                       choice = Cast (Others_Value'Access)
                                        and then
                                           not GCC_Exception.Occurrence.Id.
                                              Not_Handled_By_Others)

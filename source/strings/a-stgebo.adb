@@ -122,7 +122,8 @@ package body Ada.Strings.Generic_Bounded is
       return String_Type
    is
       pragma Check (Pre,
-         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+         Check =>
+            (Low <= Source.Length + 1 and then High <= Source.Length)
             or else raise Index_Error); -- CXA4034
    begin
       return Source.Element (Low .. High);
@@ -135,7 +136,8 @@ package body Ada.Strings.Generic_Bounded is
       High : Natural)
    is
       pragma Check (Pre,
-         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+         Check =>
+            (Low <= Source.Length + 1 and then High <= Source.Length)
             or else raise Index_Error);
    begin
       Set_Bounded_String (Target, Source.Element (Low .. High));
@@ -411,10 +413,8 @@ package body Ada.Strings.Generic_Bounded is
             Total_Length := Max;
             Actual_Count := Total_Length / Item_Length;
          end if;
-         return Result : Bounded_String := (
-            Capacity => Max,
-            Length => Total_Length,
-            Element => <>)
+         return Result : Bounded_String :=
+            (Capacity => Max, Length => Total_Length, Element => <>)
          do
             case Drop is
                when Right | Error =>

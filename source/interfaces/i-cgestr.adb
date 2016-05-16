@@ -219,7 +219,8 @@ package body Interfaces.C.Generic_Strings is
       return Element_Array
    is
       pragma Check (Pre,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else Length = 0
             or else raise Dereference_Error); -- CXB3010
       pragma Suppress (Alignment_Check);
@@ -286,7 +287,8 @@ package body Interfaces.C.Generic_Strings is
       return String_Type
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item, Limit => Length);
@@ -313,7 +315,8 @@ package body Interfaces.C.Generic_Strings is
       return size_t
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
    begin
       if Element'Size = char'Size
@@ -417,7 +420,8 @@ package body Interfaces.C.Generic_Strings is
       Check : Boolean := True)
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       Chars_Length : constant C.size_t := Chars'Length;
    begin

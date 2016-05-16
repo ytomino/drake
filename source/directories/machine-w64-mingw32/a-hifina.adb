@@ -412,7 +412,8 @@ package body Ada.Hierarchical_File_Names is
       return String
    is
       pragma Check (Pre,
-         Check => Directory'Length = 0
+         Check =>
+            Directory'Length = 0
             or else Is_Relative_Name (Relative_Name)
             or else raise Name_Error); -- CXAG002
       Directory_Length : constant Natural := Directory'Length;

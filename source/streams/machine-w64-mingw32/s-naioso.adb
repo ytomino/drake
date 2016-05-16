@@ -25,8 +25,7 @@ package body System.Native_IO.Sockets is
    begin
       R := C.winsock2.WSACleanup;
       pragma Check (Debug,
-         Check => R = 0
-            or else Debug.Runtime_Error ("WSACleanup failed"));
+         Check => R = 0 or else Debug.Runtime_Error ("WSACleanup failed"));
    end Finalize;
 
    procedure Initialize;
