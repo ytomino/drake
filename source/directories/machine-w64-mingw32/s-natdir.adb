@@ -274,7 +274,7 @@ package body System.Native_Directories is
          LowPart => Information.nFileSizeLow,
          HighPart => Information.nFileSizeHigh);
    begin
-      return Ada.Streams.Stream_Element_Count (U.QuadPart);
+      return Ada.Streams.Stream_Element_Offset (U.QuadPart);
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)

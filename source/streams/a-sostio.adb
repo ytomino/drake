@@ -35,7 +35,7 @@ package body Ada.Streams.Overlaps_Storage_IO is
             raise Constraint_Error; -- AARM 13.13.1(11/2)
          end if;
       end if;
-      Last := Item'First + (Stream_Element_Count (Size) - 1);
+      Last := Item'First + (Stream_Element_Offset (Size) - 1);
       declare
          Source : Stream_Element_Array (1 .. Stream_Element_Offset (Size));
          for Source'Address use Object.Address + Object.Index - 1;
@@ -87,7 +87,7 @@ package body Ada.Streams.Overlaps_Storage_IO is
    overriding function Size (Object : Overlay)
       return Stream_Element_Count is
    begin
-      return Stream_Element_Count (Object.Size);
+      return Stream_Element_Offset (Object.Size);
    end Size;
 
 end Ada.Streams.Overlaps_Storage_IO;

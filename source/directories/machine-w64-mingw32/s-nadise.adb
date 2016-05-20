@@ -248,7 +248,7 @@ package body System.Native_Directories.Searching is
          LowPart => Directory_Entry.nFileSizeLow,
          HighPart => Directory_Entry.nFileSizeHigh);
    begin
-      return Ada.Streams.Stream_Element_Count (U.QuadPart);
+      return Ada.Streams.Stream_Element_Offset (U.QuadPart);
    end Size;
 
    function Modification_Time (
