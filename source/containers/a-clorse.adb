@@ -778,10 +778,30 @@ package body Ada.Containers.Limited_Ordered_Sets is
       return Left /= Right and then Left.Element.all < Right.Element.all;
    end "<";
 
+   function ">" (Left, Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       return Left.Element.all < Right;
    end "<";
+
+   function ">" (Left : Cursor; Right : Element_Type) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
+   function "<" (Left : Element_Type; Right : Cursor) return Boolean is
+   begin
+      return Left < Right.Element.all;
+   end "<";
+
+   function ">" (Left : Element_Type; Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
 
    procedure Iterate (
       Container : Set'Class;

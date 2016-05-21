@@ -169,15 +169,15 @@ package Ada.Containers.Indefinite_Ordered_Sets is
 
    function "<" (Left, Right : Cursor) return Boolean;
 
---  function ">" (Left, Right : Cursor) return Boolean;
+   function ">" (Left, Right : Cursor) return Boolean;
 
    function "<" (Left : Cursor; Right : Element_Type) return Boolean;
 
---  function ">" (Left : Cursor; Right : Element_Type) return Boolean;
+   function ">" (Left : Cursor; Right : Element_Type) return Boolean;
 
---  function "<" (Left : Element_Type; Right : Cursor) return Boolean;
+   function "<" (Left : Element_Type; Right : Cursor) return Boolean;
 
---  function ">" (Left : Element_Type; Right : Cursor) return Boolean;
+   function ">" (Left : Element_Type; Right : Cursor) return Boolean;
 
    --  modified
    procedure Iterate (
