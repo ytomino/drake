@@ -640,10 +640,30 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return Left /= Right and then Left.Key.all < Right.Key.all;
    end "<";
 
+   function ">" (Left, Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
    function "<" (Left : Cursor; Right : Key_Type) return Boolean is
    begin
       return Left.Key.all < Right;
    end "<";
+
+   function ">" (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
+   function "<" (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Left < Right.Key.all;
+   end "<";
+
+   function ">" (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
 
    procedure Iterate (
       Container : Map'Class;
