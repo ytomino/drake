@@ -674,7 +674,7 @@ package body Ada.Containers.Ordered_Sets is
    function First_Element (Container : Set'Class)
       return Element_Type is
    begin
-      return Element (Last (Set (Container)));
+      return Element (First (Set (Container)));
    end First_Element;
 
    function Last (Container : Set) return Cursor is

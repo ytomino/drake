@@ -516,13 +516,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function First_Element (Container : Map'Class)
       return Element_Type is
    begin
-      return Element (Last (Map (Container)));
+      return Element (First (Map (Container)));
    end First_Element;
 
    function First_Key (Container : Map'Class)
       return Key_Type is
    begin
-      return Key (Last (Map (Container)));
+      return Key (First (Map (Container)));
    end First_Key;
 
    function Last (Container : Map) return Cursor is
