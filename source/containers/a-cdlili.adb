@@ -376,11 +376,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
-      Insert (
-         Container,
-         Downcast (Downcast (Container.Super.Data).First),
-         New_Item,
-         Count);
+      Insert (Container, First (Container), New_Item, Count);
    end Prepend;
 
    procedure Append (
