@@ -190,7 +190,8 @@ package body System.Native_Environment_Encoding is
       Buffer_Length : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      pragma Check (Trace, Ada.Debug.Put ("Finish = " & Finish'Img));
+      pragma Check (Trace,
+         Check => Ada.Debug.Put ("Finish = " & Boolean'Image (Finish)));
       if Item'First > Item'Last then
          Last := Item'First - 1;
          Out_Last := Out_Item'First - 1;
@@ -359,8 +360,16 @@ package body System.Native_Environment_Encoding is
                   end if;
                end;
          end case;
-         pragma Check (Trace, Ada.Debug.Put ("Item'First =" & Item'First'Img));
-         pragma Check (Trace, Ada.Debug.Put ("Last =" & Last'Img));
+         pragma Check (Trace,
+            Check =>
+               Ada.Debug.Put (
+                  "Item'First ="
+                  & Ada.Streams.Stream_Element_Offset'Image (Item'First)));
+         pragma Check (Trace,
+            Check =>
+               Ada.Debug.Put (
+                  "Last ="
+                  & Ada.Streams.Stream_Element_Offset'Image (Last)));
          case Object.To is
             when UTF_16 =>
                declare
@@ -447,8 +456,15 @@ package body System.Native_Environment_Encoding is
                end;
          end case;
          pragma Check (Trace,
-            Check => Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
-         pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
+            Check =>
+               Ada.Debug.Put (
+                  "Out_Item'First ="
+                  & Ada.Streams.Stream_Element_Offset'Image (Out_Item'First)));
+         pragma Check (Trace,
+            Check =>
+               Ada.Debug.Put (
+                  "Out_Last ="
+                  & Ada.Streams.Stream_Element_Offset'Image (Out_Last)));
       end if;
       if Finish and then Last = Item'Last then
          Status := Finished;
