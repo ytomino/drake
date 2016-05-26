@@ -160,7 +160,7 @@ package body Ada.Containers.Array_Sorting is
             --  merge
             New_Middle := First_Cut + (Second_Cut - (Middle + 1));
             pragma Check (Trace,
-               Debug.Put ("MC " & Integer'Image (New_Middle)));
+               Check => Debug.Put ("MC " & Integer'Image (New_Middle)));
             In_Place_Merge (
                First,
                First_Cut - 1,

@@ -615,9 +615,10 @@ package body Ada.Locales is
       Lang_Map_3 := new Language_Table_Array'(Language_Table);
       --  check duplicated?
       pragma Check (Validate,
-         (for all I in Lang_Map_3'First .. Lang_Map_3'Last - 1 =>
-            (for all J in I + 1 .. Lang_Map_3'Last =>
-               Lang_Map_3 (I).Alpha_3 /= Lang_Map_3 (J).Alpha_3)));
+         Check =>
+            (for all I in Lang_Map_3'First .. Lang_Map_3'Last - 1 =>
+               (for all J in I + 1 .. Lang_Map_3'Last =>
+                  Lang_Map_3 (I).Alpha_3 /= Lang_Map_3 (J).Alpha_3)));
       --  sort
       for I in Lang_Map_3'First + 1 .. Lang_Map_3'Last loop
          for J in reverse Lang_Map_3'First .. I - 1 loop
@@ -705,9 +706,10 @@ package body Ada.Locales is
       end;
       --  check duplicated?
       pragma Check (Validate,
-         (for all I in Lang_Map_2'First .. Lang_Map_2'Last - 1 =>
-            (for all J in I + 1 .. Lang_Map_2'Last =>
-               Lang_Map_2 (I).Alpha_2 /= Lang_Map_2 (J).Alpha_2)));
+         Check =>
+            (for all I in Lang_Map_2'First .. Lang_Map_2'Last - 1 =>
+               (for all J in I + 1 .. Lang_Map_2'Last =>
+                  Lang_Map_2 (I).Alpha_2 /= Lang_Map_2 (J).Alpha_2)));
       --  sort
       for I in Lang_Map_2'First + 1 .. Lang_Map_2'Last loop
          for J in reverse Lang_Map_2'First .. I - 1 loop

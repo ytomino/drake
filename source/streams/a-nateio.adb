@@ -753,7 +753,7 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       pragma Check (Pre,
-         not Is_Open (File) or else raise Status_Error);
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
       Open_File (
          Open_Proc => Streams.Naked_Stream_IO.Create'Access,
@@ -770,7 +770,7 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       pragma Check (Pre,
-         not Is_Open (File) or else raise Status_Error);
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
       Open_File (
          Open_Proc => Streams.Naked_Stream_IO.Open'Access,

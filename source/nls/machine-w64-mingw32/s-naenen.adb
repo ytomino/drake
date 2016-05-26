@@ -220,7 +220,7 @@ package body System.Native_Environment_Encoding is
                         Out_Last := Out_Item'First - 1;
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
-                           Ada.Debug.Put ("illegal sequence"));
+                           Check => Ada.Debug.Put ("illegal sequence"));
                         return;
                      when UTF_Conversions.Truncated =>
                         Last := Item'First - 1;
@@ -280,7 +280,7 @@ package body System.Native_Environment_Encoding is
                         Out_Last := Out_Item'First - 1;
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
-                           Ada.Debug.Put ("illegal sequence"));
+                           Check => Ada.Debug.Put ("illegal sequence"));
                         return;
                      when UTF_Conversions.Truncated =>
                         Last := Item'First - 1;
@@ -438,7 +438,7 @@ package body System.Native_Environment_Encoding is
                         when others =>
                            Status := Illegal_Sequence;
                            pragma Check (Trace,
-                              Ada.Debug.Put ("illegal sequence"));
+                              Check => Ada.Debug.Put ("illegal sequence"));
                      end case;
                      return;
                   end if;
@@ -447,7 +447,7 @@ package body System.Native_Environment_Encoding is
                end;
          end case;
          pragma Check (Trace,
-            Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
+            Check => Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
          pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
       end if;
       if Finish and then Last = Item'Last then

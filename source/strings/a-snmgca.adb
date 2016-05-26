@@ -200,8 +200,9 @@ package body Ada.Strings.Naked_Maps.General_Category is
             Items => UA.Items);
       end;
       pragma Check (Validate,
-         All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High =
-         Character_Type'Val (16#10FFFF#));
+         Check =>
+            All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High =
+            Character_Type'Val (16#10FFFF#));
       All_Unassigned_Set.Items (All_Unassigned_Set.Items'Last).High :=
          Character_Type'Last;
       pragma Check (Validate, Debug.Valid (All_Unassigned_Set.all));
