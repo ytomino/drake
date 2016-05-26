@@ -8,7 +8,8 @@ package System.UTF_Conversions is
 
    UTF_8_Max_Length : constant := 6;
 
-   type From_Status_Type is (Success, Illegal_Sequence, Truncated);
+   type From_Status_Type is
+      (Success, Illegal_Sequence, Non_Shortest, Truncated);
    pragma Discard_Names (From_Status_Type);
 
    subtype Sequence_Status_Type is

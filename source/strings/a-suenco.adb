@@ -422,9 +422,15 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                Item_Last,
                Code,
                From_Status);
-            if From_Status /= System.UTF_Conversions.Success then
-               Raise_Exception (Encoding_Error'Identity);
-            end if;
+            case From_Status is
+               when System.UTF_Conversions.Success
+                  | System.UTF_Conversions.Non_Shortest =>
+                     --  AARM A.4.11(54.a/4), CXA4036
+                  null;
+               when System.UTF_Conversions.Illegal_Sequence
+                  | System.UTF_Conversions.Truncated =>
+                  Raise_Exception (Encoding_Error'Identity);
+            end case;
             To_UTF (Output_Scheme) (
                Code,
                Result (Last + 1 .. Result'Last),

@@ -3,7 +3,6 @@ with Ada.Strings.UTF_Encoding.Conversions;
 with System.UTF_Conversions;
 package body Ada.Strings.UTF_Encoding.Generic_Strings is
    use Exception_Identification.From_Here;
-   use type System.UTF_Conversions.From_Status_Type;
 
    generic
       type UTF_Character_Type is (<>);
@@ -143,9 +142,15 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
                   Item_Last,
                   Code,
                   From_Status);
-               if From_Status /= System.UTF_Conversions.Success then
-                  Raise_Exception (Encoding_Error'Identity);
-               end if;
+               case From_Status is
+                  when System.UTF_Conversions.Success
+                     | System.UTF_Conversions.Non_Shortest =>
+                        --  AARM A.4.11(54.a/4)
+                     null;
+                  when System.UTF_Conversions.Illegal_Sequence
+                     | System.UTF_Conversions.Truncated =>
+                     Raise_Exception (Encoding_Error'Identity);
+               end case;
                Put (
                   Wide_Wide_Character'Val (Code),
                   Result (Result_Last + 1 .. Result'Last),

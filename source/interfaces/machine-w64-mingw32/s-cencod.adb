@@ -272,7 +272,10 @@ package body System.C_Encoding is
                               raise Constraint_Error;
                         end case;
                      when UTF_Conversions.Illegal_Sequence
+                        | UTF_Conversions.Non_Shortest
                         | UTF_Conversions.Truncated =>
+                           --  Non_Shortest and Truncated do not returned in
+                           --    UTF-32.
                         Target_Last := Target_Index + (Substitute'Length - 1);
                         if Target_Last > Target'Last then
                            raise Constraint_Error; -- overflow
@@ -340,8 +343,9 @@ package body System.C_Encoding is
                               Put_Substitute := True;
                         end case;
                      when UTF_Conversions.Illegal_Sequence
+                        | UTF_Conversions.Non_Shortest
                         | UTF_Conversions.Truncated =>
-                        --  Truncated does not returned in UTF-32
+                           --  Non_Shortest does not returned in UTF-16.
                         Put_Substitute := True;
                   end case;
                   if Put_Substitute then
