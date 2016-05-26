@@ -9,6 +9,9 @@ package System.Native_IO.Sockets is
 
    subtype Socket_Address is C.sys.socket.struct_sockaddr;
 
+   procedure Close_Socket (Handle : Handle_Type; Raise_On_Error : Boolean);
+      --  Close_Ordinary without Name
+
    --  client
 
    subtype End_Point is C.netdb.struct_addrinfo_ptr;
@@ -36,6 +39,7 @@ package System.Native_IO.Sockets is
       Handle : aliased out Handle_Type;
       Remote_Address : out Socket_Address);
 
-   procedure Close_Listener (Server : Listener; Raise_On_Error : Boolean);
+   procedure Close_Listener (Server : Listener; Raise_On_Error : Boolean)
+      renames Close_Socket;
 
 end System.Native_IO.Sockets;

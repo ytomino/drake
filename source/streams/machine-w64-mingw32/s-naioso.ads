@@ -11,6 +11,9 @@ package System.Native_IO.Sockets is
 
    subtype Socket_Address is C.psdk_inc.qip_types.SOCKADDR;
 
+   procedure Close_Socket (Handle : Handle_Type; Raise_On_Error : Boolean);
+      --  Close_Ordinary without Name
+
    --  client
 
    subtype End_Point is C.ws2tcpip.struct_addrinfoW_ptr;
