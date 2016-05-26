@@ -126,9 +126,13 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
          Result : String_Type (1 .. Item'Length * Expanding);
          Result_Last : Natural := Result'First - 1;
       begin
-         if Item (Item_Last + 1 .. Item_Last + BOM'Length) = BOM then
-            Item_Last := Item_Last + BOM'Length;
-         end if;
+         declare
+            L : constant Natural := Item_Last + BOM'Length;
+         begin
+            if L <= Item'Last and then Item (Item_Last + 1 .. L) = BOM then
+               Item_Last := L;
+            end if;
+         end;
          while Item_Last < Item'Last loop
             declare
                Code : System.UTF_Conversions.UCS_4;
