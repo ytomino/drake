@@ -302,9 +302,6 @@ package body Ada.Naked_Text_IO is
                if Wait and then File.Last = Old_Last then
                   File.End_Of_File := True;
                end if;
-            exception
-               when End_Error =>
-                  File.End_Of_File := True;
             end;
          end if;
       end if;

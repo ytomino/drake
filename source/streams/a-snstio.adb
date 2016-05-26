@@ -684,7 +684,7 @@ package body Ada.Streams.Naked_Stream_IO is
             begin
                Ready_Reading_Buffer (File, Error);
                if Error then
-                  Raise_Exception (Use_Error'Identity);
+                  Raise_Exception (Device_Error'Identity);
                end if;
             end;
          end if;
@@ -804,7 +804,7 @@ package body Ada.Streams.Naked_Stream_IO is
          if Index <= Item'First then
             --  RM 13.13.1(8/2), Item'First - 1 is returned in Last for EOF.
             if Error then
-               Raise_Exception (End_Error'Identity); -- ???
+               Raise_Exception (Device_Error'Identity);
             elsif Index = Stream_Element_Offset'First then
                raise Constraint_Error; -- AARM 13.13.1(11/2)
             end if;

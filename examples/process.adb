@@ -60,16 +60,21 @@ begin
 				File,
 				Ada.Text_IO.In_File,
 				Ada.Streams.Stream_IO.Stream (Output_Reading));
-			while not Ada.Text_IO.End_Of_File (File) loop
-				declare
-					Line : constant String := Ada.Text_IO.Get_Line (File);
-				begin
-					pragma Check (Trace, Ada.Debug.Put (Line));
-					if Line = "ahaha=ufufu" then
-						Success := True;
-					end if;
-				end;
-			end loop;
+			Reading : begin
+				loop
+					declare
+						Line : constant String := Ada.Text_IO.Get_Line (File);
+					begin
+						pragma Check (Trace, Ada.Debug.Put (Line));
+						if Line = "ahaha=ufufu" then
+							Success := True;
+						end if;
+					end;
+				end loop;
+			exception
+				when Ada.Text_IO.End_Error => null;
+			end Reading;
+			pragma Assert (Ada.Text_IO.End_Of_File (File));
 			Ada.Text_IO.Close (File);
 			pragma Assert (Success);
 		end;
