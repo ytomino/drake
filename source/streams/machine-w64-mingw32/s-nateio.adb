@@ -16,6 +16,14 @@ package body System.Native_Text_IO is
    package LPSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.CCHAR, C.winnt.LPSTR);
 
+   function Processed_Input_Is_Enabled (Handle : Handle_Type) return Boolean;
+   function Processed_Input_Is_Enabled (Handle : Handle_Type) return Boolean is
+      Mode : aliased C.windef.DWORD;
+   begin
+      return C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0
+         and then (Mode and C.wincon.ENABLE_PROCESSED_INPUT) /= 0;
+   end Processed_Input_Is_Enabled;
+
    procedure Read_Buffer_Trailing_From_Terminal (
       Handle : Handle_Type;
       Buffer : in out Buffer_Type;
@@ -210,7 +218,11 @@ package body System.Native_Text_IO is
          lpReserved => C.windef.LPVOID (Null_Address)) = 0
       then
          Out_Length := -1; -- error
-      elsif Read_Size = 0 then
+      elsif Read_Size = 0
+         or else (
+            W_Buffer (0) = 16#1A# -- Control+Z
+            and then Processed_Input_Is_Enabled (Handle))
+      then
          Out_Length := 0; -- no data
       else
          Read_Buffer_Trailing_From_Terminal (

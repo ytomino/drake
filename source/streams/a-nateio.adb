@@ -274,7 +274,10 @@ package body Ada.Naked_Text_IO is
                      Streams.Naked_Stream_IO.Handle (File.File),
                      File.Buffer (File.Last + 1)'Address,
                      1,
-                     Read_Length); -- Read_Length can be > 1
+                     Read_Length);
+                  if Read_Length = 0 then
+                     File.End_Of_File := True;
+                  end if;
                else
                   System.Native_Text_IO.Terminal_Get_Immediate (
                      Streams.Naked_Stream_IO.Handle (File.File),
