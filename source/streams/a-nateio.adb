@@ -808,7 +808,11 @@ package body Ada.Naked_Text_IO is
 
    procedure Delete (File : aliased in out Non_Controlled_File_Type) is
       pragma Check (Pre,
-         Check => Is_Open (File) or else raise Status_Error);
+         Check =>
+            (Is_Open (File)
+               and then Streams.Naked_Stream_IO.Is_Open (File.File)
+               and then not Streams.Naked_Stream_IO.Is_Standard (File.File))
+            or else raise Status_Error);
       Internal : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
          File.File;
    begin
