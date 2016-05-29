@@ -12,7 +12,6 @@ with C.winnt;
 package System.Native_IO is
    pragma Preelaborate;
 
-   subtype Name_Length is C.size_t;
    subtype Name_Character is C.winnt.WCHAR;
    subtype Name_String is C.winnt.WCHAR_array;
    subtype Name_Pointer is C.winnt.LPWSTR;
@@ -23,9 +22,7 @@ package System.Native_IO is
 
    --  name
 
-   function Value (
-      First : not null access constant Name_Character;
-      Length : Name_Length)
+   function Value (First : not null access constant Name_Character)
       return String
       renames Zero_Terminated_WStrings.Value;
 
@@ -33,20 +30,17 @@ package System.Native_IO is
 
    procedure New_Full_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer; -- Full_Name (Name) & NUL
-      Out_Length : out Name_Length);
+      Out_Item : aliased out Name_Pointer); -- Full_Name (Name) & NUL
 
    procedure New_External_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer; -- '*' & Name & NUL
-      Out_Length : out Name_Length);
+      Out_Item : aliased out Name_Pointer); -- '*' & Name & NUL
 
    --  file management
 
    procedure Open_Temporary (
       Handle : aliased out Handle_Type;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length);
+      Out_Item : aliased out Name_Pointer);
 
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);

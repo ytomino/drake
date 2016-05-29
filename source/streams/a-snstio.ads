@@ -210,7 +210,6 @@ private
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

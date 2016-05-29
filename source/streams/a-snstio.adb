@@ -137,7 +137,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
       return Non_Controlled_File_Type;
@@ -146,7 +145,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
       return Non_Controlled_File_Type is
@@ -157,7 +155,6 @@ package body Ada.Streams.Naked_Stream_IO is
          Kind => Kind,
          Buffer_Inline => <>,
          Name => Name,
-         Name_Length => Name_Length,
          Form => Form,
          Buffer => System.Null_Address,
          Buffer_Length => Uninitialized_Buffer,
@@ -265,37 +262,26 @@ package body Ada.Streams.Naked_Stream_IO is
       else
          Kind := Temporary;
       end if;
-      declare
-         Full_Name_Length : System.Native_IO.Name_Length;
-      begin
-         if Kind = Ordinary then
-            Scoped.Closer := System.Native_IO.Close_Ordinary'Access;
-            System.Native_IO.New_Full_Name (
-               Name,
-               Scoped.Name,
-               Full_Name_Length);
-            System.Native_IO.Open_Ordinary (
-               Method => Method,
-               Handle => Scoped.Handle,
-               Mode => Mode,
-               Name => Scoped.Name,
-               Form => Form);
-         else
-            Scoped.Closer := System.Native_IO.Close_Temporary'Access;
-            System.Native_IO.Open_Temporary (
-               Scoped.Handle,
-               Scoped.Name,
-               Full_Name_Length);
-         end if;
-         Scoped.File := Allocate (
+      if Kind = Ordinary then
+         Scoped.Closer := System.Native_IO.Close_Ordinary'Access;
+         System.Native_IO.New_Full_Name (Name, Scoped.Name);
+         System.Native_IO.Open_Ordinary (
+            Method => Method,
             Handle => Scoped.Handle,
             Mode => Mode,
-            Kind => Kind,
             Name => Scoped.Name,
-            Name_Length => Full_Name_Length,
-            Form => Form,
-            Closer => Scoped.Closer);
-      end;
+            Form => Form);
+      else
+         Scoped.Closer := System.Native_IO.Close_Temporary'Access;
+         System.Native_IO.Open_Temporary (Scoped.Handle, Scoped.Name);
+      end if;
+      Scoped.File := Allocate (
+         Handle => Scoped.Handle,
+         Mode => Mode,
+         Kind => Kind,
+         Name => Scoped.Name,
+         Form => Form,
+         Closer => Scoped.Closer);
       if Kind = Ordinary and then Mode = IO_Modes.Append_File then
          Set_Index_To_Append (Scoped.File); -- sets index to the last
       end if;
@@ -657,9 +643,7 @@ package body Ada.Streams.Naked_Stream_IO is
 
    function Name (File : not null Non_Controlled_File_Type) return String is
    begin
-      return System.Native_IO.Value (
-         File.Name,
-         File.Name_Length);
+      return System.Native_IO.Value (File.Name);
    end Name;
 
    function Form (File : Non_Controlled_File_Type)
@@ -1013,7 +997,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Kind : Stream_Kind;
       Closer : Close_Handler;
       Full_Name : aliased System.Native_IO.Name_Pointer;
-      Full_Name_Length : System.Native_IO.Name_Length;
    begin
       if To_Close then
          Kind := External;
@@ -1023,16 +1006,12 @@ package body Ada.Streams.Naked_Stream_IO is
          Closer := null;
       end if;
       Name_Holder.Assign (Full_Name);
-      System.Native_IO.New_External_Name (
-         Name,
-         Full_Name, -- '*' & Name & NUL
-         Full_Name_Length);
+      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
       File := Allocate (
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
          Name => Full_Name,
-         Name_Length => Full_Name_Length,
          Form => Form,
          Closer => Closer);
       --  complete

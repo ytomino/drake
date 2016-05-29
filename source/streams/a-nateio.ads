@@ -213,12 +213,11 @@ private
    type Virtual_Mark_Type is (None, EOP, EOP_EOF, EOF);
    pragma Discard_Names (Virtual_Mark_Type);
 
-   type Text_Type (
-      Name_Length : Natural) is -- "limited" prevents No_Elaboration_Code
-   record
+   type Text_Type is record -- "limited" prevents No_Elaboration_Code
       Stream : System.Address := -- access Streams.Root_Stream_Type'Class
          System.Null_Address;
       File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Name : System.Native_IO.Name_Pointer; -- used when File is not assigned
       Page : Natural := 1;
       Line : Natural := 1;
       Col : Natural := 1;
@@ -235,14 +234,13 @@ private
       Mode : IO_Modes.File_Mode;
       External : IO_Modes.File_External;
       New_Line : IO_Modes.File_New_Line;
-      Name : String (1 .. Name_Length);
    end record;
    pragma Suppress_Initialization (Text_Type);
 
    Standard_Input_Text : aliased Text_Type := (
-      Name_Length => 0,
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
+      Name => null,
       Page => 1,
       Line => 1,
       Col => 1,
@@ -258,13 +256,12 @@ private
       Virtual_Mark => None,
       Mode => IO_Modes.In_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
-      New_Line => System.Native_Text_IO.Default_New_Line,
-      Name => "");
+      New_Line => System.Native_Text_IO.Default_New_Line);
 
    Standard_Output_Text : aliased Text_Type := (
-      Name_Length => 0,
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
+      Name => null,
       Page => 1,
       Line => 1,
       Col => 1,
@@ -280,13 +277,12 @@ private
       Virtual_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
-      New_Line => System.Native_Text_IO.Default_New_Line,
-      Name => "");
+      New_Line => System.Native_Text_IO.Default_New_Line);
 
    Standard_Error_Text : aliased Text_Type := (
-      Name_Length => 0,
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Error,
+      Name => null,
       Page => 1,
       Line => 1,
       Col => 1,
@@ -302,8 +298,7 @@ private
       Virtual_Mark => None,
       Mode => IO_Modes.Out_File,
       External => System.Native_Text_IO.Default_External, -- be overwritten
-      New_Line => System.Native_Text_IO.Default_New_Line,
-      Name => "");
+      New_Line => System.Native_Text_IO.Default_New_Line);
 
    Standard_Input : constant Non_Controlled_File_Type :=
       Standard_Input_Text'Access;

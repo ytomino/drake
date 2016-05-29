@@ -12,7 +12,7 @@ package body System.Native_IO is
    use type Ada.IO_Modes.File_Shared_Spec;
    use type Ada.Streams.Stream_Element_Offset;
    use type Storage_Elements.Storage_Offset;
-   use type C.size_t; -- Name_Length
+   use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
@@ -37,23 +37,22 @@ package body System.Native_IO is
 
    procedure New_Full_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
+      Out_Item : aliased out Name_Pointer)
    is
       W_Item : aliased Name_String (
          0 ..
          Item'Length * Zero_Terminated_WStrings.Expanding);
-      W_Item_Length : Name_Length;
+      W_Item_Length : C.size_t;
       Full_Path_Buffer : aliased Name_String (0 .. C.windef.MAX_PATH - 1);
       Full_Path_Pointer : not null access C.winnt.WCHAR :=
          Full_Path_Buffer (0)'Access;
-      Full_Path_Length : Name_Length;
+      Full_Path_Length : C.size_t;
    begin
       Zero_Terminated_WStrings.To_C (
          Item,
          W_Item (0)'Access,
          W_Item_Length);
-      Full_Path_Length := Name_Length (
+      Full_Path_Length := C.size_t (
          C.winbase.GetFullPathName (
             W_Item (0)'Access,
             Full_Path_Buffer'Length,
@@ -64,27 +63,26 @@ package body System.Native_IO is
          Full_Path_Length := W_Item_Length;
       end if;
       --  allocate filename
-      Out_Length := Full_Path_Length;
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
+            (Storage_Elements.Storage_Offset (Full_Path_Length) + 1) -- NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
-         Full_Path_A : Name_String (Name_Length);
+         Full_Path_A : Name_String (C.size_t);
          for Full_Path_A'Address use
             Name_Pointer_Conv.To_Address (Full_Path_Pointer);
-         Out_Item_A : Name_String (Name_Length);
+         Out_Item_A : Name_String (C.size_t);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
-         Out_Item_A (0 .. Out_Length) := Full_Path_A (0 .. Out_Length);
+         Out_Item_A (0 .. Full_Path_Length) :=
+            Full_Path_A (0 .. Full_Path_Length);
       end;
    end New_Full_Name;
 
    procedure New_External_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer; -- '*' & Name & NUL
-      Out_Length : out Name_Length) is
+      Out_Item : aliased out Name_Pointer) is
    begin
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
@@ -92,26 +90,22 @@ package body System.Native_IO is
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
-         Out_Item_A : Name_String (Name_Length);
+         Out_Item_A : Name_String (C.size_t);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
          Out_Item_A (0) := Name_Character'Val (Wide_Character'Pos ('*'));
-         Zero_Terminated_WStrings.To_C (
-            Item,
-            Out_Item_A (1)'Access,
-            Out_Length);
+         Zero_Terminated_WStrings.To_C (Item, Out_Item_A (1)'Access);
       end;
-      Out_Length := Out_Length + 1; -- '*'
    end New_External_Name;
 
    procedure Open_Temporary (
       Handle : aliased out Handle_Type;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
+      Out_Item : aliased out Name_Pointer)
    is
       use type C.winnt.HANDLE;
       Temp_Dir : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Temp_Name : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
+      Out_Length : C.size_t;
    begin
       --  compose template
       if C.winbase.GetTempPath (Temp_Dir'Length, Temp_Dir (0)'Access) = 0

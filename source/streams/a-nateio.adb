@@ -171,8 +171,14 @@ package body Ada.Naked_Text_IO is
 
    --  non-controlled
 
-   procedure Free is
-      new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
+   procedure Free (X : in out Non_Controlled_File_Type);
+   procedure Free (X : in out Non_Controlled_File_Type) is
+      procedure Raw_Free is
+         new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
+   begin
+      System.Native_IO.Free (X.Name);
+      Raw_Free (X);
+   end Free;
 
    type Open_Access is not null access procedure (
       File : in out Streams.Naked_Stream_IO.Non_Controlled_File_Type;
@@ -194,12 +200,11 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form)
    is
       New_File : aliased Non_Controlled_File_Type := new Text_Type'(
-         Name_Length => 0,
          Stream => <>,
+         Name => null,
          Mode => Mode,
          External => <>,
          New_Line => <>,
-         Name => "",
          others => <>);
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Non_Controlled_File_Type, Free);
@@ -877,7 +882,7 @@ package body Ada.Naked_Text_IO is
       if Streams.Naked_Stream_IO.Is_Open (File.File) then
          return Streams.Naked_Stream_IO.Name (File.File);
       else
-         return File.Name;
+         return System.Native_IO.Value (File.Name);
       end if;
    end Name;
 
@@ -1601,15 +1606,23 @@ package body Ada.Naked_Text_IO is
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
          with Import, Convention => Intrinsic;
+      package Name_Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            System.Native_IO.Name_Pointer,
+            System.Native_IO.Free);
+      Full_Name : aliased System.Native_IO.Name_Pointer;
    begin
+      Name_Holder.Assign (Full_Name);
+      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
       File := new Text_Type'(
-         Name_Length => Name'Length + 1,
          Stream => To_Address (Stream),
+         Name => Full_Name,
          Mode => Mode,
          External => Select_External (Form.External),
          New_Line => Select_New_Line (Form.New_Line),
-         Name => '*' & Name,
          others => <>);
+      --  complete
+      Name_Holder.Clear;
    end Open;
 
    function Stream (File : Non_Controlled_File_Type)
