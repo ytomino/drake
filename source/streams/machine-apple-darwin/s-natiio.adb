@@ -41,65 +41,6 @@ package body System.Native_IO is
       Item := null;
    end Free;
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer)
-   is
-      Item_Length : constant Natural := Item'Length;
-      Out_Length : C.size_t;
-   begin
-      if Item (Item'First) = '/' then
-         --  absolute path
-         Out_Item := Name_Pointer_Conv.To_Pointer (
-            Address (
-               C.stdlib.malloc (
-                  C.size_t (Item_Length) * Zero_Terminated_Strings.Expanding
-                  + 1))); -- NUL
-         if Out_Item = null then
-            raise Storage_Error;
-         end if;
-         Out_Length := 0;
-      else
-         --  current directory
-         Out_Item := C.unistd.getcwd (null, 0);
-         Out_Length := strlen (Out_Item);
-         --  reuse the memory from malloc (similar to reallocf)
-         declare
-            New_Out_Item : constant Name_Pointer :=
-               Name_Pointer_Conv.To_Pointer (
-                  Address (
-                     C.stdlib.realloc (
-                        C.void_ptr (Name_Pointer_Conv.To_Address (Out_Item)),
-                        Out_Length
-                           + C.size_t (Item_Length)
-                              * Zero_Terminated_Strings.Expanding
-                           + 2))); -- '/' & NUL
-         begin
-            if New_Out_Item = null then
-               raise Storage_Error;
-            end if;
-            Out_Item := New_Out_Item;
-         end;
-         --  append slash
-         declare
-            Out_Item_A : Name_String (C.size_t);
-            for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-         begin
-            if Out_Item_A (Out_Length - 1) /= '/' then
-               Out_Item_A (Out_Length) := '/';
-               Out_Length := Out_Length + 1;
-            end if;
-         end;
-      end if;
-      --  append Item
-      declare
-         Out_Item_A : Name_String (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-      begin
-         Zero_Terminated_Strings.To_C (Item, Out_Item_A (Out_Length)'Access);
-      end;
-   end New_Full_Name;
-
    procedure New_External_Name (
       Item : String;
       Out_Item : aliased out Name_Pointer) is
@@ -336,7 +277,7 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       pragma Unreferenced (Name);
@@ -350,7 +291,7 @@ package body System.Native_IO is
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       Error : Boolean;

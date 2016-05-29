@@ -35,51 +35,6 @@ package body System.Native_IO is
       Item := null;
    end Free;
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer)
-   is
-      W_Item : aliased Name_String (
-         0 ..
-         Item'Length * Zero_Terminated_WStrings.Expanding);
-      W_Item_Length : C.size_t;
-      Full_Path_Buffer : aliased Name_String (0 .. C.windef.MAX_PATH - 1);
-      Full_Path_Pointer : not null access C.winnt.WCHAR :=
-         Full_Path_Buffer (0)'Access;
-      Full_Path_Length : C.size_t;
-   begin
-      Zero_Terminated_WStrings.To_C (
-         Item,
-         W_Item (0)'Access,
-         W_Item_Length);
-      Full_Path_Length := C.size_t (
-         C.winbase.GetFullPathName (
-            W_Item (0)'Access,
-            Full_Path_Buffer'Length,
-            Full_Path_Pointer,
-            null));
-      if Full_Path_Length = 0 then -- GetFullPathName failed
-         Full_Path_Pointer := W_Item (0)'Access;
-         Full_Path_Length := W_Item_Length;
-      end if;
-      --  allocate filename
-      Out_Item := Name_Pointer_Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            (Storage_Elements.Storage_Offset (Full_Path_Length) + 1) -- NUL
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
-      declare
-         pragma Suppress (Alignment_Check);
-         Full_Path_A : Name_String (C.size_t);
-         for Full_Path_A'Address use
-            Name_Pointer_Conv.To_Address (Full_Path_Pointer);
-         Out_Item_A : Name_String (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-      begin
-         Out_Item_A (0 .. Full_Path_Length) :=
-            Full_Path_A (0 .. Full_Path_Length);
-      end;
-   end New_Full_Name;
-
    procedure New_External_Name (
       Item : String;
       Out_Item : aliased out Name_Pointer) is
@@ -297,7 +252,7 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       pragma Unreferenced (Name);
@@ -311,7 +266,7 @@ package body System.Native_IO is
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       Error : Boolean;

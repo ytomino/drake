@@ -201,7 +201,7 @@ private
 
    type Close_Handler is access procedure (
       Handle : System.Native_IO.Handle_Type;
-      Name : not null System.Native_IO.Name_Pointer;
+      Name : System.Native_IO.Name_Pointer;
       Raise_On_Error : Boolean);
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
@@ -209,6 +209,7 @@ private
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
       Buffer : System.Address;

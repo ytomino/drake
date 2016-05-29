@@ -193,6 +193,7 @@
 #endif
 #endif
 #if defined(__APPLE__)
+#pragma for Ada overload int fcntl(int, int, char *)
 #pragma for Ada overload int gettimeofday(struct timeval *, struct timezone *)
 #pragma for Ada overload size_t iconv(iconv_t cd, \
 	char const **inbuf, size_t *inbytesleft, \

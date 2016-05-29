@@ -28,10 +28,6 @@ package System.Native_IO is
 
    procedure Free (Item : in out Name_Pointer);
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer); -- Full_Name (Name) & NUL
-
    procedure New_External_Name (
       Item : String;
       Out_Item : aliased out Name_Pointer); -- '*' & Name & NUL
@@ -63,17 +59,17 @@ package System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean);
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer; -- not null
       Raise_On_Error : Boolean);
 
    procedure Close_Temporary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer; -- not null
       Raise_On_Error : Boolean)
       renames Close_Ordinary;
 

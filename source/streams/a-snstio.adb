@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
+with System.Native_IO.Names;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 package body Ada.Streams.Naked_Stream_IO is
@@ -136,6 +137,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
@@ -144,6 +146,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
@@ -154,6 +157,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Mode => Mode,
          Kind => Kind,
          Buffer_Inline => <>,
+         Has_Full_Name => Has_Full_Name,
          Name => Name,
          Form => Form,
          Buffer => System.Null_Address,
@@ -264,12 +268,12 @@ package body Ada.Streams.Naked_Stream_IO is
       end if;
       if Kind = Ordinary then
          Scoped.Closer := System.Native_IO.Close_Ordinary'Access;
-         System.Native_IO.New_Full_Name (Name, Scoped.Name);
-         System.Native_IO.Open_Ordinary (
+         System.Native_IO.Names.Open_Ordinary (
             Method => Method,
             Handle => Scoped.Handle,
             Mode => Mode,
-            Name => Scoped.Name,
+            Name => Name,
+            Out_Name => Scoped.Name,
             Form => Form);
       else
          Scoped.Closer := System.Native_IO.Close_Temporary'Access;
@@ -279,6 +283,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Handle => Scoped.Handle,
          Mode => Mode,
          Kind => Kind,
+         Has_Full_Name => Scoped.Name /= null,
          Name => Scoped.Name,
          Form => Form,
          Closer => Scoped.Closer);
@@ -289,6 +294,19 @@ package body Ada.Streams.Naked_Stream_IO is
       --  complete
       Holder.Clear;
    end Allocate_And_Open;
+
+   procedure Get_Full_Name (File : not null Non_Controlled_File_Type);
+   procedure Get_Full_Name (File : not null Non_Controlled_File_Type) is
+   begin
+      if not File.Has_Full_Name then
+         System.Native_IO.Names.Get_Full_Name (
+            File.Handle,
+            File.Has_Full_Name,
+            File.Name,
+            Is_Standard => File.Kind = Standard_Handle,
+            Raise_On_Error => File.Name = null);
+      end if;
+   end Get_Full_Name;
 
    procedure Get_Buffer (File : not null Non_Controlled_File_Type);
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
@@ -493,8 +511,16 @@ package body Ada.Streams.Naked_Stream_IO is
          when Ordinary | Temporary | External =>
             Scoped.Handle := Freeing_File.Handle;
             Scoped.Name := Freeing_File.Name;
-         when External_No_Close | Standard_Handle =>
-            null;
+         when External_No_Close =>
+            Scoped.Name := Freeing_File.Name;
+         when Standard_Handle =>
+            if Freeing_File.Has_Full_Name then
+               Scoped.Name := Freeing_File.Name;
+               --  The standard files may be double-finalized
+               --    from Ada.Streams.Stream_IO.Standard_Files and Ada.Text_IO.
+               Freeing_File.Name := null;
+               Freeing_File.Has_Full_Name := False;
+            end if;
       end case;
       if Kind /= Temporary then
          Flush_Writing_Buffer (
@@ -563,6 +589,7 @@ package body Ada.Streams.Naked_Stream_IO is
    begin
       case File.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             File.Closer := System.Native_IO.Delete_Ordinary'Access;
             Close_And_Deallocate (File, Raise_On_Error => True);
          when Temporary =>
@@ -589,6 +616,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             Scoped.Handle := File.Handle;
             Scoped.File := File;
             Scoped.Name := File.Name;
@@ -643,6 +671,7 @@ package body Ada.Streams.Naked_Stream_IO is
 
    function Name (File : not null Non_Controlled_File_Type) return String is
    begin
+      Get_Full_Name (File);
       return System.Native_IO.Value (File.Name);
    end Name;
 
@@ -930,6 +959,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             Scoped.Handle := File.Handle;
             Scoped.File := File;
             Scoped.Name := File.Name;
@@ -1011,6 +1041,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
+         Has_Full_Name => False,
          Name => Full_Name,
          Form => Form,
          Closer => Closer);
