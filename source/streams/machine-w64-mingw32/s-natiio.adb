@@ -127,9 +127,7 @@ package body System.Native_IO is
             C.winnt.FILE_SHARE_READ
             or C.winnt.FILE_SHARE_WRITE,
          lpSecurityAttributes => null,
-         dwCreationDisposition =>
-            C.winbase.OPEN_EXISTING
-            or C.winbase.TRUNCATE_EXISTING,
+         dwCreationDisposition => C.winbase.TRUNCATE_EXISTING,
          dwFlagsAndAttributes =>
             C.winnt.FILE_ATTRIBUTE_TEMPORARY
             or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
