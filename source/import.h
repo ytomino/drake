@@ -123,6 +123,7 @@
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
+#include <sys/sendfile.h>
 #include <sys/statvfs.h>
 #include <link.h>
 #undef _GNU_SOURCE

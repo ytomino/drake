@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit specialized for FreeBSD (or Linux)
+--  implementation unit specialized for FreeBSD
 package System.Native_Directories.Copying is
    pragma Preelaborate;
 
