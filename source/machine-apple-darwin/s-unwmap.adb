@@ -13,6 +13,10 @@ package body System.Unwind.Mapping is
    use type C.unsigned_int;
    use type C.unsigned_long;
 
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
+
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
       Info : access C.signal.siginfo_t;
@@ -63,7 +67,7 @@ package body System.Unwind.Mapping is
       end case;
       Raising.Raise_From_Signal_Handler (
          Eexception_Id,
-         Message => Message (1 .. Integer (C.string.strlen (C_Message))),
+         Message => Message (1 .. Integer (strlen (C_Message))),
          Stack_Guard => Stack_Guard);
    end sigaction_Handler;
 

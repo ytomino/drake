@@ -2,12 +2,15 @@ with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Once;
 with C.stdlib;
-with C.string;
 package body System.Native_Text_IO.Terminal_Colors is
    use type C.char_array;
    use type C.char_ptr;
    use type C.signed_int;
    use type C.size_t;
+
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    TERM_Variable : constant C.char_array (0 .. 4) := "TERM" & C.char'Val (0);
 
@@ -21,7 +24,7 @@ package body System.Native_Text_IO.Terminal_Colors is
       TERM : constant C.char_ptr := C.stdlib.getenv (TERM_Variable (0)'Access);
    begin
       if TERM /= null
-         and then C.string.strlen (TERM) = xterm_256color'Length
+         and then strlen (TERM) = xterm_256color'Length
       then
          declare
             package char_ptr_Conv is

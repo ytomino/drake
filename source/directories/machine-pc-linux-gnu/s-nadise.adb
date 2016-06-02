@@ -6,7 +6,6 @@ with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fnmatch;
 with C.stdint;
-with C.string;
 package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Elements.Storage_Offset;
@@ -24,6 +23,10 @@ package body System.Native_Directories.Searching is
       new Address_To_Named_Access_Conversions (
          C.dirent.struct_dirent64,
          C.bits.dirent.struct_dirent64_ptr);
+
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    procedure memcpy (
       dst : not null C.bits.dirent.struct_dirent64_ptr;
@@ -44,7 +47,7 @@ package body System.Native_Directories.Searching is
       errno : out C.signed_int)
    is
       S_Length : constant C.size_t :=
-         C.string.strlen (Directory_Entry.d_name (0)'Access);
+         strlen (Directory_Entry.d_name (0)'Access);
       Full_Name : C.char_array (
          0 ..
          Directory'Length * Zero_Terminated_Strings.Expanding
