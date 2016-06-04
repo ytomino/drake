@@ -23,6 +23,82 @@ package body System.Native_Processes is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memchr";
 
+   --  implementation
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String)
+   is
+      Argument_Length : constant Natural := Argument'Length;
+      Has_Space : Boolean;
+   begin
+      --  add separator
+      if Last >= Command_Line'First then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := ' ';
+      end if;
+      --  find space in argument
+      Has_Space := memchr (
+         Argument'Address,
+         Character'Pos (' '),
+         Storage_Elements.Storage_Offset (Argument_Length)) /= Null_Address;
+      --  open
+      if Has_Space then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := '"';
+      end if;
+      --  argument
+      if Last + Argument_Length > Command_Line'Last then
+         raise Constraint_Error;
+      end if;
+      Command_Line (Last + 1 .. Last + Argument_Length) := Argument;
+      Last := Last + Argument_Length;
+      --  close
+      if Has_Space then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := '"';
+      end if;
+   end Append_Argument;
+
+   --  implementation of child process type
+
+   package body Controlled is
+
+      function Reference (Object : Native_Processes.Process)
+         return not null access C.winnt.HANDLE is
+      begin
+         return Process (Object).Handle'Unrestricted_Access;
+      end Reference;
+
+      overriding procedure Finalize (Object : in out Process) is
+      begin
+         if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
+            declare
+               R : C.windef.WINBOOL;
+            begin
+               R := C.winbase.CloseHandle (Object.Handle);
+               pragma Check (Debug,
+                  Check =>
+                     R /= 0
+                     or else Debug.Runtime_Error ("CloseHandle failed"));
+            end;
+         end if;
+      end Finalize;
+
+   end Controlled;
+
+   --  child process management
+
    procedure Wait (
       Child : in out Process;
       Milliseconds : C.windef.DWORD;
@@ -65,7 +141,7 @@ package body System.Native_Processes is
       end case;
    end Wait;
 
-   --  implementation
+   --  implementation of child process management
 
    function Do_Is_Open (Child : Process) return Boolean is
       Handle : C.winnt.HANDLE
@@ -231,6 +307,8 @@ package body System.Native_Processes is
       end if;
    end Do_Forced_Abort_Process;
 
+   --  implementation of pass a command to the shell
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status)
@@ -245,75 +323,5 @@ package body System.Native_Processes is
          Error => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Error);
       Do_Wait (P, Status);
    end Shell;
-
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String)
-   is
-      Argument_Length : constant Natural := Argument'Length;
-      Has_Space : Boolean;
-   begin
-      --  add separator
-      if Last >= Command_Line'First then
-         if Last >= Command_Line'Last then
-            raise Constraint_Error;
-         end if;
-         Last := Last + 1;
-         Command_Line (Last) := ' ';
-      end if;
-      --  find space in argument
-      Has_Space := memchr (
-         Argument'Address,
-         Character'Pos (' '),
-         Storage_Elements.Storage_Offset (Argument_Length)) /= Null_Address;
-      --  open
-      if Has_Space then
-         if Last >= Command_Line'Last then
-            raise Constraint_Error;
-         end if;
-         Last := Last + 1;
-         Command_Line (Last) := '"';
-      end if;
-      --  argument
-      if Last + Argument_Length > Command_Line'Last then
-         raise Constraint_Error;
-      end if;
-      Command_Line (Last + 1 .. Last + Argument_Length) := Argument;
-      Last := Last + Argument_Length;
-      --  close
-      if Has_Space then
-         if Last >= Command_Line'Last then
-            raise Constraint_Error;
-         end if;
-         Last := Last + 1;
-         Command_Line (Last) := '"';
-      end if;
-   end Append_Argument;
-
-   package body Controlled is
-
-      function Reference (Object : Native_Processes.Process)
-         return not null access C.winnt.HANDLE is
-      begin
-         return Process (Object).Handle'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out Process) is
-      begin
-         if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-            declare
-               R : C.windef.WINBOOL;
-            begin
-               R := C.winbase.CloseHandle (Object.Handle);
-               pragma Check (Debug,
-                  Check =>
-                     R /= 0
-                     or else Debug.Runtime_Error ("CloseHandle failed"));
-            end;
-         end if;
-      end Finalize;
-
-   end Controlled;
 
 end System.Native_Processes;

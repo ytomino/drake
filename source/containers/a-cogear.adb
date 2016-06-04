@@ -62,12 +62,6 @@ package body Ada.Containers.Generic_Arrays is
       end if;
    end Assign;
 
-   procedure Assign (Target : in out Array_Access; Source : New_Array) is
-   begin
-      Free (Target);
-      Target := Array_Access (Source);
-   end Assign;
-
    procedure Move (
       Target : in out Array_Access;
       Source : in out Array_Access) is
@@ -310,125 +304,6 @@ package body Ada.Containers.Generic_Arrays is
       end if;
    end Last_Index;
 
-   package body Operators is
-
-      function Start (
-         Left : Array_Access;
-         Right : Element_Type;
-         Space : Count_Type)
-         return New_Array_1;
-      function Start (
-         Left : Array_Access;
-         Right : Element_Type;
-         Space : Count_Type)
-         return New_Array_1 is
-      begin
-         if Left = null then
-            declare
-               Result : constant New_Array_1 := (
-                  Data => new Array_Type (
-                     Index_Type'First ..
-                     Index_Type'First + Index_Type'Base (Space)),
-                  Last => Index_Type'First);
-            begin
-               Result.Data (Index_Type'First) := Right;
-               return Result;
-            end;
-         else
-            declare
-               Result : constant New_Array_1 := (
-                  Data => new Array_Type (
-                     Left'First ..
-                     Left'Last + 1 + Index_Type'Base (Space)),
-                  Last => Left'Last + 1);
-            begin
-               Result.Data (Left'Range) := Left.all;
-               Result.Data (Result.Last) := Right;
-               return Result;
-            end;
-         end if;
-      end Start;
-
-      function Step (
-         Left : New_Array_1;
-         Right : Element_Type;
-         Space : Count_Type)
-         return New_Array_1;
-      function Step (
-         Left : New_Array_1;
-         Right : Element_Type;
-         Space : Count_Type)
-         return New_Array_1 is
-      begin
-         if Left.Last + 1 <= Left.Data'Last then
-            Left.Data (Left.Last + 1) := Right;
-            return (Data => Left.Data, Last => Left.Last + 1);
-         else
-            declare
-               Data : Array_Access := Left.Data;
-               Result : constant New_Array_1 := (
-                  Data => new Array_Type (
-                     Data'First ..
-                     Left.Last + 1 + Index_Type'Base (Space)),
-                  Last => Left.Last + 1);
-            begin
-               Result.Data (Data'Range) := Data.all;
-               Result.Data (Result.Last) := Right;
-               Free (Data);
-               return Result;
-            end;
-         end if;
-      end Step;
-
-      --  implementation
-
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array is
-      begin
-         return New_Array (Start (Left, Right, Space => 0).Data);
-      end "&";
-
-      function "&" (Left : New_Array_1; Right : Element_Type)
-         return New_Array
-      is
-         Data : Array_Access := Left.Data;
-      begin
-         if Left.Last + 1 = Data'Last then
-            Data (Data'Last) := Right;
-            return New_Array (Data);
-         else
-            declare
-               Result : constant New_Array :=
-                  new Array_Type (Data'First .. Data'Last + 1);
-            begin
-               Result (Data'Range) := Data.all;
-               Result (Data'Last + 1) := Right;
-               Free (Data);
-               return Result;
-            end;
-         end if;
-      end "&";
-
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array_1 is
-      begin
-         return Start (Left, Right, Space => 1);
-      end "&";
-
-      function "&" (Left : New_Array_2; Right : Element_Type)
-         return New_Array_1 is
-      begin
-         return Step (New_Array_1 (Left), Right, Space => 1);
-      end "&";
-
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array_2 is
-      begin
-         return New_Array_2 (Start (Left, Right, Space => 2));
-      end "&";
-
-   end Operators;
-
    package body Generic_Reversing is
 
       type Context_Type is limited record
@@ -593,5 +468,130 @@ package body Ada.Containers.Generic_Arrays is
       end Merge;
 
    end Generic_Sorting;
+
+   procedure Assign (Target : in out Array_Access; Source : New_Array) is
+   begin
+      Free (Target);
+      Target := Array_Access (Source);
+   end Assign;
+
+   package body Operators is
+
+      function Start (
+         Left : Array_Access;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1;
+      function Start (
+         Left : Array_Access;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1 is
+      begin
+         if Left = null then
+            declare
+               Result : constant New_Array_1 := (
+                  Data => new Array_Type (
+                     Index_Type'First ..
+                     Index_Type'First + Index_Type'Base (Space)),
+                  Last => Index_Type'First);
+            begin
+               Result.Data (Index_Type'First) := Right;
+               return Result;
+            end;
+         else
+            declare
+               Result : constant New_Array_1 := (
+                  Data => new Array_Type (
+                     Left'First ..
+                     Left'Last + 1 + Index_Type'Base (Space)),
+                  Last => Left'Last + 1);
+            begin
+               Result.Data (Left'Range) := Left.all;
+               Result.Data (Result.Last) := Right;
+               return Result;
+            end;
+         end if;
+      end Start;
+
+      function Step (
+         Left : New_Array_1;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1;
+      function Step (
+         Left : New_Array_1;
+         Right : Element_Type;
+         Space : Count_Type)
+         return New_Array_1 is
+      begin
+         if Left.Last + 1 <= Left.Data'Last then
+            Left.Data (Left.Last + 1) := Right;
+            return (Data => Left.Data, Last => Left.Last + 1);
+         else
+            declare
+               Data : Array_Access := Left.Data;
+               Result : constant New_Array_1 := (
+                  Data => new Array_Type (
+                     Data'First ..
+                     Left.Last + 1 + Index_Type'Base (Space)),
+                  Last => Left.Last + 1);
+            begin
+               Result.Data (Data'Range) := Data.all;
+               Result.Data (Result.Last) := Right;
+               Free (Data);
+               return Result;
+            end;
+         end if;
+      end Step;
+
+      --  implementation
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array is
+      begin
+         return New_Array (Start (Left, Right, Space => 0).Data);
+      end "&";
+
+      function "&" (Left : New_Array_1; Right : Element_Type)
+         return New_Array
+      is
+         Data : Array_Access := Left.Data;
+      begin
+         if Left.Last + 1 = Data'Last then
+            Data (Data'Last) := Right;
+            return New_Array (Data);
+         else
+            declare
+               Result : constant New_Array :=
+                  new Array_Type (Data'First .. Data'Last + 1);
+            begin
+               Result (Data'Range) := Data.all;
+               Result (Data'Last + 1) := Right;
+               Free (Data);
+               return Result;
+            end;
+         end if;
+      end "&";
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_1 is
+      begin
+         return Start (Left, Right, Space => 1);
+      end "&";
+
+      function "&" (Left : New_Array_2; Right : Element_Type)
+         return New_Array_1 is
+      begin
+         return Step (New_Array_1 (Left), Right, Space => 1);
+      end "&";
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_2 is
+      begin
+         return New_Array_2 (Start (Left, Right, Space => 2));
+      end "&";
+
+   end Operators;
 
 end Ada.Containers.Generic_Arrays;

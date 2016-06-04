@@ -10,8 +10,6 @@ package Ada.Containers.Generic_Arrays is
    --  There are utilities like Vectors for access-to-array types.
    pragma Preelaborate;
 
-   type New_Array (<>) is limited private;
-
    subtype Extended_Index is
       Index_Type'Base range
          Index_Type'Base'Pred (Index_Type'First) ..
@@ -27,7 +25,6 @@ package Ada.Containers.Generic_Arrays is
       renames Free;
 
    procedure Assign (Target : in out Array_Access; Source : Array_Access);
-   procedure Assign (Target : in out Array_Access; Source : New_Array);
 
    procedure Move (
       Target : in out Array_Access;
@@ -96,35 +93,6 @@ package Ada.Containers.Generic_Arrays is
    function Last_Index (Container : Array_Access) return Extended_Index;
 
    generic
-   package Operators is
-
-      type New_Array_1 (<>) is limited private;
-      type New_Array_2 (<>) is limited private;
-
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array;
-      function "&" (Left : New_Array_1; Right : Element_Type)
-         return New_Array;
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array_1;
-      function "&" (Left : New_Array_2; Right : Element_Type)
-         return New_Array_1;
-      function "&" (Left : Array_Access; Right : Element_Type)
-         return New_Array_2;
-
-   private
-
-      type New_Array_1 is record
-         Data : Array_Access;
-         Last : Extended_Index;
-      end record;
-      pragma Suppress_Initialization (New_Array_1);
-
-      type New_Array_2 is new New_Array_1;
-
-   end Operators;
-
-   generic
       with procedure Swap (Container : in out Array_Access; I, J : Index_Type)
          is Generic_Arrays.Swap;
    package Generic_Reversing is
@@ -162,6 +130,41 @@ package Ada.Containers.Generic_Arrays is
          Source : in out Array_Access);
 
    end Generic_Sorting;
+
+   --  Allocating concatenation operators
+
+   type New_Array (<>) is limited private;
+
+   procedure Assign (Target : in out Array_Access; Source : New_Array);
+
+   generic
+   package Operators is
+
+      type New_Array_1 (<>) is limited private;
+      type New_Array_2 (<>) is limited private;
+
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array;
+      function "&" (Left : New_Array_1; Right : Element_Type)
+         return New_Array;
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_1;
+      function "&" (Left : New_Array_2; Right : Element_Type)
+         return New_Array_1;
+      function "&" (Left : Array_Access; Right : Element_Type)
+         return New_Array_2;
+
+   private
+
+      type New_Array_1 is record
+         Data : Array_Access;
+         Last : Extended_Index;
+      end record;
+      pragma Suppress_Initialization (New_Array_1);
+
+      type New_Array_2 is new New_Array_1;
+
+   end Operators;
 
 private
 

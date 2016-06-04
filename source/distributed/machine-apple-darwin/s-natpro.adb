@@ -66,6 +66,41 @@ package body System.Native_Processes is
       Arguments (Argument_Index) := null;
    end Split_Argument;
 
+   --  implementation
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String) is
+   begin
+      if Last >= Command_Line'First then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := ' ';
+      end if;
+      for I in Argument'Range loop
+         if Argument (I) = ' ' then
+            if Last + 1 >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := '\';
+            Last := Last + 1;
+            Command_Line (Last) := ' ';
+         else
+            if Last >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := Argument (I);
+         end if;
+      end loop;
+   end Append_Argument;
+
+   --  child process management
+
    procedure Spawn (
       Child : out C.sys.types.pid_t;
       Command_Line : String;
@@ -266,7 +301,7 @@ package body System.Native_Processes is
       end if;
    end Kill;
 
-   --  implementation
+   --  implementation of child process management
 
    function Do_Is_Open (Child : Process) return Boolean is
    begin
@@ -325,6 +360,8 @@ package body System.Native_Processes is
       Kill (Child, C.signal.SIGKILL);
    end Do_Forced_Abort_Process;
 
+   --  implementation of pass a command to the shell
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status)
@@ -348,36 +385,5 @@ package body System.Native_Processes is
          end if;
       end if;
    end Shell;
-
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String) is
-   begin
-      if Last >= Command_Line'First then
-         if Last >= Command_Line'Last then
-            raise Constraint_Error;
-         end if;
-         Last := Last + 1;
-         Command_Line (Last) := ' ';
-      end if;
-      for I in Argument'Range loop
-         if Argument (I) = ' ' then
-            if Last + 1 >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := '\';
-            Last := Last + 1;
-            Command_Line (Last) := ' ';
-         else
-            if Last >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := Argument (I);
-         end if;
-      end loop;
-   end Append_Argument;
 
 end System.Native_Processes;

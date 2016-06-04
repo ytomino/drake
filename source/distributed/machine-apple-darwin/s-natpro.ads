@@ -7,9 +7,18 @@ with C.sys.types;
 package System.Native_Processes is
    use type C.sys.types.pid_t;
 
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String);
+
+   --  Child process type
+
    type Process is limited record
       Id : C.sys.types.pid_t := -1;
    end record;
+
+   --  Child process management
 
    function Do_Is_Open (Child : Process) return Boolean;
    pragma Inline (Do_Is_Open);
@@ -35,14 +44,13 @@ package System.Native_Processes is
    procedure Do_Abort_Process (Child : in out Process);
    procedure Do_Forced_Abort_Process (Child : in out Process);
 
+   --  Pass a command to the shell
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String);
+   --  Exceptions
 
    Name_Error : exception
       renames Ada.IO_Exceptions.Name_Error;

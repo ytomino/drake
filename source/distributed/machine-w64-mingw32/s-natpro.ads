@@ -8,7 +8,16 @@ with C.winnt;
 private with Ada.Finalization;
 package System.Native_Processes is
 
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String);
+
+   --  Child process type
+
    type Process is limited private;
+
+   --  Child process management
 
    function Do_Is_Open (Child : Process) return Boolean;
    pragma Inline (Do_Is_Open);
@@ -37,14 +46,13 @@ package System.Native_Processes is
       renames Do_Forced_Abort_Process;
       --  Should it use CREATE_NEW_PROCESS_GROUP and GenerateConsoleCtrlEvent?
 
+   --  Pass a command to the shell
+
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String);
+   --  Exceptions
 
    Name_Error : exception
       renames Ada.IO_Exceptions.Name_Error;
