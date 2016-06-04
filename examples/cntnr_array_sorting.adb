@@ -1,4 +1,4 @@
-with Ada.Containers.Generic_Arrays;
+with Ada.Containers.Generic_Array_Access_Types;
 with Ada.Unchecked_Deallocation;
 procedure cntnr_array_sorting is
 	type SA is access String;
@@ -39,7 +39,12 @@ procedure cntnr_array_sorting is
 		Data (Left) := Data (Right);
 		Data (Right) := Temp;
 	end Swap;
-	package SA_Op is new Ada.Containers.Generic_Arrays (Positive, Character, String, SA);
+	package SA_Op is
+		new Ada.Containers.Generic_Array_Access_Types (
+			Positive,
+			Character,
+			String,
+			SA);
 	package SA_Reversing is new SA_Op.Generic_Reversing (Swap);
 	package SA_Sorting is new SA_Op.Generic_Sorting (LT, Swap);
 begin

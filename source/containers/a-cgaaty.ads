@@ -6,7 +6,7 @@ generic
    type Array_Type is array (Index_Type range <>) of Element_Type;
    type Array_Access is access Array_Type;
    with procedure Free (X : in out Array_Access) is <>;
-package Ada.Containers.Generic_Arrays is
+package Ada.Containers.Generic_Array_Access_Types is
    --  There are utilities like Vectors for access-to-array types.
    pragma Preelaborate;
 
@@ -94,7 +94,7 @@ package Ada.Containers.Generic_Arrays is
 
    generic
       with procedure Swap (Container : in out Array_Access; I, J : Index_Type)
-         is Generic_Arrays.Swap;
+         is Generic_Array_Access_Types.Swap;
    package Generic_Reversing is
 
       procedure Reverse_Elements (Container : in out Array_Access);
@@ -115,7 +115,7 @@ package Ada.Containers.Generic_Arrays is
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
       with procedure Swap (Container : in out Array_Access; I, J : Index_Type)
-         is Generic_Arrays.Swap;
+         is Generic_Array_Access_Types.Swap;
    package Generic_Sorting is
 
       function Is_Sorted (Container : Array_Access) return Boolean;
@@ -170,4 +170,4 @@ private
 
    type New_Array is new Array_Access;
 
-end Ada.Containers.Generic_Arrays;
+end Ada.Containers.Generic_Array_Access_Types;

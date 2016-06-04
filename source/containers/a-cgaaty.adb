@@ -1,6 +1,6 @@
 with Ada.Containers.Array_Sorting;
 with System;
-package body Ada.Containers.Generic_Arrays is
+package body Ada.Containers.Generic_Array_Access_Types is
 
    --  implementation
 
@@ -326,7 +326,8 @@ package body Ada.Containers.Generic_Arrays is
 
       procedure Reverse_Elements (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          if Container /= null then
             Array_Sorting.In_Place_Reverse (
@@ -346,7 +347,8 @@ package body Ada.Containers.Generic_Arrays is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          if Container /= null then
             Array_Sorting.Reverse_Rotate (
@@ -367,7 +369,8 @@ package body Ada.Containers.Generic_Arrays is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          if Container /= null then
             Array_Sorting.Juggling_Rotate (
@@ -411,7 +414,8 @@ package body Ada.Containers.Generic_Arrays is
       --  implementation
 
       function Is_Sorted (Container : Array_Access) return Boolean is
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          return Container = null
             or else Array_Sorting.Is_Sorted (
@@ -423,7 +427,8 @@ package body Ada.Containers.Generic_Arrays is
 
       procedure Insertion_Sort (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          if Container /= null then
             Array_Sorting.Insertion_Sort (
@@ -437,7 +442,8 @@ package body Ada.Containers.Generic_Arrays is
 
       procedure Merge_Sort (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type := (Container => Container);
+         Context : Context_Type :=
+            (Container => Container);
       begin
          if Container /= null then
             Array_Sorting.In_Place_Merge_Sort (
@@ -603,4 +609,4 @@ package body Ada.Containers.Generic_Arrays is
 
    end Operators;
 
-end Ada.Containers.Generic_Arrays;
+end Ada.Containers.Generic_Array_Access_Types;
