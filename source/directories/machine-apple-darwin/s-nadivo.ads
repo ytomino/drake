@@ -8,7 +8,7 @@ package System.Native_Directories.Volumes is
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
    type Non_Controlled_File_System is record
-      Statistics : aliased C.sys.mount.struct_statfs64;
+      Statistics : aliased C.sys.mount.struct_statfs;
       Case_Sensitive : Boolean;
       Case_Sensitive_Valid : Boolean;
    end record;
