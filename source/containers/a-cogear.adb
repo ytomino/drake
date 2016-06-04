@@ -172,14 +172,14 @@ package body Ada.Containers.Generic_Arrays is
       Container : in out Array_Access;
       New_Item : Array_Type) is
    begin
-      Insert (Container, Container'First, New_Item);
+      Insert (Container, First_Index (Container), New_Item);
    end Prepend;
 
    procedure Prepend (
       Container : in out Array_Access;
       New_Item : Array_Access) is
    begin
-      Insert (Container, Container'First, New_Item);
+      Insert (Container, First_Index (Container), New_Item);
    end Prepend;
 
    procedure Prepend (
@@ -187,28 +187,28 @@ package body Ada.Containers.Generic_Arrays is
       New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
-      Insert (Container, Container'First, New_Item, Count);
+      Insert (Container, First_Index (Container), New_Item, Count);
    end Prepend;
 
    procedure Prepend (
       Container : in out Array_Access;
       Count : Count_Type := 1) is
    begin
-      Insert (Container, Container'First, Count);
+      Insert (Container, First_Index (Container), Count);
    end Prepend;
 
    procedure Append (
       Container : in out Array_Access;
       New_Item : Array_Type) is
    begin
-      Insert (Container, Container'Last + 1, New_Item);
+      Insert (Container, Last_Index (Container) + 1, New_Item);
    end Append;
 
    procedure Append (
       Container : in out Array_Access;
       New_Item : Array_Access) is
    begin
-      Insert (Container, Container'Last + 1, New_Item);
+      Insert (Container, Last_Index (Container) + 1, New_Item);
    end Append;
 
    procedure Append (
@@ -216,14 +216,14 @@ package body Ada.Containers.Generic_Arrays is
       New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
-      Insert (Container, Container'Last + 1, New_Item, Count);
+      Insert (Container, Last_Index (Container) + 1, New_Item, Count);
    end Append;
 
    procedure Append (
       Container : in out Array_Access;
       Count : Count_Type := 1) is
    begin
-      Insert (Container, Container'Last + 1, Count);
+      Insert (Container, Last_Index (Container) + 1, Count);
    end Append;
 
    procedure Delete (
@@ -325,11 +325,13 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Array_Sorting.In_Place_Reverse (
-            Index_Type'Pos (Container'First),
-            Index_Type'Pos (Container'Last),
-            Context'Address,
-            Swap => Swap'Access);
+         if Container /= null then
+            Array_Sorting.In_Place_Reverse (
+               Index_Type'Pos (Container'First),
+               Index_Type'Pos (Container'Last),
+               Context'Address,
+               Swap => Swap'Access);
+         end if;
       end Reverse_Elements;
 
       procedure Reverse_Rotate_Elements (
@@ -343,12 +345,14 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Array_Sorting.Reverse_Rotate (
-            Index_Type'Pos (Container'First),
-            Index_Type'Pos (Before) - 1,
-            Index_Type'Pos (Container'Last),
-            Context'Address,
-            Swap => Swap'Access);
+         if Container /= null then
+            Array_Sorting.Reverse_Rotate (
+               Index_Type'Pos (Container'First),
+               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Container'Last),
+               Context'Address,
+               Swap => Swap'Access);
+         end if;
       end Reverse_Rotate_Elements;
 
       procedure Juggling_Rotate_Elements (
@@ -362,12 +366,14 @@ package body Ada.Containers.Generic_Arrays is
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
       begin
-         Array_Sorting.Juggling_Rotate (
-            Index_Type'Pos (Container'First),
-            Index_Type'Pos (Before) - 1,
-            Index_Type'Pos (Container'Last),
-            Context'Address,
-            Swap => Swap'Access);
+         if Container /= null then
+            Array_Sorting.Juggling_Rotate (
+               Index_Type'Pos (Container'First),
+               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Container'Last),
+               Context'Address,
+               Swap => Swap'Access);
+         end if;
       end Juggling_Rotate_Elements;
 
    end Generic_Reversing;
