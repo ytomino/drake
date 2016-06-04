@@ -38,9 +38,7 @@ package body System.Native_Directories.Copying is
    begin
       Zero_Terminated_Strings.To_C (Source_Name, C_Source_Name (0)'Access);
       Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
-      Source := C.fcntl.open (
-         C_Source_Name (0)'Access,
-         C.fcntl.O_RDONLY);
+      Source := C.fcntl.open (C_Source_Name (0)'Access, C.fcntl.O_RDONLY);
       if Source < 0 then
          Exception_Id := Named_IO_Exception_Id (C.errno.errno);
       else

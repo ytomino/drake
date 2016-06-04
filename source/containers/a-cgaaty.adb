@@ -42,8 +42,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
                   S : Array_Access := Container;
                begin
                   Container := new Array_Type (
-                     S'First ..
-                     S'First + Index_Type'Base (Length) - 1);
+                     S'First .. S'First + Index_Type'Base (Length) - 1);
                   Container (S'Range) := S.all;
                   Free (S);
                end;
@@ -518,8 +517,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
             declare
                Result : constant New_Array_1 := (
                   Data => new Array_Type (
-                     Left'First ..
-                     Left'Last + 1 + Index_Type'Base (Space)),
+                     Left'First .. Left'Last + 1 + Index_Type'Base (Space)),
                   Last => Left'Last + 1);
             begin
                Result.Data (Left'Range) := Left.all;
@@ -548,8 +546,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
                Data : Array_Access := Left.Data;
                Result : constant New_Array_1 := (
                   Data => new Array_Type (
-                     Data'First ..
-                     Left.Last + 1 + Index_Type'Base (Space)),
+                     Data'First .. Left.Last + 1 + Index_Type'Base (Space)),
                   Last => Left.Last + 1);
             begin
                Result.Data (Data'Range) := Data.all;

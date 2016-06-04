@@ -37,8 +37,8 @@ package body System.Storage_Map is
       NtQueryInformationProcess :=
          To_NtQueryInformationProcess_Type (
             C.winbase.GetProcAddress (
-              NTDLL,
-              NtQueryInformationProcess_Name (0)'Access));
+               NTDLL,
+               NtQueryInformationProcess_Name (0)'Access));
       if NtQueryInformationProcess = null then
          return Null_Address; -- ???
       else

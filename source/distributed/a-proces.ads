@@ -75,8 +75,7 @@ package Ada.Processes is
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
-   procedure Shell (
-      Command_Line : String);
+   procedure Shell (Command_Line : String);
    pragma Inline (Shell); -- renamed, or for shorthand
 
    --  Exceptions

@@ -103,9 +103,7 @@ package body Ada.Processes is
       Do_Forced_Abort_Process (Child);
    end Forced_Abort_Process;
 
-   procedure Shell (
-      Command_Line : String)
-   is
+   procedure Shell (Command_Line : String) is
       Dummy : Ada.Command_Line.Exit_Status;
    begin
       Shell (Command_Line, Dummy);
