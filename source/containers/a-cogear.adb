@@ -80,7 +80,7 @@ package body Ada.Containers.Generic_Arrays is
    is
       pragma Check (Pre,
          Check =>
-            Before in Index_Type'First .. Last_Index (Container) + 1
+            Before in First_Index (Container) .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if New_Item'Length > 0 then
@@ -115,7 +115,7 @@ package body Ada.Containers.Generic_Arrays is
    is
       pragma Check (Pre,
          Check =>
-            Before in Index_Type'First .. Last_Index (Container) + 1
+            Before in First_Index (Container) .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if New_Item /= null then
@@ -145,7 +145,7 @@ package body Ada.Containers.Generic_Arrays is
    is
       pragma Check (Pre,
          Check =>
-            Before in Index_Type'First .. Last_Index (Container) + 1
+            Before in First_Index (Container) .. Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if Count > 0 then
@@ -233,7 +233,7 @@ package body Ada.Containers.Generic_Arrays is
    is
       pragma Check (Pre,
          Check =>
-            (Index >= Index_Type'First
+            (Index >= First_Index (Container)
                and then Index + Index_Type'Base (Count) - 1 <=
                   Last_Index (Container))
             or else raise Constraint_Error);
@@ -274,8 +274,8 @@ package body Ada.Containers.Generic_Arrays is
    procedure Swap (Container : in out Array_Access; I, J : Index_Type) is
       pragma Check (Pre,
          Check =>
-            (I in Index_Type'First .. Last_Index (Container)
-               and then J in Index_Type'First .. Last_Index (Container))
+            (I in First_Index (Container) .. Last_Index (Container)
+               and then J in First_Index (Container) .. Last_Index (Container))
             or else raise Constraint_Error);
       pragma Unmodified (Container);
    begin
@@ -290,9 +290,12 @@ package body Ada.Containers.Generic_Arrays is
    end Swap;
 
    function First_Index (Container : Array_Access) return Index_Type is
-      pragma Unreferenced (Container);
    begin
-      return Index_Type'First;
+      if Container = null then
+         return Index_Type'First;
+      else
+         return Container'First;
+      end if;
    end First_Index;
 
    function Last_Index (Container : Array_Access) return Extended_Index is
@@ -340,7 +343,7 @@ package body Ada.Containers.Generic_Arrays is
       is
          pragma Check (Pre,
             Check =>
-               Before in Index_Type'First .. Last_Index (Container) + 1
+               Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
@@ -361,7 +364,7 @@ package body Ada.Containers.Generic_Arrays is
       is
          pragma Check (Pre,
             Check =>
-               Before in Index_Type'First .. Last_Index (Container) + 1
+               Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
          Context : Context_Type := (Container => Container);
