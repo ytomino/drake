@@ -1,19 +1,26 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
+with System.Address_To_Named_Access_Conversions;
 with System.Debug;
 with System.Native_IO;
+with System.Standard_Allocators;
 with System.Storage_Elements;
+with System.Wide_Startup; -- that is also linked by Ada.Command_Line
 with System.Zero_Terminated_WStrings;
+with C.string;
 with C.windef;
 with C.winerror;
 package body System.Native_Processes is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Command_Line.Exit_Status;
+   use type Storage_Elements.Storage_Offset;
    use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.windef.UINT;
    use type C.winnt.HANDLE; -- C.void_ptr
+   use type C.winnt.LPWSTR; -- Command_Type
 
    function memchr (
       s : Address;
@@ -23,7 +30,166 @@ package body System.Native_Processes is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memchr";
 
+   package LPWSTR_Conv is
+      new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
+
+   package LPWSTR_ptr_Conv is
+      new Address_To_Named_Access_Conversions (
+         C.winnt.LPWSTR,
+         C.winnt.LPWSTR_ptr);
+
+   function "+" (Left : C.winnt.LPWSTR_ptr; Right : C.ptrdiff_t)
+      return C.winnt.LPWSTR_ptr
+      with Convention => Intrinsic;
+   pragma Inline_Always ("+");
+
+   function "+" (Left : C.winnt.LPWSTR_ptr; Right : C.ptrdiff_t)
+      return C.winnt.LPWSTR_ptr is
+   begin
+      return LPWSTR_ptr_Conv.To_Pointer (
+         LPWSTR_ptr_Conv.To_Address (Left)
+            + Storage_Elements.Storage_Offset (Right)
+               * (C.winnt.LPWSTR'Size / Standard'Storage_Unit));
+   end "+";
+
+   procedure Reallocate (X : in out Command_Type; Length : C.size_t);
+   procedure Reallocate (X : in out Command_Type; Length : C.size_t) is
+      Size : constant Storage_Elements.Storage_Count :=
+         (Storage_Elements.Storage_Offset (Length) + 1) -- NUL
+         * (C.winnt.WCHAR'Size / Standard'Storage_Unit);
+   begin
+      X := LPWSTR_Conv.To_Pointer (
+         Standard_Allocators.Reallocate (LPWSTR_Conv.To_Address (X), Size));
+   end Reallocate;
+
+   procedure C_Append (
+      Command : Command_Type;
+      Index : in out C.size_t;
+      New_Item : not null C.winnt.LPWSTR);
+   procedure C_Append (
+      Command : Command_Type;
+      Index : in out C.size_t;
+      New_Item : not null C.winnt.LPWSTR)
+   is
+      D : C.winnt.WCHAR_array (C.size_t);
+      for D'Address use LPWSTR_Conv.To_Address (Command);
+   begin
+      if Index > 0 then
+         D (Index) := C.winnt.WCHAR'Val (Character'Pos (' '));
+         Index := Index + 1;
+      end if;
+      declare
+         Has_Space : constant Boolean :=
+            C.string.wcschr (
+               New_Item,
+               C.wchar_t'Val (Character'Pos (' '))) /= null;
+      begin
+         if Has_Space then
+            D (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
+            Index := Index + 1;
+         end if;
+         declare
+            Length : constant C.size_t := C.string.wcslen (New_Item);
+            S : C.winnt.WCHAR_array (0 .. Length - 1);
+            for S'Address use LPWSTR_Conv.To_Address (New_Item);
+         begin
+            D (Index .. Index + Length - 1) := S;
+            Index := Index + Length;
+         end;
+         if Has_Space then
+            D (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
+            Index := Index + 1;
+         end if;
+      end;
+      D (Index) := C.winnt.WCHAR'Val (0);
+   end C_Append;
+
    --  implementation
+
+   procedure Free (X : in out Command_Type) is
+   begin
+      Standard_Allocators.Free (LPWSTR_Conv.To_Address (X));
+      X := null;
+   end Free;
+
+   function Image (Command : Command_Type) return String is
+   begin
+      return System.Zero_Terminated_WStrings.Value (Command);
+   end Image;
+
+   procedure Value (
+      Command_Line : String;
+      Command : aliased out Command_Type)
+   is
+      Size : constant Storage_Elements.Storage_Count :=
+         (Command_Line'Length * Zero_Terminated_WStrings.Expanding + 1)
+         * (C.winnt.WCHAR'Size / Standard'Storage_Unit);
+   begin
+      Command := LPWSTR_Conv.To_Pointer (Standard_Allocators.Allocate (Size));
+      Zero_Terminated_WStrings.To_C (Command_Line, Command);
+   end Value;
+
+   procedure Append (
+      Command : aliased in out Command_Type;
+      New_Item : String)
+   is
+      W_New_Item : aliased C.winnt.WCHAR_array (
+         0 .. New_Item'Length * Zero_Terminated_WStrings.Expanding);
+      W_New_Item_Length : C.size_t;
+      Old_Length : C.size_t;
+   begin
+      Zero_Terminated_WStrings.To_C (
+         New_Item,
+         W_New_Item (0)'Access,
+         W_New_Item_Length);
+      if Command = null then
+         Old_Length := 0;
+      else
+         Old_Length := C.string.wcslen (Command);
+      end if;
+      Reallocate (
+         Command,
+         Old_Length + W_New_Item_Length + 3); -- space and a pair of '"'
+      C_Append (Command, Old_Length, W_New_Item (0)'Unchecked_Access);
+   end Append;
+
+   procedure Append (
+      Command : aliased in out Command_Type;
+      First : Positive;
+      Last : Natural)
+   is
+      Old_Length : C.size_t;
+      Additional_Length : C.size_t := 0;
+      B : constant C.winnt.LPWSTR_ptr :=
+         LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv) + C.ptrdiff_t (First);
+   begin
+      --  get length
+      declare
+         P : C.winnt.LPWSTR_ptr := B;
+      begin
+         for I in First .. Last loop
+            Additional_Length := Additional_Length
+               + C.string.wcslen (P.all) + 3; -- space and a pair of '"'
+            P := P + 1;
+         end loop;
+      end;
+      if Command = null then
+         Old_Length := 0;
+      else
+         Old_Length := C.string.wcslen (Command);
+      end if;
+      Reallocate (Command, Old_Length + Additional_Length);
+      --  copy
+      declare
+         Index : C.size_t := Old_Length;
+         P : C.winnt.LPWSTR_ptr := B;
+      begin
+         for I in First .. Last loop
+            C_Append (Command, Index, P.all);
+            P := P + 1;
+         end loop;
+      end;
+   end Append;
 
    procedure Append_Argument (
       Command_Line : in out String;
@@ -152,17 +318,14 @@ package body System.Native_Processes is
 
    procedure Create (
       Child : in out Process;
-      Command_Line : String;
+      Command : Command_Type;
       Directory : String := "";
       Search_Path : Boolean := False;
-      Input : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
-      Output : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
-      Error : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type)
+      Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type)
    is
       pragma Unreferenced (Search_Path);
-      W_Command_Line : aliased C.winnt.WCHAR_array (
-         0 ..
-         Command_Line'Length * Zero_Terminated_WStrings.Expanding);
       W_Directory : aliased C.winnt.WCHAR_array (0 .. Directory'Length);
       Directory_Ref : access constant C.winnt.WCHAR;
       Startup_Info : aliased C.winbase.STARTUPINFO;
@@ -170,7 +333,7 @@ package body System.Native_Processes is
       Current_Process : constant C.winnt.HANDLE := C.winbase.GetCurrentProcess;
       subtype Handle_Index is Integer range 0 .. 2;
       Source_Files : array (Handle_Index) of
-         access constant Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+         Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Target_Handles : array (Handle_Index) of C.winnt.HANDLE;
       Duplicated_Handles : array (Handle_Index) of aliased C.winnt.HANDLE;
       R : C.windef.WINBOOL;
@@ -178,17 +341,15 @@ package body System.Native_Processes is
       C.winbase.GetStartupInfo (Startup_Info'Access);
       Startup_Info.dwFlags := C.winbase.STARTF_USESTDHANDLES
          or C.winbase.STARTF_FORCEOFFFEEDBACK;
-      Source_Files (0) := Input'Access;
-      Source_Files (1) := Output'Access;
-      Source_Files (2) := Error'Access;
+      Source_Files (0) := Input;
+      Source_Files (1) := Output;
+      Source_Files (2) := Error;
       for I in Handle_Index loop
          declare
             Source_Handle : constant C.winnt.HANDLE :=
-               Ada.Streams.Naked_Stream_IO.Handle (Source_Files (I).all);
+               Ada.Streams.Naked_Stream_IO.Handle (Source_Files (I));
          begin
-            if Ada.Streams.Naked_Stream_IO.Is_Standard (
-               Source_Files (I).all)
-            then
+            if Ada.Streams.Naked_Stream_IO.Is_Standard (Source_Files (I)) then
                Duplicated_Handles (I) := C.winbase.INVALID_HANDLE_VALUE;
                Target_Handles (I) := Source_Handle;
             else
@@ -210,7 +371,6 @@ package body System.Native_Processes is
       Startup_Info.hStdInput := Target_Handles (0);
       Startup_Info.hStdOutput := Target_Handles (1);
       Startup_Info.hStdError := Target_Handles (2);
-      Zero_Terminated_WStrings.To_C (Command_Line, W_Command_Line (0)'Access);
       if Directory'Length > 0 then
          Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
          Directory_Ref := W_Directory (0)'Access;
@@ -219,7 +379,7 @@ package body System.Native_Processes is
       end if;
       R := C.winbase.CreateProcess (
          lpApplicationName => null,
-         lpCommandLine => W_Command_Line (0)'Access,
+         lpCommandLine => Command,
          lpProcessAttributes => null,
          lpThreadAttributes => null,
          bInheritHandles => 1,
@@ -259,6 +419,30 @@ package body System.Native_Processes is
             Handle := Process_Info.hProcess;
          end;
       end if;
+   end Create;
+
+   procedure Create (
+      Child : in out Process;
+      Command_Line : String;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type)
+   is
+      W_Command_Line : aliased C.winnt.WCHAR_array (
+         0 ..
+         Command_Line'Length * Zero_Terminated_WStrings.Expanding);
+   begin
+      Zero_Terminated_WStrings.To_C (Command_Line, W_Command_Line (0)'Access);
+      Create (
+         Child,
+         W_Command_Line (0)'Unchecked_Access,
+         Directory,
+         Search_Path,
+         Input,
+         Output,
+         Error);
    end Create;
 
    procedure Do_Wait (
@@ -310,18 +494,31 @@ package body System.Native_Processes is
    --  implementation of pass a command to the shell
 
    procedure Shell (
-      Command_Line : String;
+      Command : Command_Type;
       Status : out Ada.Command_Line.Exit_Status)
    is
       --  unimplemented, should use ShellExecute
       P : Process;
    begin
-      Create (P, Command_Line,
+      Create (P, Command,
          Search_Path => True,
          Input => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
          Output => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
          Error => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Error);
       Do_Wait (P, Status);
+   end Shell;
+
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      package Holder is
+         new Ada.Exceptions.Finally.Scoped_Holder (Command_Type, Free);
+      Command : aliased Command_Type;
+   begin
+      Holder.Assign (Command);
+      Value (Command_Line, Command);
+      Shell (Command, Status);
    end Shell;
 
 end System.Native_Processes;
