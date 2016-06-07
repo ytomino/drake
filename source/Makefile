@@ -9,7 +9,10 @@
 #   IMPORTDIR=  pre-translated headers (default:empty, generating on make)
 #   RTSDIR=     output directory (default:.)
 #   BUILDDIR=   temporary directory (default:$RTSDIR/adalib)
-#   GCC=        compiler (default:$TARGET-gcc)
+#   GCCPREFIX=  the prefix of gcc (default:$TARGET-)
+#   GCCSUFFIX=  the suffix of gcc (default:empty)
+#   GCC=        compiler (default:$GCCPREFIX\gcc$GCCSUFFIX)
+#   AR=         librarian (default:$TARGET-ar)
 #   INSTALL=    copy source files to adainclude (default:install -m 444)
 #   EH=         mechanism of exception handling (default:selected by $TARGET)
 #   WITHA=      if 0, building minimum runtime (default:1)
@@ -23,13 +26,15 @@ export MAKEFLAGS+=r
 
 HOST=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
+GCCSUFFIX=
 ifeq ($(TARGET),$(HOST))
-GCC=gcc
+GCCPREFIX=
 AR=ar
 else
-GCC=$(TARGET)-gcc
+GCCPREFIX=$(TARGET)-
 AR=$(TARGET)-ar
 endif
+GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
 LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
 
@@ -72,7 +77,7 @@ RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
 
 BUILDDIR=$(RTSDIR)/adalib
-LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat.build
+LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat$(GCCSUFFIX).build
 NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
 NOTB_BUILDDIR=$(BUILDDIR)/notb.build
 
@@ -304,11 +309,11 @@ TREE= \
 
 .PHONY: all tree import_objs c-archive
 
-all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat.a $(ALL_ALI)
+all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a $(ALL_ALI)
 
 tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat.a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
 
