@@ -31,7 +31,7 @@ GCC=$(TARGET)-gcc
 AR=$(TARGET)-ar
 endif
 
-LIBGCCDIR=$(dir $(shell $(GCC) -print-libgcc-file-name))
+LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
 
 ifeq ($(INSTALL),)
 INSTALL=install -m 444
