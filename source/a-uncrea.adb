@@ -64,15 +64,24 @@ begin
          Pool_Address : constant System.Address := X'Pool_Address;
          Constraints_Size : constant Storage_Offset :=
             Object_Address - Pool_Address;
-         New_Object_Size : constant Storage_Offset :=
-            Storage_Offset (New_Length)
-            * Array_Type'Component_Size
-            / Standard'Storage_Unit;
-         New_Pool_Size : constant Storage_Offset :=
-            Constraints_Size + New_Object_Size;
+         New_Object_Size : Storage_Offset;
+         New_Pool_Size : Storage_Offset;
          New_Pool_Address : System.Address;
          New_Object_Address : System.Address;
       begin
+         if Array_Type'Component_Size
+            rem Standard'Storage_Unit = 0
+         then -- optimized for packed
+            New_Object_Size :=
+               Storage_Offset (New_Length)
+               * (Array_Type'Component_Size / Standard'Storage_Unit);
+         else -- unpacked
+            New_Object_Size :=
+               (Storage_Offset (New_Length) * Array_Type'Component_Size
+                  + (Standard'Storage_Unit - 1))
+               / Standard'Storage_Unit;
+         end if;
+         New_Pool_Size := Constraints_Size + New_Object_Size;
          pragma Check (Trace,
             Check => Debug.Put (
                "requested size =" & Storage_Offset'Image (New_Pool_Size)));
