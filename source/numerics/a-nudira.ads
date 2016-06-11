@@ -11,6 +11,11 @@ package Ada.Numerics.Discrete_Random is
 
    function Random (Gen : Generator) return Result_Subtype;
 
+   function Random (Gen : Generator; First, Last : Result_Subtype)
+      return Result_Subtype;
+--    with Post => Random'Result in First .. Last;
+      --  AI12-0144-1
+
 --  procedure Reset (Gen : Generator; Initiator : Integer);
 --  procedure Reset (Gen : Generator);
    --  procedure Reset is inherited.
