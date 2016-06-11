@@ -101,6 +101,8 @@ package System.Native_IO is
 
    --  position within file
 
+   subtype Whence_Type is C.windef.DWORD;
+
    From_Begin : constant := C.winbase.FILE_BEGIN;
    From_Current : constant := C.winbase.FILE_CURRENT;
    From_End : constant := C.winbase.FILE_END;
@@ -108,7 +110,7 @@ package System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset; -- 0-origin
-      Whence : C.windef.DWORD;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset); -- 1-origin
 
    function Index (Handle : Handle_Type)

@@ -100,6 +100,8 @@ package System.Native_IO is
 
    --  position within file
 
+   subtype Whence_Type is C.signed_int;
+
    From_Begin : constant := C.unistd.SEEK_SET;
    From_Current : constant := C.unistd.SEEK_CUR;
    From_End : constant := C.unistd.SEEK_END;
@@ -107,7 +109,7 @@ package System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset; -- 0-origin
-      Whence : C.signed_int;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset); -- 1-origin
 
    function Index (Handle : Handle_Type)

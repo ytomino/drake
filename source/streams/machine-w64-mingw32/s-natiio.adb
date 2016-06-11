@@ -386,7 +386,7 @@ package body System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset;
-      Whence : C.windef.DWORD;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset)
    is
       liDistanceToMove : C.winnt.LARGE_INTEGER;
