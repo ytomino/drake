@@ -171,6 +171,7 @@
 #undef RC_INVOKED
 #include <stdlib.h>
 #include <signal.h>
+#include <errno.h>
 #undef UNICODE
 #undef WIN32_LEAN_AND_MEAN
 #endif
@@ -313,4 +314,6 @@
 #pragma instance DWORD "INFINITE" /* winbase.h */
 #pragma instance DWORD "CRYPT_VERIFYCONTEXT" /* wincrypt.h */
 #pragma instance DWORD "GENERIC_READ" /* winnt.h */
+#pragma for Ada "errno.h" include "stddef.h"
+#pragma for Ada "stdlib.h" include "malloc.h"
 #endif
