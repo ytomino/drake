@@ -314,8 +314,7 @@ package body System.Pool_Size is
       Aligned_Component_Size : constant Storage_Elements.Storage_Count :=
          Storage_Elements.Storage_Offset'Max (
             --  minimum chunk size
-            (Storage_Elements.Storage_Count'Size + Standard'Storage_Unit - 1) /
-               Standard'Storage_Unit,
+            Storage_Elements.Storage_Offset'Size / Standard'Storage_Unit,
             --  component size
             Allocator.Component_Size
                + (-Allocator.Component_Size)
