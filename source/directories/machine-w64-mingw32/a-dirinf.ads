@@ -84,6 +84,12 @@ package Ada.Directories.Information is
    --  Additional implementation-defined subprograms allowed here.
 
    --  extended
+   function Is_Symbolic_Link (Name : String) return Boolean;
+   function Is_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return Boolean;
+
+   --  extended
    --  Unique file identifier.
    type File_Id is private;
    function Identity (Name : String) return File_Id;

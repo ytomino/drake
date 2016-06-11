@@ -281,6 +281,27 @@ package body Ada.Directories.Information is
          and C.winnt.FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) /= 0;
    end Is_Not_Indexed;
 
+   function Is_Symbolic_Link (Name : String) return Boolean is
+      Information : aliased Directory_Entry_Information_Type;
+   begin
+      System.Native_Directories.Get_Information (Name, Information);
+      return (Information.dwFileAttributes
+         and C.winnt.FILE_ATTRIBUTE_REPARSE_POINT) /= 0;
+   end Is_Symbolic_Link;
+
+   function Is_Symbolic_Link (
+      Directory_Entry : Directory_Entry_Type)
+      return Boolean
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
+      NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled.Reference (Directory_Entry).all;
+   begin
+      return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
+         and C.winnt.FILE_ATTRIBUTE_REPARSE_POINT) /= 0;
+   end Is_Symbolic_Link;
+
    function Identity (Name : String) return File_Id is
       Exception_Id : Exception_Identification.Exception_Id :=
          Exception_Identification.Null_Id;
