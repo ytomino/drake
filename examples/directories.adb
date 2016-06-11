@@ -88,6 +88,19 @@ begin
 		pragma Assert (Ada.Directories.Information.Identity (Name) = Ada.Directories.Information.Identity (Directory_Entry));
 		null;
 	end;
+	-- user permissions
+	Ada.Debug.Put ("**** permissions");
+	declare
+		UP : Ada.Directories.Information.User_Permission_Set_Type :=
+			Ada.Directories.Information.User_Permission_Set ("directories.adb");
+	begin
+		for I in UP'Range loop
+			Ada.Debug.Put (
+				Ada.Directories.Information.User_Permission'Image (I)
+				& " => "
+				& Boolean'Image (UP (I)));
+		end loop;
+	end;
 	-- symbolic link
 	Ada.Debug.Put ("**** symbolic link");
 	declare

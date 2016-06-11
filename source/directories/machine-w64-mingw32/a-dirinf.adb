@@ -25,6 +25,33 @@ package body Ada.Directories.Information is
 
    function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 
+   function Is_Executable (Name : String) return Boolean;
+   function Is_Executable (Name : String) return Boolean is
+      --  Currently, check only that an extension is ".COM" or ".EXE".
+      --  It should check PATHEXT, or look PE header?
+      E_First : Positive;
+      E_Last : Natural;
+      Result : Boolean;
+   begin
+      Hierarchical_File_Names.Extension (Name,
+         First => E_First, Last => E_Last);
+      if E_Last - E_First + 1 = 3 then
+         declare
+            E : String (1 .. 3) := Name (E_First .. E_Last);
+         begin
+            for I in E'Range loop
+               if E (I) in 'a' .. 'z' then
+                  E (I) := Character'Val (Character'Pos (E (I)) - 16#20#);
+               end if;
+            end loop;
+            Result := E = "COM" or else E = "EXE";
+         end;
+      else
+         Result := False;
+      end if;
+      return Result;
+   end Is_Executable;
+
    --  implementation
 
    function Creation_Time (Name : String) return Calendar.Time is
@@ -301,6 +328,35 @@ package body Ada.Directories.Information is
       return (NC_Directory_Entry.Directory_Entry.dwFileAttributes
          and C.winnt.FILE_ATTRIBUTE_REPARSE_POINT) /= 0;
    end Is_Symbolic_Link;
+
+   function User_Permission_Set (Name : String)
+      return User_Permission_Set_Type
+   is
+      Executable : constant Boolean := Is_Executable (Name);
+      Writable : constant Boolean := not Is_Read_Only (Name);
+      Readable : constant Boolean := True;
+   begin
+      return (
+         User_Execute => Executable,
+         User_Write => Writable,
+         User_Read => Readable);
+   end User_Permission_Set;
+
+   function User_Permission_Set (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return User_Permission_Set_Type
+   is
+      Executable : constant Boolean :=
+         Is_Executable (
+            Simple_Name (Directory_Entry)); -- checking the predicate
+      Writable : constant Boolean := not Is_Read_Only (Directory_Entry);
+      Readable : constant Boolean := True;
+   begin
+      return (
+         User_Execute => Executable,
+         User_Write => Writable,
+         User_Read => Readable);
+   end User_Permission_Set;
 
    function Identity (Name : String) return File_Id is
       Exception_Id : Exception_Identification.Exception_Id :=

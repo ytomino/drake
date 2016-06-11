@@ -92,6 +92,22 @@ package Ada.Directories.Information is
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
       return String;
 
+   --  extended from here
+   --  The permissions of the current user.
+
+   type User_Permission is (User_Execute, User_Write, User_Read);
+
+   type User_Permission_Set_Type is array (User_Permission) of Boolean;
+   pragma Pack (User_Permission_Set_Type);
+
+   function User_Permission_Set (Name : String)
+      return User_Permission_Set_Type;
+   function User_Permission_Set (
+      Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
+      return User_Permission_Set_Type;
+
+   --  to here
+
    --  extended
    --  Unique file identifier.
    type File_Id is mod 2 ** 64; -- 64bit inode
