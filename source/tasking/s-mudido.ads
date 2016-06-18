@@ -54,4 +54,10 @@ private
 
    System_Dispatching_Domain : constant Dispatching_Domain := (null record);
 
+   --  called by gnatbind (s-mudido.adb)
+   procedure Freeze_Dispatching_Domains is null
+      with Export,
+         Convention => Ada,
+         External_Name => "__gnat_freeze_dispatching_domains";
+
 end System.Multiprocessors.Dispatching_Domains;
