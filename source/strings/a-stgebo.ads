@@ -123,7 +123,7 @@ package Ada.Strings.Generic_Bounded is
       subtype Length_Range is Natural range 0 .. Max_Length;
 
 --    function Length (Source : Bounded_String) return Length_Range;
-      --  function Length is inherited
+         --  function Length is inherited
 
       --  Conversion, Concatenation, and Selection functions
 
@@ -132,7 +132,8 @@ package Ada.Strings.Generic_Bounded is
          Drop : Truncation := Error)
          return Bounded_String;
 
-      --  extended for shorthand
+      --  extended
+      --  For shorthand.
       function "+" (Source : String_Type) return Bounded_String;
 
 --    function To_String (Source : Bounded_String) return String_Type;
@@ -177,19 +178,19 @@ package Ada.Strings.Generic_Bounded is
 --       Source : in out Bounded_String;
 --       New_Item : Bounded_String;
 --       Drop : Truncation := Error);
-      --  procedure Append is inherited
+         --  procedure Append is inherited
 
 --    procedure Append (
 --       Source : in out Bounded_String;
 --       New_Item : String_Type;
 --       Drop : Truncation := Error);
-      --  procedure Append is inherited
+         --  procedure Append is inherited
 
 --    procedure Append_Element (
 --       Source : in out Bounded_String;
 --       New_Item : Character_Type;
 --       Drop : Truncation := Error);
-      --  procedure Append_Element is inherited
+         --  procedure Append_Element is inherited
 
       function "&" (Left, Right : Bounded_String)
          return Bounded_String;
@@ -210,20 +211,20 @@ package Ada.Strings.Generic_Bounded is
 --       Source : Bounded_String;
 --       Index : Positive)
 --       return Character_Type;
-      --  function Element is inherited
+         --  function Element is inherited
 
 --    procedure Replace_Element (
 --       Source : in out Bounded_String;
 --       Index : Positive;
 --       By : Character_Type);
-      --  procedure Replace_Element is inherited
+         --  procedure Replace_Element is inherited
 
 --    function Slice (
 --       Source : Bounded_String;
 --       Low : Positive;
 --       High : Natural)
 --       return String_Type;
-      --  function Slice is inherited
+         --  function Slice is inherited
 
       function Bounded_Slice (
          Source : Bounded_String;
@@ -236,7 +237,7 @@ package Ada.Strings.Generic_Bounded is
 --       Target : out Bounded_String;
 --       Low : Positive;
 --       High : Natural);
-      --  procedure Bounded_Slice is inherited
+         --  procedure Bounded_Slice is inherited
 
 --    function "=" (Left, Right : Bounded_String) return Boolean;
 --    function "=" (Left : Bounded_String; Right : String_Type) return Boolean;
@@ -257,17 +258,17 @@ package Ada.Strings.Generic_Bounded is
 --       return Boolean;
 --    function ">=" (Left : String_Type; Right : Bounded_String)
 --       return Boolean;
-      --  "=", "<", "<=", ">" and ">=" are inherited
+         --  "=", "<", "<=", ">", and ">=" are inherited
 
       --  String constructor subprograms
 
       function "*" (Left : Natural; Right : Character_Type)
          return Bounded_String;
-      --  function "*" should be primitive for CXA4007
+         --  function "*" should be primitive for CXA4007
 
       function "*" (Left : Natural; Right : String_Type)
          return Bounded_String;
-      --  function "*" should be primitive for CXA4007
+         --  function "*" should be primitive for CXA4007
 
       function "*" (Left : Natural; Right : Bounded_String)
          return Bounded_String;

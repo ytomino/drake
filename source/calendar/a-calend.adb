@@ -31,7 +31,7 @@ package body Ada.Calendar is
 
    function Packed_Split (Date : Time) return Packed_Split_Time;
       --  The callings of this function will be unified since pure attribute
-      --    when Year, Month and Day are inlined
+      --    when Year, Month, and Day are inlined.
    pragma Pure_Function (Packed_Split);
    pragma Machine_Attribute (Packed_Split, "const");
 

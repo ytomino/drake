@@ -4,7 +4,6 @@ package Ada.Strings.East_Asian_Width is
    --  Unicode property "east asian width".
    pragma Pure;
 
-   --  same order of Ada.UCD.East_Asian_Width_Type
    type Width_Kind is (
       Neutral,
       Narrow,

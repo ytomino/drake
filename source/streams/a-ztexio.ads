@@ -334,8 +334,8 @@ package Ada.Wide_Wide_Text_IO is
    --  Generic packages for Input-Output of Real Types
    --  Generic package for Input-Output of Enumeration Types
 
-   --  Integer_IO, Modular_IO, Float_IO, Fixed_IO, Decimal_IO, Enumeration_IO
-   --  are separated by compiler
+   --  Note: Integer_IO, Modular_IO, Float_IO, Fixed_IO, Decimal_IO, and
+   --    Enumeration_IO are separated by compiler.
 
    --  Exceptions
 

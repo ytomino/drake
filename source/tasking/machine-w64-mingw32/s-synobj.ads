@@ -164,10 +164,10 @@ private
       Filter : Queue_Filter;
       Previous : in out Queue_Node_Access;
       Current : in out Queue_Node_Access);
-   --  awake Abortable.Take
    procedure Notify_All (
       Object : in out Queue;
       Item : not null Queue_Node_Access);
+      --  awake Abortable.Take
 
    type Event is limited record
       Handle : C.winnt.HANDLE;

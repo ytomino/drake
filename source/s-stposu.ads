@@ -19,18 +19,20 @@ package System.Storage_Pools.Subpools is
    --  The following operations are intended for pool implementers:
 
 --  function Pool_of_Subpool (
-   --  RM defined Pool_*of*_Subpool,
-   --  but GNAT runtime defined Pool_*Of*_Subpool...
    function Pool_Of_Subpool (
       Subpool : not null Subpool_Handle)
       return access Root_Storage_Pool_With_Subpools'Class;
 
+   --  Note: RM defined Pool_*o*f_Subpool,
+   --    but GNAT runtime defined Pool_*O*f_Subpool.
+
 --  procedure Set_Pool_of_Subpool (
-   --  RM defined Set_Pool_*of*_Subpool,
-   --  but GNAT runtime defined Set_Pool_*Of*_Subpool...
    procedure Set_Pool_Of_Subpool (
       Subpool : not null Subpool_Handle;
       To : in out Root_Storage_Pool_With_Subpools'Class);
+
+   --  Note: RM defined Set_Pool_*o*f_Subpool,
+   --    but GNAT runtime defined Set_Pool_*O*f_Subpool.
 
    procedure Allocate_From_Subpool (
       Pool : in out Root_Storage_Pool_With_Subpools;
@@ -46,11 +48,12 @@ package System.Storage_Pools.Subpools is
 --       with Pre'Class => Pool_of_Subpool(Subpool) = Pool'Access;
 
 --  function Default_Subpool_for_Pool (
-   --  RM defined Default_Subpool_*for*_Pool,
-   --  but GNAT runtime defined Default_Subpool_*For*_Pool...
    function Default_Subpool_For_Pool (
       Pool : Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle;
+
+   --  Note: RM defined Default_Subpool_*f*or_Pool,
+   --    but GNAT runtime defined Default_Subpool_*F*or_Pool.
 
    overriding procedure Allocate (
       Pool : in out Root_Storage_Pool_With_Subpools;

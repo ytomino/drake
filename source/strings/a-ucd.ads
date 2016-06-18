@@ -30,6 +30,7 @@ private package Ada.UCD is
    type Combining_Class_Type is mod 2 ** 8;
 
    type East_Asian_Width_Type is (N, Na, H, A, W, F);
+      --  same order as Ada.Strings.East_Asian_Width.Width_Kind
    pragma Discard_Names (East_Asian_Width_Type);
 
    --  set

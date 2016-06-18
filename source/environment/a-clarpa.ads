@@ -64,7 +64,6 @@ private package Ada.Command_Line.Argument_Parsing is
       return Value_Location;
    function Value (Argument : String; Position : Cursor) return String;
 
-   --  package Argument_Iterator_Interfaces
    function First (Object : Argument_Iterator) return Cursor;
    function Next (Object : Argument_Iterator; Position : Cursor)
       return Cursor;

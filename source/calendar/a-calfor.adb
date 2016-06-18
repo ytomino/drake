@@ -31,7 +31,8 @@ package body Ada.Calendar.Formatting is
       Time_Zone : Time_Zones.Time_Offset)
       return Packed_Split_Time;
       --  The callings of this function will be unified since pure attribute
-      --    when Year, Month and Day are inlined
+      --    when Year, Month, Day, Hour, Minute, Second, and Day_of_Week are
+      --    inlined.
    pragma Pure_Function (Packed_Split);
    pragma Machine_Attribute (Packed_Split, "const");
 

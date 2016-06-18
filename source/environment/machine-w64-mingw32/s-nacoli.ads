@@ -6,7 +6,7 @@ package System.Native_Command_Line is
    function Argument_Count return Natural;
    pragma Inline (Argument_Count);
 
-   --  Number => 0 means Command_Name
    function Argument (Number : Natural) return String;
+      --  Returns Command_Name if Number = 0.
 
 end System.Native_Command_Line;

@@ -57,7 +57,8 @@ package Ada.Strings.Generic_Unbounded is
 
    function To_Unbounded_String (Source : String_Type)
       return Unbounded_String;
-   --  extended for shorthand
+   --  extended
+   --  For shorthand.
    function "+" (Source : String_Type) return Unbounded_String
       renames To_Unbounded_String;
 
