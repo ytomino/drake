@@ -72,7 +72,7 @@ package body System.Native_IO is
    begin
       --  compose template
       Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
-      if Temp_Dir /= null then
+      if Temp_Dir /= null and then Temp_Dir.all /= C.char'Val (0) then
          --  environment variable TMPDIR
          Out_Length := strlen (Temp_Dir);
          Out_Item := Name_Pointer_Conv.To_Pointer (

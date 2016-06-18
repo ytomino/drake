@@ -15,21 +15,37 @@ package body System.Native_Directories.Temporary is
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
 
-   procedure Include_Trailing_Path_Delimiter (
-      S : in out C.char_array;
-      Length : in out C.size_t);
-   procedure Include_Trailing_Path_Delimiter (
-      S : in out C.char_array;
-      Length : in out C.size_t) is
+   procedure Put_Template (
+      Directory : String;
+      Template : not null C.char_ptr;
+      Length : out C.size_t);
+   procedure Put_Template (
+      Directory : String;
+      Template : not null C.char_ptr;
+      Length : out C.size_t)
+   is
+      Template_A : C.char_array (C.size_t);
+      for Template_A'Address use Template.all'Address;
    begin
-      if Length > 0
-         and then not Ada.Hierarchical_File_Names.Is_Path_Delimiter (
-            Character (S (Length - 1)))
+      if Directory'Length = 0
+         or else Ada.Hierarchical_File_Names.Is_Current_Directory_Name (
+            Directory)
       then
-         S (Length) := '/';
-         Length := Length + 1;
+         Length := 0;
+      else
+         Zero_Terminated_Strings.To_C (Directory, Template, Length);
+         if not Ada.Hierarchical_File_Names.Is_Path_Delimiter (
+            Character (Template_A (Length - 1))) -- Length > 0
+         then
+            Template_A (Length) :=
+               C.char (Ada.Hierarchical_File_Names.Default_Path_Delimiter);
+            Length := Length + 1;
+         end if;
       end if;
-   end Include_Trailing_Path_Delimiter;
+      Template_A (Length .. Length + (Temp_Template'Length - 1)) :=
+         Temp_Template;
+      Length := Length + (Temp_Template'Length - 1); -- exclude NUL
+   end Put_Template;
 
    --  implementation
 
@@ -38,7 +54,7 @@ package body System.Native_Directories.Temporary is
    begin
       Temp_Dir := C.stdlib.getenv (
          Temp_Variable (Temp_Variable'First)'Access);
-      if Temp_Dir = null then
+      if Temp_Dir = null or else Temp_Dir.all = C.char'Val (0) then
          return "."; -- Is_Current_Directory_Name (".") = True
       else
          return Zero_Terminated_Strings.Value (Temp_Dir);
@@ -68,13 +84,7 @@ package body System.Native_Directories.Temporary is
             + Temp_Template'Length);
       Length : C.size_t;
    begin
-      Zero_Terminated_Strings.To_C (
-         Directory,
-         Template (0)'Access,
-         Length);
-      Include_Trailing_Path_Delimiter (Template, Length);
-      Template (Length .. Length + Temp_Template'Length - 1) := Temp_Template;
-      Length := Length + Temp_Template'Length - 1; -- exclude NUL
+      Put_Template (Directory, Template (0)'Unchecked_Access, Length);
       declare
          Handle : C.signed_int;
       begin
@@ -104,13 +114,7 @@ package body System.Native_Directories.Temporary is
             + Temp_Template'Length);
       Length : C.size_t;
    begin
-      Zero_Terminated_Strings.To_C (
-         Directory,
-         Template (0)'Access,
-         Length);
-      Include_Trailing_Path_Delimiter (Template, Length);
-      Template (Length .. Length + Temp_Template'Length - 1) := Temp_Template;
-      Length := Length + Temp_Template'Length - 1; -- exclude NUL
+      Put_Template (Directory, Template (0)'Unchecked_Access, Length);
       declare
          R : C.char_ptr;
       begin
