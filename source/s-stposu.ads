@@ -49,7 +49,7 @@ package System.Storage_Pools.Subpools is
 
 --  function Default_Subpool_for_Pool (
    function Default_Subpool_For_Pool (
-      Pool : Root_Storage_Pool_With_Subpools)
+      Pool : in out Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle;
 
    --  Note: RM defined Default_Subpool_*f*or_Pool,

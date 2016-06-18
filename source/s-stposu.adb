@@ -164,7 +164,7 @@ package body System.Storage_Pools.Subpools is
    end Set_Pool_Of_Subpool;
 
    function Default_Subpool_For_Pool (
-      Pool : Root_Storage_Pool_With_Subpools)
+      Pool : in out Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle is
    begin
       --  RM 13.11.4(35/3)
