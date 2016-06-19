@@ -374,12 +374,18 @@ package body System.Native_Environment_Encoding is
       end Reference;
 
       overriding procedure Finalize (Object : in out Converter) is
-         R : C.signed_int;
       begin
-         R := C.iconv.iconv_close (Object.Data.iconv);
-         pragma Check (Debug,
-            Check =>
-               not (R < 0) or else Debug.Runtime_Error ("iconv_close failed"));
+         if Object.Data.iconv /= C.void_ptr (Null_Address) then
+            declare
+               R : C.signed_int;
+            begin
+               R := C.iconv.iconv_close (Object.Data.iconv);
+               pragma Check (Debug,
+                  Check =>
+                     not (R < 0)
+                     or else Debug.Runtime_Error ("iconv_close failed"));
+            end;
+         end if;
       end Finalize;
 
    end Controlled;
