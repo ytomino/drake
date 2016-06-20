@@ -123,7 +123,7 @@ tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
 cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a
-	@sh -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
+	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
 		if [[ -f $(BUILDDIR)/$$I ]] ; then \
 			echo rm $$I ; \
 			rm $(BUILDDIR)/$$I ; \
