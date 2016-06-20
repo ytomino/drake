@@ -40,10 +40,13 @@ package body System.Unbounded_Stack_Allocators is
       Top : constant Address := Allocator;
       Mask : constant Storage_Elements.Integer_Address :=
          Storage_Elements.Integer_Address (Alignment - 1);
+      --  new block:
       New_Block : Address := Null_Address;
       New_Block_Size : Storage_Elements.Storage_Count;
       Aligned_Header_Size : Storage_Elements.Storage_Count;
+      --  top block:
       Aligned_Top_Used : Address;
+      New_Top_Used : Address;
    begin
       if Top /= Null_Address then
          --  when top block is empty and previous block has enough space
@@ -57,15 +60,14 @@ package body System.Unbounded_Stack_Allocators is
                      (Storage_Elements.Integer_Address (Cast (Previous).Used)
                         + Mask)
                      and not Mask);
+               New_Previous_Used : constant Address :=
+                  Aligned_Previous_Used + Size_In_Storage_Elements;
             begin
-               if Aligned_Previous_Used + Size_In_Storage_Elements <=
-                  Cast (Previous).Limit
-               then
+               if New_Previous_Used <= Cast (Previous).Limit then
                   Allocator := Previous;
                   System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
                   Storage_Address := Aligned_Previous_Used;
-                  Cast (Previous).Used :=
-                     Storage_Address + Size_In_Storage_Elements;
+                  Cast (Previous).Used := New_Previous_Used;
                   return;
                end if;
             end;
@@ -74,11 +76,10 @@ package body System.Unbounded_Stack_Allocators is
          Aligned_Top_Used := Address (
             (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
             and not Mask);
-         if Aligned_Top_Used + Size_In_Storage_Elements <=
-            Cast (Top).Limit
-         then
+         New_Top_Used := Aligned_Top_Used + Size_In_Storage_Elements;
+         if New_Top_Used <= Cast (Top).Limit then
             Storage_Address := Aligned_Top_Used;
-            Cast (Top).Used := Storage_Address + Size_In_Storage_Elements;
+            Cast (Top).Used := New_Top_Used;
             return;
          end if;
          --  try expanding top block
@@ -98,8 +99,7 @@ package body System.Unbounded_Stack_Allocators is
                if Additional_Block = Cast (Top).Limit then
                   Cast (Top).Limit := Cast (Top).Limit + Additional_Block_Size;
                   Storage_Address := Aligned_Top_Used;
-                  Cast (Top).Used :=
-                     Storage_Address + Size_In_Storage_Elements;
+                  Cast (Top).Used := New_Top_Used;
                   return;
                end if;
                New_Block := Additional_Block;
