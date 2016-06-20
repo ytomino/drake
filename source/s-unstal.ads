@@ -36,10 +36,6 @@ private
    end record;
    pragma Suppress_Initialization (Block);
 
-   type Marker is record
-      Top : Address; -- Block_Access;
-      Used : Address;
-   end record;
-   pragma Suppress_Initialization (Marker);
+   type Marker is new Address; -- Used
 
 end System.Unbounded_Stack_Allocators;
