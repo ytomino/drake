@@ -81,30 +81,23 @@ package body System.System_Allocators is
    end Page_Size;
 
    function Map (
+      Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
       return Address
    is
       use type C.windef.DWORD;
       Mapped_Address : C.windef.LPVOID;
    begin
+      if Storage_Address /= Null_Address then
+         --  VirtualAlloc and VirtualFree should be one-to-one correspondence
+         return Null_Address;
+      end if;
       Mapped_Address := C.winbase.VirtualAlloc (
          C.windef.LPVOID (Null_Address),
          C.basetsd.SIZE_T (Size),
          C.winnt.MEM_RESERVE or C.winnt.MEM_COMMIT,
          C.winnt.PAGE_READWRITE);
       return Address (Mapped_Address);
-   end Map;
-
-   function Map (
-      Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      pragma Unreferenced (Storage_Address);
-      pragma Unreferenced (Size);
-   begin
-      --  VirtualAlloc and VirtualFree should be one-to-one correspondence
-      return Null_Address;
    end Map;
 
    procedure Unmap (

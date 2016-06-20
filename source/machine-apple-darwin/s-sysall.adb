@@ -41,27 +41,6 @@ package body System.System_Allocators is
    end Page_Size;
 
    function Map (
-      Size : Storage_Elements.Storage_Count)
-      return Address
-   is
-      Mapped_Address : C.void_ptr;
-   begin
-      pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (Null_Address),
-         C.size_t (Size),
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE,
-         C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE,
-         -1,
-         0);
-      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
-         Mapped_Address := C.void_ptr (Null_Address); -- failed
-      end if;
-      pragma Check (Trace, Ada.Debug.Put ("leave"));
-      return Address (Mapped_Address);
-   end Map;
-
-   function Map (
       Storage_Address : Address;
       Size : Storage_Elements.Storage_Count)
       return Address
@@ -73,7 +52,7 @@ package body System.System_Allocators is
          C.void_ptr (Storage_Address),
          C.size_t (Size),
          C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE,
-         C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE + C.sys.mman.MAP_FIXED,
+         C.sys.mman.MAP_ANON + C.sys.mman.MAP_PRIVATE,
          -1,
          0);
       if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then

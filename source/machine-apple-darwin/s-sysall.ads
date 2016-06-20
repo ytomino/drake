@@ -22,10 +22,7 @@ package System.System_Allocators is
    function Page_Size return Storage_Elements.Storage_Count;
 
    function Map (
-      Size : Storage_Elements.Storage_Count)
-      return Address; -- Null_Address if it failed
-   function Map (
-      Storage_Address : Address;
+      Storage_Address : Address; -- not fixed but hint
       Size : Storage_Elements.Storage_Count)
       return Address; -- Null_Address if it failed
    procedure Unmap (
