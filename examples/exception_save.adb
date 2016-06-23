@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-procedure exception6 is
+procedure exception_save is
 	S : Ada.Exceptions.Exception_Occurrence;
 begin
 	-- Save_Exception
@@ -27,4 +27,4 @@ begin
 			null;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
-end exception6;
+end exception_save;

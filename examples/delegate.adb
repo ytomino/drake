@@ -1,6 +1,6 @@
 with Ada.Strings.Unbounded;
 with Ada.Tags.Delegating;
-procedure tagged4 is
+procedure delegate is
 	package I is
 		type Intf is limited interface;
 		procedure Method (Object : Intf) is abstract;
@@ -66,4 +66,4 @@ begin
 		Ada.Debug.Put (Ada.Tags.Expanded_Name (Intf'Tag));
 		I.Method (Intf.all);
 	end;
-end tagged4;
+end delegate;

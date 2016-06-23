@@ -1,6 +1,6 @@
 with Ada.Command_Line;
 with Ada.Text_IO.Terminal;
-procedure tty2 is
+procedure tty_info is
 	use Ada.Text_IO;
 	use Ada.Text_IO.Terminal;
 	package Count_IO is new Integer_IO (Count);
@@ -60,4 +60,4 @@ begin
 	if Try_Save then
 		Reset_State (Standard_Output.all, State);
 	end if;
-end tty2;
+end tty_info;

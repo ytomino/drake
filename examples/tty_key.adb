@@ -1,5 +1,5 @@
 with Ada.Text_IO;
-procedure tty1 is
+procedure tty_key is
 	use type Ada.Text_IO.Count;
 	C, D : Character;
 	Avail : Boolean;
@@ -26,4 +26,4 @@ begin
 		end if;
 	end loop;
 	Ada.Text_IO.New_Line;
-end tty1;
+end tty_key;
