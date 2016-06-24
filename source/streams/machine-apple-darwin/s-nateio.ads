@@ -85,6 +85,8 @@ package System.Native_Text_IO is
       Left, Top : out Positive;
       Right, Bottom : out Natural);
 
+   function Use_Terminal_Position (Handle : Handle_Type) return Boolean;
+
    procedure Terminal_Position (
       Handle : Handle_Type;
       Col, Line : out Positive);

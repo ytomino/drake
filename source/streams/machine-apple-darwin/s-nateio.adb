@@ -1,6 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
 with C.sys.ioctl;
+with C.unistd;
 package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
@@ -185,6 +186,14 @@ package body System.Native_Text_IO is
       Left := 1;
       Top := 1;
    end Terminal_View;
+
+   function Use_Terminal_Position (Handle : Handle_Type) return Boolean is
+   begin
+      --  It's a workaround for that in some kinds of combinations of
+      --    commands like timeout(1), the process may be run as background,
+      --    so it may receive SIGTTOU by tcsetattr and be stopped.
+      return C.unistd.tcgetpgrp (Handle) = C.unistd.getpgrp;
+   end Use_Terminal_Position;
 
    procedure Terminal_Position (
       Handle : Handle_Type;

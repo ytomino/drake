@@ -689,6 +689,7 @@ package body Ada.Naked_Text_IO is
                Raise_Exception (Device_Error'Identity);
             end if;
          end;
+         File.Ahead_Col := Sequence_Length; -- for fallback
       elsif File.External = IO_Modes.Locale
          and then File.Buffer (1) >= Character'Val (16#80#)
       then
@@ -1098,7 +1099,10 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Set_Terminal_Col (
             Streams.Naked_Stream_IO.Handle (File.File),
             To);
@@ -1132,7 +1136,10 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Set_Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
             Col => 1,
@@ -1162,7 +1169,10 @@ package body Ada.Naked_Text_IO is
       File : Non_Controlled_File_Type;
       Col, Line : out Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
             Col,
