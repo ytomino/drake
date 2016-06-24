@@ -442,7 +442,6 @@ package body System.Tasks is
    begin
       TLS_Current_Task_Id := T;
       --  block abort signal
-      Native_Tasks.Initialize (T.Abort_Attribute);
       Native_Tasks.Block_Abort_Signal (T.Abort_Attribute);
       T.Abort_Locking := 1;
       --  setup secondary stack
@@ -945,6 +944,8 @@ package body System.Tasks is
          --  append to the parent's master
          Append_To_Completion_List (Master, T);
       end if;
+      --  for abort
+      Native_Tasks.Initialize (T.Abort_Attribute);
       --  for activation
       if Chain_Data /= null then
          --  apeend to activation chain
