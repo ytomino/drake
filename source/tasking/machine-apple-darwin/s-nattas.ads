@@ -38,18 +38,7 @@ package System.Native_Tasks is
 
    --  stack
 
-   subtype Info_Block_Type is Handle_Type;
-
-   type Task_Attribute_Of_Stack is null record;
-   pragma Suppress_Initialization (Task_Attribute_Of_Stack);
-
-   procedure Initialize (Attr : in out Task_Attribute_Of_Stack) is null;
-   procedure Finalize (Attr : in out Task_Attribute_Of_Stack) is null;
-
-   function Info_Block (
-      Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Stack)
-      return Info_Block_Type;
+   function Info_Block (Handle : Handle_Type) return C.pthread.pthread_t;
    pragma Inline (Info_Block);
 
    --  signals

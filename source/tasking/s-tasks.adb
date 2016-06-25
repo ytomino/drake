@@ -453,8 +453,6 @@ package body System.Tasks is
       Unwind.Mapping.Install_Task_Exception_Handler (
          SEH'Address,
          T.Signal_Stack'Access);
-      --  setup native stack
-      Native_Tasks.Initialize (T.Stack_Attribute);
       --  execute
       declare
          procedure On_Exception;
@@ -501,8 +499,6 @@ package body System.Tasks is
             Expected'Access,
             TS_Terminated);
       end;
-      --  cleanup native stack info
-      Native_Tasks.Finalize (T.Stack_Attribute);
       --  free
       if No_Detached then
          Result := To_Result (TR_Not_Freed); -- caller or master may wait
@@ -936,7 +932,6 @@ package body System.Tasks is
          Next_At_Same_Level => null,
          Auto_Detach => False,
          Rendezvous => Rendezvous,
-         Stack_Attribute => <>, -- uninitialized
          Abort_Attribute => <>, -- uninitialized
          Signal_Stack => <>); -- uninitialized
       --  for master
@@ -1069,7 +1064,7 @@ package body System.Tasks is
    is
       Top, Bottom : Address;
    begin
-      Stack.Get (Native_Tasks.Info_Block (T.Handle, T.Stack_Attribute),
+      Stack.Get (Native_Tasks.Info_Block (T.Handle),
          Top => Top, Bottom => Bottom);
       Addr := Top;
       Size := Bottom - Top;

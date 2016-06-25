@@ -264,8 +264,6 @@ private
             Auto_Detach : Boolean;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
-            --  stack
-            Stack_Attribute : Native_Tasks.Task_Attribute_Of_Stack;
             --  signal alt stack
             Signal_Stack : aliased Unwind.Mapping.Signal_Stack_Type;
       end case;

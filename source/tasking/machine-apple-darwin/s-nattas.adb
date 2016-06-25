@@ -81,12 +81,7 @@ package body System.Native_Tasks is
 
    --  implementation of stack
 
-   function Info_Block (
-      Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Stack)
-      return Info_Block_Type
-   is
-      pragma Unreferenced (Attr);
+   function Info_Block (Handle : Handle_Type) return C.pthread.pthread_t is
    begin
       return Handle;
    end Info_Block;

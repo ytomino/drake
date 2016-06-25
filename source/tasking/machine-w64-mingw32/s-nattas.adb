@@ -1,9 +1,37 @@
+with Ada.Unchecked_Conversion;
 with System.Debug;
+with System.Storage_Map;
+with C.basetsd;
 with C.winerror;
+with C.winternl;
 package body System.Native_Tasks is
+   use type C.char_array;
    use type C.void_ptr; -- C.void_ptr
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+
+   type struct_THREAD_BASIC_INFORMATION is record
+      ExitStatus : C.winternl.NTSTATUS;
+      TebBaseAddress : C.winnt.struct_TEB_ptr; -- PVOID;
+      ClientId : C.winternl.CLIENT_ID;
+      AffinityMask : C.basetsd.KAFFINITY;
+      Priority : C.winternl.KPRIORITY;
+      BasePriority : C.winternl.KPRIORITY;
+   end record
+      with Convention => C;
+   pragma Suppress_Initialization (struct_THREAD_BASIC_INFORMATION);
+
+   type NtQueryInformationThread_Type is access function (
+      ThreadHandle : C.winnt.HANDLE;
+      ThreadInformationClass : C.winternl.THREADINFOCLASS;
+      ThreadInformation : C.winnt.PVOID;
+      ThreadInformationLength : C.windef.ULONG;
+      ReturnLength : access C.windef.ULONG)
+      return C.winternl.NTSTATUS
+      with Convention => WINAPI;
+
+   NtQueryInformationThread_Name : constant C.char_array (0 .. 24) :=
+      "NtQueryInformationThread" & C.char'Val (0);
 
    Installed_Abort_Handler : Abort_Handler := null;
 
@@ -84,19 +112,36 @@ package body System.Native_Tasks is
 
    --  implementation of stack
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Stack) is
+   function Info_Block (Handle : Handle_Type) return C.winnt.struct_TEB_ptr is
+      function To_NtQueryInformationThread_Type is
+         new Ada.Unchecked_Conversion (
+            C.windef.FARPROC,
+            NtQueryInformationThread_Type);
+      NtQueryInformationThread : NtQueryInformationThread_Type;
    begin
-      Attr := C.winnt.NtCurrentTeb;
-   end Initialize;
-
-   function Info_Block (
-      Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Stack)
-      return Info_Block_Type
-   is
-      pragma Unreferenced (Handle);
-   begin
-      return Attr;
+      NtQueryInformationThread :=
+         To_NtQueryInformationThread_Type (
+            C.winbase.GetProcAddress (
+               Storage_Map.NTDLL,
+               NtQueryInformationThread_Name (0)'Access));
+      if NtQueryInformationThread = null then
+         return null; -- ???
+      else
+         declare
+            TBI : aliased struct_THREAD_BASIC_INFORMATION;
+            ReturnLength : aliased C.windef.ULONG;
+            Status : C.winternl.NTSTATUS;
+            pragma Unreferenced (Status);
+         begin
+            Status := NtQueryInformationThread (
+               Handle,
+               C.winternl.ThreadBasicInformation,
+               C.windef.LPVOID (TBI'Address),
+               struct_THREAD_BASIC_INFORMATION'Size / Standard'Storage_Unit,
+               ReturnLength'Access);
+            return TBI.TebBaseAddress;
+         end;
+      end if;
    end Info_Block;
 
    --  implementation of signals
