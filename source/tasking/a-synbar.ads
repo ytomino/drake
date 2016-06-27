@@ -20,7 +20,10 @@ private
    type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
       limited new Finalization.Limited_Controlled with
    record
-      Object : System.Synchronous_Objects.Barrier;
+      Mutex : System.Synchronous_Objects.Mutex;
+      Event : System.Synchronous_Objects.Event;
+      Blocked : Natural;
+      Unblocked : Natural;
    end record;
 
    overriding procedure Initialize (Object : in out Synchronous_Barrier);

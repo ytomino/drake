@@ -389,52 +389,6 @@ package body System.Synchronous_Objects is
       Leave (Object.Mutex);
    end Wait;
 
-   --  group-synchronization
-
-   procedure Initialize (
-      Object : in out Barrier;
-      Release_Threshold : Natural) is
-   begin
-      Initialize (Object.Mutex);
-      Initialize (Object.Condition_Variable);
-      Object.Release_Threshold := Release_Threshold;
-      Object.Blocked := 0;
-      Object.Unblocked := 0;
-   end Initialize;
-
-   procedure Finalize (Object : in out Barrier) is
-   begin
-      Finalize (Object.Mutex);
-      Finalize (Object.Condition_Variable);
-   end Finalize;
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean)
-   is
-      Order : Natural;
-   begin
-      Enter (Object.Mutex);
-      Object.Blocked := Object.Blocked + 1;
-      Order := Object.Blocked rem Object.Release_Threshold;
-      Notified := Order = 1;
-      if Order = 0 then
-         Notify_All (Object.Condition_Variable);
-         Object.Unblocked := Object.Unblocked + 1;
-      else
-         loop
-            Wait (Object.Condition_Variable, Object.Mutex);
-            exit when Object.Blocked >= Object.Release_Threshold;
-         end loop;
-         Object.Unblocked := Object.Unblocked + 1;
-      end if;
-      if Object.Unblocked = Object.Release_Threshold then
-         Object.Blocked := Object.Blocked - Object.Release_Threshold;
-         Object.Unblocked := 0;
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
    --  multi-read/exclusive-write lock
 
    procedure Initialize (Object : in out RW_Lock) is

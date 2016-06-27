@@ -101,18 +101,6 @@ package System.Synchronous_Objects is
       Timeout : Duration;
       Value : out Boolean);
 
-   --  group-synchronization for Ada.Synchronous_Barriers
-
-   type Barrier is limited private;
-
-   procedure Initialize (
-      Object : in out Barrier;
-      Release_Threshold : Natural);
-   procedure Finalize (Object : in out Barrier);
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean);
-
    --  multi-read/exclusive-write lock for protected
 
    type RW_Lock is limited private;
@@ -176,15 +164,6 @@ private
       Value : aliased Storage_Barriers.Flag;
    end record;
    pragma Suppress_Initialization (Event);
-
-   type Barrier is limited record
-      Mutex : Synchronous_Objects.Mutex;
-      Condition_Variable : Synchronous_Objects.Condition_Variable;
-      Release_Threshold : Natural;
-      Blocked : Natural;
-      Unblocked : Natural;
-   end record;
-   pragma Suppress_Initialization (Barrier);
 
    type RW_Lock is limited record
       Handle : aliased C.pthread.pthread_rwlock_t;

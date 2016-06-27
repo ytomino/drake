@@ -33,13 +33,6 @@ package System.Synchronous_Objects.Abortable is
       Value : out Boolean;
       Aborted : out Boolean);
 
-   --  group-synchronization
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
-      Aborted : out Boolean);
-
 private
 
    Abort_Checking_Span : constant Duration := 1.0;

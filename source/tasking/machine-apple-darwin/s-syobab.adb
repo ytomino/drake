@@ -163,45 +163,4 @@ package body System.Synchronous_Objects.Abortable is
       Leave (Object.Mutex);
    end Wait;
 
-   --  barrier
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
-      Aborted : out Boolean)
-   is
-      Order : Natural;
-   begin
-      Enter (Object.Mutex);
-      Object.Blocked := Object.Blocked + 1;
-      Order := Object.Blocked rem Object.Release_Threshold;
-      Notified := Order = 1;
-      if Order = 0 then
-         Notify_All (Object.Condition_Variable);
-         Object.Unblocked := Object.Unblocked + 1;
-         Aborted := Tasks.Is_Aborted;
-      else
-         loop
-            declare
-               Threshold_Is_Satisfied : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Timeout => Abort_Checking_Span,
-                  Notified => Threshold_Is_Satisfied,
-                  Aborted => Aborted);
-            end;
-            exit when Object.Blocked >= Object.Release_Threshold
-               or else Aborted;
-         end loop;
-         Object.Unblocked := Object.Unblocked + 1;
-      end if;
-      if Object.Unblocked = Object.Release_Threshold then
-         Object.Blocked := Object.Blocked - Object.Release_Threshold;
-         Object.Unblocked := 0;
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
 end System.Synchronous_Objects.Abortable;
