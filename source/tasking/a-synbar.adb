@@ -16,7 +16,7 @@ package body Ada.Synchronous_Barriers is
       System.Synchronous_Objects.Enter (Object.Mutex);
       Object.Blocked := Object.Blocked + 1;
       Order := Object.Blocked rem Object.Release_Threshold;
-      Notified := Order = 1;
+      Notified := Order = 1 or else Object.Release_Threshold = 1; -- first one
       if Order = 0 then
          System.Synchronous_Objects.Set (Object.Event);
          Aborted := System.Tasks.Is_Aborted;
