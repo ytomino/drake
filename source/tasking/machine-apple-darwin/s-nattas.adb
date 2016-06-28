@@ -63,11 +63,11 @@ package body System.Native_Tasks is
 
    procedure Join (
       Handle : Handle_Type; -- of target thread
-      Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
+      Current_Abort_Event : access Synchronous_Objects.Event;
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
-      pragma Unreferenced (Abort_Current);
+      pragma Unreferenced (Current_Abort_Event);
    begin
       Error := C.pthread.pthread_join (Handle, Result'Access) /= 0;
    end Join;
@@ -120,11 +120,11 @@ package body System.Native_Tasks is
 
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : in out Task_Attribute_Of_Abort;
+      Abort_Event : in out Synchronous_Objects.Event;
       Error : out Boolean) is
    begin
       --  write to the pipe
-      Set (Attr);
+      Synchronous_Objects.Set (Abort_Event);
       --  send SIGTERM
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
          when 0 =>
@@ -137,14 +137,13 @@ package body System.Native_Tasks is
       end case;
    end Send_Abort_Signal;
 
-   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
-      pragma Unreferenced (Attr);
+   procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event) is
+      pragma Unreferenced (Abort_Event);
    begin
       Mask_SIGTERM (C.signal.SIG_BLOCK);
    end Block_Abort_Signal;
 
-   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
-      pragma Unreferenced (Attr);
+   procedure Unblock_Abort_Signal is
    begin
       Mask_SIGTERM (C.signal.SIG_UNBLOCK);
    end Unblock_Abort_Signal;

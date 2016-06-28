@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
-private with C.winnt;
+with C.winnt;
 package System.Synchronous_Objects is
    pragma Preelaborate;
 
@@ -92,6 +92,9 @@ package System.Synchronous_Objects is
       Object : in out Event;
       Timeout : Duration;
       Value : out Boolean);
+
+   function Handle (Object : Event) return C.winnt.HANDLE;
+   pragma Inline (Handle);
 
    --  multi-read/exclusive-write lock for protected
 

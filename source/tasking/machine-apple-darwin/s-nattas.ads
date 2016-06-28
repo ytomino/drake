@@ -5,8 +5,6 @@ with C.pthread;
 package System.Native_Tasks is
    pragma Preelaborate;
 
-   type Task_Attribute_Of_Abort;
-
    --  thread
 
    subtype Handle_Type is C.pthread.pthread_t;
@@ -30,7 +28,7 @@ package System.Native_Tasks is
 
    procedure Join (
       Handle : Handle_Type; -- of target thread
-      Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
+      Current_Abort_Event : access Synchronous_Objects.Event;
       Result : aliased out Result_Type;
       Error : out Boolean);
    procedure Detach (
@@ -49,18 +47,12 @@ package System.Native_Tasks is
    procedure Install_Abort_Handler (Handler : Abort_Handler);
    procedure Uninstall_Abort_Handler;
 
-   type Task_Attribute_Of_Abort is new Synchronous_Objects.Event;
-
---  procedure Initialize (Attr : in out Task_Attribute_Of_Abort);
---  procedure Finalize (Attr : in out Task_Attribute_Of_Abort);
-      --  procedures Initialize and Finalize are inherited
-
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : in out Task_Attribute_Of_Abort;
+      Abort_Event : in out Synchronous_Objects.Event;
       Error : out Boolean);
 
-   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
-   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);
+   procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event);
+   procedure Unblock_Abort_Signal;
 
 end System.Native_Tasks;

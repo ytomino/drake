@@ -82,8 +82,7 @@ package System.Tasks is
    procedure Lock_Abort;
    procedure Unlock_Abort;
    function Is_Aborted return Boolean;
-   function Abort_Attribute
-      return access Native_Tasks.Task_Attribute_Of_Abort;
+   function Abort_Event return access Synchronous_Objects.Event;
 
    --  for manual activation (Chain /= null)
    function Elaborated (T : not null Task_Id) return Boolean;
@@ -233,7 +232,7 @@ private
       pragma Atomic (Aborted);
       Abort_Handler : Tasks.Abort_Handler;
       Abort_Locking : Natural;
-      Abort_Attribute : aliased Native_Tasks.Task_Attribute_Of_Abort;
+      Abort_Event : aliased Synchronous_Objects.Event;
       Attributes : Attribute_Array_Access;
       Attributes_Length : Natural;
       --  activation / completion

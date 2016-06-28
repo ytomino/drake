@@ -1,5 +1,4 @@
 with System.Native_Real_Time;
-with System.Native_Tasks;
 with System.Native_Time;
 with System.Debug;
 with System.Tasks;
@@ -69,10 +68,9 @@ package body System.Synchronous_Objects.Abortable is
       Object : in out Event;
       Aborted : out Boolean)
    is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      if Attr /= null then
+      if Abort_Event /= null then
          declare
             Polling : aliased struct_pollfd_array (0 .. 1);
          begin
@@ -80,7 +78,7 @@ package body System.Synchronous_Objects.Abortable is
             Polling (0).events :=
                C.signed_short (
                   C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
-            Polling (1).fd := Event (Attr.all).Reading_Pipe;
+            Polling (1).fd := Abort_Event.Reading_Pipe;
             Polling (1).events :=
                C.signed_short (
                   C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
@@ -133,10 +131,9 @@ package body System.Synchronous_Objects.Abortable is
       Value : out Boolean;
       Aborted : out Boolean)
    is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      if Attr /= null then
+      if Abort_Event /= null then
          declare
             Deadline : constant Duration :=
                Native_Real_Time.To_Duration (Native_Real_Time.Clock) + Timeout;
@@ -147,7 +144,7 @@ package body System.Synchronous_Objects.Abortable is
             Polling (0).events :=
                C.signed_short (
                   C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
-            Polling (1).fd := Event (Attr.all).Reading_Pipe;
+            Polling (1).fd := Abort_Event.Reading_Pipe;
             Polling (1).events :=
                C.signed_short (
                   C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));

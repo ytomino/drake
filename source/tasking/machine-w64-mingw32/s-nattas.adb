@@ -1,8 +1,6 @@
 with Ada.Unchecked_Conversion;
-with System.Debug;
 with System.Storage_Map;
 with C.basetsd;
-with C.winerror;
 with C.winternl;
 package body System.Native_Tasks is
    use type C.char_array;
@@ -57,17 +55,17 @@ package body System.Native_Tasks is
 
    procedure Join (
       Handle : Handle_Type;
-      Abort_Current : access Task_Attribute_Of_Abort;
+      Current_Abort_Event : access Synchronous_Objects.Event;
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
       R : C.windef.DWORD;
    begin
       Error := False;
-      if Abort_Current /= null and then not Abort_Current.Blocked then
+      if Current_Abort_Event /= null then
          declare
             Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
-               (Handle, Abort_Current.Event);
+               (Handle, Synchronous_Objects.Handle (Current_Abort_Event.all));
          begin
             R := C.winbase.WaitForMultipleObjects (
                2,
@@ -156,54 +154,23 @@ package body System.Native_Tasks is
       Installed_Abort_Handler := null;
    end Uninstall_Abort_Handler;
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Abort) is
-   begin
-      Attr.Event := C.winbase.CreateEvent (null, 1, 0, null); -- manual
-      Attr.Blocked := False;
-   end Initialize;
-
-   procedure Finalize (Attr : in out Task_Attribute_Of_Abort) is
-      Closing_Handle : constant Handle_Type := Attr.Event;
-   begin
-      Attr.Event := C.winbase.INVALID_HANDLE_VALUE;
-      declare
-         R : C.windef.WINBOOL;
-      begin
-         R := C.winbase.CloseHandle (Closing_Handle);
-         pragma Check (Debug,
-            Check =>
-               R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
-      end;
-   end Finalize;
-
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Abort;
+      Abort_Event : in out Synchronous_Objects.Event;
       Error : out Boolean)
    is
       pragma Unreferenced (Handle);
    begin
+      Synchronous_Objects.Set (Abort_Event);
       Error := False;
-      if C.winbase.SetEvent (Attr.Event) = 0 then
-         Error := C.winbase.GetLastError /=
-            C.winerror.ERROR_INVALID_HANDLE; -- already terminated
-      end if;
    end Send_Abort_Signal;
 
-   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
+   procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event) is
    begin
-      Attr.Blocked := True;
       --  check aborted
-      if C.winbase.WaitForSingleObject (Attr.Event, 0) =
-         C.winbase.WAIT_OBJECT_0
-      then
+      if Synchronous_Objects.Get (Abort_Event) then
          Installed_Abort_Handler.all;
       end if;
    end Block_Abort_Signal;
-
-   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
-   begin
-      Attr.Blocked := False;
-   end Unblock_Abort_Signal;
 
 end System.Native_Tasks;

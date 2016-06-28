@@ -363,6 +363,11 @@ package body System.Synchronous_Objects is
       end case;
    end Wait;
 
+   function Handle (Object : Event) return C.winnt.HANDLE is
+   begin
+      return Object.Handle;
+   end Handle;
+
    --  multi-read/exclusive-write lock for protected
 
    procedure Initialize (Object : in out RW_Lock) is
