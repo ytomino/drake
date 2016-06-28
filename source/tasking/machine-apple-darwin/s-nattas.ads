@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
+with System.Synchronous_Objects;
 with C.pthread;
 package System.Native_Tasks is
    pragma Preelaborate;
@@ -48,15 +49,15 @@ package System.Native_Tasks is
    procedure Install_Abort_Handler (Handler : Abort_Handler);
    procedure Uninstall_Abort_Handler;
 
-   type Task_Attribute_Of_Abort is null record;
-   pragma Suppress_Initialization (Task_Attribute_Of_Abort);
+   type Task_Attribute_Of_Abort is new Synchronous_Objects.Event;
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Abort) is null;
-   procedure Finalize (Attr : in out Task_Attribute_Of_Abort) is null;
+--  procedure Initialize (Attr : in out Task_Attribute_Of_Abort);
+--  procedure Finalize (Attr : in out Task_Attribute_Of_Abort);
+      --  procedures Initialize and Finalize are inherited
 
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Abort;
+      Attr : in out Task_Attribute_Of_Abort;
       Error : out Boolean);
 
    procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort);

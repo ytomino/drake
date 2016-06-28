@@ -51,6 +51,7 @@
 #include <sys/stat.h>
 #endif
 #include <sys/file.h>
+#include <poll.h>
 #if defined(__linux__)
 #define _SYS_SOCKET_H
 #include <bits/socket.h> /* before netinet/in.h */
@@ -203,6 +204,7 @@
 #pragma for Ada "dirent.h" include "sys/dirent.h"
 #pragma for Ada "errno.h" include "sys/errno.h"
 #pragma for Ada "fcntl.h" include "sys/fcntl.h"
+#pragma for Ada "poll.h" include "sys/poll.h"
 #pragma for Ada "pthread.h" include "signal.h" /* pthread_kill */
 #pragma for Ada "pthread.h" include "sys/types.h"
 #pragma for Ada "signal.h" include "sys/_structs.h" /* stack_t */
@@ -278,6 +280,8 @@
 #pragma for Ada "errno.h" include "bits/errno.h"
 #pragma for Ada "fcntl.h" include "bits/fcntl.h"
 #pragma for Ada "fcntl.h" include "bits/fcntl-linux.h"
+#pragma for Ada "poll.h" include "bits/poll.h"
+#pragma for Ada "poll.h" include "sys/poll.h"
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
 #pragma for Ada "pthread.h" include "bits/sigthread.h"
 #pragma for Ada "signal.h" include "bits/siginfo.h"

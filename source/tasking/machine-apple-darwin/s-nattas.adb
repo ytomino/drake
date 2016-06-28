@@ -120,11 +120,12 @@ package body System.Native_Tasks is
 
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Abort;
-      Error : out Boolean)
-   is
-      pragma Unreferenced (Attr);
+      Attr : in out Task_Attribute_Of_Abort;
+      Error : out Boolean) is
    begin
+      --  write to the pipe
+      Set (Attr);
+      --  send SIGTERM
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
          when 0 =>
             Yield;

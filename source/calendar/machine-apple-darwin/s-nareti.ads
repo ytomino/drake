@@ -3,6 +3,7 @@ pragma License (Unrestricted);
 with C.stdint;
 with C.mach.mach_time;
 package System.Native_Real_Time is
+   pragma Preelaborate;
 
    subtype Native_Time is C.stdint.uint64_t;
 

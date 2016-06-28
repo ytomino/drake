@@ -3,15 +3,6 @@ pragma License (Unrestricted);
 package System.Synchronous_Objects.Abortable is
    pragma Preelaborate;
 
-   --  condition variable
-
---  procedure Wait (
---    Object : in out Condition_Variable;
---    Mutex : in out Synchronous_Objects.Mutex;
---    Timeout : Duration;
---    Notified : out Boolean;
---    Aborted : out Boolean);
-
    --  queue
 
    procedure Take (

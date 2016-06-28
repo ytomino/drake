@@ -19,16 +19,10 @@ package System.Synchronous_Objects is
 
    procedure Initialize (Object : in out Condition_Variable);
    procedure Finalize (Object : in out Condition_Variable);
---  procedure Notify_One (Object : in out Condition_Variable);
    procedure Notify_All (Object : in out Condition_Variable);
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex);
---  procedure Wait (
---    Object : in out Condition_Variable;
---    Mutex : in out Synchronous_Objects.Mutex;
---    Timeout : Duration;
---    Notified : out Boolean);
 
    --  queue
 
