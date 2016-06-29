@@ -66,23 +66,26 @@ package body System.Synchronous_Objects.Abortable is
          declare
             Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
                (Object.Handle, Abort_Event.Handle);
+            R : C.windef.DWORD;
          begin
-            case C.winbase.WaitForMultipleObjects (
+            R := C.winbase.WaitForMultipleObjects (
                2,
                Handles (0)'Access,
                0,
-               C.winbase.INFINITE)
-            is
+               C.winbase.INFINITE);
+            case R is
                when C.winbase.WAIT_OBJECT_0 | C.winbase.WAIT_OBJECT_0 + 1 =>
                   null;
                when others =>
                   Raise_Exception (Tasking_Error'Identity);
             end case;
+            Aborted :=
+               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object);
+         Aborted := Tasks.Is_Aborted;
       end if;
-      Aborted := Tasks.Is_Aborted;
    end Wait;
 
    procedure Wait (
@@ -99,22 +102,23 @@ package body System.Synchronous_Objects.Abortable is
                (Object.Handle, Abort_Event.Handle);
             Milliseconds : constant C.windef.DWORD :=
                C.windef.DWORD (Timeout * 1_000);
+            R : C.windef.DWORD;
          begin
-            case C.winbase.WaitForMultipleObjects (
+            R := C.winbase.WaitForMultipleObjects (
                2,
                Handles (0)'Access,
                0,
-               Milliseconds)
-            is
+               Milliseconds);
+            case R is
                when C.winbase.WAIT_OBJECT_0 =>
                   Value := True;
-                  Aborted := Tasks.Is_Aborted;
                when C.winbase.WAIT_OBJECT_0 + 1 | C.winerror.WAIT_TIMEOUT =>
                   Value := Get (Object);
-                  Aborted := True;
                when others =>
                   Raise_Exception (Tasking_Error'Identity);
             end case;
+            Aborted :=
+               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object, Timeout, Value);
