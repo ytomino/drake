@@ -1,10 +1,9 @@
-with Ada.Exception_Identification.From_Here;
+with System.Debug;
 with System.Tasks;
 with C.winbase;
 with C.windef;
 with C.winerror;
 package body System.Synchronous_Objects.Abortable is
-   use Ada.Exception_Identification.From_Here;
    use type C.windef.DWORD;
 
    --  queue
@@ -73,12 +72,12 @@ package body System.Synchronous_Objects.Abortable is
                Handles (0)'Access,
                0,
                C.winbase.INFINITE);
-            case R is
-               when C.winbase.WAIT_OBJECT_0 | C.winbase.WAIT_OBJECT_0 + 1 =>
-                  null;
-               when others =>
-                  Raise_Exception (Tasking_Error'Identity);
-            end case;
+            pragma Check (Debug,
+               Check =>
+                  R = C.winbase.WAIT_OBJECT_0
+                  or else R = C.winbase.WAIT_OBJECT_0 + 1
+                  or else Debug.Runtime_Error (
+                     "WaitForMultipleObjects failed"));
             Aborted :=
                R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
@@ -109,14 +108,14 @@ package body System.Synchronous_Objects.Abortable is
                Handles (0)'Access,
                0,
                Milliseconds);
-            case R is
-               when C.winbase.WAIT_OBJECT_0 =>
-                  Value := True;
-               when C.winbase.WAIT_OBJECT_0 + 1 | C.winerror.WAIT_TIMEOUT =>
-                  Value := Get (Object);
-               when others =>
-                  Raise_Exception (Tasking_Error'Identity);
-            end case;
+            pragma Check (Debug,
+               Check =>
+                  R = C.winbase.WAIT_OBJECT_0
+                  or else R = C.winbase.WAIT_OBJECT_0 + 1
+                  or else R = C.winerror.WAIT_TIMEOUT
+                  or else Debug.Runtime_Error (
+                     "WaitForMultipleObjects failed"));
+            Value := R = C.winbase.WAIT_OBJECT_0 or else Get (Object);
             Aborted :=
                R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;

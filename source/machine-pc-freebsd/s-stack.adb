@@ -22,12 +22,12 @@ package body System.Stack is
                C_Addr'Access,
                C_Size'Access) = 0;
          declare
-            R : C.signed_int;
+            errno : C.signed_int;
          begin
-            R := C.pthread.pthread_attr_destroy (Attr'Access);
+            errno := C.pthread.pthread_attr_destroy (Attr'Access);
             pragma Check (Debug,
                Check =>
-                  R = 0
+                  errno = 0
                   or else Debug.Runtime_Error ("pthread_attr_destroy failed"));
          end;
       end if;

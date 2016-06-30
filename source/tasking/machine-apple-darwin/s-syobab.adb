@@ -113,7 +113,7 @@ package body System.Synchronous_Objects.Abortable is
                   end if;
                   pragma Check (Debug,
                      Check =>
-                        R >= 0
+                        not (R < 0)
                         or else C.errno.errno = C.errno.EINTR
                         or else Debug.Runtime_Error ("poll failed"));
                end;
@@ -178,7 +178,7 @@ package body System.Synchronous_Objects.Abortable is
                   end if;
                   pragma Check (Debug,
                      Check =>
-                        R >= 0
+                        not (R < 0)
                         or else C.errno.errno = C.errno.EINTR
                         or else Debug.Runtime_Error ("poll failed"));
                end;

@@ -27,14 +27,10 @@ package body System.Synchronous_Objects is
 
    procedure Set_Close_On_Exec (Handle : C.signed_int);
    procedure Set_Close_On_Exec (Handle : C.signed_int) is
-      R : C.signed_int;
    begin
-      R := C.fcntl.fcntl (
-         Handle,
-         C.fcntl.F_SETFD,
-         C.fcntl.FD_CLOEXEC);
-      pragma Check (Debug,
-         Check => R = 0 or else Debug.Runtime_Error ("fcntl failed"));
+      if C.fcntl.fcntl (Handle, C.fcntl.F_SETFD, C.fcntl.FD_CLOEXEC) < 0 then
+         Raise_Exception (Tasking_Error'Identity); -- Use_Error
+      end if;
    end Set_Close_On_Exec;
 
    --  mutex
@@ -45,14 +41,14 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Mutex) is
-      R : C.signed_int;
+      errno : C.signed_int;
    begin
-      R := C.pthread.pthread_mutex_destroy (Object.Handle'Access);
+      errno := C.pthread.pthread_mutex_destroy (Object.Handle'Access);
       pragma Check (Debug,
          Check =>
-            R = 0
+            errno = 0
             or else (
-               R = C.errno.EINVAL
+               errno = C.errno.EINVAL
                and then memcmp (
                   Object.Handle'Address,
                   C.pthread.PTHREAD_MUTEX_INITIALIZER'Address,
@@ -68,10 +64,13 @@ package body System.Synchronous_Objects is
    end Enter;
 
    procedure Leave (Object : in out Mutex) is
+      errno : C.signed_int;
    begin
-      if C.pthread.pthread_mutex_unlock (Object.Handle'Access) /= 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      errno := C.pthread.pthread_mutex_unlock (Object.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_mutex_unlock failed"));
    end Leave;
 
    --  condition variable
@@ -82,14 +81,14 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Condition_Variable) is
-      R : C.signed_int;
+      errno : C.signed_int;
    begin
-      R := C.pthread.pthread_cond_destroy (Object.Handle'Access);
+      errno := C.pthread.pthread_cond_destroy (Object.Handle'Access);
       pragma Check (Debug,
          Check =>
-            R = 0
+            errno = 0
             or else (
-               R = C.errno.EINVAL
+               errno = C.errno.EINVAL
                and then memcmp (
                   Object.Handle'Address,
                   C.pthread.PTHREAD_COND_INITIALIZER'Address,
@@ -98,22 +97,28 @@ package body System.Synchronous_Objects is
    end Finalize;
 
    procedure Notify_All (Object : in out Condition_Variable) is
+      errno : C.signed_int;
    begin
-      if C.pthread.pthread_cond_broadcast (Object.Handle'Access) /= 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      errno := C.pthread.pthread_cond_broadcast (Object.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_cond_broadcast failed"));
    end Notify_All;
 
    procedure Wait (
       Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex) is
+      Mutex : in out Synchronous_Objects.Mutex)
+   is
+      errno : C.signed_int;
    begin
-      if C.pthread.pthread_cond_wait (
+      errno := C.pthread.pthread_cond_wait (
          Object.Handle'Access,
-         Mutex.Handle'Access) /= 0
-      then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+         Mutex.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_cond_wait failed"));
    end Wait;
 
    --  queue
@@ -295,11 +300,10 @@ package body System.Synchronous_Objects is
 
    procedure Initialize (Object : in out Event) is
       Handles : aliased C.signed_int_array (0 .. 1);
-      R : C.signed_int;
    begin
-      R := C.unistd.pipe (Handles (0)'Access);
-      pragma Check (Debug,
-         Check => R = 0 or else Debug.Runtime_Error ("pipe failed"));
+      if C.unistd.pipe (Handles (0)'Access) < 0 then
+         Raise_Exception (Tasking_Error'Identity); -- Use_Error
+      end if;
       Set_Close_On_Exec (Handles (0));
       Set_Close_On_Exec (Handles (1));
       Object.Reading_Pipe := Handles (0);
@@ -315,7 +319,7 @@ package body System.Synchronous_Objects is
       Object.Writing_Pipe := 0;
       pragma Check (Debug,
          Check =>
-            (R1 = 0 and then R2 = 0)
+            (not (R1 < 0) and then not (R2 < 0))
             or else Debug.Runtime_Error ("close failed"));
    end Finalize;
 
@@ -346,7 +350,7 @@ package body System.Synchronous_Objects is
             end if;
             pragma Check (Debug,
                Check =>
-                  R >= 0
+                  not (R < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("poll failed"));
          end;
@@ -385,7 +389,7 @@ package body System.Synchronous_Objects is
             end if;
             pragma Check (Debug,
                Check =>
-                  R >= 0
+                  not (R < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("poll failed"));
          end;
@@ -416,7 +420,7 @@ package body System.Synchronous_Objects is
             end if;
             pragma Check (Debug,
                Check =>
-                  R >= 0
+                  not (R < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("poll failed"));
          end;
@@ -457,7 +461,7 @@ package body System.Synchronous_Objects is
             end if;
             pragma Check (Debug,
                Check =>
-                  R >= 0
+                  not (R < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("poll failed"));
          end;
@@ -482,7 +486,7 @@ package body System.Synchronous_Objects is
             exit when Read_Size > 0;
             pragma Check (Debug,
                Check =>
-                  Read_Size >= 0
+                  not (Read_Size < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("read failed"));
          end;
@@ -504,7 +508,7 @@ package body System.Synchronous_Objects is
             exit when Written_Size > 0;
             pragma Check (Debug,
                Check =>
-                  Written_Size >= 0
+                  not (Written_Size < 0)
                   or else C.errno.errno = C.errno.EINTR
                   or else Debug.Runtime_Error ("write failed"));
          end;
@@ -519,14 +523,14 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out RW_Lock) is
-      R : C.signed_int;
+      errno : C.signed_int;
    begin
-      R := C.pthread.pthread_rwlock_destroy (Object.Handle'Access);
+      errno := C.pthread.pthread_rwlock_destroy (Object.Handle'Access);
       pragma Check (Debug,
          Check =>
-            R = 0
+            errno = 0
             or else (
-               R = C.errno.EINVAL
+               errno = C.errno.EINVAL
                and then memcmp (
                   Object.Handle'Address,
                   C.pthread.PTHREAD_RWLOCK_INITIALIZER'Address,
@@ -556,10 +560,13 @@ package body System.Synchronous_Objects is
    end Enter_Writing;
 
    procedure Leave (Object : in out RW_Lock) is
+      errno : C.signed_int;
    begin
-      if C.pthread.pthread_rwlock_unlock (Object.Handle'Access) /= 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      errno := C.pthread.pthread_rwlock_unlock (Object.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_rwlock_unlock failed"));
    end Leave;
 
 end System.Synchronous_Objects;

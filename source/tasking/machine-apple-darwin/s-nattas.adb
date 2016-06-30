@@ -1,3 +1,4 @@
+with System.Debug;
 with System.Native_Tasks.Yield;
 with C.errno;
 with C.signal;
@@ -34,16 +35,16 @@ package body System.Native_Tasks is
    procedure Mask_SIGTERM (How : C.signed_int);
    procedure Mask_SIGTERM (How : C.signed_int) is
       Mask : aliased C.signal.sigset_t;
+      errno : C.signed_int;
+      Dummy_R : C.signed_int;
    begin
-      if C.signal.sigemptyset (Mask'Access) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.signal.sigaddset (Mask'Access, C.signal.SIGTERM) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.pthread.pthread_sigmask (How, Mask'Access, null) /= 0 then
-         raise Program_Error; -- ??
-      end if;
+      Dummy_R := C.signal.sigemptyset (Mask'Access);
+      Dummy_R := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
+      errno := C.pthread.pthread_sigmask (How, Mask'Access, null);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_sigmask failed"));
    end Mask_SIGTERM;
 
    --  implementation of thread
@@ -92,30 +93,33 @@ package body System.Native_Tasks is
       act : aliased C.signal.struct_sigaction := (
          (Unchecked_Tag => 1, sa_sigaction => SIGTERM_Handler'Access),
          others => <>); -- uninitialized
+      R : C.signed_int;
+      Dummy_R : C.signed_int;
    begin
       Installed_Abort_Handler := Handler;
       act.sa_flags := C.signal.SA_SIGINFO;
-      if C.signal.sigemptyset (act.sa_mask'Access) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.signal.sigaction (
+      Dummy_R := C.signal.sigemptyset (act.sa_mask'Access);
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          act'Access,
-         Old_SIGTERM_Action.Handle'Access) < 0
-      then
-         raise Program_Error; -- ??
-      end if;
+         Old_SIGTERM_Action.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sigaction failed"));
    end Install_Abort_Handler;
 
    procedure Uninstall_Abort_Handler is
+      R : C.signed_int;
    begin
-      if C.signal.sigaction (
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          Old_SIGTERM_Action.Handle'Access,
-         null) < 0
-      then
-         raise Program_Error; -- ??
-      end if;
+         null);
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sigaction failed"));
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (

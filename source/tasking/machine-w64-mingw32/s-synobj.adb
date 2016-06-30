@@ -53,14 +53,20 @@ package body System.Synchronous_Objects is
    procedure Initialize (Object : in out Mutex) is
    begin
       Object.Handle := C.winbase.CreateMutex (null, 0, null);
+      pragma Check (Debug,
+         Check =>
+            Address (Object.Handle) /= Null_Address
+            or else Debug.Runtime_Error ("CreateMutex failed"));
    end Initialize;
 
    procedure Finalize (Object : in out Mutex) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.CloseHandle (Object.Handle);
+      Success := C.winbase.CloseHandle (Object.Handle);
       pragma Check (Debug,
-         Check => R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("CloseHandle failed"));
    end Finalize;
 
    procedure Enter (Object : in out Mutex) is
@@ -73,10 +79,13 @@ package body System.Synchronous_Objects is
    end Enter;
 
    procedure Leave (Object : in out Mutex) is
+      Success : C.windef.WINBOOL;
    begin
-      if C.winbase.ReleaseMutex (Object.Handle) = 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      Success := C.winbase.ReleaseMutex (Object.Handle);
+      pragma Check (Debug,
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("ReleaseMutex failed"));
    end Leave;
 
    --  condition variable
@@ -102,20 +111,20 @@ package body System.Synchronous_Objects is
 
    procedure Wait (
       Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex) is
+      Mutex : in out Synchronous_Objects.Mutex)
+   is
+      R : C.windef.DWORD;
    begin
       atomic_add_fetch (Object.Waiters'Access, 1);
-      case C.winbase.SignalObjectAndWait (
+      R := C.winbase.SignalObjectAndWait (
          hObjectToSignal => Mutex.Handle,
          hObjectToWaitOn => Object.Event.Handle,
          dwMilliseconds => C.winbase.INFINITE,
-         bAlertable => 0)
-      is
-         when C.winbase.WAIT_OBJECT_0 =>
-            null;
-         when others =>
-            Raise_Exception (Tasking_Error'Identity);
-      end case;
+         bAlertable => 0);
+      pragma Check (Debug,
+         Check =>
+            R = C.winbase.WAIT_OBJECT_0
+            or else Debug.Runtime_Error ("SignalObjectAndWait failed"));
       if atomic_sub_fetch (Object.Waiters'Access, 1) = 0 then
          Reset (Object.Event);
          Set (Object.Reset_Barrier);
@@ -308,41 +317,57 @@ package body System.Synchronous_Objects is
    end Initialize;
 
    procedure Finalize (Object : in out Event) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.CloseHandle (Object.Handle);
+      Success := C.winbase.CloseHandle (Object.Handle);
       pragma Check (Debug,
-         Check => R /= 0 or else Debug.Runtime_Error ("CloseHandle failed"));
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("CloseHandle failed"));
    end Finalize;
 
    function Get (Object : Event) return Boolean is
+      R : C.windef.DWORD;
    begin
-      return C.winbase.WaitForSingleObject (Object.Handle, 0) =
-         C.winbase.WAIT_OBJECT_0;
+      R := C.winbase.WaitForSingleObject (Object.Handle, 0);
+      pragma Check (Debug,
+         Check =>
+            R = C.winbase.WAIT_OBJECT_0
+            or else R = C.winerror.WAIT_TIMEOUT
+            or else Debug.Runtime_Error ("WaitForSingleObject failed"));
+      return R = C.winbase.WAIT_OBJECT_0;
    end Get;
 
    procedure Set (Object : in out Event) is
+      Success : C.windef.WINBOOL;
    begin
-      if C.winbase.SetEvent (Object.Handle) = 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      Success := C.winbase.SetEvent (Object.Handle);
+      pragma Check (Debug,
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("SetEvent failed"));
    end Set;
 
    procedure Reset (Object : in out Event) is
+      Success : C.windef.WINBOOL;
    begin
-      if C.winbase.ResetEvent (Object.Handle) = 0 then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      Success := C.winbase.ResetEvent (Object.Handle);
+      pragma Check (Debug,
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("ResetEvent failed"));
    end Reset;
 
    procedure Wait (
-      Object : in out Event) is
+      Object : in out Event)
+   is
+      R : C.windef.DWORD;
    begin
-      if C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE) /=
-         C.winbase.WAIT_OBJECT_0
-      then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
+      R := C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE);
+      pragma Check (Debug,
+         Check =>
+            R = C.winbase.WAIT_OBJECT_0
+            or else Debug.Runtime_Error ("WaitForSingleObject failed"));
    end Wait;
 
    procedure Wait (
@@ -352,15 +377,15 @@ package body System.Synchronous_Objects is
    is
       Milliseconds : constant C.windef.DWORD :=
          C.windef.DWORD (Duration'Max (0.0, Timeout) * 1_000);
+      R : C.windef.DWORD;
    begin
-      case C.winbase.WaitForSingleObject (Object.Handle, Milliseconds) is
-         when C.winbase.WAIT_OBJECT_0 =>
-            Value := True;
-         when C.winerror.WAIT_TIMEOUT =>
-            Value := False;
-         when others =>
-            Raise_Exception (Tasking_Error'Identity);
-      end case;
+      R := C.winbase.WaitForSingleObject (Object.Handle, Milliseconds);
+      pragma Check (Debug,
+         Check =>
+            R = C.winbase.WAIT_OBJECT_0
+            or else R = C.winerror.WAIT_TIMEOUT
+            or else Debug.Runtime_Error ("WaitForSingleObject failed"));
+      Value := R = C.winbase.WAIT_OBJECT_0;
    end Wait;
 
    function Handle (Object : Event) return C.winnt.HANDLE is

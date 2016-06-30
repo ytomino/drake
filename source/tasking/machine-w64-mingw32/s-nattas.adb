@@ -82,13 +82,15 @@ package body System.Native_Tasks is
    <<Done>>
       case R is
          when C.winbase.WAIT_OBJECT_0 =>
-            if C.winbase.GetExitCodeThread (Handle, Result'Access) = 0 then
+            if C.winbase.GetExitCodeThread (Handle, Result'Access) =
+               C.windef.FALSE
+            then
                Error := True;
             end if;
          when others =>
             Error := True;
       end case;
-      if C.winbase.CloseHandle (Handle) = 0 then
+      if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
          Error := True;
       end if;
    end Join;
@@ -98,7 +100,7 @@ package body System.Native_Tasks is
       Error : out Boolean) is
    begin
       Error := False;
-      if C.winbase.CloseHandle (Handle) /= 0 then
+      if C.winbase.CloseHandle (Handle) /= C.windef.FALSE then
          Handle := C.winbase.GetCurrentThread;
          --  magic value meaning current thread
          pragma Assert (
