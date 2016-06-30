@@ -38,14 +38,16 @@ package body System.System_Allocators is
    end Allocate;
 
    procedure Free (Storage_Address : Address) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.HeapFree (
+      Success := C.winbase.HeapFree (
          C.winbase.GetProcessHeap,
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,
-         Check => R /= 0 or else Debug.Runtime_Error ("HeapFree failed"));
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("HeapFree failed"));
    end Free;
 
    function Reallocate (
@@ -105,28 +107,28 @@ package body System.System_Allocators is
       Size : Storage_Elements.Storage_Count) is
    begin
       declare
-         R : C.windef.WINBOOL;
+         Success : C.windef.WINBOOL;
       begin
-         R := C.winbase.VirtualFree (
+         Success := C.winbase.VirtualFree (
             C.windef.LPVOID (Storage_Address),
             C.basetsd.SIZE_T (Size),
             C.winnt.MEM_DECOMMIT);
          pragma Check (Debug,
             Check =>
-               R /= 0
+               Success /= C.windef.FALSE
                or else Debug.Runtime_Error (
                   "VirtualFree (..., MEM_DECOMMIT) failed"));
       end;
       declare
-         R : C.windef.WINBOOL;
+         Success : C.windef.WINBOOL;
       begin
-         R := C.winbase.VirtualFree (
+         Success := C.winbase.VirtualFree (
             C.windef.LPVOID (Storage_Address),
             0,
             C.winnt.MEM_RELEASE);
          pragma Check (Debug,
             Check =>
-               R /= 0
+               Success /= C.windef.FALSE
                or else Debug.Runtime_Error (
                   "VirtualFree (..., MEM_RELEASE) failed"));
       end;

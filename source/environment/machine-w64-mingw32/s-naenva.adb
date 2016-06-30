@@ -149,8 +149,9 @@ package body System.Native_Environment_Variables is
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       Zero_Terminated_WStrings.To_C (Value, W_Value (0)'Access);
       if C.winbase.SetEnvironmentVariable (
-         W_Name (0)'Access,
-         W_Value (0)'Access) = 0
+            W_Name (0)'Access,
+            W_Value (0)'Access) =
+         C.windef.FALSE
       then
          raise Constraint_Error;
       end if;
@@ -162,9 +163,8 @@ package body System.Native_Environment_Variables is
          Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      if C.winbase.SetEnvironmentVariable (
-         W_Name (0)'Access,
-         null) = 0
+      if C.winbase.SetEnvironmentVariable (W_Name (0)'Access, null) =
+         C.windef.FALSE
       then
          raise Constraint_Error;
       end if;
@@ -196,8 +196,9 @@ package body System.Native_Environment_Variables is
                         Item_A (0 .. Name_Length - 1);
                      Name (Name_Length) := C.winnt.WCHAR'Val (0);
                      if C.winbase.SetEnvironmentVariable (
-                        Name (0)'Access,
-                        null) = 0
+                           Name (0)'Access,
+                           null) =
+                        C.windef.FALSE
                      then
                         Error := True;
                         exit;
@@ -258,12 +259,13 @@ package body System.Native_Environment_Variables is
          new Address_To_Named_Access_Conversions (
             C.winnt.WCHAR,
             C.winnt.LPWCH);
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.FreeEnvironmentStrings (LPWCH_Conv.To_Pointer (Block));
+      Success :=
+         C.winbase.FreeEnvironmentStrings (LPWCH_Conv.To_Pointer (Block));
       pragma Check (Debug,
          Check =>
-            R /= 0
+            Success /= C.windef.FALSE
             or else Debug.Runtime_Error ("FreeEnvironmentStrings failed"));
    end Release_Block;
 

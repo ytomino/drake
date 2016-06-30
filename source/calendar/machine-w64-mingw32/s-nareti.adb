@@ -30,7 +30,9 @@ package body System.Native_Real_Time is
          declare
             Count : aliased C.winnt.LARGE_INTEGER;
          begin
-            if C.winbase.QueryPerformanceCounter (Count'Access) = 0 then
+            if C.winbase.QueryPerformanceCounter (Count'Access) =
+               C.windef.FALSE
+            then
                raise Program_Error; -- ???
             else
                return (
@@ -59,5 +61,5 @@ package body System.Native_Real_Time is
 
 begin
    Performance_Counter_Enabled :=
-      C.winbase.QueryPerformanceFrequency (Frequency'Access) /= 0;
+      C.winbase.QueryPerformanceFrequency (Frequency'Access) /= C.windef.FALSE;
 end System.Native_Real_Time;

@@ -250,12 +250,12 @@ package body System.Native_Processes is
       begin
          if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
             declare
-               R : C.windef.WINBOOL;
+               Success : C.windef.WINBOOL;
             begin
-               R := C.winbase.CloseHandle (Object.Handle);
+               Success := C.winbase.CloseHandle (Object.Handle);
                pragma Check (Debug,
                   Check =>
-                     R /= 0
+                     Success /= C.windef.FALSE
                      or else Debug.Runtime_Error ("CloseHandle failed"));
             end;
          end if;
@@ -284,10 +284,13 @@ package body System.Native_Processes is
             declare
                Max : constant := C.windef.DWORD'Modulus / 2; -- 2 ** 31
                Exit_Code : aliased C.windef.DWORD;
-               R : C.windef.WINBOOL;
+               Success : C.windef.WINBOOL;
             begin
-               R := C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access);
-               if C.winbase.CloseHandle (Handle) = 0 or else R = 0 then
+               Success :=
+                  C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access);
+               if C.winbase.CloseHandle (Handle) = C.windef.FALSE
+                  or else Success = C.windef.FALSE
+               then
                   Raise_Exception (Use_Error'Identity);
                end if;
                Handle := C.winbase.INVALID_HANDLE_VALUE;
@@ -336,7 +339,7 @@ package body System.Native_Processes is
          Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Target_Handles : array (Handle_Index) of C.winnt.HANDLE;
       Duplicated_Handles : array (Handle_Index) of aliased C.winnt.HANDLE;
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
       C.winbase.GetStartupInfo (Startup_Info'Access);
       Startup_Info.dwFlags := C.winbase.STARTF_USESTDHANDLES
@@ -354,13 +357,14 @@ package body System.Native_Processes is
                Target_Handles (I) := Source_Handle;
             else
                if C.winbase.DuplicateHandle (
-                  hSourceProcessHandle => Current_Process,
-                  hSourceHandle => Source_Handle,
-                  hTargetProcessHandle => Current_Process,
-                  lpTargetHandle => Duplicated_Handles (I)'Access,
-                  dwDesiredAccess => 0,
-                  bInheritHandle => 1,
-                  dwOptions => C.winnt.DUPLICATE_SAME_ACCESS) = 0
+                     hSourceProcessHandle => Current_Process,
+                     hSourceHandle => Source_Handle,
+                     hTargetProcessHandle => Current_Process,
+                     lpTargetHandle => Duplicated_Handles (I)'Access,
+                     dwDesiredAccess => 0,
+                     bInheritHandle => 1,
+                     dwOptions => C.winnt.DUPLICATE_SAME_ACCESS) =
+                  C.windef.FALSE
                then
                   Raise_Exception (Use_Error'Identity);
                end if;
@@ -377,7 +381,7 @@ package body System.Native_Processes is
       else
          Directory_Ref := null;
       end if;
-      R := C.winbase.CreateProcess (
+      Success := C.winbase.CreateProcess (
          lpApplicationName => null,
          lpCommandLine => Command,
          lpProcessAttributes => null,
@@ -390,12 +394,14 @@ package body System.Native_Processes is
          lpProcessInformation => Process_Info'Access);
       for I in Handle_Index loop
          if Duplicated_Handles (I) /= C.winbase.INVALID_HANDLE_VALUE then
-            if C.winbase.CloseHandle (Duplicated_Handles (I)) = 0 then
+            if C.winbase.CloseHandle (Duplicated_Handles (I)) =
+               C.windef.FALSE
+            then
                Raise_Exception (Use_Error'Identity);
             end if;
          end if;
       end loop;
-      if R = 0 then
+      if Success = C.windef.FALSE then
          declare
             Error : constant C.windef.DWORD := C.winbase.GetLastError;
          begin
@@ -409,7 +415,7 @@ package body System.Native_Processes is
             end case;
          end;
       else
-         if C.winbase.CloseHandle (Process_Info.hThread) = 0 then
+         if C.winbase.CloseHandle (Process_Info.hThread) = C.windef.FALSE then
             Raise_Exception (Use_Error'Identity);
          end if;
          declare
@@ -473,7 +479,7 @@ package body System.Native_Processes is
       Handle : C.winnt.HANDLE
          renames Controlled.Reference (Child).all;
    begin
-      if C.winbase.TerminateProcess (Handle, Code) = 0 then
+      if C.winbase.TerminateProcess (Handle, Code) = C.windef.FALSE then
          declare
             Exit_Code : aliased C.windef.DWORD;
          begin
@@ -481,8 +487,9 @@ package body System.Native_Processes is
             if not (
                C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
                and then C.winbase.GetExitCodeProcess (
-                  Handle,
-                  Exit_Code'Access) /= 0
+                     Handle,
+                     Exit_Code'Access) /=
+                  C.windef.FALSE
                and then Exit_Code /= C.winbase.STILL_ACTIVE)
             then
                Raise_Exception (Use_Error'Identity);

@@ -11,7 +11,7 @@ package body System.Native_Environment_Encoding is
    use Ada.Exception_Identification.From_Here;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
-   use type C.windef.WINBOOL;
+   use type C.signed_int; -- C.windef.WINBOOL
 
    package char_Conv is
       new Address_To_Constant_Access_Conversions (
@@ -90,10 +90,8 @@ package body System.Native_Environment_Encoding is
    function Get_Image (Encoding : Encoding_Id) return String is
       Info : aliased C.winnls.CPINFOEX;
    begin
-      if C.winnls.GetCPInfoEx (
-         C.windef.UINT (Encoding),
-         0,
-         Info'Access) = 0
+      if C.winnls.GetCPInfoEx (C.windef.UINT (Encoding), 0, Info'Access) =
+         C.windef.FALSE
       then
          Raise_Exception (Use_Error'Identity); -- ?
       end if;
@@ -329,8 +327,9 @@ package body System.Native_Environment_Encoding is
                   Length : C.signed_int;
                begin
                   if C.winnls.IsDBCSLeadByteEx (
-                     C.windef.UINT (Object.From),
-                     C.char'Pos (Item_As_C (0))) /= 0
+                        C.windef.UINT (Object.From),
+                        C.char'Pos (Item_As_C (0))) /=
+                     C.windef.FALSE
                   then
                      if Item'First + 1 > Item'Last then
                         Last := Item'First - 1;

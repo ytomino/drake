@@ -18,30 +18,31 @@ package body System.Random_Initiators is
             C.windef.BYTE,
             C.windef.BYTE_ptr);
       Context : aliased C.wincrypt.HCRYPTPROV;
-      Error : Boolean;
+      Success : C.windef.WINBOOL;
    begin
       if C.wincrypt.CryptAcquireContext (
-         Context'Access,
-         null,
-         null,
-         C.wincrypt.PROV_RSA_FULL,
-         C.wincrypt.CRYPT_VERIFYCONTEXT) = 0
+            Context'Access,
+            null,
+            null,
+            C.wincrypt.PROV_RSA_FULL,
+            C.wincrypt.CRYPT_VERIFYCONTEXT) =
+         C.windef.FALSE
       then
          Raise_Exception (Use_Error'Identity);
       end if;
       for I in 1 .. 5 loop
-         Error := C.wincrypt.CryptGenRandom (
+         Success := C.wincrypt.CryptGenRandom (
             Context,
             C.windef.DWORD (Size),
-            BYTE_ptr_Conv.To_Pointer (Item)) = 0;
-         exit when not Error
+            BYTE_ptr_Conv.To_Pointer (Item));
+         exit when Success /= C.windef.FALSE
             or else C.winbase.GetLastError /= C.winerror.ERROR_BUSY;
          C.winbase.Sleep (10); -- ???
       end loop;
-      if C.wincrypt.CryptReleaseContext (Context, 0) = 0 then
-         Error := True;
+      if C.wincrypt.CryptReleaseContext (Context, 0) = C.windef.FALSE then
+         Success := C.windef.FALSE;
       end if;
-      if Error then
+      if Success = C.windef.FALSE then
          Raise_Exception (Use_Error'Identity);
       end if;
    end Get;

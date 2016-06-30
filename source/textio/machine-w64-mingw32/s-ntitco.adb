@@ -1,7 +1,6 @@
 with C.wincon;
 with C.windef;
 package body System.Native_Text_IO.Terminal_Colors is
-   use type C.windef.WINBOOL;
    use type C.windef.WORD;
 
    Initial_Attributes_Assigned : Boolean := False;

@@ -65,8 +65,9 @@ package body System.Native_Calendar is
       Local_Date := Local_Date - Sub_Second;
       FileTime := To_Native_Time (Local_Date);
       Error := C.winbase.FileTimeToSystemTime (
-         FileTime'Access,
-         SystemTime'Access) = 0;
+            FileTime'Access,
+            SystemTime'Access) =
+         C.windef.FALSE;
       if not Error then
          Year := Year_Number (SystemTime.wYear);
          Month := Month_Number (SystemTime.wMonth);
@@ -103,8 +104,9 @@ package body System.Native_Calendar is
       FileTime : aliased C.windef.FILETIME;
    begin
       Error := C.winbase.SystemTimeToFileTime (
-         SystemTime'Access,
-         FileTime'Access) = 0;
+            SystemTime'Access,
+            FileTime'Access) =
+         C.windef.FALSE;
       if not Error then
          Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Seconds;
       end if;

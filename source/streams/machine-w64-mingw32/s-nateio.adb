@@ -7,8 +7,8 @@ with C.winnt;
 package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
+   use type C.signed_int; -- C.windef.WINBOOL
    use type C.windef.DWORD;
-   use type C.windef.WINBOOL;
    use type C.windef.WORD;
    use type C.winnt.SHORT;
    use type C.winnt.WCHAR;
@@ -20,7 +20,7 @@ package body System.Native_Text_IO is
    function Processed_Input_Is_Enabled (Handle : Handle_Type) return Boolean is
       Mode : aliased C.windef.DWORD;
    begin
-      return C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0
+      return C.wincon.GetConsoleMode (Handle, Mode'Access) /= C.windef.FALSE
          and then (Mode and C.wincon.ENABLE_PROCESSED_INPUT) /= 0;
    end Processed_Input_Is_Enabled;
 
@@ -54,11 +54,12 @@ package body System.Native_Text_IO is
             Sequence_Status);
          if UTF_16_Seq = 2
             and then C.wincon.ReadConsoleW (
-               hConsoleInput => Handle,
-               lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
-               nNumberOfCharsToRead => 1,
-               lpNumberOfCharsRead => Read_Size'Access,
-               lpReserved => C.windef.LPVOID (Null_Address)) /= 0
+                  hConsoleInput => Handle,
+                  lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
+                  nNumberOfCharsToRead => 1,
+                  lpNumberOfCharsRead => Read_Size'Access,
+                  lpReserved => C.windef.LPVOID (Null_Address)) /=
+               C.windef.FALSE
             and then Read_Size > 0
          then
             W_Buffer_Length := W_Buffer_Length + Natural (Read_Size);
@@ -78,8 +79,9 @@ package body System.Native_Text_IO is
       ConsoleScreenBufferInfo : access C.wincon.CONSOLE_SCREEN_BUFFER_INFO) is
    begin
       if C.wincon.GetConsoleScreenBufferInfo (
-         ConsoleOutput,
-         ConsoleScreenBufferInfo) = 0
+            ConsoleOutput,
+            ConsoleScreenBufferInfo) =
+         C.windef.FALSE
       then
          Raise_Exception (Device_Error'Identity);
       end if;
@@ -107,16 +109,16 @@ package body System.Native_Text_IO is
          Rect.Top := 0;
          Rect.Right := C.winnt.SHORT'Min (Size.X, Old_Size.X) - 1;
          Rect.Bottom := C.winnt.SHORT'Min (Size.Y, Old_Size.Y) - 1;
-         if C.wincon.SetConsoleWindowInfo (
-            ConsoleOutput,
-            1,
-            Rect'Access) = 0
+         if C.wincon.SetConsoleWindowInfo (ConsoleOutput, 1, Rect'Access) =
+            C.windef.FALSE
          then
             Raise_Exception (Layout_Error'Identity);
          end if;
       end if;
       --  resize screen buffer
-      if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) = 0 then
+      if C.wincon.SetConsoleScreenBufferSize (ConsoleOutput, Size) =
+         C.windef.FALSE
+      then
          Raise_Exception (Layout_Error'Identity); -- Size is too large
       end if;
       --  maximize viewport
@@ -125,7 +127,9 @@ package body System.Native_Text_IO is
       Rect.Top := 0;
       Rect.Right := Info.dwMaximumWindowSize.X - 1;
       Rect.Bottom := Info.dwMaximumWindowSize.Y - 1;
-      if C.wincon.SetConsoleWindowInfo (ConsoleOutput, 1, Rect'Access) = 0 then
+      if C.wincon.SetConsoleWindowInfo (ConsoleOutput, 1, Rect'Access) =
+         C.windef.FALSE
+      then
          Raise_Exception (Device_Error'Identity);
       end if;
    end SetConsoleScreenBufferSize_With_Adjusting;
@@ -147,7 +151,8 @@ package body System.Native_Text_IO is
       DBCS_Seq := 1
          + Boolean'Pos (
             C.winnls.IsDBCSLeadByte (
-               C.windef.BYTE'(Character'Pos (Buffer (1)))) /= 0);
+               C.windef.BYTE'(Character'Pos (Buffer (1)))) /=
+            C.windef.FALSE);
       if Last = DBCS_Seq then
          W_Buffer_Length := C.winnls.MultiByteToWideChar (
             C.winnls.CP_ACP,
@@ -211,11 +216,12 @@ package body System.Native_Text_IO is
       Read_Size : aliased C.windef.DWORD;
    begin
       if C.wincon.ReadConsole (
-         hConsoleInput => Handle,
-         lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
-         nNumberOfCharsToRead => 1,
-         lpNumberOfCharsRead => Read_Size'Access,
-         lpReserved => C.windef.LPVOID (Null_Address)) = 0
+            hConsoleInput => Handle,
+            lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
+            nNumberOfCharsToRead => 1,
+            lpNumberOfCharsRead => Read_Size'Access,
+            lpReserved => C.windef.LPVOID (Null_Address)) =
+         C.windef.FALSE
       then
          Out_Length := -1; -- error
       elsif Read_Size = 0
@@ -246,24 +252,24 @@ package body System.Native_Text_IO is
       Read_Size : aliased C.windef.DWORD;
       Event : aliased C.wincon.INPUT_RECORD;
    begin
-      if C.wincon.GetNumberOfConsoleInputEvents (
-         Handle,
-         Event_Count'Access) = 0
+      if C.wincon.GetNumberOfConsoleInputEvents (Handle, Event_Count'Access) =
+         C.windef.FALSE
       then
          Out_Length := -1; -- error
       elsif Event_Count = 0 then
          Out_Length := 0; -- no data
       elsif C.wincon.ReadConsoleInput (
-         hConsoleInput => Handle,
-         lpBuffer => Event'Access,
-         nLength => 1,
-         lpNumberOfEventsRead => Read_Size'Access) = 0
+            hConsoleInput => Handle,
+            lpBuffer => Event'Access,
+            nLength => 1,
+            lpNumberOfEventsRead => Read_Size'Access) =
+         C.windef.FALSE
       then
          Out_Length := -1; -- error
       elsif not (
          Read_Size > 0
          and then Event.EventType = C.wincon.KEY_EVENT
-         and then Event.Event.KeyEvent.bKeyDown /= 0)
+         and then Event.Event.KeyEvent.bKeyDown /= C.windef.FALSE)
       then
          Out_Length := 0; -- no data
       else
@@ -292,11 +298,12 @@ package body System.Native_Text_IO is
          Ada_Buffer,
          Ada_Buffer_Last);
       if C.wincon.WriteConsoleW (
-         hConsoleOutput => Handle,
-         lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
-         nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
-         lpNumberOfCharsWritten => Written'Access,
-         lpReserved => C.windef.LPVOID (Null_Address)) = 0
+            hConsoleOutput => Handle,
+            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
+            nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
+            lpNumberOfCharsWritten => Written'Access,
+            lpReserved => C.windef.LPVOID (Null_Address)) =
+         C.windef.FALSE
       then
          Out_Length := -1; -- error
       else
@@ -363,10 +370,11 @@ package body System.Native_Text_IO is
       Col, Line : Positive) is
    begin
       if C.wincon.SetConsoleCursorPosition (
-         Handle,
-         C.wincon.COORD'(
-            X => C.winnt.SHORT (Col) - 1,
-            Y => C.winnt.SHORT (Line) - 1)) = 0
+            Handle,
+            C.wincon.COORD'(
+               X => C.winnt.SHORT (Col) - 1,
+               Y => C.winnt.SHORT (Line) - 1)) =
+         C.windef.FALSE
       then
          Raise_Exception (Layout_Error'Identity);
       end if;
@@ -407,16 +415,19 @@ package body System.Native_Text_IO is
          Region.Right := Info.dwSize.X - 1;
          Region.Bottom := Info.dwSize.Y - 1;
          if C.wincon.WriteConsoleOutputW (
-            hConsoleOutput => Handle,
-            lpBuffer => Buffer (0, 0)'Access,
-            dwBufferSize => Info.dwSize,
-            dwBufferCoord => (X => 0, Y => 0),
-            lpWriteRegion => Region'Access) = 0
+               hConsoleOutput => Handle,
+               lpBuffer => Buffer (0, 0)'Access,
+               dwBufferSize => Info.dwSize,
+               dwBufferCoord => (X => 0, Y => 0),
+               lpWriteRegion => Region'Access) =
+            C.windef.FALSE
          then
             Raise_Exception (Device_Error'Identity);
          end if;
       end;
-      if C.wincon.SetConsoleCursorPosition (Handle, (X => 0, Y => 0)) = 0 then
+      if C.wincon.SetConsoleCursorPosition (Handle, (X => 0, Y => 0)) =
+         C.windef.FALSE
+      then
          Raise_Exception (Device_Error'Identity);
       end if;
    end Terminal_Clear;
@@ -429,13 +440,15 @@ package body System.Native_Text_IO is
       pragma Unreferenced (Wait);
    begin
       --  get and unset line-input mode
-      if C.wincon.GetConsoleMode (Handle, Saved_Settings'Access) = 0
+      if C.wincon.GetConsoleMode (Handle, Saved_Settings'Access) =
+            C.windef.FALSE
          or else C.wincon.SetConsoleMode (
-            Handle,
-            Saved_Settings
-               and not (
-                  C.wincon.ENABLE_ECHO_INPUT
-                  or C.wincon.ENABLE_LINE_INPUT)) = 0
+               Handle,
+               Saved_Settings
+                  and not (
+                     C.wincon.ENABLE_ECHO_INPUT
+                     or C.wincon.ENABLE_LINE_INPUT)) =
+            C.windef.FALSE
       then
          Raise_Exception (Device_Error'Identity);
       end if;
@@ -445,7 +458,7 @@ package body System.Native_Text_IO is
       Handle : Handle_Type;
       Settings : aliased Setting) is
    begin
-      if C.wincon.SetConsoleMode (Handle, Settings) = 0 then
+      if C.wincon.SetConsoleMode (Handle, Settings) = C.windef.FALSE then
          Raise_Exception (Device_Error'Identity);
       end if;
    end Restore;
@@ -454,7 +467,9 @@ package body System.Native_Text_IO is
       Handle : Handle_Type;
       Attributes : C.windef.WORD) is
    begin
-      if C.wincon.SetConsoleTextAttribute (Handle, Attributes) = 0 then
+      if C.wincon.SetConsoleTextAttribute (Handle, Attributes) =
+         C.windef.FALSE
+      then
          Raise_Exception (Device_Error'Identity);
       end if;
    end Set_Terminal_Attributes;
@@ -462,7 +477,9 @@ package body System.Native_Text_IO is
    procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
       Info : aliased C.wincon.CONSOLE_SCREEN_BUFFER_INFO;
    begin
-      if C.wincon.GetConsoleScreenBufferInfo (Handle, Info'Access) = 0 then
+      if C.wincon.GetConsoleScreenBufferInfo (Handle, Info'Access) =
+         C.windef.FALSE
+      then
          Raise_Exception (Device_Error'Identity);
       end if;
       To_State.Position := Info.dwCursorPosition;

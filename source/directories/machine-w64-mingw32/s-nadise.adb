@@ -7,9 +7,9 @@ with C.winerror;
 package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Elements.Storage_Offset;
-   use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
+   use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
@@ -121,7 +121,9 @@ package body System.Native_Directories.Searching is
                Has_Next_Entry := True;
                exit; -- found
             end if;
-            if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
+            if C.winbase.FindNextFile (Search.Handle, Directory_Entry) =
+               C.windef.FALSE
+            then
                declare
                   Error : constant C.windef.DWORD := C.winbase.GetLastError;
                begin
@@ -147,7 +149,7 @@ package body System.Native_Directories.Searching is
    begin
       Search.Handle := Handle_Type (Null_Address);
       if Handle /= C.winbase.INVALID_HANDLE_VALUE then
-         if C.winbase.FindClose (Handle) = 0 then
+         if C.winbase.FindClose (Handle) = C.windef.FALSE then
             if Raise_On_Error then
                Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
             end if;
@@ -164,7 +166,9 @@ package body System.Native_Directories.Searching is
    begin
       Directory_Entry := Search.Directory_Entry'Unchecked_Access;
       loop
-         if C.winbase.FindNextFile (Search.Handle, Directory_Entry) = 0 then
+         if C.winbase.FindNextFile (Search.Handle, Directory_Entry) =
+            C.windef.FALSE
+         then
             declare
                Error : constant C.windef.DWORD := C.winbase.GetLastError;
             begin

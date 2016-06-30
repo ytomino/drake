@@ -22,7 +22,7 @@ package body System.Native_IO.Sockets is
 
    procedure Finalize;
    procedure Finalize is
-      R : C.windef.WINBOOL;
+      R : C.signed_int;
    begin
       R := C.winsock2.WSACleanup;
       pragma Check (Debug,

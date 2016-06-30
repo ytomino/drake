@@ -37,9 +37,8 @@ package body System.Native_Directories.Temporary is
          Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      if C.winbase.SetEnvironmentVariable (
-         TMP (0)'Access,
-         W_Name (0)'Access) = 0
+      if C.winbase.SetEnvironmentVariable (TMP (0)'Access, W_Name (0)'Access) =
+         C.windef.FALSE
       then
          Raise_Exception (Use_Error'Identity);
       end if;
@@ -70,10 +69,12 @@ package body System.Native_Directories.Temporary is
          Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      if C.winbase.DeleteFile (W_Name (0)'Access) = 0 then
+      if C.winbase.DeleteFile (W_Name (0)'Access) = C.windef.FALSE then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
-      if C.winbase.CreateDirectory (W_Name (0)'Access, null) = 0 then
+      if C.winbase.CreateDirectory (W_Name (0)'Access, null) =
+         C.windef.FALSE
+      then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return Name;

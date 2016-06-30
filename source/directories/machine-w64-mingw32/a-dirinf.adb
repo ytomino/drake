@@ -383,10 +383,12 @@ package body Ada.Directories.Information is
       if Handle = C.winbase.INVALID_HANDLE_VALUE then
          Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
       else
-         if C.winbase.GetFileInformationByHandle (Handle, Info'Access) = 0 then
+         if C.winbase.GetFileInformationByHandle (Handle, Info'Access) =
+            C.windef.FALSE
+         then
             Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
          end if;
-         if C.winbase.CloseHandle (Handle) = 0 then
+         if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
             if Exception_Id = Exception_Identification.Null_Id then
                Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
             end if;

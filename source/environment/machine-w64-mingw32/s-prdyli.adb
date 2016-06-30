@@ -25,10 +25,10 @@ package body System.Program.Dynamic_Linking is
 
    procedure Close (Handle : C.windef.HMODULE; Raise_On_Error : Boolean);
    procedure Close (Handle : C.windef.HMODULE; Raise_On_Error : Boolean) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.FreeLibrary (Handle);
-      if R = 0 and then Raise_On_Error then
+      Success := C.winbase.FreeLibrary (Handle);
+      if Success = C.windef.FALSE and then Raise_On_Error then
          Raise_Exception (Use_Error'Identity);
       end if;
    end Close;
