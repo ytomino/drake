@@ -477,6 +477,7 @@ package body System.Tasks is
       Local.Secondary_Stack := Null_Address;
       Local.Overlaid_Allocation := Null_Address;
       Local.Machine_Occurrence := null;
+      Local.Triggered_By_Abort := False;
       TLS_Data := Local'Unchecked_Access;
       --  setup signal stack
       Unwind.Mapping.Install_Task_Exception_Handler (
@@ -858,6 +859,14 @@ package body System.Tasks is
 
    --  implementation
 
+   procedure Raise_Abort_Signal is
+      TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
+         Get_TLS; -- Runtime_Context.Get_Task_Local_Storage
+   begin
+      TLS.Triggered_By_Abort := True;
+      raise Standard'Abort_Signal;
+   end Raise_Abort_Signal;
+
    procedure When_Abort_Signal is
    begin
       if not ZCX_By_Default then
@@ -1120,7 +1129,7 @@ package body System.Tasks is
             Name (Current_Task_Id).all & " aborts " & Name (T).all));
       if T = Current_Task_Id then
          Set_Abort_Recursively (T);
-         raise Standard'Abort_Signal;
+         Raise_Abort_Signal;
       elsif T.Activation_State = AS_Suspended then
          T.Aborted := True;
       else
@@ -1138,7 +1147,7 @@ package body System.Tasks is
                exit when P = null;
                if P = T then
                   pragma Assert (Current_Task_Id.Aborted);
-                  raise Standard'Abort_Signal;
+                  Raise_Abort_Signal;
                end if;
             end loop;
          end;
@@ -1179,7 +1188,7 @@ package body System.Tasks is
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
          if T.Aborted and then T.Abort_Locking = 1 then
-            raise Standard'Abort_Signal;
+            Raise_Abort_Signal;
          end if;
       end if;
    end Disable_Abort;

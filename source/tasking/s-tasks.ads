@@ -23,6 +23,9 @@ package System.Tasks is
    for Activation_Chain_Access'Storage_Size use 0;
    pragma No_Strict_Aliasing (Activation_Chain_Access);
 
+   procedure Raise_Abort_Signal;
+   pragma No_Return (Raise_Abort_Signal);
+
    --  this shold be called when Standard'Abort_Signal
    procedure When_Abort_Signal;
 

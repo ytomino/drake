@@ -91,7 +91,7 @@ package body System.Tasking.Stages is
    begin
       Tasks.Accept_Activation (Aborted);
       if Aborted then
-         raise Standard'Abort_Signal;
+         Tasks.Raise_Abort_Signal;
       end if;
    end Complete_Activation;
 

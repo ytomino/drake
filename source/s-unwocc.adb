@@ -244,25 +244,13 @@ package body System.Unwind.Occurrences is
    function Triggered_By_Abort return Boolean is
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
-      Machine_Occurrence : constant
-         Representation.Machine_Occurrence_Access :=
-         TLS.Machine_Occurrence;
-      Result : Boolean;
    begin
-      Result := Machine_Occurrence /= null
-         and then Machine_Occurrence.Header.exception_class =
-            Representation.GNAT_Exception_Class;
-      if Result then
-         declare
-            subtype Fixed_String is String (Positive);
-            Full_Name : Fixed_String;
-            for Full_Name'Address use
-               Machine_Occurrence.Occurrence.Id.Full_Name;
-         begin
-            Result := Full_Name (1) = '_'; -- Standard'Abort_Signal
-         end;
-      end if;
-      return Result;
+      --  Strictly speaking, this conditional expression suppresses to call
+      --    __gnat_rcheck_PE_Finalize_Raised_Exception from nested blocks
+      --    excessively.
+      --  However, TLS.Machine_Occurrence = null because Triggered_By_Abort is
+      --    called from finalizers, without Begin_Handler/End_Handler.
+      return TLS.Triggered_By_Abort;
    end Triggered_By_Abort;
 
    procedure Unhandled_Except_Handler (
