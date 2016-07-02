@@ -23,7 +23,7 @@ begin
 	exception
 		when X : Tasking_Error =>
 			Ada.Debug.Put (Ada.Exceptions.Exception_Information (X));
-			pragma Assert (Ada.Exceptions.Exception_Message (X) = "exception6.adb:18: explicit raise");
+			pragma Assert (Ada.Exceptions.Exception_Message (X) = "exception_save.adb:18 explicit raise");
 			null;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));

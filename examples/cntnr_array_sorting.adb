@@ -85,7 +85,7 @@ begin
 	-- rotate an empty data
 	declare
 		Source : constant String := "";
-		Middle : constant Integer := 1;
+		Middle : constant Integer := 0;
 	begin
 		Setup (Source);
 		SA_Reversing.Reverse_Rotate_Elements (Data, Before => Middle + 1);
