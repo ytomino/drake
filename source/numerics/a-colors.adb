@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace => Ignore, Validate => Ignore);
+pragma Check_Policy (Validate => Ignore);
 package body Ada.Colors is
 
    function modff (value : Float; iptr : access Float) return Float
@@ -34,11 +34,6 @@ package body Ada.Colors is
    --  implementation
 
    function To_RGB (Color : HSV) return RGB is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Hue'Image (Color.Hue)
-            & ", S =" & Brightness'Image (Color.Saturation)
-            & ", V =" & Brightness'Image (Color.Value)));
       H : Hue'Base;
       Q : aliased Hue'Base;
       Diff : Brightness'Base;
@@ -77,20 +72,10 @@ package body Ada.Colors is
       end if;
       pragma Check (Validate, Color.Saturation > 0.0
          or else (Red = Green and then Green = Blue));
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "R =" & Brightness'Image (Red)
-            & ", G =" & Brightness'Image (Green)
-            & ", B =" & Brightness'Image (Blue)));
       return (Red => Red, Green => Green, Blue => Blue);
    end To_RGB;
 
    function To_RGB (Color : HSL) return RGB is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Hue'Image (Color.Hue)
-            & ", S =" & Brightness'Image (Color.Saturation)
-            & ", L =" & Brightness'Image (Color.Lightness)));
       H : Hue'Base;
       Q : aliased Hue'Base;
       Diff : Brightness'Base;
@@ -128,20 +113,10 @@ package body Ada.Colors is
          Green := Min;
          Blue := X;
       end if;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "R =" & Brightness'Image (Red)
-            & ", G =" & Brightness'Image (Green)
-            & ", B =" & Brightness'Image (Blue)));
       return (Red => Red, Green => Green, Blue => Blue);
    end To_RGB;
 
    function To_HSV (Color : RGB) return HSV is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "R =" & Brightness'Image (Color.Red)
-            & ", G =" & Brightness'Image (Color.Green)
-            & ", B =" & Brightness'Image (Color.Blue)));
       Max : constant Brightness'Base :=
          Brightness'Base'Max (
             Color.Red,
@@ -167,20 +142,10 @@ package body Ada.Colors is
          Saturation := 0.0;
          Hue := 0.0;
       end if;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Colors.Hue'Image (Hue)
-            & ", S =" & Brightness'Image (Saturation)
-            & ", V =" & Brightness'Image (Value)));
       return (Hue => Hue, Saturation => Saturation, Value => Value);
    end To_HSV;
 
    function To_HSV (Color : HSL) return HSV is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Hue'Image (Color.Hue)
-            & ", S =" & Brightness'Image (Color.Saturation)
-            & ", L =" & Brightness'Image (Color.Lightness)));
       Hue : constant Colors.Hue'Base := Color.Hue;
       Saturation : Brightness'Base;
       Value : constant Brightness'Base :=
@@ -192,20 +157,10 @@ package body Ada.Colors is
       else
          Saturation := 0.0;
       end if;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Colors.Hue'Image (Hue)
-            & ", S =" & Brightness'Image (Saturation)
-            & ", V =" & Brightness'Image (Value)));
       return (Hue => Hue, Saturation => Saturation, Value => Value);
    end To_HSV;
 
    function To_HSL (Color : RGB) return HSL is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "R =" & Brightness'Image (Color.Red)
-            & ", G =" & Brightness'Image (Color.Green)
-            & ", B =" & Brightness'Image (Color.Blue)));
       Max : constant Brightness'Base :=
          Brightness'Base'Max (
             Color.Red,
@@ -231,20 +186,10 @@ package body Ada.Colors is
          Saturation := 0.0;
          Hue := 0.0;
       end if;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Colors.Hue'Image (Hue)
-            & ", S =" & Brightness'Image (Saturation)
-            & ", L =" & Brightness'Image (Lightness)));
       return (Hue => Hue, Saturation => Saturation, Lightness => Lightness);
    end To_HSL;
 
    function To_HSL (Color : HSV) return HSL is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Hue'Image (Color.Hue)
-            & ", S =" & Brightness'Image (Color.Saturation)
-            & ", V =" & Brightness'Image (Color.Value)));
       Hue : constant Colors.Hue'Base := Color.Hue;
       Saturation : Brightness'Base;
       Lightness : constant Brightness'Base :=
@@ -256,11 +201,6 @@ package body Ada.Colors is
       else
          Saturation := 0.0;
       end if;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "H =" & Colors.Hue'Image (Hue)
-            & ", S =" & Brightness'Image (Saturation)
-            & ", L =" & Brightness'Image (Lightness)));
       return (Hue => Hue, Saturation => Saturation, Lightness => Lightness);
    end To_HSL;
 
@@ -290,18 +230,6 @@ package body Ada.Colors is
    end RGB_Distance;
 
    function HSV_Distance (Left, Right : HSV) return Float is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Left = (H =" & Hue'Image (Left.Hue)
-            & ", S =" & Brightness'Image (Left.Saturation)
-            & ", V =" & Brightness'Image (Left.Value)
-            & ")"));
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Right = (H =" & Hue'Image (Right.Hue)
-            & ", S =" & Brightness'Image (Right.Saturation)
-            & ", V =" & Brightness'Image (Right.Value)
-            & ")"));
       --  cone model
       LR : constant Float := Left.Saturation * Left.Value / 2.0;
       LX : constant Float := cosf (Left.Hue) * LR;
@@ -311,35 +239,11 @@ package body Ada.Colors is
       RX : constant Float := cosf (Right.Hue) * RR;
       RY : constant Float := sinf (Right.Hue) * RR;
       RZ : constant Float := Right.Value;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Left = (X =" & Float'Image (LX)
-            & ", Y =" & Float'Image (LY)
-            & ", Z =" & Float'Image (LZ)
-            & ")"));
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Right = (X =" & Float'Image (RX)
-            & ", Y =" & Float'Image (RY)
-            & ", Z =" & Float'Image (RZ)
-            & ")"));
    begin
       return (LX - RX) ** 2 + (LY - RY) ** 2 + (LZ - RZ) ** 2;
    end HSV_Distance;
 
    function HSL_Distance (Left, Right : HSL) return Float is
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Left = (H =" & Hue'Image (Left.Hue)
-            & ", S =" & Brightness'Image (Left.Saturation)
-            & ", L =" & Brightness'Image (Left.Lightness)
-            & ")"));
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Right = (H =" & Hue'Image (Right.Hue)
-            & ", S =" & Brightness'Image (Right.Saturation)
-            & ", L =" & Brightness'Image (Right.Lightness)
-            & ")"));
       --  double cone model
       LR : constant Float :=
          Left.Saturation * (0.5 - abs (Left.Lightness - 0.5));
@@ -351,18 +255,6 @@ package body Ada.Colors is
       RX : constant Float := cosf (Right.Hue) * RR;
       RY : constant Float := sinf (Right.Hue) * RR;
       RZ : constant Float := Right.Lightness;
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Left = (X =" & Float'Image (LX)
-            & ", Y =" & Float'Image (LY)
-            & ", Z =" & Float'Image (LZ)
-            & ")"));
-      pragma Check (Trace,
-         Check => Debug.Put (
-            "Right = (X =" & Float'Image (RX)
-            & ", Y =" & Float'Image (RY)
-            & ", Z =" & Float'Image (RZ)
-            & ")"));
    begin
       return (LX - RX) ** 2 + (LY - RY) ** 2 + (LZ - RZ) ** 2;
    end HSL_Distance;

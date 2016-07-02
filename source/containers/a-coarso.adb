@@ -1,6 +1,5 @@
 --  reference:
 --  http://thomas.baudel.name/Visualisation/VisuTri/inplacestablesort.html
-pragma Check_Policy (Trace => Ignore);
 package body Ada.Containers.Array_Sorting is
 
    function GCD (X, Y : Positive) return Positive;
@@ -106,25 +105,15 @@ package body Ada.Containers.Array_Sorting is
       if First <= Middle and then Middle < Last then
          if First + 1 = Last then
             if LT (Last, First, Params) then
-               pragma Check (Trace, Debug.Put (
-                  "Swap "
-                  & Integer'Image (First)
-                  & Integer'Image (Last)));
                Swap (First, Last, Params);
             end if;
          else
-            pragma Check (Trace, Debug.Put (
-               "MA "
-               & Integer'Image (First)
-               & Integer'Image (Middle)
-               & Integer'Image (Last)));
             if Middle - First >= Last - Middle then
                First_Cut := (First + Middle + 1) / 2;
                L := Middle + 1;
                H := Last;
                loop
                   M := (L + H + 1) / 2;
-                  pragma Check (Trace, Debug.Put ("Mf " & Integer'Image (M)));
                   if LT (M, First_Cut, Params) then
                      L := M;
                      exit when L >= H;
@@ -140,7 +129,6 @@ package body Ada.Containers.Array_Sorting is
                H := Middle;
                loop
                   M := (L + H) / 2;
-                  pragma Check (Trace, Debug.Put ("Ms " & Integer'Image (M)));
                   if LT (Second_Cut, M, Params) then
                      H := M;
                      exit when L >= H;
@@ -151,16 +139,10 @@ package body Ada.Containers.Array_Sorting is
                end loop;
                First_Cut := L;
             end if;
-            pragma Check (Trace, Debug.Put (
-               "MB "
-               & Integer'Image (First_Cut)
-               & Integer'Image (Second_Cut)));
             --  swap with Reverse_Rotate or Juggling_Rotate
             Juggling_Rotate (First_Cut, Middle, Second_Cut, Params, Swap);
             --  merge
             New_Middle := First_Cut + (Second_Cut - (Middle + 1));
-            pragma Check (Trace,
-               Check => Debug.Put ("MC " & Integer'Image (New_Middle)));
             In_Place_Merge (
                First,
                First_Cut - 1,
@@ -175,10 +157,6 @@ package body Ada.Containers.Array_Sorting is
                Params,
                LT => LT,
                Swap => Swap);
-            pragma Check (Trace, Debug.Put (
-               "ME "
-               & Integer'Image (First)
-               & Integer'Image (Last)));
          end if;
       end if;
    end In_Place_Merge;

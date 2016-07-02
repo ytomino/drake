@@ -2,14 +2,12 @@ with Ada.Tags;
 with Ada.Unchecked_Deallocation;
 with System.Standard_Allocators;
 with System.Storage_Elements;
---  with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Standard_Pools;
 procedure Ada.Unchecked_Reallocation (
    X : in out Name;
    First_Index : Index_Type;
    Last_Index : Index_Type'Base)
 is
-   pragma Check_Policy (Trace => Disable);
    pragma Suppress (All_Checks);
    use type Tags.Tag;
    Old_First_Index : constant Index_Type := X'First;
@@ -19,26 +17,6 @@ is
    New_Length : constant Index_Type'Base :=
       Index_Type'Base'Max (Last_Index - First_Index + 1, 0);
 begin
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "old X'First =" & Index_Type'Base'Image (Old_First_Index)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "old X'Last =" & Index_Type'Base'Image (Old_Last_Index)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "old X.all'Address = "
-         & System.Storage_Elements.Formatting.Image (X.all'Address)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "old X'Pool_Address = "
-         & System.Storage_Elements.Formatting.Image (X'Pool_Address)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "requested X'First =" & Index_Type'Base'Image (First_Index)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "requested X'Last =" & Index_Type'Base'Image (Last_Index)));
    --  reallocate
    if Name'Storage_Pool'Tag =
       System.Storage_Pools.Standard_Pools.Standard_Pool'Tag
@@ -82,9 +60,6 @@ begin
                / Standard'Storage_Unit;
          end if;
          New_Pool_Size := Constraints_Size + New_Object_Size;
-         pragma Check (Trace,
-            Check => Debug.Put (
-               "requested size =" & Storage_Offset'Image (New_Pool_Size)));
          New_Pool_Address := System.Standard_Allocators.Reallocate (
             Pool_Address,
             New_Pool_Size);
@@ -143,16 +118,4 @@ begin
          X := New_X;
       end;
    end if;
-   pragma Check (Trace,
-      Check => Debug.Put ("new X'First =" & Index_Type'Base'Image (X'First)));
-   pragma Check (Trace,
-      Check => Debug.Put ("new X'Last =" & Index_Type'Base'Image (X'Last)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "new X.all'Address = "
-         & System.Storage_Elements.Formatting.Image (X.all'Address)));
-   pragma Check (Trace,
-      Check => Debug.Put (
-         "new X'Pool_Address = "
-         & System.Storage_Elements.Formatting.Image (X'Pool_Address)));
 end Ada.Unchecked_Reallocation;
