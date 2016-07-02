@@ -1,6 +1,6 @@
 with System.Debug;
-with System.Native_Tasks.Yield;
 with C.errno;
+with C.sched;
 with C.signal;
 package body System.Native_Tasks is
    use type C.signed_int;
@@ -151,5 +151,15 @@ package body System.Native_Tasks is
    begin
       Mask_SIGTERM (C.signal.SIG_UNBLOCK);
    end Unblock_Abort_Signal;
+
+   procedure Yield is
+      R : C.signed_int;
+   begin
+      R := C.sched.sched_yield;
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sched_yield failed"));
+   end Yield;
 
 end System.Native_Tasks;

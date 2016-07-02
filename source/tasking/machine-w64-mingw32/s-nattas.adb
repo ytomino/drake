@@ -175,4 +175,9 @@ package body System.Native_Tasks is
       end if;
    end Block_Abort_Signal;
 
+   procedure Yield is
+   begin
+      C.winbase.Sleep (0);
+   end Yield;
+
 end System.Native_Tasks;

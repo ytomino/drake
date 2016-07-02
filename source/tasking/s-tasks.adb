@@ -5,7 +5,6 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Tasks.Yield;
 with System.Native_Time;
 with System.Runtime_Context;
 with System.Shared_Locking;

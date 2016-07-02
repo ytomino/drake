@@ -55,4 +55,8 @@ package System.Native_Tasks is
    procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event);
    procedure Unblock_Abort_Signal;
 
+   --  scheduling
+
+   procedure Yield;
+
 end System.Native_Tasks;
