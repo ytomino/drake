@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  implementation unit
+with Ada.Exceptions;
 with System.Native_Tasks;
 with System.Storage_Elements;
 with System.Synchronous_Objects;
@@ -159,6 +160,29 @@ package System.Tasks is
       T : not null Task_Id;
       Index : aliased in out Attribute_Index);
 
+   --  termination handler for Task_Termination
+
+   type Cause_Of_Termination is (Normal, Abnormal, Unhandled_Exception);
+      --  same as Ada.Task_Termination.Cause_Of_Termination
+   pragma Discard_Names (Cause_Of_Termination);
+
+   type Termination_Handler is access protected procedure (
+      Cause : Cause_Of_Termination;
+      T : Task_Id;
+      X : Ada.Exceptions.Exception_Occurrence);
+      --  same as Ada.Task_Termination.Termination_Handler
+
+   procedure Set_Dependents_Fallback_Handler (
+      T : Task_Id;
+      Handler : Termination_Handler);
+   function Dependents_Fallback_Handler (T : Task_Id)
+      return Termination_Handler;
+
+   procedure Set_Specific_Handler (
+      T : Task_Id;
+      Handler : Termination_Handler);
+   function Specific_Handler (T : Task_Id) return Termination_Handler;
+
 private
 
    type String_Access is access String;
@@ -243,6 +267,8 @@ private
       Termination_State : aliased Tasks.Termination_State;
       Master_Level : Tasks.Master_Level; -- level of self
       Master_Top : Master_Access; -- stack
+      --  termination handler
+      Dependents_Fallback_Handler : Termination_Handler;
       --  for sub task
       case Kind is
          when Environment =>
@@ -266,6 +292,8 @@ private
             Auto_Detach : Boolean;
             --  rendezvous
             Rendezvous : Rendezvous_Access;
+            --  termination handler
+            Specific_Handler : Termination_Handler;
             --  signal alt stack
             Signal_Stack : aliased Unwind.Mapping.Signal_Stack_Type;
       end case;

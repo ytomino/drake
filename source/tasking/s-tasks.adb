@@ -1,6 +1,5 @@
 pragma Check_Policy (Trace => Disable);
 with Ada.Exception_Identification.From_Here;
-with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
@@ -411,6 +410,40 @@ package body System.Tasks is
 
    --  thread body
 
+   procedure Invoke_Handler (
+      Cause : Cause_Of_Termination;
+      T : Task_Id;
+      X : Ada.Exceptions.Exception_Occurrence;
+      Handled : out Boolean);
+   procedure Invoke_Handler (
+      Cause : Cause_Of_Termination;
+      T : Task_Id;
+      X : Ada.Exceptions.Exception_Occurrence;
+      Handled : out Boolean) is
+   begin
+      if T.Specific_Handler /= null then
+         T.Specific_Handler (Cause, T, X);
+         Handled := True;
+      else
+         declare
+            P : Task_Id := T;
+         begin
+            loop
+               P := Parent (P);
+               if P = null then
+                  Handled := False;
+                  exit;
+               end if;
+               if P.Dependents_Fallback_Handler /= null then
+                  P.Dependents_Fallback_Handler (Cause, T, X);
+                  Handled := True;
+                  exit;
+               end if;
+            end loop;
+         end;
+      end if;
+   end Invoke_Handler;
+
    procedure Report (
       T : not null Task_Id;
       Current : Ada.Exceptions.Exception_Occurrence);
@@ -468,6 +501,7 @@ package body System.Tasks is
       Local : aliased Runtime_Context.Task_Local_Storage;
       T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
+      Cause : Cause_Of_Termination;
    begin
       TLS_Current_Task_Id := T;
       --  block abort signal
@@ -505,6 +539,7 @@ package body System.Tasks is
             T.Abort_Locking := T.Abort_Locking + 1;
          end if;
          T.Process (T.Params);
+         Cause := Normal;
       exception
          when Standard'Abort_Signal =>
             pragma Check (Trace, Ada.Debug.Put ("Abort_Signal"));
@@ -513,10 +548,26 @@ package body System.Tasks is
                T.Abort_Locking := T.Abort_Locking - 1;
             end if;
             On_Exception;
+            Cause := Abnormal;
          when E : others =>
-            Report (T, E);
             On_Exception;
+            declare
+               Handled : Boolean;
+            begin
+               Invoke_Handler (Unhandled_Exception, T, E, Handled);
+               if not Handled then
+                  Report (T, E);
+               end if;
+               Cause := Unhandled_Exception;
+            end;
       end;
+      if Cause /= Unhandled_Exception then
+         declare
+            Handled : Boolean; -- ignored
+         begin
+            Invoke_Handler (Cause, T, Ada.Exceptions.Null_Occurrence, Handled);
+         end;
+      end if;
       pragma Assert (T.Abort_Locking = 1);
       --  cancel calling queue
       Cancel_Calls;
@@ -957,6 +1008,7 @@ package body System.Tasks is
          Termination_State => TS_Active,
          Master_Level => Level,
          Master_Top => null,
+         Dependents_Fallback_Handler => null,
          Params => Params,
          Process => To_Process_Handler (Process.all'Address),
          Preferred_Free_Mode => Detach,
@@ -970,6 +1022,7 @@ package body System.Tasks is
          Next_At_Same_Level => null,
          Auto_Detach => False,
          Rendezvous => Rendezvous,
+         Specific_Handler => null,
          Abort_Event => <>, -- uninitialized
          Signal_Stack => <>); -- uninitialized
       --  for master
@@ -1762,5 +1815,32 @@ package body System.Tasks is
       end if;
       Synchronous_Objects.Leave (Index.Mutex);
    end Clear;
+
+   --  termination handler
+
+   procedure Set_Dependents_Fallback_Handler (
+      T : Task_Id;
+      Handler : Termination_Handler) is
+   begin
+      T.Dependents_Fallback_Handler := Handler;
+   end Set_Dependents_Fallback_Handler;
+
+   function Dependents_Fallback_Handler (T : Task_Id)
+      return Termination_Handler is
+   begin
+      return T.Dependents_Fallback_Handler;
+   end Dependents_Fallback_Handler;
+
+   procedure Set_Specific_Handler (
+      T : Task_Id;
+      Handler : Termination_Handler) is
+   begin
+      T.Specific_Handler := Handler;
+   end Set_Specific_Handler;
+
+   function Specific_Handler (T : Task_Id) return Termination_Handler is
+   begin
+      return T.Specific_Handler;
+   end Specific_Handler;
 
 end System.Tasks;

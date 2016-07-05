@@ -11,14 +11,16 @@ package Ada.Task_Termination is
       T : Task_Identification.Task_Id;
       X : Exceptions.Exception_Occurrence);
 
---  procedure Set_Dependents_Fallback_Handler (
---    Handler: Termination_Handler);
---  function Current_Task_Fallback_Handler return Termination_Handler;
+   procedure Set_Dependents_Fallback_Handler (Handler : Termination_Handler);
+   function Current_Task_Fallback_Handler return Termination_Handler;
 
---  procedure Set_Specific_Handler (
---    T : Task_Identification.Task_Id;
---    Handler : Termination_Handler);
---  function Specific_Handler (T : Task_Identification.Task_Id)
---    return Termination_Handler;
+   procedure Set_Specific_Handler (
+      T : Task_Identification.Task_Id;
+      Handler : Termination_Handler);
+   function Specific_Handler (T : Task_Identification.Task_Id)
+      return Termination_Handler;
+
+   pragma Inline (Set_Specific_Handler);
+   pragma Inline (Specific_Handler);
 
 end Ada.Task_Termination;
