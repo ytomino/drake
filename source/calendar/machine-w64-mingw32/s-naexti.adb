@@ -13,11 +13,12 @@ package body System.Native_Execution_Time is
       UserTime : aliased C.windef.FILETIME;
    begin
       if C.winbase.GetProcessTimes (
-         C.winbase.GetCurrentProcess,
-         CreationTime'Access,
-         ExitTime'Access,
-         KernelTime'Access,
-         UserTime'Access) = 0
+            C.winbase.GetCurrentProcess,
+            CreationTime'Access,
+            ExitTime'Access,
+            KernelTime'Access,
+            UserTime'Access) =
+         C.windef.FALSE
       then
          raise Program_Error; -- ???
       else

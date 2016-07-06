@@ -11,6 +11,7 @@ package System.Runtime_Context is
       SEH : Address; -- Win32 only
       Machine_Occurrence : Unwind.Representation.Machine_Occurrence_Access;
       Secondary_Occurrence : aliased Unwind.Representation.Machine_Occurrence;
+      Triggered_By_Abort : Boolean;
       No_Discrete_Value_Failure_Propagation : Boolean;
       Discrete_Value_Failure : Boolean;
    end record;

@@ -460,7 +460,8 @@ package body Ada.Strings.Generic_Functions is
       return String_Type
    is
       pragma Check (Pre,
-         Check => Before in Source'First .. Source'Last + 1
+         Check =>
+            Before in Source'First .. Source'Last + 1
             or else raise Index_Error); -- CXA4005, CXA4016
    begin
       return Result : String_Type (1 .. Source'Length + New_Item'Length) do
@@ -479,7 +480,8 @@ package body Ada.Strings.Generic_Functions is
       Drop : Truncation := Error)
    is
       pragma Check (Pre,
-         Check => Before in Source'First .. Source'Last + 1
+         Check =>
+            Before in Source'First .. Source'Last + 1
             or else raise Index_Error);
    begin
       if New_Item'Length > 0 then -- growing
@@ -563,7 +565,8 @@ package body Ada.Strings.Generic_Functions is
       return String_Type
    is
       pragma Check (Pre,
-         Check => (From <= Source'Last + 1 and then Through <= Source'Last)
+         Check =>
+            (From <= Source'Last + 1 and then Through <= Source'Last)
             or else raise Index_Error);
    begin
       return Result : String_Type (
@@ -585,7 +588,8 @@ package body Ada.Strings.Generic_Functions is
       Pad : Character_Type := Space)
    is
       pragma Check (Pre,
-         Check => (From <= Source'Last + 1 and then Through <= Source'Last)
+         Check =>
+            (From <= Source'Last + 1 and then Through <= Source'Last)
             or else raise Index_Error);
       Last : Natural := Source'Last;
    begin

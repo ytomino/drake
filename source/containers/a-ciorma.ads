@@ -191,15 +191,15 @@ package Ada.Containers.Indefinite_Ordered_Maps is
 
    function "<" (Left, Right : Cursor) return Boolean;
 
---  function ">" (Left, Right : Cursor) return Boolean;
+   function ">" (Left, Right : Cursor) return Boolean;
 
    function "<" (Left : Cursor; Right : Key_Type) return Boolean;
 
---  function ">" (Left : Cursor; Right : Key_Type) return Boolean;
+   function ">" (Left : Cursor; Right : Key_Type) return Boolean;
 
---  function "<" (Left : Key_Type; Right : Cursor) return Boolean;
+   function "<" (Left : Key_Type; Right : Cursor) return Boolean;
 
---  function ">" (Left : Key_Type; Right : Cursor) return Boolean;
+   function ">" (Left : Key_Type; Right : Cursor) return Boolean;
 
    --  modified
    procedure Iterate (

@@ -1,9 +1,35 @@
-with System.Debug;
-with C.winerror;
+with Ada.Unchecked_Conversion;
+with System.Storage_Map;
+with C.basetsd;
+with C.winternl;
 package body System.Native_Tasks is
+   use type C.char_array;
    use type C.void_ptr; -- C.void_ptr
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+
+   type struct_THREAD_BASIC_INFORMATION is record
+      ExitStatus : C.winternl.NTSTATUS;
+      TebBaseAddress : C.winnt.struct_TEB_ptr; -- PVOID;
+      ClientId : C.winternl.CLIENT_ID;
+      AffinityMask : C.basetsd.KAFFINITY;
+      Priority : C.winternl.KPRIORITY;
+      BasePriority : C.winternl.KPRIORITY;
+   end record
+      with Convention => C;
+   pragma Suppress_Initialization (struct_THREAD_BASIC_INFORMATION);
+
+   type NtQueryInformationThread_Type is access function (
+      ThreadHandle : C.winnt.HANDLE;
+      ThreadInformationClass : C.winternl.THREADINFOCLASS;
+      ThreadInformation : C.winnt.PVOID;
+      ThreadInformationLength : C.windef.ULONG;
+      ReturnLength : access C.windef.ULONG)
+      return C.winternl.NTSTATUS
+      with Convention => WINAPI;
+
+   NtQueryInformationThread_Name : constant C.char_array (0 .. 24) :=
+      "NtQueryInformationThread" & C.char'Val (0);
 
    Installed_Abort_Handler : Abort_Handler := null;
 
@@ -29,18 +55,17 @@ package body System.Native_Tasks is
 
    procedure Join (
       Handle : Handle_Type;
-      Abort_Current : access Task_Attribute_Of_Abort;
+      Current_Abort_Event : access Synchronous_Objects.Event;
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
       R : C.windef.DWORD;
    begin
       Error := False;
-      if Abort_Current /= null and then not Abort_Current.Blocked then
+      if Current_Abort_Event /= null then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Handle,
-               Abort_Current.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Handle, Synchronous_Objects.Handle (Current_Abort_Event.all));
          begin
             R := C.winbase.WaitForMultipleObjects (
                2,
@@ -57,13 +82,15 @@ package body System.Native_Tasks is
    <<Done>>
       case R is
          when C.winbase.WAIT_OBJECT_0 =>
-            if C.winbase.GetExitCodeThread (Handle, Result'Access) = 0 then
+            if C.winbase.GetExitCodeThread (Handle, Result'Access) =
+               C.windef.FALSE
+            then
                Error := True;
             end if;
          when others =>
             Error := True;
       end case;
-      if C.winbase.CloseHandle (Handle) = 0 then
+      if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
          Error := True;
       end if;
    end Join;
@@ -73,7 +100,7 @@ package body System.Native_Tasks is
       Error : out Boolean) is
    begin
       Error := False;
-      if C.winbase.CloseHandle (Handle) /= 0 then
+      if C.winbase.CloseHandle (Handle) /= C.windef.FALSE then
          Handle := C.winbase.GetCurrentThread;
          --  magic value meaning current thread
          pragma Assert (
@@ -85,19 +112,36 @@ package body System.Native_Tasks is
 
    --  implementation of stack
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Stack) is
+   function Info_Block (Handle : Handle_Type) return C.winnt.struct_TEB_ptr is
+      function To_NtQueryInformationThread_Type is
+         new Ada.Unchecked_Conversion (
+            C.windef.FARPROC,
+            NtQueryInformationThread_Type);
+      NtQueryInformationThread : NtQueryInformationThread_Type;
    begin
-      Attr := C.winnt.NtCurrentTeb;
-   end Initialize;
-
-   function Info_Block (
-      Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Stack)
-      return Info_Block_Type
-   is
-      pragma Unreferenced (Handle);
-   begin
-      return Attr;
+      NtQueryInformationThread :=
+         To_NtQueryInformationThread_Type (
+            C.winbase.GetProcAddress (
+               Storage_Map.NTDLL,
+               NtQueryInformationThread_Name (0)'Access));
+      if NtQueryInformationThread = null then
+         return null; -- ???
+      else
+         declare
+            TBI : aliased struct_THREAD_BASIC_INFORMATION;
+            ReturnLength : aliased C.windef.ULONG;
+            Status : C.winternl.NTSTATUS;
+            pragma Unreferenced (Status);
+         begin
+            Status := NtQueryInformationThread (
+               Handle,
+               C.winternl.ThreadBasicInformation,
+               C.windef.LPVOID (TBI'Address),
+               struct_THREAD_BASIC_INFORMATION'Size / Standard'Storage_Unit,
+               ReturnLength'Access);
+            return TBI.TebBaseAddress;
+         end;
+      end if;
    end Info_Block;
 
    --  implementation of signals
@@ -112,54 +156,28 @@ package body System.Native_Tasks is
       Installed_Abort_Handler := null;
    end Uninstall_Abort_Handler;
 
-   procedure Initialize (Attr : in out Task_Attribute_Of_Abort) is
-   begin
-      Attr.Event := C.winbase.CreateEvent (null, 1, 0, null); -- manual
-      Attr.Blocked := False;
-   end Initialize;
-
-   procedure Finalize (Attr : in out Task_Attribute_Of_Abort) is
-      Closing_Handle : constant Handle_Type := Attr.Event;
-   begin
-      Attr.Event := C.winbase.INVALID_HANDLE_VALUE;
-      declare
-         R : C.windef.WINBOOL;
-      begin
-         R := C.winbase.CloseHandle (Closing_Handle);
-         pragma Check (Debug,
-            Check => R /= 0
-               or else Debug.Runtime_Error ("CloseHandle failed"));
-      end;
-   end Finalize;
-
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Abort;
+      Abort_Event : in out Synchronous_Objects.Event;
       Error : out Boolean)
    is
       pragma Unreferenced (Handle);
    begin
+      Synchronous_Objects.Set (Abort_Event);
       Error := False;
-      if C.winbase.SetEvent (Attr.Event) = 0 then
-         Error := C.winbase.GetLastError /=
-            C.winerror.ERROR_INVALID_HANDLE; -- already terminated
-      end if;
    end Send_Abort_Signal;
 
-   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
+   procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event) is
    begin
-      Attr.Blocked := True;
       --  check aborted
-      if C.winbase.WaitForSingleObject (Attr.Event, 0) =
-         C.winbase.WAIT_OBJECT_0
-      then
+      if Synchronous_Objects.Get (Abort_Event) then
          Installed_Abort_Handler.all;
       end if;
    end Block_Abort_Signal;
 
-   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
+   procedure Yield is
    begin
-      Attr.Blocked := False;
-   end Unblock_Abort_Signal;
+      C.winbase.Sleep (0);
+   end Yield;
 
 end System.Native_Tasks;

@@ -1,7 +1,5 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-private with System.Native_Calendar;
-private with System.Storage_Barriers;
 private with C.pthread;
 package System.Synchronous_Objects is
    pragma Preelaborate;
@@ -21,16 +19,10 @@ package System.Synchronous_Objects is
 
    procedure Initialize (Object : in out Condition_Variable);
    procedure Finalize (Object : in out Condition_Variable);
-   procedure Notify_One (Object : in out Condition_Variable);
    procedure Notify_All (Object : in out Condition_Variable);
    procedure Wait (
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex);
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean);
 
    --  queue
 
@@ -73,11 +65,12 @@ package System.Synchronous_Objects is
       Object : in out Queue;
       Item : not null Queue_Node_Access;
       Canceled : out Boolean);
-   procedure Take ( -- no waiting
+   procedure Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
       Params : Address;
       Filter : Queue_Filter);
+      --  no waiting
    procedure Unsynchronized_Take (
       Object : in out Queue;
       Item : out Queue_Node_Access;
@@ -99,18 +92,6 @@ package System.Synchronous_Objects is
       Object : in out Event;
       Timeout : Duration;
       Value : out Boolean);
-
-   --  group-synchronization for Ada.Synchronous_Barriers
-
-   type Barrier is limited private;
-
-   procedure Initialize (
-      Object : in out Barrier;
-      Release_Threshold : Natural);
-   procedure Finalize (Object : in out Barrier);
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean);
 
    --  multi-read/exclusive-write lock for protected
 
@@ -134,15 +115,9 @@ private
    end record;
    pragma Suppress_Initialization (Condition_Variable);
 
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Calendar.Native_Time;
-      Notified : out Boolean);
-
    type Queue is limited record
       Mutex : not null Mutex_Access;
-      Condition_Variable : Synchronous_Objects.Condition_Variable;
+      Pipe : Synchronous_Objects.Event; -- count bytes in the pipe
       Head : aliased Queue_Node_Access;
       Tail : Queue_Node_Access;
       Params : Address;
@@ -164,26 +139,19 @@ private
       Filter : Queue_Filter;
       Previous : in out Queue_Node_Access;
       Current : in out Queue_Node_Access);
-   --  awake Abortable.Take
    procedure Notify_All (
       Object : in out Queue;
       Item : not null Queue_Node_Access);
+      --  awake Abortable.Take
 
    type Event is limited record
-      Mutex : Synchronous_Objects.Mutex;
-      Condition_Variable : Synchronous_Objects.Condition_Variable;
-      Value : aliased Storage_Barriers.Flag;
+      Reading_Pipe : C.signed_int;
+      Writing_Pipe : C.signed_int;
    end record;
    pragma Suppress_Initialization (Event);
 
-   type Barrier is limited record
-      Mutex : Synchronous_Objects.Mutex;
-      Condition_Variable : Synchronous_Objects.Condition_Variable;
-      Release_Threshold : Natural;
-      Blocked : Natural;
-      Unblocked : Natural;
-   end record;
-   pragma Suppress_Initialization (Barrier);
+   procedure Read_1 (Reading_Pipe : C.signed_int);
+   procedure Write_1 (Writing_Pipe : C.signed_int);
 
    type RW_Lock is limited record
       Handle : aliased C.pthread.pthread_rwlock_t;

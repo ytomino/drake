@@ -4,7 +4,6 @@ with System.Environment_Block;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
-with C.string;
 package body System.Native_Environment_Variables is
    use type Storage_Elements.Storage_Offset;
    use type C.char_const_ptr;
@@ -13,6 +12,17 @@ package body System.Native_Environment_Variables is
    use type C.signed_int;
    use type C.ptrdiff_t;
    use type C.size_t;
+
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
+
+   function strchr (
+      s : not null access constant C.char;
+      c : Standard.C.signed_int)
+      return Standard.C.char_const_ptr
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strchr";
 
    package char_const_ptr_Conv is
       new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
@@ -41,7 +51,7 @@ package body System.Native_Environment_Variables is
    is
       P : C.char_const_ptr;
    begin
-      P := C.char_const_ptr (C.string.strchr (Item, C.char'Pos ('=')));
+      P := strchr (Item, C.char'Pos ('='));
       if P /= null then
          Name_Length := C.size_t (
             char_const_ptr_Conv.To_Address (P)
@@ -50,7 +60,7 @@ package body System.Native_Environment_Variables is
             char_const_ptr_Conv.To_Address (P)
             + Storage_Elements.Storage_Offset'(1));
       else
-         Name_Length := C.string.strlen (Item);
+         Name_Length := strlen (Item);
          Value := char_const_ptr_Conv.To_Pointer (
             char_const_ptr_Conv.To_Address (C.char_const_ptr (Item))
             + Storage_Elements.Storage_Offset (Name_Length));

@@ -11,9 +11,14 @@ package Ada.Numerics.Discrete_Random is
 
    function Random (Gen : Generator) return Result_Subtype;
 
+   function Random (Gen : Generator; First, Last : Result_Subtype)
+      return Result_Subtype;
+--    with Post => Random'Result in First .. Last;
+      --  AI12-0144-1
+
 --  procedure Reset (Gen : Generator; Initiator : Integer);
 --  procedure Reset (Gen : Generator);
-   --  procedure Reset is inherited.
+      --  procedure Reset is inherited
 
    --  Advanced facilities
 
@@ -22,7 +27,7 @@ package Ada.Numerics.Discrete_Random is
 
 --  procedure Save (Gen : Generator; To_State : out State);
 --  procedure Reset (Gen : Generator; From_State : State);
-   --  procedure Save and Load are inherited.
+      --  procedure Save and Load are inherited
 
    Max_Image_Width : constant := MT19937.Max_Image_Width;
 

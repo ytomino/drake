@@ -1,10 +1,8 @@
 with Ada.Unchecked_Conversion;
 with System.Runtime_Context;
-with System.Startup;
 with System.Unwind.Occurrences;
 package body System.Soft_Links is
    pragma Suppress (All_Checks);
-   use type Ada.Exceptions.Exception_Occurrence_Access;
 
    --  implementation
 
@@ -33,24 +31,6 @@ package body System.Soft_Links is
    begin
       return Cast (Cast (Get_Current_Excep.all).Id);
    end Get_GNAT_Exception;
-
-   procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence_Access)
-   is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            Ada.Exceptions.Exception_Occurrence_Access,
-            Unwind.Exception_Occurrence_Access);
-   begin
-      if not Startup.Library_Exception_Set then
-         Startup.Library_Exception_Set := True;
-         if E /= null then
-            Unwind.Occurrences.Save_Occurrence (
-               Startup.Library_Exception.X,
-               Cast (E).all);
-         end if;
-      end if;
-   end Save_Library_Occurrence;
 
    function Zero return Integer is
    begin

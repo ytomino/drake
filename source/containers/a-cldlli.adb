@@ -99,9 +99,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
---
 
 --  diff (Copy_Data)
 --
@@ -375,10 +372,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 
 --  diff (Prepend)
---
---
---
---
 --
 --
 --
@@ -864,11 +857,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          end Equivalent;
       begin
          return Left.Length = Right.Length
-            and then
-               Linked_Lists.Equivalent (
-                  Left.Last,
-                  Right.Last,
-                  Equivalent'Access);
+            and then Linked_Lists.Equivalent (
+               Left.Last,
+               Right.Last,
+               Equivalent'Access);
       end "=";
 
       function Find (Container : List; Item : Element_Type)

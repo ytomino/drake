@@ -263,9 +263,8 @@ package body System.Long_Long_Complex_Elementary_Functions is
          and then abs X.Im < Root_Root_Epsilon
       then
          declare
-            Z : constant Long_Long_Complex := ( -- X - 1.0
-               Re => X.Re - 1.0,
-               Im => X.Im);
+            Z : constant Long_Long_Complex := (Re => X.Re - 1.0, Im => X.Im);
+               --  X - 1.0
             Result : constant Long_Long_Complex :=
                (1.0 - (1.0 / 2.0 - (1.0 / 3.0 - (1.0 / 4.0) * Z) * Z) * Z) * Z;
          begin
@@ -322,9 +321,11 @@ package body System.Long_Long_Complex_Elementary_Functions is
          return X;
       else
          return (
-            Re => Long_Long_Elementary_Functions.Fast_Sin (X.Re)
+            Re =>
+               Long_Long_Elementary_Functions.Fast_Sin (X.Re)
                * Long_Long_Elementary_Functions.Fast_Cosh (X.Im),
-            Im => Long_Long_Elementary_Functions.Fast_Cos (X.Re)
+            Im =>
+               Long_Long_Elementary_Functions.Fast_Cos (X.Re)
                * Long_Long_Elementary_Functions.Fast_Sinh (X.Im));
       end if;
    end Fast_Sin;
@@ -332,9 +333,11 @@ package body System.Long_Long_Complex_Elementary_Functions is
    function Fast_Cos (X : Long_Long_Complex) return Long_Long_Complex is
    begin
       return (
-         Re => Long_Long_Elementary_Functions.Fast_Cos (X.Re)
+         Re =>
+            Long_Long_Elementary_Functions.Fast_Cos (X.Re)
             * Long_Long_Elementary_Functions.Fast_Cosh (X.Im),
-         Im => -(Long_Long_Elementary_Functions.Fast_Sin (X.Re)
+         Im =>
+            -(Long_Long_Elementary_Functions.Fast_Sin (X.Re)
             * Long_Long_Elementary_Functions.Fast_Sinh (X.Im)));
    end Fast_Cos;
 
@@ -363,17 +366,14 @@ package body System.Long_Long_Complex_Elementary_Functions is
          or else abs X.Im > Inv_Square_Root_Epsilon
       then
          declare
-            iX : constant Long_Long_Complex := (
-               Re => -X.Im,
-               Im => X.Re);
+            iX : constant Long_Long_Complex := (Re => -X.Im, Im => X.Re);
             Log_2i : constant Long_Long_Complex :=
                Fast_Log ((Re => 0.0, Im => 2.0));
-            A : constant Long_Long_Complex := ( -- iX + Log_2i
-               Re => iX.Re + Log_2i.Re,
-               Im => iX.Im + Log_2i.Im);
-            Result : constant Long_Long_Complex := ( -- -i * A
-               Re => A.Im,
-               Im => -A.Re);
+            A : constant Long_Long_Complex :=
+               (Re => iX.Re + Log_2i.Re, Im => iX.Im + Log_2i.Im);
+               --  iX + Log_2i
+            Result : constant Long_Long_Complex := (Re => A.Im, Im => -A.Re);
+               --  -i * A
          begin
             if Result.Im > Pi_Div_2 then
                return (Re => Result.Re, Im => Pi - X.Im);
@@ -387,17 +387,17 @@ package body System.Long_Long_Complex_Elementary_Functions is
          declare
             iX : constant Long_Long_Complex := (Re => -X.Im, Im => X.Re);
             X_X : constant Long_Long_Complex := X * X;
-            A : constant Long_Long_Complex := ( -- 1.0 - X_X
-               Re => 1.0 - X_X.Re,
-               Im => -X_X.Im);
+            A : constant Long_Long_Complex :=
+               (Re => 1.0 - X_X.Re, Im => -X_X.Im);
+               --  1.0 - X_X
             Sqrt_A : constant Long_Long_Complex := Fast_Sqrt (A);
-            B : constant Long_Long_Complex := ( -- iX + Sqrt_A
-               Re => iX.Re + Sqrt_A.Re,
-               Im => iX.Im + Sqrt_A.Im);
+            B : constant Long_Long_Complex :=
+               (Re => iX.Re + Sqrt_A.Re, Im => iX.Im + Sqrt_A.Im);
+               --  iX + Sqrt_A
             Log_B : constant Long_Long_Complex := Fast_Log (B);
-            Result : constant Long_Long_Complex := ( -- -i * Log_B
-               Re => Log_B.Im,
-               Im => -Log_B.Re);
+            Result : constant Long_Long_Complex :=
+               (Re => Log_B.Im, Im => -Log_B.Re);
+               --  -i * Log_B
          begin
             if X.Re = 0.0 then
                return (Re => X.Re, Im => Result.Im);
@@ -422,50 +422,46 @@ package body System.Long_Long_Complex_Elementary_Functions is
          or else abs X.Im > Inv_Square_Root_Epsilon
       then
          declare
-            A : constant Long_Long_Complex := ( -- 1.0 - X
-               Re => 1.0 - X.Re,
-               Im => -X.Im);
-            B : constant Long_Long_Complex := ( -- A / 2.0
-               Re => A.Re / 2.0,
-               Im => A.Im / 2.0);
+            A : constant Long_Long_Complex := (Re => 1.0 - X.Re, Im => -X.Im);
+               --  1.0 - X
+            B : constant Long_Long_Complex :=
+               (Re => A.Re / 2.0, Im => A.Im / 2.0);
+               --  A / 2.0
             Sqrt_B : constant Long_Long_Complex := Fast_Sqrt (B);
-            i_Sqrt_B : constant Long_Long_Complex := (
-               Re => -Sqrt_B.Im,
-               Im => Sqrt_B.Re);
-            C : constant Long_Long_Complex := ( -- 1.0 + X
-               Re => 1.0 + X.Re,
-               Im => X.Im);
-            D : constant Long_Long_Complex := ( -- C / 2.0
-               Re => C.Re / 2.0,
-               Im => C.Im / 2.0);
+            i_Sqrt_B : constant Long_Long_Complex :=
+               (Re => -Sqrt_B.Im, Im => Sqrt_B.Re);
+            C : constant Long_Long_Complex := (Re => 1.0 + X.Re, Im => X.Im);
+               --  1.0 + X
+            D : constant Long_Long_Complex :=
+               (Re => C.Re / 2.0, Im => C.Im / 2.0);
+               --  C / 2.0
             Sqrt_D : constant Long_Long_Complex := Fast_Sqrt (D);
-            E : constant Long_Long_Complex := ( -- Sqrt_D + i_Sqrt_B
-               Re => Sqrt_D.Re + i_Sqrt_B.Re,
-               Im => Sqrt_D.Im + i_Sqrt_B.Im);
+            E : constant Long_Long_Complex :=
+               (Re => Sqrt_D.Re + i_Sqrt_B.Re, Im => Sqrt_D.Im + i_Sqrt_B.Im);
+               --  Sqrt_D + i_Sqrt_B
             Log_E : constant Long_Long_Complex := Fast_Log (E);
-            Result : constant Long_Long_Complex := ( -- -2.0 * i * Log_E
-               Re => 2.0 * Log_E.Im,
-               Im => -2.0 * Log_E.Re);
+            Result : constant Long_Long_Complex :=
+               (Re => 2.0 * Log_E.Im, Im => -2.0 * Log_E.Re);
+               --  -2.0 * i * Log_E
          begin
             return Result;
          end;
       else
          declare
             X_X : constant Long_Long_Complex := X * X;
-            A : constant Long_Long_Complex := ( -- 1.0 - X_X
-               Re => 1.0 - X_X.Re,
-               Im => -X_X.Im);
+            A : constant Long_Long_Complex :=
+               (Re => 1.0 - X_X.Re, Im => -X_X.Im);
+               --  1.0 - X_X
             Sqrt_A : constant Long_Long_Complex := Fast_Sqrt (A);
-            i_Sqrt_A : constant Long_Long_Complex := (
-               Re => -Sqrt_A.Im,
-               Im => Sqrt_A.Re);
-            B : constant Long_Long_Complex := ( -- X + i_Sqrt_A
-               Re => X.Re + i_Sqrt_A.Re,
-               Im => X.Im + i_Sqrt_A.Im);
+            i_Sqrt_A : constant Long_Long_Complex :=
+               (Re => -Sqrt_A.Im, Im => Sqrt_A.Re);
+            B : constant Long_Long_Complex :=
+               (Re => X.Re + i_Sqrt_A.Re, Im => X.Im + i_Sqrt_A.Im);
+               --  X + i_Sqrt_A
             Log_B : constant Long_Long_Complex := Fast_Log (B);
-            Result : constant Long_Long_Complex := ( -- -i * Log_B
-               Re => Log_B.Im,
-               Im => -Log_B.Re);
+            Result : constant Long_Long_Complex :=
+               (Re => Log_B.Im, Im => -Log_B.Re);
+               --  -i * Log_B
          begin
             if X.Im = 0.0 and then abs X.Re <= 1.00 then
                return (Re => Result.Re, Im => X.Im);
@@ -484,23 +480,20 @@ package body System.Long_Long_Complex_Elementary_Functions is
          return X;
       else
          declare
-            iX : constant Long_Long_Complex := (
-               Re => -X.Im,
-               Im => X.Re);
-            A : constant Long_Long_Complex := ( -- 1.0 + iX
-               Re => 1.0 + iX.Re,
-               Im => iX.Im);
+            iX : constant Long_Long_Complex := (Re => -X.Im, Im => X.Re);
+            A : constant Long_Long_Complex := (Re => 1.0 + iX.Re, Im => iX.Im);
+               --  1.0 + iX
             Log_A : constant Long_Long_Complex := Fast_Log (A);
-            B : constant Long_Long_Complex := ( -- 1.0 - iX
-               Re => 1.0 - iX.Re,
-               Im => -iX.Im);
+            B : constant Long_Long_Complex :=
+               (Re => 1.0 - iX.Re, Im => -iX.Im);
+               --  1.0 - iX
             Log_B : constant Long_Long_Complex := Fast_Log (B);
-            C : constant Long_Long_Complex := ( -- Log_A - Log_B
-               Re => Log_A.Re - Log_B.Re,
-               Im => Log_A.Im - Log_B.Im);
-            Result : constant Long_Long_Complex := ( -- -i * C / 2.0
-               Re => C.Im / 2.0,
-               Im => -C.Re / 2.0);
+            C : constant Long_Long_Complex :=
+               (Re => Log_A.Re - Log_B.Re, Im => Log_A.Im - Log_B.Im);
+               --  Log_A - Log_B
+            Result : constant Long_Long_Complex :=
+               (Re => C.Im / 2.0, Im => -C.Re / 2.0);
+               --  -i * C / 2.0
          begin
             return Result;
          end;
@@ -515,9 +508,11 @@ package body System.Long_Long_Complex_Elementary_Functions is
          return X;
       else
          return (
-            Re => Long_Long_Elementary_Functions.Fast_Sinh (X.Re)
+            Re =>
+               Long_Long_Elementary_Functions.Fast_Sinh (X.Re)
                * Long_Long_Elementary_Functions.Fast_Cos (X.Im),
-            Im => Long_Long_Elementary_Functions.Fast_Cosh (X.Re)
+            Im =>
+               Long_Long_Elementary_Functions.Fast_Cosh (X.Re)
                * Long_Long_Elementary_Functions.Fast_Sin (X.Im));
       end if;
    end Fast_Sinh;
@@ -525,9 +520,11 @@ package body System.Long_Long_Complex_Elementary_Functions is
    function Fast_Cosh (X : Long_Long_Complex) return Long_Long_Complex is
    begin
       return (
-         Re => Long_Long_Elementary_Functions.Fast_Cosh (X.Re)
+         Re =>
+            Long_Long_Elementary_Functions.Fast_Cosh (X.Re)
             * Long_Long_Elementary_Functions.Fast_Cos (X.Im),
-         Im => Long_Long_Elementary_Functions.Fast_Sinh (X.Re)
+         Im =>
+            Long_Long_Elementary_Functions.Fast_Sinh (X.Re)
             * Long_Long_Elementary_Functions.Fast_Sin (X.Im));
    end Fast_Cosh;
 
@@ -557,9 +554,9 @@ package body System.Long_Long_Complex_Elementary_Functions is
       then
          declare
             Log_X : constant Long_Long_Complex := Fast_Log (X);
-            Result : constant Long_Long_Complex := ( -- Log_2 + Log_X
-               Re => Log_2 + Log_X.Re,
-               Im => Log_X.Im);
+            Result : constant Long_Long_Complex :=
+               (Re => Log_2 + Log_X.Re, Im => Log_X.Im);
+               --  Log_2 + Log_X
          begin
             if (X.Re < 0.0 and then Result.Re > 0.0)
                or else (X.Re > 0.0 and then Result.Re < 0.0)
@@ -572,13 +569,13 @@ package body System.Long_Long_Complex_Elementary_Functions is
       else
          declare
             X_X : constant Long_Long_Complex := X * X;
-            A : constant Long_Long_Complex := ( -- 1.0 + X_X
-               Re => 1.0 + X_X.Re,
-               Im => X_X.Im);
+            A : constant Long_Long_Complex :=
+               (Re => 1.0 + X_X.Re, Im => X_X.Im);
+               --  1.0 + X_X
             Sqrt_A : constant Long_Long_Complex := Fast_Sqrt (A);
-            B : constant Long_Long_Complex := ( -- X + Sqrt_A
-               Re => X.Re + Sqrt_A.Re,
-               Im => X.Im + Sqrt_A.Im);
+            B : constant Long_Long_Complex :=
+               (Re => X.Re + Sqrt_A.Re, Im => X.Im + Sqrt_A.Im);
+               --  X + Sqrt_A
             Result : constant Long_Long_Complex := Fast_Log (B);
          begin
             if X.Re = 0.0 then
@@ -600,9 +597,9 @@ package body System.Long_Long_Complex_Elementary_Functions is
          and then abs X.Im < Square_Root_Epsilon
       then
          declare
-            Result : constant Long_Long_Complex := ( -- i * X - i * (Pi / 2)
-               Re => -X.Im,
-               Im => X.Re - Pi_Div_2);
+            Result : constant Long_Long_Complex :=
+               (Re => -X.Im, Im => X.Re - Pi_Div_2);
+               --  i * X - i * (Pi / 2)
          begin
             if Result.Re <= 0.0 then
                return (Re => -Result.Re, Im => -Result.Im);
@@ -615,9 +612,9 @@ package body System.Long_Long_Complex_Elementary_Functions is
       then
          declare
             Log_X : constant Long_Long_Complex := Fast_Log (X);
-            Result : constant Long_Long_Complex := ( -- Log_2 + Log_X
-               Re => Log_2 + Log_X.Re,
-               Im => Log_X.Im);
+            Result : constant Long_Long_Complex :=
+               (Re => Log_2 + Log_X.Re, Im => Log_X.Im);
+               --  Log_2 + Log_X
          begin
             if Result.Re <= 0.0 then
                return (Re => -Result.Re, Im => -Result.Im);
@@ -627,27 +624,25 @@ package body System.Long_Long_Complex_Elementary_Functions is
          end;
       else
          declare
-            A : constant Long_Long_Complex := ( -- X + 1.0
-               Re => X.Re + 1.0,
-               Im => X.Im);
-            B : constant Long_Long_Complex := ( -- A / 2.0
-               Re => A.Re / 2.0,
-               Im => A.Im / 2.0);
+            A : constant Long_Long_Complex := (Re => X.Re + 1.0, Im => X.Im);
+               --  X + 1.0
+            B : constant Long_Long_Complex :=
+               (Re => A.Re / 2.0, Im => A.Im / 2.0);
+               --  A / 2.0
             Sqrt_B : constant Long_Long_Complex := Fast_Sqrt (B);
-            C : constant Long_Long_Complex := ( -- X - 1.0
-               Re => X.Re - 1.0,
-               Im => X.Im);
-            D : constant Long_Long_Complex := ( -- C / 2.0
-               Re => C.Re / 2.0,
-               Im => C.Im / 2.0);
+            C : constant Long_Long_Complex := (Re => X.Re - 1.0, Im => X.Im);
+               --  X - 1.0
+            D : constant Long_Long_Complex :=
+               (Re => C.Re / 2.0, Im => C.Im / 2.0);
+               --  C / 2.0
             Sqrt_D : constant Long_Long_Complex := Fast_Sqrt (D);
-            E : constant Long_Long_Complex := ( -- Sqrt_B + Sqrt_D
-               Re => Sqrt_B.Re + Sqrt_D.Re,
-               Im => Sqrt_B.Im + Sqrt_D.Im);
+            E : constant Long_Long_Complex :=
+               (Re => Sqrt_B.Re + Sqrt_D.Re, Im => Sqrt_B.Im + Sqrt_D.Im);
+               --  Sqrt_B + Sqrt_D
             Log_E : constant Long_Long_Complex := Fast_Log (E);
-            Result : constant Long_Long_Complex := ( -- 2.0 * Log_E
-               Re => 2.0 * Log_E.Re,
-               Im => 2.0 * Log_E.Im);
+            Result : constant Long_Long_Complex :=
+               (Re => 2.0 * Log_E.Re, Im => 2.0 * Log_E.Im);
+               --  2.0 * Log_E
          begin
             if Result.Re <= 0.0 then
                return (Re => -Result.Re, Im => -Result.Im);
@@ -666,20 +661,18 @@ package body System.Long_Long_Complex_Elementary_Functions is
          return X;
       else
          declare
-            A : constant Long_Long_Complex := ( -- 1.0 + X
-               Re => 1.0 + X.Re,
-               Im => X.Im);
+            A : constant Long_Long_Complex := (Re => 1.0 + X.Re, Im => X.Im);
+               --  1.0 + X
             Log_A : constant Long_Long_Complex := Fast_Log (A);
-            B : constant Long_Long_Complex := ( -- 1.0 - X
-               Re => 1.0 - X.Re,
-               Im => -X.Im);
+            B : constant Long_Long_Complex := (Re => 1.0 - X.Re, Im => -X.Im);
+               --  1.0 - X
             Log_B : constant Long_Long_Complex := Fast_Log (B);
-            C : constant Long_Long_Complex := ( -- Log_A - Log_B
-               Re => Log_A.Re - Log_B.Re,
-               Im => Log_A.Im - Log_B.Im);
-            Result : constant Long_Long_Complex := ( -- C / 2.0
-               Re => C.Re / 2.0,
-               Im => C.Im / 2.0);
+            C : constant Long_Long_Complex :=
+               (Re => Log_A.Re - Log_B.Re, Im => Log_A.Im - Log_B.Im);
+               --  Log_A - Log_B
+            Result : constant Long_Long_Complex :=
+               (Re => C.Re / 2.0, Im => C.Im / 2.0);
+               --  C / 2.0
          begin
             return Result;
          end;

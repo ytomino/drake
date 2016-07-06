@@ -5,7 +5,7 @@ with C.dirent;
 package System.Native_Directories.Searching is
    pragma Preelaborate;
 
-   subtype Directory_Entry_Access is C.bits.dirent.struct_dirent64_ptr;
+   subtype Directory_Entry_Access is C.bits.dirent.struct_dirent_ptr;
 
    function New_Directory_Entry (Source : not null Directory_Entry_Access)
       return not null Directory_Entry_Access;
@@ -14,7 +14,7 @@ package System.Native_Directories.Searching is
 
    type Directory_Entry_Additional_Type is record
       Filled : Boolean;
-      Information : aliased C.sys.stat.struct_stat64;
+      Information : aliased C.sys.stat.struct_stat;
    end record;
    pragma Suppress_Initialization (Directory_Entry_Additional_Type);
 
@@ -78,6 +78,6 @@ package System.Native_Directories.Searching is
    procedure Get_Information (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
-      Information : aliased out C.sys.stat.struct_stat64);
+      Information : aliased out C.sys.stat.struct_stat);
 
 end System.Native_Directories.Searching;

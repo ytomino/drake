@@ -1,7 +1,11 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
 with System.Native_IO;
+with System.Standard_Allocators;
+with System.Startup;
+with System.Storage_Elements;
 with System.Synchronous_Control;
 with System.Zero_Terminated_Strings;
 with C.errno;
@@ -14,61 +18,297 @@ package body System.Native_Processes is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Command_Line.Exit_Status;
    use type Ada.Exception_Identification.Exception_Id;
+   use type Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.char_ptr;
+   use type C.char_ptr_ptr; -- Command_Type
+   use type C.ptrdiff_t;
    use type C.size_t;
 
-   subtype Arguments_Type is C.char_ptr_array (0 .. 255);
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
-   procedure Split_Argument (
-      Command_Line : in out C.char_array;
-      Arguments : in out Arguments_Type);
-   procedure Split_Argument (
-      Command_Line : in out C.char_array;
-      Arguments : in out Arguments_Type)
-   is
-      I : C.size_t := Command_Line'First;
-      Argument_Index : C.size_t := Arguments'First;
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
+   package char_ptr_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char_ptr, C.char_ptr_ptr);
+
+   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
+      return C.char_ptr_ptr
+      with Convention => Intrinsic;
+   pragma Inline_Always ("+");
+
+   function "+" (Left : C.char_ptr_ptr; Right : C.ptrdiff_t)
+      return C.char_ptr_ptr is
    begin
-      Arguments (Argument_Index) := null;
+      return char_ptr_ptr_Conv.To_Pointer (
+         char_ptr_ptr_Conv.To_Address (Left)
+            + Storage_Elements.Storage_Offset (Right)
+               * (C.char_ptr'Size / Standard'Storage_Unit));
+   end "+";
+
+   procedure Reallocate (X : in out Command_Type; Entry_Count : C.size_t);
+   procedure Reallocate (X : in out Command_Type; Entry_Count : C.size_t) is
+      Size : constant Storage_Elements.Storage_Count :=
+         (Storage_Elements.Storage_Offset (Entry_Count) + 1) -- terminator
+         * (C.char_ptr'Size / Standard'Storage_Unit);
+   begin
+      X := char_ptr_ptr_Conv.To_Pointer (
+         Standard_Allocators.Reallocate (
+            char_ptr_ptr_Conv.To_Address (X),
+            Size));
+   end Reallocate;
+
+   function Entry_Count (Command : Command_Type) return C.size_t;
+   function Entry_Count (Command : Command_Type) return C.size_t is
+      Result : C.size_t := 0;
+   begin
+      if Command /= null then
+         declare
+            P : C.char_ptr_ptr := Command;
+         begin
+            while P.all /= null loop
+               Result := Result + 1;
+               P := P + 1;
+            end loop;
+         end;
+      end if;
+      return Result;
+   end Entry_Count;
+
+   function C_Width (Command : Command_Type) return C.size_t;
+   function C_Width (Command : Command_Type) return C.size_t is
+      Result : C.size_t := 0;
+   begin
+      if Command /= null then
+         declare
+            P : C.char_ptr_ptr := Command;
+         begin
+            while P.all /= null loop
+               Result := Result
+                  + strlen (P.all) * 2 -- for escape by '\'
+                  + 1; -- Space
+               P := P + 1;
+            end loop;
+         end;
+      end if;
+      return Result;
+   end C_Width;
+
+   procedure C_Image (
+      Command : Command_Type;
+      Command_Line : not null C.char_ptr);
+   procedure C_Image (
+      Command : Command_Type;
+      Command_Line : not null C.char_ptr)
+   is
+      Command_Line_As_A : String (Positive);
+      for Command_Line_As_A'Address use
+         char_ptr_Conv.To_Address (Command_Line);
+      Last : Natural := 0;
+   begin
+      if Command /= null then
+         declare
+            P : C.char_ptr_ptr := Command;
+         begin
+            while P.all /= null loop
+               declare
+                  S : String (1 .. Natural (strlen (P.all)));
+                  for S'Address use char_ptr_Conv.To_Address (P.all);
+               begin
+                  Append_Argument (Command_Line_As_A, Last, S);
+               end;
+               P := P + 1;
+            end loop;
+         end;
+      end if;
+      Command_Line_As_A (Last + 1) := Character'Val (0);
+   end C_Image;
+
+   procedure Insert (
+      Command : Command_Type;
+      Index : C.ptrdiff_t;
+      New_Item : String);
+   procedure Insert (
+      Command : Command_Type;
+      Index : C.ptrdiff_t;
+      New_Item : String)
+   is
+      E : constant C.char_ptr_ptr := Command + Index;
+   begin
+      --  clear for that any exception is raised
+      E.all := null;
+      --  set terminator
+      C.char_ptr_ptr'(Command + (Index + 1)).all := null;
+      --  allocate and copy
+      E.all := char_ptr_Conv.To_Pointer (
+         Standard_Allocators.Allocate (
+            New_Item'Length * Zero_Terminated_Strings.Expanding + 1));
+      Zero_Terminated_Strings.To_C (New_Item, E.all);
+   end Insert;
+
+   --  implementation
+
+   procedure Free (X : in out Command_Type) is
+   begin
+      if X /= null then
+         declare
+            P : C.char_ptr_ptr := X;
+         begin
+            while P.all /= null loop
+               Standard_Allocators.Free (char_ptr_Conv.To_Address (P.all));
+               P := P + 1;
+            end loop;
+         end;
+         Standard_Allocators.Free (char_ptr_ptr_Conv.To_Address (X));
+         X := null;
+      end if;
+   end Free;
+
+   function Image (Command : Command_Type) return String is
+      Width : constant C.size_t := C_Width (Command);
+      Command_Line : aliased C.char_array (0 .. Width); -- NUL
+   begin
+      C_Image (Command, Command_Line (0)'Unchecked_Access);
+      return Zero_Terminated_Strings.Value (Command_Line (0)'Unchecked_Access);
+   end Image;
+
+   procedure Value (
+      Command_Line : String;
+      Command : aliased out Command_Type)
+   is
+      Capacity : C.size_t := 256;
+      I : Positive := Command_Line'First;
+      Argument_Index : C.ptrdiff_t := 0;
+   begin
+      Reallocate (Command, Capacity);
+      Command.all := null; -- terminator
       loop
          --  skip spaces
-         while Command_Line (I) = ' ' loop
+         while I <= Command_Line'Last and then Command_Line (I) = ' ' loop
             I := I + 1;
          end loop;
-         exit when Command_Line (I) = C.char'Val (0);
-         --  take on argument
-         Arguments (Argument_Index) := Command_Line (I)'Unchecked_Access;
+         exit when I > Command_Line'Last;
+         --  clear for that any exception is raised
+         C.char_ptr_ptr'(Command + Argument_Index).all := null;
+         --  set terminator
+         C.char_ptr_ptr'(Command + (Argument_Index + 1)).all := null;
+         --  unescape, allocate and copy
          declare
-            J : C.size_t := I;
+            Buffer : String (I .. Command_Line'Last);
+            J : Natural := I - 1;
          begin
             loop
                if Command_Line (I) = '\' then
                   I := I + 1;
-                  exit when Command_Line (I) = C.char'Val (0);
+                  exit when I > Command_Line'Last;
                end if;
-               Command_Line (J) := Command_Line (I);
-               I := I + 1;
                J := J + 1;
+               Buffer (J) := Command_Line (I);
+               I := I + 1;
+               exit when I > Command_Line'Last;
                if Command_Line (I) = ' ' then
                   I := I + 1;
                   exit;
                end if;
-               exit when Command_Line (I) = C.char'Val (0);
+               exit when I > Command_Line'Last;
             end loop;
-            Command_Line (J) := C.char'Val (0);
+            Insert (Command, Argument_Index, Buffer (Buffer'First .. J));
          end;
          Argument_Index := Argument_Index + 1;
-         if Argument_Index > Arguments'Last then
-            raise Constraint_Error;
+         if C.size_t (Argument_Index) >= Capacity then
+            Capacity := Capacity * 2;
+            Reallocate (Command, Capacity);
          end if;
       end loop;
-      Arguments (Argument_Index) := null;
-   end Split_Argument;
+   end Value;
+
+   procedure Append (
+      Command : aliased in out Command_Type;
+      New_Item : String)
+   is
+      Old_Count : constant C.size_t := Entry_Count (Command);
+   begin
+      Reallocate (Command, Old_Count + 1);
+      Insert (Command, C.ptrdiff_t (Old_Count), New_Item);
+   end Append;
+
+   procedure Append (
+      Command : aliased in out Command_Type;
+      First : Positive;
+      Last : Natural)
+   is
+      Old_Count : constant C.size_t := Entry_Count (Command);
+      New_Count : constant C.size_t :=
+         Old_Count + C.size_t (Integer'Max (Last - First + 1, 0));
+      P : C.char_ptr_ptr;
+   begin
+      Reallocate (Command, New_Count);
+      --  clear for that any exception is raised, and set terminator
+      for I in Old_Count .. New_Count loop
+         C.char_ptr_ptr'(Command + C.ptrdiff_t (I)).all := null;
+      end loop;
+      --  allocate and copy
+      P := char_ptr_ptr_Conv.To_Pointer (Startup.argv) + C.ptrdiff_t (First);
+      for I in Old_Count .. New_Count - 1 loop
+         declare
+            E : constant C.char_ptr_ptr := Command + C.ptrdiff_t (I);
+            Length : constant C.size_t := strlen (P.all);
+         begin
+            E.all := char_ptr_Conv.To_Pointer (
+               Standard_Allocators.Allocate (
+                  Storage_Elements.Storage_Offset (Length) + 1));
+            declare
+               D : C.char_array (0 .. Length);
+               for D'Address use char_ptr_Conv.To_Address (E.all);
+               S : C.char_array (0 .. Length);
+               for S'Address use char_ptr_Conv.To_Address (P.all);
+            begin
+               D := S;
+            end;
+         end;
+         P := P + 1;
+      end loop;
+   end Append;
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String) is
+   begin
+      if Last >= Command_Line'First then
+         if Last >= Command_Line'Last then
+            raise Constraint_Error;
+         end if;
+         Last := Last + 1;
+         Command_Line (Last) := ' ';
+      end if;
+      for I in Argument'Range loop
+         if Argument (I) = ' ' then
+            if Last + 1 >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := '\';
+            Last := Last + 1;
+            Command_Line (Last) := ' ';
+         else
+            if Last >= Command_Line'Last then
+               raise Constraint_Error;
+            end if;
+            Last := Last + 1;
+            Command_Line (Last) := Argument (I);
+         end if;
+      end loop;
+   end Append_Argument;
+
+   --  child process management
 
    procedure Spawn (
       Child : out C.sys.types.pid_t;
-      Command_Line : String;
+      Command : Command_Type;
       Directory : String;
       Search_Path : Boolean;
       Input : Native_IO.Handle_Type;
@@ -76,15 +316,13 @@ package body System.Native_Processes is
       Error : Native_IO.Handle_Type);
    procedure Spawn (
       Child : out C.sys.types.pid_t;
-      Command_Line : String;
+      Command : Command_Type;
       Directory : String;
       Search_Path : Boolean;
       Input : Native_IO.Handle_Type;
       Output : Native_IO.Handle_Type;
       Error : Native_IO.Handle_Type)
    is
-      package char_ptr_Conv is
-         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       Old_Directory : C.char_ptr := null;
       Exception_Id : Ada.Exception_Identification.Exception_Id :=
          Ada.Exception_Identification.Null_Id;
@@ -108,10 +346,6 @@ package body System.Native_Processes is
       end if;
       --  execute
       declare
-         C_Command_Line : C.char_array (
-            0 ..
-            Command_Line'Length * Zero_Terminated_Strings.Expanding);
-         Arguments : C.char_ptr_array (0 .. 255) := (others => <>);
          Environment_Block : constant C.char_ptr_ptr :=
             System.Environment_Block;
          Actions : aliased C.spawn.posix_spawn_file_actions_t;
@@ -121,10 +355,6 @@ package body System.Native_Processes is
          New_Child : aliased C.sys.types.pid_t;
          errno : C.signed_int;
       begin
-         Zero_Terminated_Strings.To_C (
-            Command_Line,
-            C_Command_Line (0)'Access);
-         Split_Argument (C_Command_Line, Arguments);
          if C.spawn.posix_spawn_file_actions_init (Actions'Access) /= 0 then
             Exception_Id := Use_Error'Identity;
             goto Cleanup;
@@ -151,18 +381,18 @@ package body System.Native_Processes is
          if Search_Path then
             errno := C.spawn.posix_spawnp (
                New_Child'Access,
-               Arguments (0),
+               Command.all,
                Actions'Access,
                Attrs'Access,
-               Arguments (0)'Access,
+               Command,
                Environment_Block);
          else
             errno := C.spawn.posix_spawn (
                New_Child'Access,
-               Arguments (0),
+               Command.all,
                Actions'Access,
                Attrs'Access,
-               Arguments (0)'Access,
+               Command,
                Environment_Block);
          end if;
          case errno is
@@ -266,7 +496,7 @@ package body System.Native_Processes is
       end if;
    end Kill;
 
-   --  implementation
+   --  implementation of child process management
 
    function Do_Is_Open (Child : Process) return Boolean is
    begin
@@ -275,7 +505,7 @@ package body System.Native_Processes is
 
    procedure Create (
       Child : in out Process;
-      Command_Line : String;
+      Command : Command_Type;
       Directory : String := "";
       Search_Path : Boolean := False;
       Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
@@ -284,7 +514,32 @@ package body System.Native_Processes is
    begin
       Spawn (
          Child.Id,
-         Command_Line,
+         Command,
+         Directory,
+         Search_Path,
+         Ada.Streams.Naked_Stream_IO.Handle (Input),
+         Ada.Streams.Naked_Stream_IO.Handle (Output),
+         Ada.Streams.Naked_Stream_IO.Handle (Error));
+   end Create;
+
+   procedure Create (
+      Child : in out Process;
+      Command_Line : String;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type)
+   is
+      package Holder is
+         new Ada.Exceptions.Finally.Scoped_Holder (Command_Type, Free);
+      Command : aliased Command_Type;
+   begin
+      Holder.Assign (Command);
+      Value (Command_Line, Command);
+      Spawn (
+         Child.Id,
+         Command,
          Directory,
          Search_Path,
          Ada.Streams.Naked_Stream_IO.Handle (Input),
@@ -325,17 +580,18 @@ package body System.Native_Processes is
       Kill (Child, C.signal.SIGKILL);
    end Do_Forced_Abort_Process;
 
-   procedure Shell (
-      Command_Line : String;
+   --  pass a command to the shell
+
+   procedure C_Shell (
+      Command_Line : C.char_ptr;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure C_Shell (
+      Command_Line : C.char_ptr;
       Status : out Ada.Command_Line.Exit_Status)
    is
-      C_Command_Line : C.char_array (
-         0 ..
-         Command_Line'Length * Zero_Terminated_Strings.Expanding);
       Code : C.signed_int;
    begin
-      Zero_Terminated_Strings.To_C (Command_Line, C_Command_Line (0)'Access);
-      Code := C.stdlib.C_system (C_Command_Line (0)'Access);
+      Code := C.stdlib.C_system (Command_Line);
       if Code < 0
          or else Code = 127 * 16#100# -- the execution of the shell failed
       then
@@ -347,37 +603,31 @@ package body System.Native_Processes is
             Status := -1;
          end if;
       end if;
+   end C_Shell;
+
+   --  implementation of pass a command to the shell
+
+   procedure Shell (
+      Command : Command_Type;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      Width : constant C.size_t := C_Width (Command);
+      Command_Line : aliased C.char_array (0 .. Width); -- NUL
+   begin
+      C_Image (Command, Command_Line (0)'Unchecked_Access);
+      C_Shell (Command_Line (0)'Unchecked_Access, Status);
    end Shell;
 
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String) is
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status)
+   is
+      C_Command_Line : C.char_array (
+         0 ..
+         Command_Line'Length * Zero_Terminated_Strings.Expanding);
    begin
-      if Last >= Command_Line'First then
-         if Last >= Command_Line'Last then
-            raise Constraint_Error;
-         end if;
-         Last := Last + 1;
-         Command_Line (Last) := ' ';
-      end if;
-      for I in Argument'Range loop
-         if Argument (I) = ' ' then
-            if Last + 1 >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := '\';
-            Last := Last + 1;
-            Command_Line (Last) := ' ';
-         else
-            if Last >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := Argument (I);
-         end if;
-      end loop;
-   end Append_Argument;
+      Zero_Terminated_Strings.To_C (Command_Line, C_Command_Line (0)'Access);
+      C_Shell (C_Command_Line (0)'Unchecked_Access, Status);
+   end Shell;
 
 end System.Native_Processes;

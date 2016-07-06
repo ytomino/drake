@@ -1,5 +1,6 @@
-with System.Native_Tasks.Yield;
+with System.Debug;
 with C.errno;
+with C.sched;
 with C.signal;
 package body System.Native_Tasks is
    use type C.signed_int;
@@ -34,16 +35,16 @@ package body System.Native_Tasks is
    procedure Mask_SIGTERM (How : C.signed_int);
    procedure Mask_SIGTERM (How : C.signed_int) is
       Mask : aliased C.signal.sigset_t;
+      errno : C.signed_int;
+      Dummy_R : C.signed_int;
    begin
-      if C.signal.sigemptyset (Mask'Access) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.signal.sigaddset (Mask'Access, C.signal.SIGTERM) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.pthread.pthread_sigmask (How, Mask'Access, null) /= 0 then
-         raise Program_Error; -- ??
-      end if;
+      Dummy_R := C.signal.sigemptyset (Mask'Access);
+      Dummy_R := C.signal.sigaddset (Mask'Access, C.signal.SIGTERM);
+      errno := C.pthread.pthread_sigmask (How, Mask'Access, null);
+      pragma Check (Debug,
+         Check =>
+            errno = 0
+            or else Debug.Runtime_Error ("pthread_sigmask failed"));
    end Mask_SIGTERM;
 
    --  implementation of thread
@@ -63,11 +64,11 @@ package body System.Native_Tasks is
 
    procedure Join (
       Handle : Handle_Type; -- of target thread
-      Abort_Current : access Task_Attribute_Of_Abort; -- of current thread
+      Current_Abort_Event : access Synchronous_Objects.Event;
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
-      pragma Unreferenced (Abort_Current);
+      pragma Unreferenced (Current_Abort_Event);
    begin
       Error := C.pthread.pthread_join (Handle, Result'Access) /= 0;
    end Join;
@@ -81,12 +82,7 @@ package body System.Native_Tasks is
 
    --  implementation of stack
 
-   function Info_Block (
-      Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Stack)
-      return Info_Block_Type
-   is
-      pragma Unreferenced (Attr);
+   function Info_Block (Handle : Handle_Type) return C.pthread.pthread_t is
    begin
       return Handle;
    end Info_Block;
@@ -97,39 +93,43 @@ package body System.Native_Tasks is
       act : aliased C.signal.struct_sigaction := (
          (Unchecked_Tag => 1, sa_sigaction => SIGTERM_Handler'Access),
          others => <>); -- uninitialized
+      R : C.signed_int;
+      Dummy_R : C.signed_int;
    begin
       Installed_Abort_Handler := Handler;
       act.sa_flags := C.signal.SA_SIGINFO;
-      if C.signal.sigemptyset (act.sa_mask'Access) < 0 then
-         raise Program_Error; -- ??
-      end if;
-      if C.signal.sigaction (
+      Dummy_R := C.signal.sigemptyset (act.sa_mask'Access);
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          act'Access,
-         Old_SIGTERM_Action.Handle'Access) < 0
-      then
-         raise Program_Error; -- ??
-      end if;
+         Old_SIGTERM_Action.Handle'Access);
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sigaction failed"));
    end Install_Abort_Handler;
 
    procedure Uninstall_Abort_Handler is
+      R : C.signed_int;
    begin
-      if C.signal.sigaction (
+      R := C.signal.sigaction (
          C.signal.SIGTERM,
          Old_SIGTERM_Action.Handle'Access,
-         null) < 0
-      then
-         raise Program_Error; -- ??
-      end if;
+         null);
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sigaction failed"));
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (
       Handle : Handle_Type;
-      Attr : Task_Attribute_Of_Abort;
-      Error : out Boolean)
-   is
-      pragma Unreferenced (Attr);
+      Abort_Event : in out Synchronous_Objects.Event;
+      Error : out Boolean) is
    begin
+      --  write to the pipe
+      Synchronous_Objects.Set (Abort_Event);
+      --  send SIGTERM
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
          when 0 =>
             Yield;
@@ -141,16 +141,25 @@ package body System.Native_Tasks is
       end case;
    end Send_Abort_Signal;
 
-   procedure Block_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
-      pragma Unreferenced (Attr);
+   procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event) is
+      pragma Unreferenced (Abort_Event);
    begin
       Mask_SIGTERM (C.signal.SIG_BLOCK);
    end Block_Abort_Signal;
 
-   procedure Unblock_Abort_Signal (Attr : in out Task_Attribute_Of_Abort) is
-      pragma Unreferenced (Attr);
+   procedure Unblock_Abort_Signal is
    begin
       Mask_SIGTERM (C.signal.SIG_UNBLOCK);
    end Unblock_Abort_Signal;
+
+   procedure Yield is
+      R : C.signed_int;
+   begin
+      R := C.sched.sched_yield;
+      pragma Check (Debug,
+         Check =>
+            not (R < 0)
+            or else Debug.Runtime_Error ("sched_yield failed"));
+   end Yield;
 
 end System.Native_Tasks;

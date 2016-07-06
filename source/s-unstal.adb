@@ -1,5 +1,5 @@
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Allocators;
+with System.System_Allocators;
 package body System.Unbounded_Stack_Allocators is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Integer_Address;
@@ -14,7 +14,7 @@ package body System.Unbounded_Stack_Allocators is
       return Storage_Elements.Storage_Count
    is
       Alignment : constant Storage_Elements.Integer_Address :=
-         Storage_Elements.Integer_Address (Native_Allocators.Page_Size);
+         Storage_Elements.Integer_Address (System_Allocators.Page_Size);
    begin
       return Storage_Elements.Storage_Offset (
          Storage_Elements.Integer_Address'Mod (Required)
@@ -37,10 +37,16 @@ package body System.Unbounded_Stack_Allocators is
    is
       Header_Size : constant Storage_Elements.Storage_Count :=
          Block'Size / Standard'Storage_Unit;
-      Top : constant Address := Allocator;
       Mask : constant Storage_Elements.Integer_Address :=
          Storage_Elements.Integer_Address (Alignment - 1);
+      Top : Address := Allocator;
+      --  new block:
+      New_Block : Address := Null_Address;
+      New_Block_Size : Storage_Elements.Storage_Count;
+      Aligned_Header_Size : Storage_Elements.Storage_Count;
+      --  top block:
       Aligned_Top_Used : Address;
+      New_Top_Used : Address;
    begin
       if Top /= Null_Address then
          --  when top block is empty and previous block has enough space
@@ -54,15 +60,14 @@ package body System.Unbounded_Stack_Allocators is
                      (Storage_Elements.Integer_Address (Cast (Previous).Used)
                         + Mask)
                      and not Mask);
+               New_Previous_Used : constant Address :=
+                  Aligned_Previous_Used + Size_In_Storage_Elements;
             begin
-               if Aligned_Previous_Used + Size_In_Storage_Elements <=
-                  Cast (Previous).Limit
-               then
+               if New_Previous_Used <= Cast (Previous).Limit then
                   Allocator := Previous;
-                  Native_Allocators.Unmap (Top, Cast (Top).Limit - Top);
+                  System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
                   Storage_Address := Aligned_Previous_Used;
-                  Cast (Previous).Used :=
-                     Storage_Address + Size_In_Storage_Elements;
+                  Cast (Previous).Used := New_Previous_Used;
                   return;
                end if;
             end;
@@ -71,60 +76,95 @@ package body System.Unbounded_Stack_Allocators is
          Aligned_Top_Used := Address (
             (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
             and not Mask);
-         if Aligned_Top_Used + Size_In_Storage_Elements <=
-            Cast (Top).Limit
-         then
+         New_Top_Used := Aligned_Top_Used + Size_In_Storage_Elements;
+         if New_Top_Used <= Cast (Top).Limit then
             Storage_Address := Aligned_Top_Used;
-            Cast (Top).Used := Storage_Address + Size_In_Storage_Elements;
+            Cast (Top).Used := New_Top_Used;
             return;
          end if;
          --  try expanding top block
          if Expanding /= 0 then
+            Aligned_Header_Size := Storage_Elements.Storage_Offset (
+               (Storage_Elements.Integer_Address (Header_Size) + Mask)
+               and not Mask);
             declare
                Additional_Block_Size : constant
                   Storage_Elements.Storage_Count :=
                      Ceiling_Page_Size (
-                        Size_In_Storage_Elements
-                        - (Cast (Top).Limit - Aligned_Top_Used));
-               Additional_Block : constant Address := Native_Allocators.Map (
+                        Size_In_Storage_Elements + Aligned_Header_Size);
+               Additional_Block : constant Address := System_Allocators.Map (
                   Cast (Top).Limit,
                   Additional_Block_Size);
             begin
                if Additional_Block = Cast (Top).Limit then
                   Cast (Top).Limit := Cast (Top).Limit + Additional_Block_Size;
                   Storage_Address := Aligned_Top_Used;
-                  Cast (Top).Used :=
-                     Storage_Address + Size_In_Storage_Elements;
+                  Cast (Top).Used := New_Top_Used;
                   return;
+               elsif Additional_Block + Additional_Block_Size = Top then
+                  --  The new block is allocated brefore the top block,
+                  --    concatenate them.
+                  --  Especially, this often happen in Linux.
+                  declare
+                     Top_Is_Unused : constant Boolean :=
+                        Cast (Top).Used = Top + Header_Size;
+                  begin
+                     Cast (Additional_Block).all := Cast (Top).all;
+                     Allocator := Additional_Block;
+                     Top := Additional_Block;
+                     if Top_Is_Unused then
+                        Storage_Address :=
+                           Address (
+                              (Storage_Elements.Integer_Address (
+                                    Top + Header_Size)
+                                 + Mask)
+                              and not Mask);
+                        Cast (Top).Used :=
+                           Storage_Address + Size_In_Storage_Elements;
+                        return;
+                     end if;
+                  end;
+                  goto Allocating_New_Block;
                end if;
+               New_Block := Additional_Block;
+               New_Block_Size := Additional_Block_Size;
             end;
          end if;
          --  top block is not enough, then free it if unused
          if Cast (Top).Used = Top + Header_Size then
-            Allocator := Cast (Top).Previous;
-            Native_Allocators.Unmap (Top, Cast (Top).Limit - Top);
+            declare
+               New_Top : constant Address := Cast (Top).Previous;
+            begin
+               System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
+               Allocator := New_Top;
+               Top := New_Top;
+            end;
          end if;
       end if;
+   <<Allocating_New_Block>>
       --  new block
       declare
          Default_Block_Size : constant := 10 * 1024;
-         Aligned_Header_Size : constant Storage_Elements.Storage_Count :=
-            Storage_Elements.Storage_Count (
-               (Storage_Elements.Integer_Address (Header_Size) + Mask)
-               and not Mask);
-         Block_Size : constant Storage_Elements.Storage_Count :=
-            Ceiling_Page_Size (
-               Storage_Elements.Storage_Offset'Max (
-                  Default_Block_Size,
-                  Size_In_Storage_Elements + Aligned_Header_Size));
-         New_Block : constant Address := Native_Allocators.Map (Block_Size);
       begin
          if New_Block = Null_Address then
-            raise Storage_Error;
+            Aligned_Header_Size := Storage_Elements.Storage_Offset (
+               (Storage_Elements.Integer_Address (Header_Size) + Mask)
+               and not Mask);
+            New_Block_Size := Size_In_Storage_Elements + Aligned_Header_Size;
+            if Top = Null_Address then
+               New_Block_Size := Storage_Elements.Storage_Offset'Max (
+                  Default_Block_Size,
+                  New_Block_Size);
+            end if;
+            New_Block_Size := Ceiling_Page_Size (New_Block_Size);
+            New_Block := System_Allocators.Map (Null_Address, New_Block_Size);
+            if New_Block = Null_Address then
+               raise Storage_Error;
+            end if;
          end if;
-         Cast (New_Block).Previous := Allocator;
+         Cast (New_Block).Previous := Top;
          Allocator := New_Block;
-         Cast (New_Block).Limit := New_Block + Block_Size;
+         Cast (New_Block).Limit := New_Block + New_Block_Size;
          Storage_Address := New_Block + Aligned_Header_Size;
          Cast (New_Block).Used := Storage_Address + Size_In_Storage_Elements;
       end;
@@ -138,19 +178,19 @@ package body System.Unbounded_Stack_Allocators is
       Top : constant Address := Allocator;
    begin
       if Top = Null_Address then
-         return (Top => Null_Address, Used => Null_Address);
+         return Marker (Null_Address);
       elsif Cast (Top).Used = Top + Header_Size then
          declare
             Previous : constant Address := Cast (Top).Previous;
          begin
             if Previous = Null_Address then
-               return (Top => Null_Address, Used => Null_Address);
+               return Marker (Null_Address);
             else
-               return (Top => Previous, Used => Cast (Previous).Used);
+               return Marker (Cast (Previous).Used);
             end if;
          end;
       else
-         return (Top => Top, Used => Cast (Top).Used);
+         return Marker (Cast (Top).Used);
       end if;
    end Mark;
 
@@ -166,19 +206,18 @@ package body System.Unbounded_Stack_Allocators is
             declare
                Top : constant Address := Allocator;
             begin
-               if Top = Mark.Top then
-                  Cast (Top).Used := Mark.Used;
+               if Address (Mark) in Top .. Cast (Top).Limit then
+                  Cast (Top).Used := Address (Mark);
                   exit;
-               elsif Cast (Top).Previous = Mark.Top
-                  and then (Mark.Top = Null_Address
-                     or else Mark.Used = Cast (Mark.Top).Used)
+               elsif Cast (Top).Previous = Null_Address
+                  or else Address (Mark) = Cast (Cast (Top).Previous).Used
                then
-                  --  leave Limit unused block
+                  --  leave one unused block
                   Cast (Top).Used := Top + Header_Size;
                   exit;
                end if;
                Allocator := Cast (Top).Previous;
-               Native_Allocators.Unmap (Top, Cast (Top).Limit - Top);
+               System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
             end;
          end loop;
       end if;
@@ -191,7 +230,7 @@ package body System.Unbounded_Stack_Allocators is
             Top : constant Address := Allocator;
          begin
             Allocator := Cast (Top).Previous;
-            Native_Allocators.Unmap (Top, Cast (Top).Limit - Top);
+            System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
          end;
       end loop;
    end Clear;

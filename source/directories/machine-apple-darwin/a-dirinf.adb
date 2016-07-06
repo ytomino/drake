@@ -84,6 +84,38 @@ package body Ada.Directories.Information is
       end if;
    end To_Permission_Set;
 
+   function To_User_Permission_Set (Information : C.sys.stat.struct_stat)
+      return User_Permission_Set_Type;
+   function To_User_Permission_Set (Information : C.sys.stat.struct_stat)
+      return User_Permission_Set_Type
+   is
+      Executable : Boolean;
+      Writable : Boolean;
+      Readable : Boolean;
+   begin
+      if System.Native_Credentials.Belongs_To_Current_User (
+         Information.st_uid)
+      then
+         Executable := (Information.st_mode and C.sys.stat.S_IXUSR) /= 0;
+         Writable := (Information.st_mode and C.sys.stat.S_IWUSR) /= 0;
+         Readable := (Information.st_mode and C.sys.stat.S_IRUSR) /= 0;
+      elsif System.Native_Credentials.Belongs_To_Current_Group (
+         Information.st_gid)
+      then
+         Executable := (Information.st_mode and C.sys.stat.S_IXGRP) /= 0;
+         Writable := (Information.st_mode and C.sys.stat.S_IWGRP) /= 0;
+         Readable := (Information.st_mode and C.sys.stat.S_IRGRP) /= 0;
+      else
+         Executable := (Information.st_mode and C.sys.stat.S_IXOTH) /= 0;
+         Writable := (Information.st_mode and C.sys.stat.S_IWOTH) /= 0;
+         Readable := (Information.st_mode and C.sys.stat.S_IROTH) /= 0;
+      end if;
+      return (
+         User_Execute => Executable,
+         User_Write => Writable,
+         User_Read => Readable);
+   end To_User_Permission_Set;
+
    --  implementation
 
    function Last_Access_Time (Name : String) return Calendar.Time is
@@ -325,7 +357,7 @@ package body Ada.Directories.Information is
       Buffer_Length : C.size_t := 1024;
       Buffer : aliased C.char_ptr := Conv.To_Pointer (
          System.Standard_Allocators.Allocate (
-            System.Storage_Elements.Storage_Count (Buffer_Length)));
+            System.Storage_Elements.Storage_Offset (Buffer_Length)));
    begin
       Holder.Assign (Buffer);
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
@@ -356,7 +388,7 @@ package body Ada.Directories.Information is
             Buffer := Conv.To_Pointer (
                System.Standard_Allocators.Reallocate (
                   Conv.To_Address (Buffer),
-                  System.Storage_Elements.Storage_Count (Buffer_Length)));
+                  System.Storage_Elements.Storage_Offset (Buffer_Length)));
          end;
       end loop;
    end Read_Symbolic_Link;
@@ -368,6 +400,29 @@ package body Ada.Directories.Information is
       return Read_Symbolic_Link (
          Full_Name (Directory_Entry)); -- checking the predicate
    end Read_Symbolic_Link;
+
+   function User_Permission_Set (Name : String)
+      return User_Permission_Set_Type
+   is
+      Information : aliased Directory_Entry_Information_Type;
+   begin
+      System.Native_Directories.Get_Information (Name, Information);
+      return To_User_Permission_Set (Information);
+   end User_Permission_Set;
+
+   function User_Permission_Set (
+      Directory_Entry : Directory_Entry_Type)
+      return User_Permission_Set_Type
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
+      NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled.Reference (Directory_Entry).all;
+   begin
+      Fill (NC_Directory_Entry);
+      return To_User_Permission_Set (
+         NC_Directory_Entry.Additional.Information);
+   end User_Permission_Set;
 
    function Identity (Name : String) return File_Id is
       Information : aliased Directory_Entry_Information_Type;

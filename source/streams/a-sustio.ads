@@ -123,7 +123,7 @@ private
             return Buffer_Type
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";
-         --  "out" parameter destructs size info, and result is also
+            --  "out" parameter destructs size info, and result is also
 
          procedure Write (
             Stream : not null access Root_Stream_Type'Class;

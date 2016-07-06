@@ -39,7 +39,7 @@ begin
 			null;
 		exception
 			when others =>
-				Ada.Debug.Put (I'Img);
+				Ada.Debug.Put (Character'Image (I));
 				raise;
 		end;
 	end loop;

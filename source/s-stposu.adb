@@ -164,7 +164,7 @@ package body System.Storage_Pools.Subpools is
    end Set_Pool_Of_Subpool;
 
    function Default_Subpool_For_Pool (
-      Pool : Root_Storage_Pool_With_Subpools)
+      Pool : in out Root_Storage_Pool_With_Subpools)
       return not null Subpool_Handle is
    begin
       --  RM 13.11.4(35/3)
@@ -302,8 +302,8 @@ package body System.Storage_Pools.Subpools is
       end if;
       --  fix address
       if Is_Controlled
-         and then -- for System.Storage_Pools.Overlaps
-            Actual_Storage_Address /= Overlaid_Allocation
+         and then Actual_Storage_Address /=
+            Overlaid_Allocation -- for System.Storage_Pools.Overlaps
       then
          Shared_Locking.Enter;
          declare
@@ -341,8 +341,9 @@ package body System.Storage_Pools.Subpools is
    begin
       --  fix address
       if Is_Controlled
-         and then -- for System.Storage_Pools.Overlaps
-            Runtime_Context.Get_Task_Local_Storage.Overlaid_Allocation /= Addr
+         and then Addr /=
+            Runtime_Context.Get_Task_Local_Storage.Overlaid_Allocation
+               --  for System.Storage_Pools.Overlaps
       then
          Shared_Locking.Enter;
          declare

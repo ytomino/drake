@@ -1,11 +1,9 @@
-with Ada.Exception_Identification.From_Here;
-with System.Native_Tasks;
+with System.Debug;
 with System.Tasks;
 with C.winbase;
 with C.windef;
 with C.winerror;
 package body System.Synchronous_Objects.Abortable is
-   use Ada.Exception_Identification.From_Here;
    use type C.windef.DWORD;
 
    --  queue
@@ -61,31 +59,32 @@ package body System.Synchronous_Objects.Abortable is
       Object : in out Event;
       Aborted : out Boolean)
    is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      if Attr /= null and then not Attr.Blocked then
+      if Abort_Event /= null then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Object.Handle,
-               Attr.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Object.Handle, Abort_Event.Handle);
+            R : C.windef.DWORD;
          begin
-            case C.winbase.WaitForMultipleObjects (
+            R := C.winbase.WaitForMultipleObjects (
                2,
                Handles (0)'Access,
                0,
-               C.winbase.INFINITE)
-            is
-               when C.winbase.WAIT_OBJECT_0 | C.winbase.WAIT_OBJECT_0 + 1 =>
-                  null;
-               when others =>
-                  Raise_Exception (Tasking_Error'Identity);
-            end case;
+               C.winbase.INFINITE);
+            pragma Check (Debug,
+               Check =>
+                  R = C.winbase.WAIT_OBJECT_0
+                  or else R = C.winbase.WAIT_OBJECT_0 + 1
+                  or else Debug.Runtime_Error (
+                     "WaitForMultipleObjects failed"));
+            Aborted :=
+               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object);
+         Aborted := Tasks.Is_Aborted;
       end if;
-      Aborted := Tasks.Is_Aborted;
    end Wait;
 
    procedure Wait (
@@ -94,82 +93,34 @@ package body System.Synchronous_Objects.Abortable is
       Value : out Boolean;
       Aborted : out Boolean)
    is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      if Attr /= null and then not Attr.Blocked then
+      if Abort_Event /= null then
          declare
-            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE := (
-               Object.Handle,
-               Attr.Event);
+            Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
+               (Object.Handle, Abort_Event.Handle);
             Milliseconds : constant C.windef.DWORD :=
                C.windef.DWORD (Timeout * 1_000);
+            R : C.windef.DWORD;
          begin
-            case C.winbase.WaitForMultipleObjects (
+            R := C.winbase.WaitForMultipleObjects (
                2,
                Handles (0)'Access,
                0,
-               Milliseconds)
-            is
-               when C.winbase.WAIT_OBJECT_0 =>
-                  Value := True;
-                  Aborted := Tasks.Is_Aborted;
-               when C.winbase.WAIT_OBJECT_0 + 1 | C.winerror.WAIT_TIMEOUT =>
-                  Value := Get (Object);
-                  Aborted := True;
-               when others =>
-                  Raise_Exception (Tasking_Error'Identity);
-            end case;
+               Milliseconds);
+            pragma Check (Debug,
+               Check =>
+                  R = C.winbase.WAIT_OBJECT_0
+                  or else R = C.winbase.WAIT_OBJECT_0 + 1
+                  or else R = C.winerror.WAIT_TIMEOUT
+                  or else Debug.Runtime_Error (
+                     "WaitForMultipleObjects failed"));
+            Value := R = C.winbase.WAIT_OBJECT_0 or else Get (Object);
+            Aborted :=
+               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object, Timeout, Value);
-         Aborted := Tasks.Is_Aborted;
-      end if;
-   end Wait;
-
-   --  barrier
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
-      Aborted : out Boolean)
-   is
-      Attr : constant access Native_Tasks.Task_Attribute_Of_Abort :=
-         Tasks.Abort_Attribute;
-   begin
-      if Attr /= null and then not Attr.Blocked then
-         declare
-            Order : Natural;
-         begin
-            Enter (Object.Mutex);
-            Object.Blocked := Object.Blocked + 1;
-            Order := Object.Blocked rem Object.Release_Threshold;
-            Notified := Order = 1;
-            if Order = 0 then
-               Set (Object.Event);
-               Aborted := Tasks.Is_Aborted;
-               Object.Unblocked := Object.Unblocked + 1;
-            else
-               loop
-                  Leave (Object.Mutex);
-                  Wait (Object.Event, Aborted);
-                  Enter (Object.Mutex);
-                  exit when Object.Blocked >= Object.Release_Threshold
-                     or else Aborted;
-               end loop;
-               Object.Unblocked := Object.Unblocked + 1;
-            end if;
-            if Object.Unblocked = Object.Release_Threshold then
-               Object.Blocked := Object.Blocked - Object.Release_Threshold;
-               Object.Unblocked := 0;
-               if Object.Blocked < Object.Release_Threshold then
-                  Reset (Object.Event);
-               end if;
-            end if;
-            Leave (Object.Mutex);
-         end;
-      else
-         Wait (Object, Notified);
          Aborted := Tasks.Is_Aborted;
       end if;
    end Wait;

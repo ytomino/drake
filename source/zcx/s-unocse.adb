@@ -1,6 +1,6 @@
 --  for ZCX (or SjLj, or Win64 SEH)
 pragma Check_Policy (Trace => Ignore);
-with System.Native_Allocators;
+with System.System_Allocators;
 with C.unwind;
 separate (System.Unwind.Occurrences)
 package body Separated is
@@ -31,7 +31,7 @@ package body Separated is
             C.unwind.struct_Unwind_Exception_ptr);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      Native_Allocators.Free (Conv.To_Address (Exception_Object));
+      System_Allocators.Free (Conv.To_Address (Exception_Object));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Cleanup;
 
@@ -47,7 +47,7 @@ package body Separated is
       Result : Representation.Machine_Occurrence_Access;
    begin
       Result := Conv.To_Pointer (
-         Native_Allocators.Allocate (
+         System_Allocators.Allocate (
             Representation.Machine_Occurrence'Size / Standard'Storage_Unit));
       if Result = null then
          declare -- fallback for the heap is exhausted

@@ -10,9 +10,9 @@ package body System.Native_Directories.Volumes is
    use Ada.Exception_Identification.From_Here;
    use type File_Size;
    use type Storage_Elements.Storage_Offset;
-   use type C.signed_int;
    use type C.size_t;
    use type C.windef.DWORD;
+   use type C.windef.WINBOOL;
    use type C.winnt.LPWSTR;
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
@@ -33,14 +33,15 @@ package body System.Native_Directories.Volumes is
    begin
       if FileSystemNameBuffer /= null or else not FS.Valid then
          if C.winbase.GetVolumeInformation (
-            FS.Root_Path,
-            null,
-            0,
-            FS.VolumeSerialNumber'Access,
-            null,
-            FS.FileSystemFlags'Access,
-            FileSystemNameBuffer,
-            FileSystemNameSize) = 0
+               FS.Root_Path,
+               null,
+               0,
+               FS.VolumeSerialNumber'Access,
+               null,
+               FS.FileSystemFlags'Access,
+               FileSystemNameBuffer,
+               FileSystemNameSize) =
+            C.windef.FALSE
          then
             Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
          end if;
@@ -50,7 +51,7 @@ package body System.Native_Directories.Volumes is
             declare
                type WCHAR_const_ptr is access constant C.winnt.WCHAR;
                package WCHAR_const_ptr_Conv is
-                  new System.Address_To_Constant_Access_Conversions (
+                  new Address_To_Constant_Access_Conversions (
                      C.winnt.WCHAR,
                      WCHAR_const_ptr);
                FileSystem_A : C.winnt.WCHAR_array (C.size_t);
@@ -87,9 +88,10 @@ package body System.Native_Directories.Volumes is
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetVolumePathName (
-         W_Name (0)'Access,
-         Root_Path (0)'Access,
-         Root_Path'Length) = 0
+            W_Name (0)'Access,
+            Root_Path (0)'Access,
+            Root_Path'Length) =
+         C.windef.FALSE
       then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -98,7 +100,7 @@ package body System.Native_Directories.Volumes is
          pragma Suppress (Alignment_Check);
          Dest : constant Address :=
             Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Count (Root_Path_Length + 1)
+               (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
          Dest_A : C.winnt.WCHAR_array (C.size_t);
          for Dest_A'Address use Dest;
@@ -116,10 +118,11 @@ package body System.Native_Directories.Volumes is
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
       if C.winbase.GetDiskFreeSpaceEx (
-         FS.Root_Path,
-         FreeBytesAvailable'Access,
-         TotalNumberOfBytes'Access,
-         null) = 0
+            FS.Root_Path,
+            FreeBytesAvailable'Access,
+            TotalNumberOfBytes'Access,
+            null) =
+         C.windef.FALSE
       then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -131,10 +134,11 @@ package body System.Native_Directories.Volumes is
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
       if C.winbase.GetDiskFreeSpaceEx (
-         FS.Root_Path,
-         FreeBytesAvailable'Access,
-         TotalNumberOfBytes'Access,
-         null) = 0
+            FS.Root_Path,
+            FreeBytesAvailable'Access,
+            TotalNumberOfBytes'Access,
+            null) =
+         C.windef.FALSE
       then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -164,9 +168,10 @@ package body System.Native_Directories.Volumes is
       VolumeName : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       if C.winbase.GetVolumeNameForVolumeMountPoint (
-         FS.Root_Path,
-         VolumeName (0)'Access,
-         VolumeName'Length) = 0
+            FS.Root_Path,
+            VolumeName (0)'Access,
+            VolumeName'Length) =
+         C.windef.FALSE
       then
          declare
             Error : constant C.windef.DWORD := C.winbase.GetLastError;

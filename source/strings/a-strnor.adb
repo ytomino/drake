@@ -50,8 +50,8 @@ package body Ada.Strings.Normalization is
                   L : constant UCD.UCS_4 :=
                      UCD.Hangul.LBase + SIndex / UCD.Hangul.NCount;
                   V : constant UCD.UCS_4 :=
-                     UCD.Hangul.VBase + SIndex rem UCD.Hangul.NCount
-                     / UCD.Hangul.TCount;
+                     UCD.Hangul.VBase
+                     + SIndex rem UCD.Hangul.NCount / UCD.Hangul.TCount;
                   T : constant UCD.UCS_4 :=
                      UCD.Hangul.TBase + SIndex rem UCD.Hangul.TCount;
                begin
@@ -102,8 +102,8 @@ package body Ada.Strings.Normalization is
                if C > 0 then
                   To := Canonical_Composites.C_Map (C).To;
                elsif Wide_Wide_Character'Pos (From (1)) in
-                  UCD.Hangul.LBase ..
-                  UCD.Hangul.LBase + UCD.Hangul.LCount - 1
+                     UCD.Hangul.LBase ..
+                     UCD.Hangul.LBase + UCD.Hangul.LCount - 1
                   and then Wide_Wide_Character'Pos (From (2)) in
                      UCD.Hangul.VBase ..
                      UCD.Hangul.VBase + UCD.Hangul.VCount - 1
@@ -123,8 +123,8 @@ package body Ada.Strings.Normalization is
                            * UCD.Hangul.TCount);
                   end;
                elsif Wide_Wide_Character'Pos (From (1)) in
-                  UCD.Hangul.SBase ..
-                  UCD.Hangul.SBase + UCD.Hangul.SCount - 1
+                     UCD.Hangul.SBase ..
+                     UCD.Hangul.SBase + UCD.Hangul.SCount - 1
                   and then Wide_Wide_Character'Pos (From (2)) in
                      UCD.Hangul.TBase ..
                      UCD.Hangul.TBase + UCD.Hangul.TCount - 1

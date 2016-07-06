@@ -94,11 +94,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         First => null,
-         Last => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, First => null, Last => null, Length => 0);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;
@@ -379,11 +376,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       New_Item : Element_Type;
       Count : Count_Type := 1) is
    begin
-      Insert (
-         Container,
-         Downcast (Downcast (Container.Super.Data).First),
-         New_Item,
-         Count);
+      Insert (Container, First (Container), New_Item, Count);
    end Prepend;
 
    procedure Append (

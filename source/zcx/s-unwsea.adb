@@ -256,10 +256,11 @@ package body System.Unwind.Searching is
                            then
                               is_handled :=
                                  choice = Cast (GCC_Exception.Occurrence.Id)
-                                 or else
-                                    (choice = Cast (Others_Value'Access)
-                                    and then not GCC_Exception.Occurrence.Id.
-                                       Not_Handled_By_Others)
+                                 or else (
+                                    choice = Cast (Others_Value'Access)
+                                    and then
+                                       not GCC_Exception.Occurrence.Id.
+                                          Not_Handled_By_Others)
                                  or else
                                     choice = Cast (All_Others_Value'Access);
                            else

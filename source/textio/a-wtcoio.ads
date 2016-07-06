@@ -9,12 +9,12 @@ package Ada.Wide_Text_IO.Complex_IO is
    --  for renaming
    package Strings is new Text_IO.Complex_IO (Complex_Types);
 
-   Default_Fore : Field -- := 2;
-      renames Strings.Default_Fore;
-   Default_Aft : Field -- := Complex_Types.Real'Digits - 1;
-      renames Strings.Default_Aft;
-   Default_Exp : Field -- := 3;
-      renames Strings.Default_Exp;
+   Default_Fore : Field
+      renames Strings.Default_Fore; -- 2
+   Default_Aft : Field
+      renames Strings.Default_Aft; -- Complex_Types.Real'Digits - 1
+   Default_Exp : Field
+      renames Strings.Default_Exp; -- 3
 
    procedure Get (
       File : File_Type; -- Input_File_Type

@@ -1,69 +1,18 @@
+with System.Native_Real_Time;
 with System.Native_Time;
+with System.Debug;
 with System.Tasks;
+with C.errno;
+with C.poll;
 package body System.Synchronous_Objects.Abortable is
-   use type Storage_Barriers.Flag;
+   use type Native_Time.Nanosecond_Number;
+   use type C.signed_int;
+   use type C.unsigned_short;
 
-   --  condition variable
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Duration;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Tasks.Is_Aborted;
-      if not Aborted then
-         declare
-            R : Duration := Timeout;
-         begin
-            while R > Abort_Checking_Span loop
-               Wait (Object, Mutex, Abort_Checking_Span, Notified);
-               Aborted := Tasks.Is_Aborted;
-               if Notified or else Aborted then
-                  return;
-               end if;
-               R := R - Abort_Checking_Span;
-            end loop;
-            Wait (Object, Mutex, R, Notified);
-            Aborted := Tasks.Is_Aborted;
-         end;
-      end if;
-   end Wait;
-
-   procedure Wait (
-      Object : in out Condition_Variable;
-      Mutex : in out Synchronous_Objects.Mutex;
-      Timeout : Native_Calendar.Native_Time;
-      Notified : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Notified := False;
-      Aborted := Tasks.Is_Aborted;
-      if not Aborted then
-         declare
-            Timeout_T : constant Duration := Native_Time.To_Duration (Timeout);
-            N : Duration := Native_Time.To_Duration (Native_Calendar.Clock);
-         begin
-            loop
-               N := N + Abort_Checking_Span;
-               exit when N >= Timeout_T;
-               Wait (
-                  Object,
-                  Mutex,
-                  Timeout => Native_Time.To_timespec (N),
-                  Notified => Notified);
-               Aborted := Tasks.Is_Aborted;
-               if Notified or else Aborted then
-                  return;
-               end if;
-            end loop;
-            Wait (Object, Mutex, Timeout, Notified);
-            Aborted := Tasks.Is_Aborted;
-         end;
-      end if;
-   end Wait;
+   type struct_pollfd_array is
+      array (C.size_t range <>) of aliased C.poll.struct_pollfd
+      with Convention => C;
+   pragma Suppress_Initialization (struct_pollfd_array);
 
    --  queue
 
@@ -85,18 +34,17 @@ package body System.Synchronous_Objects.Abortable is
             exit Taking when Item /= null;
             Not_Found : declare
                Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
-               Notified : Boolean; -- ignored
             begin
                Object.Params := Params;
                Object.Filter := Filter;
                loop
                   Object.Waiting := True;
-                  Wait (
-                     Object.Condition_Variable,
-                     Object.Mutex.all,
-                     Timeout => Abort_Checking_Span,
-                     Notified => Notified,
-                     Aborted => Aborted);
+                  Leave (Object.Mutex.all);
+                  Wait (Object.Pipe, Aborted => Aborted);
+                  if not Aborted then
+                     Read_1 (Object.Pipe.Reading_Pipe);
+                  end if;
+                  Enter (Object.Mutex.all);
                   Object.Waiting := False;
                   exit Taking when Aborted;
                   exit when Object.Tail /= Tail_On_Waiting;
@@ -118,90 +66,136 @@ package body System.Synchronous_Objects.Abortable is
 
    procedure Wait (
       Object : in out Event;
-      Aborted : out Boolean) is
+      Aborted : out Boolean)
+   is
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      Enter (Object.Mutex);
-      if Storage_Barriers.atomic_load (Object.Value'Access) /= 0 then
-         Aborted := Tasks.Is_Aborted;
+      if Abort_Event /= null then
+         declare
+            Polling : aliased struct_pollfd_array (0 .. 1);
+         begin
+            Polling (0).fd := Object.Reading_Pipe;
+            Polling (0).events :=
+               C.signed_short (
+                  C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
+            Polling (1).fd := Abort_Event.Reading_Pipe;
+            Polling (1).events :=
+               C.signed_short (
+                  C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
+            loop
+               declare
+                  R : C.signed_int;
+                  Value : Boolean;
+               begin
+                  R := C.poll.poll (
+                     Polling (0)'Access,
+                     2,
+                     -1); -- waiting indefinitely
+                  if R > 0 then
+                     pragma Check (Debug,
+                        Check =>
+                           ((C.unsigned_short (Polling (0).revents)
+                              and C.poll.POLLERR) = 0
+                           and then (C.unsigned_short (Polling (0).revents)
+                              and C.poll.POLLERR) = 0)
+                           or else Debug.Runtime_Error ("POLLERR"));
+                     Value :=
+                        (C.unsigned_short (Polling (0).revents)
+                           and C.poll.POLLIN) /= 0;
+                     Aborted :=
+                        (C.unsigned_short (Polling (1).revents)
+                           and C.poll.POLLIN) /= 0
+                        or else Tasks.Is_Aborted;
+                     exit when Value or else Aborted;
+                  else -- timeout
+                     Aborted := Tasks.Is_Aborted;
+                     exit;
+                  end if;
+                  pragma Check (Debug,
+                     Check =>
+                        not (R < 0)
+                        or else C.errno.errno = C.errno.EINTR
+                        or else Debug.Runtime_Error ("poll failed"));
+               end;
+            end loop;
+         end;
       else
-         loop
-            declare
-               Notified : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Timeout => Abort_Checking_Span,
-                  Notified => Notified,
-                  Aborted => Aborted);
-            end;
-            exit when Storage_Barriers.atomic_load (Object.Value'Access) /= 0
-               or else Aborted;
-         end loop;
+         Wait (Object);
+         Aborted := Tasks.Is_Aborted;
       end if;
-      Leave (Object.Mutex);
    end Wait;
 
    procedure Wait (
       Object : in out Event;
       Timeout : Duration;
       Value : out Boolean;
-      Aborted : out Boolean) is
-   begin
-      Enter (Object.Mutex);
-      if Storage_Barriers.atomic_load (Object.Value'Access) /= 0 then
-         Value := True;
-         Aborted := Tasks.Is_Aborted;
-      else
-         Wait (
-            Object.Condition_Variable,
-            Object.Mutex,
-            Timeout => Timeout,
-            Notified => Value,
-            Aborted => Aborted);
-      end if;
-      Leave (Object.Mutex);
-   end Wait;
-
-   --  barrier
-
-   procedure Wait (
-      Object : in out Barrier;
-      Notified : out Boolean;
       Aborted : out Boolean)
    is
-      Order : Natural;
+      Abort_Event : constant access Event := Tasks.Abort_Event;
    begin
-      Enter (Object.Mutex);
-      Object.Blocked := Object.Blocked + 1;
-      Order := Object.Blocked rem Object.Release_Threshold;
-      Notified := Order = 1;
-      if Order = 0 then
-         Notify_All (Object.Condition_Variable);
-         Object.Unblocked := Object.Unblocked + 1;
-         Aborted := Tasks.Is_Aborted;
+      if Abort_Event /= null then
+         declare
+            Deadline : constant Duration :=
+               Native_Real_Time.To_Duration (Native_Real_Time.Clock) + Timeout;
+            Span : Duration := Timeout;
+            Polling : aliased struct_pollfd_array (0 .. 1);
+         begin
+            Polling (0).fd := Object.Reading_Pipe;
+            Polling (0).events :=
+               C.signed_short (
+                  C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
+            Polling (1).fd := Abort_Event.Reading_Pipe;
+            Polling (1).events :=
+               C.signed_short (
+                  C.unsigned_short'(C.poll.POLLIN or C.poll.POLLERR));
+            loop
+               declare
+                  Nanoseconds : constant Native_Time.Nanosecond_Number :=
+                     Native_Time.Nanosecond_Number'Integer_Value (Span);
+                  Milliseconds : constant C.signed_int :=
+                     C.signed_int'Max (
+                        C.signed_int (Nanoseconds / 1_000_000),
+                        0);
+                  R : C.signed_int;
+               begin
+                  R := C.poll.poll (Polling (0)'Access, 2, Milliseconds);
+                  if R > 0 then
+                     pragma Check (Debug,
+                        Check =>
+                           ((C.unsigned_short (Polling (0).revents)
+                                 and C.poll.POLLERR) = 0
+                              and then (C.unsigned_short (Polling (1).revents)
+                                 and C.poll.POLLERR) = 0)
+                           or else Debug.Runtime_Error ("POLLERR"));
+                     Value :=
+                        (C.unsigned_short (Polling (0).revents)
+                           and C.poll.POLLIN) /= 0;
+                     Aborted :=
+                        (C.unsigned_short (Polling (1).revents)
+                           and C.poll.POLLIN) /= 0
+                        or else Tasks.Is_Aborted;
+                     exit when Value or else Aborted;
+                  end if;
+                  pragma Check (Debug,
+                     Check =>
+                        not (R < 0)
+                        or else C.errno.errno = C.errno.EINTR
+                        or else Debug.Runtime_Error ("poll failed"));
+               end;
+               Span :=
+                  Deadline
+                  - Native_Real_Time.To_Duration (Native_Real_Time.Clock);
+               if Span <= 0.0 then -- timeout
+                  Value := False;
+                  Aborted := Tasks.Is_Aborted;
+                  exit;
+               end if;
+            end loop;
+         end;
       else
-         loop
-            declare
-               Threshold_Is_Satisfied : Boolean;
-            begin
-               Wait (
-                  Object.Condition_Variable,
-                  Object.Mutex,
-                  Timeout => Abort_Checking_Span,
-                  Notified => Threshold_Is_Satisfied,
-                  Aborted => Aborted);
-            end;
-            exit when Object.Blocked >= Object.Release_Threshold
-               or else Aborted;
-         end loop;
-         Object.Unblocked := Object.Unblocked + 1;
+         Wait (Object, Timeout, Value);
+         Aborted := Tasks.Is_Aborted;
       end if;
-      if Object.Unblocked = Object.Release_Threshold then
-         Object.Blocked := Object.Blocked - Object.Release_Threshold;
-         Object.Unblocked := 0;
-      end if;
-      Leave (Object.Mutex);
    end Wait;
 
 end System.Synchronous_Objects.Abortable;

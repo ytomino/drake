@@ -11,8 +11,8 @@ package body System.Storage_Pools.Standard_Pools is
    is
       pragma Unreferenced (Pool);
    begin
-      Storage_Address := Standard_Allocators.Allocate (
-         Size_In_Storage_Elements);
+      Storage_Address :=
+         Standard_Allocators.Allocate (Size_In_Storage_Elements);
       if Storage_Address mod Alignment /= 0 then
          Standard_Allocators.Free (Storage_Address);
          raise Storage_Error;

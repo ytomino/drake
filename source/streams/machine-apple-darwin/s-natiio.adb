@@ -15,7 +15,7 @@ package body System.Native_IO is
    use type C.char; -- Name_Character
    use type C.char_array; -- Name_String
    use type C.char_ptr; -- Name_Pointer
-   use type C.size_t; -- Name_Length
+   use type C.size_t;
    use type C.unsigned_int;
    use type C.unsigned_short;
    use type C.sys.types.off_t;
@@ -41,74 +41,9 @@ package body System.Native_IO is
       Item := null;
    end Free;
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
-   is
-      Item_Length : constant Natural := Item'Length;
-   begin
-      if Item (Item'First) = '/' then
-         --  absolute path
-         Out_Item := Name_Pointer_Conv.To_Pointer (
-            Address (
-               C.stdlib.malloc (
-                  C.size_t (Item_Length) * Zero_Terminated_Strings.Expanding
-                  + 1))); -- NUL
-         if Out_Item = null then
-            raise Storage_Error;
-         end if;
-         Out_Length := 0;
-      else
-         --  current directory
-         Out_Item := C.unistd.getcwd (null, 0);
-         Out_Length := strlen (Out_Item);
-         --  reuse the memory from malloc (similar to reallocf)
-         declare
-            New_Out_Item : constant Name_Pointer :=
-               Name_Pointer_Conv.To_Pointer (
-                  Address (
-                     C.stdlib.realloc (
-                        C.void_ptr (Name_Pointer_Conv.To_Address (Out_Item)),
-                        Out_Length
-                           + C.size_t (Item_Length)
-                              * Zero_Terminated_Strings.Expanding
-                           + 2))); -- '/' & NUL
-         begin
-            if New_Out_Item = null then
-               raise Storage_Error;
-            end if;
-            Out_Item := New_Out_Item;
-         end;
-         --  append slash
-         declare
-            Out_Item_A : Name_String (Name_Length);
-            for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-         begin
-            if Out_Item_A (Out_Length - 1) /= '/' then
-               Out_Item_A (Out_Length) := '/';
-               Out_Length := Out_Length + 1;
-            end if;
-         end;
-      end if;
-      --  append Item
-      declare
-         Out_Item_A : Name_String (Name_Length);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-         Appended_Name_Length : Name_Length;
-      begin
-         Zero_Terminated_Strings.To_C (
-            Item,
-            Out_Item_A (Out_Length)'Access,
-            Appended_Name_Length);
-         Out_Length := Out_Length + Appended_Name_Length;
-      end;
-   end New_Full_Name;
-
    procedure New_External_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length) is
+      Out_Item : aliased out Name_Pointer) is
    begin
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Address (
@@ -119,29 +54,25 @@ package body System.Native_IO is
          raise Storage_Error;
       end if;
       declare
-         Out_Item_A : Name_String (Name_Length);
+         Out_Item_A : Name_String (C.size_t);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
          Out_Item_A (0) := '*';
-         Zero_Terminated_Strings.To_C (
-            Item,
-            Out_Item_A (1)'Access,
-            Out_Length);
+         Zero_Terminated_Strings.To_C (Item, Out_Item_A (1)'Access);
       end;
-      Out_Length := Out_Length + 1; -- '*'
    end New_External_Name;
 
    procedure Open_Temporary (
       Handle : aliased out Handle_Type;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
+      Out_Item : aliased out Name_Pointer)
    is
       Temp_Template_Length : constant C.size_t := Temp_Template'Length - 1;
       Temp_Dir : C.char_ptr;
+      Out_Length : C.size_t;
    begin
       --  compose template
       Temp_Dir := C.stdlib.getenv (Temp_Variable (0)'Access);
-      if Temp_Dir /= null then
+      if Temp_Dir /= null and then Temp_Dir.all /= C.char'Val (0) then
          --  environment variable TMPDIR
          Out_Length := strlen (Temp_Dir);
          Out_Item := Name_Pointer_Conv.To_Pointer (
@@ -191,7 +122,6 @@ package body System.Native_IO is
          --  append template
          Out_Item_A (Out_Length .. Out_Length + Temp_Template_Length) :=
             Temp_Template; -- including nul
-         Out_Length := Out_Length + Temp_Template_Length;
       end;
       --  open
       declare
@@ -347,7 +277,7 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       pragma Unreferenced (Name);
@@ -361,7 +291,7 @@ package body System.Native_IO is
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       Error : Boolean;
@@ -484,7 +414,7 @@ package body System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset;
-      Whence : C.signed_int;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset)
    is
       Offset : C.sys.types.off_t;
@@ -545,9 +475,8 @@ package body System.Native_IO is
       Size : Ada.Streams.Stream_Element_Count;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.signed_int := (
-         C.sys.mman.PROT_READ,
-         C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+      Protects : constant array (Boolean) of C.signed_int :=
+         (C.sys.mman.PROT_READ, C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
       Mapped_Offset : constant C.sys.types.off_t :=
          C.sys.types.off_t (Offset) - 1;
       Mapped_Size : constant C.size_t := C.size_t (Size);

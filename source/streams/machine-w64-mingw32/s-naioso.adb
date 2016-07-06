@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Debug;
 with System.Formatting;
@@ -21,12 +22,11 @@ package body System.Native_IO.Sockets is
 
    procedure Finalize;
    procedure Finalize is
-      R : C.windef.WINBOOL;
+      R : C.signed_int;
    begin
       R := C.winsock2.WSACleanup;
       pragma Check (Debug,
-         Check => R = 0
-            or else Debug.Runtime_Error ("WSACleanup failed"));
+         Check => R = 0 or else Debug.Runtime_Error ("WSACleanup failed"));
    end Finalize;
 
    procedure Initialize;
@@ -47,6 +47,26 @@ package body System.Native_IO.Sockets is
       end if;
    end Check_Initialize;
 
+   function To_Handle is
+      new Ada.Unchecked_Conversion (
+         C.psdk_inc.qsocket_types.SOCKET,
+         C.winnt.HANDLE);
+   function To_SOCKET is
+      new Ada.Unchecked_Conversion (
+         C.winnt.HANDLE,
+         C.psdk_inc.qsocket_types.SOCKET);
+
+   --  implementation
+
+   procedure Close_Socket (Handle : Handle_Type; Raise_On_Error : Boolean) is
+      R : C.signed_int;
+   begin
+      R := C.winsock2.closesocket (To_SOCKET (Handle));
+      if R /= 0 and then Raise_On_Error then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+   end Close_Socket;
+
    --  client
 
    function Get (
@@ -65,7 +85,7 @@ package body System.Native_IO.Sockets is
    begin
       R := C.ws2tcpip.GetAddrInfoW (Host_Name, Service, Hints, Data'Access);
       if R /= 0 then
-         return null; -- Use_Error
+         Raise_Exception (Use_Error'Identity);
       else
          return Data;
       end if;
@@ -151,24 +171,20 @@ package body System.Native_IO.Sockets is
    end Resolve;
 
    procedure Connect (Handle : aliased out Handle_Type; Peer : End_Point) is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            C.psdk_inc.qsocket_types.SOCKET,
-            C.winnt.HANDLE);
-      Socket : C.psdk_inc.qsocket_types.SOCKET;
       I : C.ws2tcpip.struct_addrinfoW_ptr := Peer;
    begin
       while I /= null loop
-         Socket := C.winsock2.WSASocket (
-            I.ai_family,
-            I.ai_socktype,
-            I.ai_protocol,
-            null,
-            0,
-            0);
-         if Socket /= C.psdk_inc.qsocket_types.INVALID_SOCKET then
+         Handle := To_Handle (
+            C.winsock2.WSASocket (
+               I.ai_family,
+               I.ai_socktype,
+               I.ai_protocol,
+               null,
+               0,
+               0));
+         if To_SOCKET (Handle) /= C.psdk_inc.qsocket_types.INVALID_SOCKET then
             if C.winsock2.WSAConnect (
-               Socket,
+               To_SOCKET (Handle),
                I.ai_addr,
                C.signed_int (I.ai_addrlen),
                null,
@@ -177,16 +193,18 @@ package body System.Native_IO.Sockets is
                null) = 0
             then
                --  connected
-               Handle := Cast (Socket);
                return;
             end if;
-            if C.winsock2.closesocket (Socket) /= 0 then
-               exit; -- Use_Error or Device_Error ?
-            end if;
+            declare
+               Closing_Handle : constant Handle_Type := Handle;
+            begin
+               Handle := Invalid_Handle;
+               Close_Socket (Closing_Handle, Raise_On_Error => True);
+            end;
          end if;
          I := I.ai_next;
       end loop;
-      Handle := Invalid_Handle;
+      Raise_Exception (Use_Error'Identity);
    end Connect;
 
    procedure Finalize (Item : End_Point) is
@@ -212,7 +230,6 @@ package body System.Native_IO.Sockets is
          ai_next => null);
       Data : aliased C.ws2tcpip.struct_addrinfoW_ptr;
       W_Service : C.winnt.WCHAR_array (0 .. 5); -- "65535" & NUL
-      Reuse_Addr_Option : aliased C.windef.BOOL;
    begin
       Check_Initialize;
       declare
@@ -236,8 +253,21 @@ package body System.Native_IO.Sockets is
          Hints'Access,
          Data'Access) /= 0
       then
-         Server := Invalid_Listener; -- Use_Error
-      else
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      declare
+         procedure Finally (X : in out C.ws2tcpip.struct_addrinfoW_ptr);
+         procedure Finally (X : in out C.ws2tcpip.struct_addrinfoW_ptr) is
+         begin
+            C.ws2tcpip.FreeAddrInfoW (X);
+         end Finally;
+         package Holder is
+            new Ada.Exceptions.Finally.Scoped_Holder (
+               C.ws2tcpip.struct_addrinfoW_ptr,
+               Finally);
+         Reuse_Addr_Option : aliased C.windef.BOOL;
+      begin
+         Holder.Assign (Data);
          Server := C.winsock2.WSASocket (
             Data.ai_family,
             Data.ai_socktype,
@@ -254,9 +284,7 @@ package body System.Native_IO.Sockets is
             To_char_const_ptr (Reuse_Addr_Option'Unchecked_Access),
             Reuse_Addr_Option'Size / Standard'Storage_Unit) /= 0
          then
-            Close_Listener (Server, Raise_On_Error => False);
-            C.ws2tcpip.FreeAddrInfoW (Data);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
          --  bind
          if C.winsock2.bind (
@@ -264,18 +292,13 @@ package body System.Native_IO.Sockets is
             Data.ai_addr,
             C.signed_int (Data.ai_addrlen)) /= 0
          then
-            Close_Listener (Server, Raise_On_Error => False);
-            C.ws2tcpip.FreeAddrInfoW (Data);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
-         --  free
-         C.ws2tcpip.FreeAddrInfoW (Data);
          --  listen
          if C.winsock2.listen (Server, C.winsock2.SOMAXCONN) /= 0 then
-            Close_Listener (Server, Raise_On_Error => False);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
-      end if;
+      end;
    end Listen;
 
    procedure Accept_Socket (
@@ -283,10 +306,6 @@ package body System.Native_IO.Sockets is
       Handle : aliased out Handle_Type;
       Remote_Address : out Socket_Address)
    is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            C.psdk_inc.qsocket_types.SOCKET,
-            C.winnt.HANDLE);
       Len : aliased C.windef.INT :=
          Socket_Address'Size / Standard'Storage_Unit;
       R : C.psdk_inc.qsocket_types.SOCKET;
@@ -298,19 +317,15 @@ package body System.Native_IO.Sockets is
          lpfnCondition => null,
          dwCallbackData => 0);
       if R = C.psdk_inc.qsocket_types.INVALID_SOCKET then
-         Handle := Invalid_Handle; -- Use_Error
+         Raise_Exception (Use_Error'Identity);
       else
-         Handle := Cast (R);
+         Handle := To_Handle (R);
       end if;
    end Accept_Socket;
 
    procedure Close_Listener (Server : Listener; Raise_On_Error : Boolean) is
-      R : C.signed_int;
    begin
-      R := C.winsock2.closesocket (Server);
-      if R /= 0 and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
-      end if;
+      Close_Socket (To_Handle (Server), Raise_On_Error => Raise_On_Error);
    end Close_Listener;
 
 end System.Native_IO.Sockets;

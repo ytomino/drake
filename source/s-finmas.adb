@@ -2,21 +2,9 @@ with Ada.Exceptions;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Shared_Locking;
-with System.Startup;
 package body System.Finalization_Masters is
    pragma Suppress (All_Checks);
-   use type Startup.Finalize_Library_Objects_Handler;
    use type Storage_Barriers.Flag;
-
-   procedure Finalize_Library_Objects;
-   pragma Linker_Destructor (Finalize_Library_Objects); -- after atexit
-
-   procedure Finalize_Library_Objects is
-   begin
-      if Startup.Finalize_Library_Objects /= null then
-         Startup.Finalize_Library_Objects.all;
-      end if;
-   end Finalize_Library_Objects;
 
    procedure Free is new Ada.Unchecked_Deallocation (FM_List, FM_List_Access);
 

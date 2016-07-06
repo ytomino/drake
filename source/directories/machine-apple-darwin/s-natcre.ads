@@ -16,4 +16,11 @@ package System.Native_Credentials is
    function User_Name (Id : User_Id := Current_User) return String;
    function Group_Name (Id : Group_Id := Current_Group) return String;
 
+   --  Check which a resouce belongs
+
+   function Belongs_To_Current_User (Id : User_Id) return Boolean;
+   function Belongs_To_Current_Group (Id : Group_Id) return Boolean;
+
+   pragma Inline (Belongs_To_Current_User);
+
 end System.Native_Credentials;

@@ -23,6 +23,13 @@ package Ada.Command_Line is
    function Iterate (First : Positive; Last : Natural)
       return Iterator_Interfaces.Reversible_Iterator'Class;
 
+   --  extended from here
+   --  A non-abstract type of the above iterator.
+   --  It's useful for some workarounds, and will be removed in the future.
+
+   type Concrete_Iterator is
+      limited new Iterator_Interfaces.Forward_Iterator with null record;
+
    --  to here
 
    function Command_Name return String;
@@ -38,6 +45,10 @@ private
 
    function Argument_Count return Natural
       renames System.Native_Command_Line.Argument_Count;
+
+   overriding function First (Object : Concrete_Iterator) return Natural;
+   overriding function Next (Object : Concrete_Iterator; Position : Natural)
+      return Natural;
 
    type Iterator is new Iterator_Interfaces.Reversible_Iterator with record
       First : Natural; -- 0 means an empty range

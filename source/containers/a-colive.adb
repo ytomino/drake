@@ -334,7 +334,8 @@ package body Ada.Containers.Limited_Vectors is
       return Cursor
    is
       pragma Check (Pre,
-         Check => Index <= Last_Index (Container) + 1
+         Check =>
+            Index <= Last_Index (Container) + 1
             or else raise Constraint_Error);
    begin
       if Index = Index_Type'First + Index_Type'Base (Container.Length) then
@@ -355,6 +356,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Replace_Element)
+--
 --
 --
 --
@@ -401,7 +403,8 @@ package body Ada.Containers.Limited_Vectors is
       return Constant_Reference_Type
    is
       pragma Check (Pre,
-         Check => Position in Index_Type'First .. Last (Container)
+         Check =>
+            Position in Index_Type'First .. Last (Container)
             or else raise Constraint_Error);
    begin
 --  diff
@@ -418,7 +421,8 @@ package body Ada.Containers.Limited_Vectors is
       return Reference_Type
    is
       pragma Check (Pre,
-         Check => Position in Index_Type'First .. Last (Container)
+         Check =>
+            Position in Index_Type'First .. Last (Container)
             or else raise Constraint_Error);
    begin
 --  diff
@@ -641,8 +645,8 @@ package body Ada.Containers.Limited_Vectors is
       Count : Count_Type := 1)
    is
       pragma Check (Pre,
-         Check => Before <= Last (Container) + 1
-            or else raise Constraint_Error);
+         Check =>
+            Before <= Last (Container) + 1 or else raise Constraint_Error);
       Old_Length : constant Count_Type := Container.Length;
       After_Last : constant Index_Type'Base :=
          Index_Type'First + Index_Type'Base (Old_Length);
@@ -1137,8 +1141,8 @@ package body Ada.Containers.Limited_Vectors is
          pragma Check (Pre,
             Check =>
                (Position in Index_Type'First .. Last (Container))
-               or else (Is_Empty (Container)
-                  and then Position = Index_Type'First)
+               or else (
+                  Is_Empty (Container) and then Position = Index_Type'First)
                or else raise Constraint_Error);
       begin
          for I in Position .. Last (Container) loop

@@ -90,8 +90,16 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                Last + System.Formatting.Address.Address_String'Length),
             Set => System.Formatting.Lower_Case);
          Last := Last + System.Formatting.Address.Address_String'Length;
-         Put (Buffer, Last, " (level =");
-         Put (Buffer, Last, Level_Type'Image (Downcast (Current).Level));
+         Put (Buffer, Last, " (level = ");
+         declare
+            Error : Boolean;
+         begin
+            System.Formatting.Image (
+               System.Formatting.Unsigned'Mod (Downcast (Current).Level),
+               Buffer (Last + 1 .. Buffer'Last),
+               Last,
+               Error => Error);
+         end;
          Put (Buffer, Last, ")");
          System.Termination.Error_Put_Line (Buffer (1 .. Last));
          Indent_S (Indent) := B;
@@ -132,9 +140,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          Count := Count + 1;
          if Level_Check then
             if Downcast (Position).Level > 0 then
-               if Position.Left = null
-                  or else Position.Right = null
-               then
+               if Position.Left = null or else Position.Right = null then
                   return False;
                end if;
             else

@@ -128,10 +128,8 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Root => null, Length => 0);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;
@@ -676,7 +674,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    function First_Element (Container : Set'Class)
       return Element_Type is
    begin
-      return Element (Last (Set (Container)));
+      return Element (First (Set (Container)));
    end First_Element;
 
    function Last (Container : Set) return Cursor is
@@ -780,10 +778,30 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       return Left /= Right and then Left.Element.all < Right.Element.all;
    end "<";
 
+   function ">" (Left, Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
    function "<" (Left : Cursor; Right : Element_Type) return Boolean is
    begin
       return Left.Element.all < Right;
    end "<";
+
+   function ">" (Left : Cursor; Right : Element_Type) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
+   function "<" (Left : Element_Type; Right : Cursor) return Boolean is
+   begin
+      return Left < Right.Element.all;
+   end "<";
+
+   function ">" (Left : Element_Type; Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
 
    procedure Iterate (
       Container : Set'Class;

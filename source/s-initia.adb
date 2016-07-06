@@ -59,9 +59,7 @@ package body System.Initialization is
             Object_Storage,
             Storage_Access);
    begin
-      if Object'Has_Access_Values
-         or else Object'Has_Tagged_Values
-      then
+      if Object'Has_Access_Values or else Object'Has_Tagged_Values then
          Storage_Pools.Overlaps.Set_Address (
             S_Conv.To_Address (Storage_Access (Storage)));
          return Object_Pointer (Object_Access'(new Object'(Value)));
@@ -86,9 +84,7 @@ package body System.Initialization is
             Object_Storage,
             Storage_Access);
    begin
-      if Object'Has_Access_Values
-         or else Object'Has_Tagged_Values
-      then
+      if Object'Has_Access_Values or else Object'Has_Tagged_Values then
          declare
             A : constant Address :=
                S_Conv.To_Address (Storage_Access (Storage));

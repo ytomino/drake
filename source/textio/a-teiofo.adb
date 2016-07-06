@@ -88,7 +88,8 @@ package body Ada.Text_IO.Formatting is
             Look_Ahead (File, Item, End_Of_Line);
          end if;
          exit when Item not in '0' .. '9'
-            and then (not Based
+            and then (
+               not Based
                or else (Item not in 'A' .. 'F'
                   and then Item not in 'a' .. 'f'));
          Add (Buffer, Last, Item);

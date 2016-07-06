@@ -2,7 +2,8 @@ pragma Check_Policy (Trace => Ignore);
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
-with System.Native_Stack;
+with System.Stack;
+with System.Storage_Map;
 with System.Unwind.Occurrences;
 with System.Unwind.Standard;
 with C.basetsd;
@@ -50,7 +51,7 @@ package body System.Unwind.Mapping is
                   System'To_Address (
                      Exception_Record.ExceptionInformation (1));
             begin
-               Native_Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
+               Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
                if AV_Address >= Stack_Top - 4096
                   and then AV_Address < Stack_Bottom
                then -- stack overflow
@@ -78,7 +79,7 @@ package body System.Unwind.Mapping is
             declare
                Dummy : Address;
             begin
-               Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+               Stack.Get (Top => Stack_Guard, Bottom => Dummy);
             end;
             Stack_Guard := Stack_Guard + 4096;
             --  Storage_Error
@@ -88,30 +89,30 @@ package body System.Unwind.Mapping is
       end case;
       if Eexception_Id /= null then
          declare
-            NTDLL_Handle : constant C.windef.HMODULE := Native_Stack.NTDLL;
             Message : String (1 .. 256);
             Message_Last : Natural;
             C_Wide_Buf : aliased C.winnt.LPWSTR;
             R : C.windef.DWORD;
          begin
             R := C.winbase.FormatMessage (
-               dwFlags => C.winbase.FORMAT_MESSAGE_FROM_HMODULE
+               dwFlags =>
+                  C.winbase.FORMAT_MESSAGE_FROM_HMODULE
                   or C.winbase.FORMAT_MESSAGE_ARGUMENT_ARRAY
                   or C.winbase.FORMAT_MESSAGE_ALLOCATE_BUFFER,
-               lpSource => Cast (NTDLL_Handle),
+               lpSource => Cast (Storage_Map.NTDLL),
                dwMessageId => Code,
                dwLanguageId => C.winnt.LANG_USER_DEFAULT,
                lpBuffer => Cast (C_Wide_Buf'Unchecked_Access),
                nSize => 0,
-               Arguments => Cast (
-                  Exception_Record.ExceptionInformation (0)'Access));
+               Arguments =>
+                  Cast (Exception_Record.ExceptionInformation (0)'Access));
             declare
                Wide_Message : Wide_String (Positive);
                for Wide_Message'Address use C_Wide_Buf.all'Address;
                Wide_Message_Last : constant Natural := Natural (R);
             begin
                if Wide_Message (Wide_Message_Last - 2 .. Wide_Message_Last) =
-                  """0x"
+                     """0x"
                   and then Code = C.winbase.EXCEPTION_ACCESS_VIOLATION
                then
                   --  bug of FormatString ???

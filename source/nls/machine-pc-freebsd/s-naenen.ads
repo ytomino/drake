@@ -111,9 +111,8 @@ package System.Native_Environment_Encoding is
       type Converter is
          limited new Ada.Finalization.Limited_Controlled with
       record
-         Data : aliased Non_Controlled_Converter := (
-            iconv => C.iconv.iconv_t (Null_Address),
-            others => <>);
+         Data : aliased Non_Controlled_Converter :=
+            (iconv => C.iconv.iconv_t (Null_Address), others => <>);
       end record;
 
       overriding procedure Finalize (Object : in out Converter);

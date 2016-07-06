@@ -13,14 +13,16 @@ package Ada.Calendar.Formatting is
       Saturday,
       Sunday);
 
+   --  modified
 --  function Day_of_Week (Date : Time) return Day_Name;
-   --  RM defined Day_*o*f_Week, but GNAT runtime defined Day_*O*f_Week...
    function Day_Of_Week (
       Date : Time;
-      Time_Zone : Time_Zones.Time_Offset := 0)
+      Time_Zone : Time_Zones.Time_Offset := 0) -- additional
       return Day_Name;
    pragma Pure_Function (Day_Of_Week);
    pragma Inline (Day_Of_Week);
+
+   --  Note: RM defined Day_*o*f_Week, but GNAT runtime defined Day_*O*f_Week.
 
    --  Hours:Minutes:Seconds access:
 

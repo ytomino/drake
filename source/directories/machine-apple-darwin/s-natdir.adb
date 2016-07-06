@@ -224,7 +224,7 @@ package body System.Native_Directories is
    function Size (Information : Directory_Entry_Information_Type)
       return Ada.Streams.Stream_Element_Count is
    begin
-      return Ada.Streams.Stream_Element_Count (Information.st_size);
+      return Ada.Streams.Stream_Element_Offset (Information.st_size);
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)

@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
+with System.Native_IO.Names;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 package body Ada.Streams.Naked_Stream_IO is
@@ -136,8 +137,8 @@ package body Ada.Streams.Naked_Stream_IO is
       Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
       return Non_Controlled_File_Type;
@@ -145,8 +146,8 @@ package body Ada.Streams.Naked_Stream_IO is
       Handle : System.Native_IO.Handle_Type;
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Closer : Close_Handler)
       return Non_Controlled_File_Type is
@@ -156,8 +157,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Mode => Mode,
          Kind => Kind,
          Buffer_Inline => <>,
+         Has_Full_Name => Has_Full_Name,
          Name => Name,
-         Name_Length => Name_Length,
          Form => Form,
          Buffer => System.Null_Address,
          Buffer_Length => Uninitialized_Buffer,
@@ -165,9 +166,7 @@ package body Ada.Streams.Naked_Stream_IO is
          Reading_Index => 0,
          Writing_Index => 0,
          Closer => Closer,
-         Dispatcher => (
-            Tag => Tags.No_Tag,
-            File => null));
+         Dispatcher => (Tag => Tags.No_Tag, File => null));
    end Allocate;
 
    procedure Free (File : in out Non_Controlled_File_Type);
@@ -222,7 +221,7 @@ package body Ada.Streams.Naked_Stream_IO is
          File.Buffer_Index := 0;
       else
          File.Buffer_Index := Buffer_Index
-            rem Stream_Element_Positive_Count (File.Buffer_Length);
+            rem Stream_Element_Positive_Count'(File.Buffer_Length);
       end if;
       File.Reading_Index := File.Buffer_Index;
       File.Writing_Index := File.Buffer_Index;
@@ -267,37 +266,27 @@ package body Ada.Streams.Naked_Stream_IO is
       else
          Kind := Temporary;
       end if;
-      declare
-         Full_Name_Length : System.Native_IO.Name_Length;
-      begin
-         if Kind = Ordinary then
-            Scoped.Closer := System.Native_IO.Close_Ordinary'Access;
-            System.Native_IO.New_Full_Name (
-               Name,
-               Scoped.Name,
-               Full_Name_Length);
-            System.Native_IO.Open_Ordinary (
-               Method => Method,
-               Handle => Scoped.Handle,
-               Mode => Mode,
-               Name => Scoped.Name,
-               Form => Form);
-         else
-            Scoped.Closer := System.Native_IO.Close_Temporary'Access;
-            System.Native_IO.Open_Temporary (
-               Scoped.Handle,
-               Scoped.Name,
-               Full_Name_Length);
-         end if;
-         Scoped.File := Allocate (
+      if Kind = Ordinary then
+         Scoped.Closer := System.Native_IO.Close_Ordinary'Access;
+         System.Native_IO.Names.Open_Ordinary (
+            Method => Method,
             Handle => Scoped.Handle,
             Mode => Mode,
-            Kind => Kind,
-            Name => Scoped.Name,
-            Name_Length => Full_Name_Length,
-            Form => Form,
-            Closer => Scoped.Closer);
-      end;
+            Name => Name,
+            Out_Name => Scoped.Name,
+            Form => Form);
+      else
+         Scoped.Closer := System.Native_IO.Close_Temporary'Access;
+         System.Native_IO.Open_Temporary (Scoped.Handle, Scoped.Name);
+      end if;
+      Scoped.File := Allocate (
+         Handle => Scoped.Handle,
+         Mode => Mode,
+         Kind => Kind,
+         Has_Full_Name => Scoped.Name /= null,
+         Name => Scoped.Name,
+         Form => Form,
+         Closer => Scoped.Closer);
       if Kind = Ordinary and then Mode = IO_Modes.Append_File then
          Set_Index_To_Append (Scoped.File); -- sets index to the last
       end if;
@@ -305,6 +294,19 @@ package body Ada.Streams.Naked_Stream_IO is
       --  complete
       Holder.Clear;
    end Allocate_And_Open;
+
+   procedure Get_Full_Name (File : not null Non_Controlled_File_Type);
+   procedure Get_Full_Name (File : not null Non_Controlled_File_Type) is
+   begin
+      if not File.Has_Full_Name then
+         System.Native_IO.Names.Get_Full_Name (
+            File.Handle,
+            File.Has_Full_Name,
+            File.Name,
+            Is_Standard => File.Kind = Standard_Handle,
+            Raise_On_Error => File.Name = null);
+      end if;
+   end Get_Full_Name;
 
    procedure Get_Buffer (File : not null Non_Controlled_File_Type);
    procedure Get_Buffer (File : not null Non_Controlled_File_Type) is
@@ -316,9 +318,9 @@ package body Ada.Streams.Naked_Stream_IO is
             File.Buffer_Index := 0;
          else
             File.Buffer := System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Count (File.Buffer_Length));
+               System.Storage_Elements.Storage_Offset (File.Buffer_Length));
             File.Buffer_Index := File.Buffer_Index
-               rem Stream_Element_Positive_Count (File.Buffer_Length);
+               rem Stream_Element_Positive_Count'(File.Buffer_Length);
          end if;
          File.Reading_Index := File.Buffer_Index;
          File.Writing_Index := File.Buffer_Index;
@@ -374,7 +376,7 @@ package body Ada.Streams.Naked_Stream_IO is
    begin
       --  writing buffer is from File.Buffer_Index until File.Writing_Index
       File.Buffer_Index := File.Buffer_Index
-         rem Stream_Element_Positive_Count (File.Buffer_Length);
+         rem Stream_Element_Positive_Count'(File.Buffer_Length);
       File.Writing_Index := File.Buffer_Index;
       File.Reading_Index := File.Buffer_Index;
    end Ready_Writing_Buffer;
@@ -405,7 +407,7 @@ package body Ada.Streams.Naked_Stream_IO is
             end if;
             if not Error then
                File.Buffer_Index := File.Writing_Index
-                  rem Stream_Element_Positive_Count (File.Buffer_Length);
+                  rem Stream_Element_Positive_Count'(File.Buffer_Length);
                File.Writing_Index := File.Buffer_Index;
                File.Reading_Index := File.Buffer_Index;
             end if;
@@ -509,8 +511,16 @@ package body Ada.Streams.Naked_Stream_IO is
          when Ordinary | Temporary | External =>
             Scoped.Handle := Freeing_File.Handle;
             Scoped.Name := Freeing_File.Name;
-         when External_No_Close | Standard_Handle =>
-            null;
+         when External_No_Close =>
+            Scoped.Name := Freeing_File.Name;
+         when Standard_Handle =>
+            if Freeing_File.Has_Full_Name then
+               Scoped.Name := Freeing_File.Name;
+               --  The standard files may be double-finalized
+               --    from Ada.Streams.Stream_IO.Standard_Files and Ada.Text_IO.
+               Freeing_File.Name := null;
+               Freeing_File.Has_Full_Name := False;
+            end if;
       end case;
       if Kind /= Temporary then
          Flush_Writing_Buffer (
@@ -521,9 +531,9 @@ package body Ada.Streams.Naked_Stream_IO is
          --  close explicitly in below
          Scoped.Handle := System.Native_IO.Invalid_Handle;
          Freeing_File.Closer (
-               Freeing_File.Handle,
-               Freeing_File.Name,
-               Raise_On_Error => Raise_On_Error);
+            Freeing_File.Handle,
+            Freeing_File.Name,
+            Raise_On_Error => Raise_On_Error);
       end if;
    end Close_And_Deallocate;
 
@@ -579,6 +589,7 @@ package body Ada.Streams.Naked_Stream_IO is
    begin
       case File.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             File.Closer := System.Native_IO.Delete_Ordinary'Access;
             Close_And_Deallocate (File, Raise_On_Error => True);
          when Temporary =>
@@ -605,6 +616,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             Scoped.Handle := File.Handle;
             Scoped.File := File;
             Scoped.Name := File.Name;
@@ -659,9 +671,8 @@ package body Ada.Streams.Naked_Stream_IO is
 
    function Name (File : not null Non_Controlled_File_Type) return String is
    begin
-      return System.Native_IO.Value (
-         File.Name,
-         File.Name_Length);
+      Get_Full_Name (File);
+      return System.Native_IO.Value (File.Name);
    end Name;
 
    function Form (File : Non_Controlled_File_Type)
@@ -686,7 +697,7 @@ package body Ada.Streams.Naked_Stream_IO is
             begin
                Ready_Reading_Buffer (File, Error);
                if Error then
-                  Raise_Exception (Use_Error'Identity);
+                  Raise_Exception (Device_Error'Identity);
                end if;
             end;
          end if;
@@ -806,7 +817,7 @@ package body Ada.Streams.Naked_Stream_IO is
          if Index <= Item'First then
             --  RM 13.13.1(8/2), Item'First - 1 is returned in Last for EOF.
             if Error then
-               Raise_Exception (End_Error'Identity); -- ???
+               Raise_Exception (Device_Error'Identity);
             elsif Index = Stream_Element_Offset'First then
                raise Constraint_Error; -- AARM 13.13.1(11/2)
             end if;
@@ -948,6 +959,7 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Assign (Scoped);
       case File.all.Kind is
          when Ordinary =>
+            Get_Full_Name (File);
             Scoped.Handle := File.Handle;
             Scoped.File := File;
             Scoped.Name := File.Name;
@@ -1015,7 +1027,6 @@ package body Ada.Streams.Naked_Stream_IO is
       Kind : Stream_Kind;
       Closer : Close_Handler;
       Full_Name : aliased System.Native_IO.Name_Pointer;
-      Full_Name_Length : System.Native_IO.Name_Length;
    begin
       if To_Close then
          Kind := External;
@@ -1025,16 +1036,13 @@ package body Ada.Streams.Naked_Stream_IO is
          Closer := null;
       end if;
       Name_Holder.Assign (Full_Name);
-      System.Native_IO.New_External_Name (
-         Name,
-         Full_Name, -- '*' & Name & NUL
-         Full_Name_Length);
+      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
       File := Allocate (
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
+         Has_Full_Name => False,
          Name => Full_Name,
-         Name_Length => Full_Name_Length,
          Form => Form,
          Closer => Closer);
       --  complete
@@ -1061,7 +1069,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Last : out Stream_Element_Offset)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.Out_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.Out_File
                or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
@@ -1072,7 +1081,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Item : Stream_Element_Array)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.In_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.In_File
                or else raise Mode_Error);
       begin
          Write (Stream.File, Item);
@@ -1084,7 +1094,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Last : out Stream_Element_Offset)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.Out_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.Out_File
                or else raise Mode_Error);
       begin
          Read (Stream.File, Item, Last);
@@ -1095,7 +1106,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Item : Stream_Element_Array)
       is
          pragma Check (Pre,
-            Check => Mode (Stream.File) /= IO_Modes.In_File
+            Check =>
+               Mode (Stream.File) /= IO_Modes.In_File
                or else raise Mode_Error);
       begin
          Write (Stream.File, Item);

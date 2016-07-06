@@ -24,19 +24,15 @@ package body Ada.Calendar.Formatting is
 --    Hour at 0 range 56 .. 63; -- 2 ** 5 = 32 > 24
 --  end record;
 
-   function Shift_Left (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Packed_Split_Time; Amount : Natural)
-      return Packed_Split_Time
-      with Import, Convention => Intrinsic;
+   pragma Provide_Shift_Operators (Packed_Split_Time);
 
    function Packed_Split (
       Date : Time;
       Time_Zone : Time_Zones.Time_Offset)
       return Packed_Split_Time;
       --  The callings of this function will be unified since pure attribute
-      --    when Year, Month and Day are inlined
+      --    when Year, Month, Day, Hour, Minute, Second, and Day_of_Week are
+      --    inlined.
    pragma Pure_Function (Packed_Split);
    pragma Machine_Attribute (Packed_Split, "const");
 

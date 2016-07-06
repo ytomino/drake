@@ -9,7 +9,7 @@ package body System.Stream_Attributes is
    for IO_Boolean'Size use
       ((Boolean'Stream_Size + Ada.Streams.Stream_Element'Size - 1)
          / Ada.Streams.Stream_Element'Size)
-         * Standard'Storage_Unit;
+      * Standard'Storage_Unit;
 
    subtype S_AD is
       Ada.Streams.Stream_Element_Array (

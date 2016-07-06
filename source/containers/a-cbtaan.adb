@@ -162,7 +162,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
       --  increment
       Length := Length + 1;
       pragma Check (Dump,
-         Debug.Dump (Container, New_Item, Message => "inserted"));
+         Check => Debug.Dump (Container, New_Item, Message => "inserted"));
       pragma Check (Validate, Debug.Valid (Container, Length));
    end Insert;
 
@@ -173,7 +173,8 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
    begin
       pragma Assert (Container /= null and then Length > 0);
       if Length = 1 then
-         pragma Assert (Container = Position
+         pragma Assert (
+            Container = Position
             and then Position.Left = null
             and then Position.Right = null
             and then Position.Parent = null);
@@ -227,17 +228,24 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
             --  rebalance
             loop
                if (Current.Left = null and then Downcast (Current).Level > 0)
-                  or else (Current.Left /= null
+                  or else (
+                     Current.Left /= null
                      and then Downcast (Current).Level >
                         Downcast (Current.Left).Level + 1)
-                  or else (Current.Right = null
+                  or else (
+                     Current.Right = null
                      and then Downcast (Current).Level > 0)
-                  or else (Current.Right /= null
+                  or else (
+                     Current.Right /= null
                      and then Downcast (Current).Level >
                         Downcast (Current.Right).Level + 1)
                then
                   pragma Check (Dump_On_Removing,
-                     Debug.Dump (Debug.Root (Current), Current, "removed a"));
+                     Check =>
+                        Debug.Dump (
+                           Debug.Root (Current),
+                           Current,
+                           "removed a"));
                   Downcast (Current).Level := Downcast (Current).Level - 1;
                   if Current.Right /= null
                      and then Downcast (Current.Right).Level >
@@ -247,13 +255,19 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                         Downcast (Current).Level;
                   end if;
                   pragma Check (Dump_On_Removing,
-                     Debug.Dump (Debug.Root (Current), Current, "removed b"));
+                     Check =>
+                        Debug.Dump (
+                           Debug.Root (Current),
+                           Current,
+                           "removed b"));
                   Current := Skew (Current);
                   if Current.Right /= null then
                      pragma Check (Dump_On_Removing,
-                        Debug.Dump (
-                           Debug.Root (Current),
-                           Current, "removed c"));
+                        Check =>
+                           Debug.Dump (
+                              Debug.Root (Current),
+                              Current,
+                              "removed c"));
                      declare
                         Dummy : Node_Access;
                      begin
@@ -261,9 +275,11 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                      end;
                      if Current.Right.Right /= null then
                         pragma Check (Dump_On_Removing,
-                           Debug.Dump (
-                              Debug.Root (Current),
-                              Current, "removed d"));
+                           Check =>
+                              Debug.Dump (
+                                 Debug.Root (Current),
+                                 Current,
+                                 "removed d"));
                         declare
                            Dummy : Node_Access;
                         begin
@@ -272,13 +288,19 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson is
                      end if;
                   end if;
                   pragma Check (Dump_On_Removing,
-                     Debug.Dump (Debug.Root (Current), Current, "removed e"));
+                     Check =>
+                        Debug.Dump (
+                           Debug.Root (Current),
+                           Current,
+                           "removed e"));
                   Current := Split (Current);
                   if Current.Right /= null then
                      pragma Check (Dump_On_Removing,
-                        Debug.Dump (
-                           Debug.Root (Current),
-                           Current, "removed f"));
+                        Check =>
+                           Debug.Dump (
+                              Debug.Root (Current),
+                              Current,
+                              "removed f"));
                      declare
                         Dummy : Node_Access;
                      begin

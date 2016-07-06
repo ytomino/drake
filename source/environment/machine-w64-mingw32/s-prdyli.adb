@@ -25,13 +25,11 @@ package body System.Program.Dynamic_Linking is
 
    procedure Close (Handle : C.windef.HMODULE; Raise_On_Error : Boolean);
    procedure Close (Handle : C.windef.HMODULE; Raise_On_Error : Boolean) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      if Handle /= null then
-         R := C.winbase.FreeLibrary (Handle);
-         if R = 0 and then Raise_On_Error then
-            Raise_Exception (Use_Error'Identity);
-         end if;
+      Success := C.winbase.FreeLibrary (Handle);
+      if Success = C.windef.FALSE and then Raise_On_Error then
+         Raise_Exception (Use_Error'Identity);
       end if;
    end Close;
 
@@ -110,7 +108,9 @@ package body System.Program.Dynamic_Linking is
 
       overriding procedure Finalize (Object : in out Library) is
       begin
-         Close (Object.Handle, Raise_On_Error => False);
+         if Object.Handle /= null then
+            Close (Object.Handle, Raise_On_Error => False);
+         end if;
       end Finalize;
 
    end Controlled;

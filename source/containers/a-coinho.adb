@@ -41,9 +41,8 @@ package body Ada.Containers.Indefinite_Holders is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Element => null);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Element => null);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;

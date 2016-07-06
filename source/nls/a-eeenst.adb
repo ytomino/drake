@@ -79,9 +79,6 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                      if Old_Context_Last = Context.Last then -- read zero
                         Context.Status := Finishing;
                      end if;
-                  exception
-                     when IO_Exceptions.End_Error =>
-                        Context.Status := Finishing;
                   end;
                end if;
             end if;

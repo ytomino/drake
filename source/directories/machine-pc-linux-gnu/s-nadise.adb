@@ -6,14 +6,13 @@ with System.Zero_Terminated_Strings;
 with C.errno;
 with C.fnmatch;
 with C.stdint;
-with C.string;
 package body System.Native_Directories.Searching is
    use Ada.Exception_Identification.From_Here;
    use type Storage_Elements.Storage_Offset;
    use type C.char;
    use type C.signed_int;
    use type C.dirent.DIR_ptr;
-   use type C.bits.dirent.struct_dirent64_ptr;
+   use type C.bits.dirent.struct_dirent_ptr;
    use type C.size_t;
    use type C.sys.types.mode_t;
 
@@ -22,12 +21,16 @@ package body System.Native_Directories.Searching is
 
    package dirent_ptr_Conv is
       new Address_To_Named_Access_Conversions (
-         C.dirent.struct_dirent64,
-         C.bits.dirent.struct_dirent64_ptr);
+         C.dirent.struct_dirent,
+         C.bits.dirent.struct_dirent_ptr);
+
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    procedure memcpy (
-      dst : not null C.bits.dirent.struct_dirent64_ptr;
-      src : not null C.bits.dirent.struct_dirent64_ptr;
+      dst : not null C.bits.dirent.struct_dirent_ptr;
+      src : not null C.bits.dirent.struct_dirent_ptr;
       n : Storage_Elements.Storage_Count)
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memcpy";
@@ -35,16 +38,16 @@ package body System.Native_Directories.Searching is
    procedure Get_Information (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
-      Information : aliased out C.sys.stat.struct_stat64;
+      Information : aliased out C.sys.stat.struct_stat;
       errno : out C.signed_int);
    procedure Get_Information (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
-      Information : aliased out C.sys.stat.struct_stat64;
+      Information : aliased out C.sys.stat.struct_stat;
       errno : out C.signed_int)
    is
       S_Length : constant C.size_t :=
-         C.string.strlen (Directory_Entry.d_name (0)'Access);
+         strlen (Directory_Entry.d_name (0)'Access);
       Full_Name : C.char_array (
          0 ..
          Directory'Length * Zero_Terminated_Strings.Expanding
@@ -64,7 +67,7 @@ package body System.Native_Directories.Searching is
       Full_Name_Length := Full_Name_Length + S_Length;
       Full_Name (Full_Name_Length) := C.char'Val (0);
       --  stat
-      if C.sys.stat.lstat64 (Full_Name (0)'Access, Information'Access) < 0 then
+      if C.sys.stat.lstat (Full_Name (0)'Access, Information'Access) < 0 then
          errno := C.errno.errno;
       else
          errno := 0;
@@ -80,11 +83,11 @@ package body System.Native_Directories.Searching is
    begin
       Result := dirent_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Count (Source.d_reclen)));
+            Storage_Elements.Storage_Offset (Source.d_reclen)));
       memcpy (
          Result,
          Source,
-         Storage_Elements.Storage_Count (Source.d_reclen));
+         Storage_Elements.Storage_Offset (Source.d_reclen));
       return Result;
    end New_Directory_Entry;
 
@@ -121,8 +124,8 @@ package body System.Native_Directories.Searching is
       Search.Filter := Filter;
       Search.Pattern := char_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (
-               Pattern'Length * Zero_Terminated_Strings.Expanding)
+            Storage_Elements.Storage_Offset (Pattern'Length)
+               * Zero_Terminated_Strings.Expanding
             + 1)); -- NUL
       Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
@@ -152,7 +155,7 @@ package body System.Native_Directories.Searching is
    begin
       loop
          C.errno.errno_location.all := 0;
-         Directory_Entry := C.dirent.readdir64 (Search.Handle);
+         Directory_Entry := C.dirent.readdir (Search.Handle);
          declare
             errno : constant C.signed_int := C.errno.errno;
          begin
@@ -188,11 +191,11 @@ package body System.Native_Directories.Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
    is
       Dummy_dirent : C.bits.dirent.struct_dirent; -- to use 'Position
-      Record_Length : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Offset'Max (
+      Record_Length : constant Storage_Elements.Storage_Count :=
+         Storage_Elements.Storage_Offset'Max (
             C.bits.dirent.struct_dirent'Size / Standard'Storage_Unit,
             Dummy_dirent.d_name'Position
-               + System.Storage_Elements.Storage_Offset (Name'Length + 1));
+               + Storage_Elements.Storage_Offset (Name'Length + 1));
       errno : C.signed_int;
    begin
       --  allocation
@@ -201,9 +204,7 @@ package body System.Native_Directories.Searching is
       --  filling components
       Directory_Entry.d_off := 0; -- ?
       Directory_Entry.d_reclen := C.stdint.uint16_t (Record_Length);
-      System.Zero_Terminated_Strings.To_C (
-         Name,
-         Directory_Entry.d_name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, Directory_Entry.d_name (0)'Access);
       Get_Information (Directory, Directory_Entry, Additional.Information,
          errno => errno);
       if errno /= 0 then
@@ -260,7 +261,7 @@ package body System.Native_Directories.Searching is
    procedure Get_Information (
       Directory : String;
       Directory_Entry : not null Directory_Entry_Access;
-      Information : aliased out C.sys.stat.struct_stat64)
+      Information : aliased out C.sys.stat.struct_stat)
    is
       errno : C.signed_int;
    begin

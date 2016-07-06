@@ -26,7 +26,8 @@ package body Ada.Command_Line is
       return Iterator_Interfaces.Reversible_Iterator'Class
    is
       pragma Check (Pre,
-         Check => (First <= Argument_Count + 1 and then Last <= Argument_Count)
+         Check =>
+            (First <= Argument_Count + 1 and then Last <= Argument_Count)
             or else raise Constraint_Error);
       Actual_First : Natural := First;
       Actual_Last : Natural := Last;
@@ -47,6 +48,30 @@ package body Ada.Command_Line is
    begin
       System.Startup.Exit_Status := Integer (Code);
    end Set_Exit_Status;
+
+   --  implementation of the non-abstract iterator
+
+   overriding function First (Object : Concrete_Iterator) return Natural is
+      pragma Unreferenced (Object);
+   begin
+      if Argument_Count = 0 then
+         return 0;
+      else
+         return 1;
+      end if;
+   end First;
+
+   overriding function Next (Object : Concrete_Iterator; Position : Natural)
+      return Natural
+   is
+      pragma Unreferenced (Object);
+   begin
+      if Position >= Argument_Count then
+         return 0;
+      else
+         return Position + 1;
+      end if;
+   end Next;
 
    --  implementation of the iterator
 

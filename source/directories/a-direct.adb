@@ -457,7 +457,8 @@ package body Ada.Directories is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Container) or else raise Status_Error);
       pragma Check (Pre,
-         Check => Integer (Position) = Container.Count
+         Check =>
+            Integer (Position) = Container.Count
             or else raise Status_Error);
    begin
       return (Element => Container.Next_Directory_Entry'Access);
@@ -468,7 +469,8 @@ package body Ada.Directories is
       return Search_Iterator_Interfaces.Forward_Iterator'Class
    is
       pragma Check (Dynamic_Predicate,
-         Check => Is_Open (Search_Type (Container))
+         Check =>
+            Is_Open (Search_Type (Container))
             or else raise Status_Error);
    begin
       return Search_Iterator'(Search => Container'Unrestricted_Access);
@@ -484,7 +486,8 @@ package body Ada.Directories is
       return Cursor
    is
       pragma Check (Pre,
-         Check => Integer (Position) = Object.Search.Count
+         Check =>
+            Integer (Position) = Object.Search.Count
             or else raise Status_Error);
    begin
       --  increment and search next
@@ -530,7 +533,8 @@ package body Ada.Directories is
       return String
    is
       pragma Check (Pre,
-         Check => Containing_Directory'Length = 0
+         Check =>
+            Containing_Directory'Length = 0
             or else Hierarchical_File_Names.Is_Simple_Name (Name)
             or else raise Name_Error); -- RM A.16(82/3)
    begin

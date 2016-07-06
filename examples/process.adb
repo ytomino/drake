@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace => Ignore);
+pragma Check_Policy (Trace => Off);
 with Ada.Command_Line;
 with Ada.Environment_Variables;
 with Ada.Processes;
@@ -10,7 +10,30 @@ procedure process is
 	In_Windows : constant Boolean :=
 		Target (Target'Length - 6 .. Target'Last) = "mingw32";
 begin
-	declare
+	declare -- making command line
+		Command : Ada.Processes.Command_Type;
+	begin
+		Ada.Processes.Append (Command, "echo");
+		Ada.Processes.Append (Command, "x");
+		Ada.Processes.Append (Command, "y z");
+		declare
+			S1 : constant String := Ada.Processes.Image (Command);
+			C2 : constant Ada.Processes.Command_Type := Ada.Processes.Value (S1);
+			S2 : constant String := Ada.Processes.Image (C2);
+		begin
+			pragma Check (Trace, Ada.Debug.Put (S1));
+			pragma Assert (S1 = S2);
+			null;
+		end;
+	end;
+	declare -- transfer command line
+		Command : Ada.Processes.Command_Type;
+	begin
+		Ada.Processes.Append (Command, "echo");
+		Ada.Processes.Append (Command, Ada.Command_Line.Iterate);
+		pragma Check (Trace, Ada.Debug.Put (Ada.Processes.Image (Command)));
+	end;
+	declare -- shell
 		Code : Ada.Command_Line.Exit_Status;
 	begin
 		-- ls
@@ -37,7 +60,7 @@ begin
 				null;
 		end;
 	end;
-	declare
+	declare -- spawn
 		C : Ada.Processes.Process;
 		Input_Reading, Input_Writing: Ada.Streams.Stream_IO.File_Type;
 		Output_Reading, Output_Writing: Ada.Streams.Stream_IO.File_Type;
@@ -60,16 +83,21 @@ begin
 				File,
 				Ada.Text_IO.In_File,
 				Ada.Streams.Stream_IO.Stream (Output_Reading));
-			while not Ada.Text_IO.End_Of_File (File) loop
-				declare
-					Line : constant String := Ada.Text_IO.Get_Line (File);
-				begin
-					pragma Check (Trace, Ada.Debug.Put (Line));
-					if Line = "ahaha=ufufu" then
-						Success := True;
-					end if;
-				end;
-			end loop;
+			Reading : begin
+				loop
+					declare
+						Line : constant String := Ada.Text_IO.Get_Line (File);
+					begin
+						pragma Check (Trace, Ada.Debug.Put (Line));
+						if Line = "ahaha=ufufu" then
+							Success := True;
+						end if;
+					end;
+				end loop;
+			exception
+				when Ada.Text_IO.End_Error => null;
+			end Reading;
+			pragma Assert (Ada.Text_IO.End_Of_File (File));
 			Ada.Text_IO.Close (File);
 			pragma Assert (Success);
 		end;

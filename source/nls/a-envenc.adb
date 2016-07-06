@@ -122,9 +122,10 @@ package body Ada.Environment_Encoding is
          Out_Last,
          Finish,
          Subsequence_Status);
-      pragma Assert (Subsequence_Status in
-         Subsequence_Status_Type (Status_Type'First) ..
-         Subsequence_Status_Type (Status_Type'Last));
+      pragma Assert (
+         Subsequence_Status in
+            Subsequence_Status_Type (Status_Type'First) ..
+            Subsequence_Status_Type (Status_Type'Last));
       Status := Status_Type (Subsequence_Status);
    end Convert;
 

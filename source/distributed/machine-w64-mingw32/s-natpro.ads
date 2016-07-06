@@ -8,19 +8,56 @@ with C.winnt;
 private with Ada.Finalization;
 package System.Native_Processes is
 
+   subtype Command_Type is C.winnt.LPWSTR;
+
+   procedure Free (X : in out Command_Type);
+
+   function Image (Command : Command_Type) return String;
+   procedure Value (
+      Command_Line : String;
+      Command : aliased out Command_Type);
+
+   pragma Inline (Image);
+
+   procedure Append (
+      Command : aliased in out Command_Type;
+      New_Item : String);
+   procedure Append (
+      Command : aliased in out Command_Type;
+      First : Positive;
+      Last : Natural);
+      --  Copy arguments from argv.
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String);
+
+   --  Child process type
+
    type Process is limited private;
+
+   --  Child process management
 
    function Do_Is_Open (Child : Process) return Boolean;
    pragma Inline (Do_Is_Open);
 
    procedure Create (
       Child : in out Process;
+      Command : Command_Type;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
+   procedure Create (
+      Child : in out Process;
       Command_Line : String;
       Directory : String := "";
       Search_Path : Boolean := False;
-      Input : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
-      Output : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
-      Error : aliased Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
+      Input : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
 
    procedure Do_Wait (
       Child : in out Process;
@@ -37,14 +74,16 @@ package System.Native_Processes is
       renames Do_Forced_Abort_Process;
       --  Should it use CREATE_NEW_PROCESS_GROUP and GenerateConsoleCtrlEvent?
 
+   --  Pass a command to the shell
+
+   procedure Shell (
+      Command : Command_Type;
+      Status : out Ada.Command_Line.Exit_Status);
    procedure Shell (
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String);
+   --  Exceptions
 
    Name_Error : exception
       renames Ada.IO_Exceptions.Name_Error;

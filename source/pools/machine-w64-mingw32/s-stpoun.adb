@@ -15,11 +15,12 @@ package body System.Storage_Pools.Unbounded is
    end Initialize;
 
    overriding procedure Finalize (Object : in out Unbounded_Pool) is
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.HeapDestroy (Object.Heap);
+      Success := C.winbase.HeapDestroy (Object.Heap);
       pragma Check (Debug,
-         Check => R /= 0
+         Check =>
+            Success /= C.windef.FALSE
             or else Debug.Runtime_Error ("HeapDestroy failed"));
    end Finalize;
 
@@ -54,14 +55,16 @@ package body System.Storage_Pools.Unbounded is
    is
       pragma Unreferenced (Size_In_Storage_Elements);
       pragma Unreferenced (Alignment);
-      R : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      R := C.winbase.HeapFree (
+      Success := C.winbase.HeapFree (
          Pool.Heap,
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,
-         Check => R /= 0 or else Debug.Runtime_Error ("HeapFree failed"));
+         Check =>
+            Success /= C.windef.FALSE
+            or else Debug.Runtime_Error ("HeapFree failed"));
    end Deallocate;
 
    overriding function Storage_Size (Pool : Unbounded_Pool)

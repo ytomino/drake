@@ -13,9 +13,11 @@ package Ada.Assertions is
       Check : Boolean;
       Message : String := Debug.Source_Location);
 
-   --  for System.Assertions
+   --  extended
    procedure Raise_Assertion_Error (
       Message : String := Debug.Source_Location);
    pragma No_Return (Raise_Assertion_Error);
+
+   --  Note: Raise_Assertion_Error is called by pragma Assert.
 
 end Ada.Assertions;

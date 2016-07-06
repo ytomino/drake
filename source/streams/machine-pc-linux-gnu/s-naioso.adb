@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with System.Formatting;
 with System.Synchronous_Control;
 with C.errno;
@@ -10,6 +11,17 @@ package body System.Native_IO.Sockets is
    use type C.size_t;
    use type C.netdb.struct_addrinfo_ptr;
    use type C.unistd.socklen_t;
+
+   --  implementation
+
+   procedure Close_Socket (Handle : Handle_Type; Raise_On_Error : Boolean) is
+      R : C.signed_int;
+   begin
+      R := C.unistd.close (Handle);
+      if R < 0 and then Raise_On_Error then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+   end Close_Socket;
 
    --  client
 
@@ -29,7 +41,7 @@ package body System.Native_IO.Sockets is
    begin
       R := C.netdb.getaddrinfo (Host_Name, Service, Hints, Data'Access);
       if R /= 0 then
-         return null; -- Use_Error
+         Raise_Exception (Use_Error'Identity);
       else
          return Data;
       end if;
@@ -43,10 +55,10 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => 0,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype => C.sys.socket.enum_socket_type'Enum_Rep (
-            C.sys.socket.SOCK_STREAM),
-         ai_protocol => C.netinet.in_h.Cast (
-            C.netinet.in_h.IPPROTO_TCP),
+         ai_socktype =>
+            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_protocol =>
+            C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
          ai_addr => null,
@@ -69,10 +81,9 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => C.netdb.AI_NUMERICSERV,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype => C.sys.socket.enum_socket_type'Enum_Rep (
-            C.sys.socket.SOCK_STREAM),
-         ai_protocol => C.netinet.in_h.Cast (
-            C.netinet.in_h.IPPROTO_TCP),
+         ai_socktype =>
+            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_protocol => C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
          ai_addr => null,
@@ -115,21 +126,24 @@ package body System.Native_IO.Sockets is
                Handle,
                C.sys.socket.CONST_SOCKADDR_ARG'(
                   Unchecked_Tag => 0,
-                  sockaddr => C.bits.socket.struct_sockaddr_const_ptr (
-                     I.ai_addr)),
+                  sockaddr =>
+                     C.bits.socket.struct_sockaddr_const_ptr (I.ai_addr)),
                I.ai_addrlen) = 0
             then
                --  connected
                Set_Close_On_Exec (Handle);
                return;
             end if;
-            if C.unistd.close (Handle) < 0 then
-               exit; -- Use_Error or Device_Error ?
-            end if;
+            declare
+               Closing_Handle : constant Handle_Type := Handle;
+            begin
+               Handle := Invalid_Handle;
+               Close_Socket (Closing_Handle, Raise_On_Error => True);
+            end;
          end if;
          I := I.ai_next;
       end loop;
-      Handle := Invalid_Handle;
+      Raise_Exception (Use_Error'Identity);
    end Connect;
 
    procedure Finalize (Item : End_Point) is
@@ -154,8 +168,6 @@ package body System.Native_IO.Sockets is
       Data : aliased C.netdb.struct_addrinfo_ptr;
       Service : C.char_array (0 .. 5); -- "65535" & NUL
       Service_Length : C.size_t;
-      Reuse_Addr_Option : aliased C.signed_int;
-      Socket_Address_Argument : C.sys.socket.CONST_SOCKADDR_ARG;
    begin
       declare
          Service_As_String : String (1 .. 5);
@@ -178,8 +190,22 @@ package body System.Native_IO.Sockets is
          Hints'Access,
          Data'Access) /= 0
       then
-         Server := Invalid_Listener; -- Use_Error
-      else
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      declare
+         procedure Finally (X : in out C.netdb.struct_addrinfo_ptr);
+         procedure Finally (X : in out C.netdb.struct_addrinfo_ptr) is
+         begin
+            C.netdb.freeaddrinfo (X);
+         end Finally;
+         package Holder is
+            new Ada.Exceptions.Finally.Scoped_Holder (
+               C.netdb.struct_addrinfo_ptr,
+               Finally);
+         Reuse_Addr_Option : aliased C.signed_int;
+         Socket_Address_Argument : C.sys.socket.CONST_SOCKADDR_ARG;
+      begin
+         Holder.Assign (Data);
          Server := C.sys.socket.socket (
             Data.ai_family,
             Data.ai_socktype,
@@ -195,9 +221,7 @@ package body System.Native_IO.Sockets is
             C.void_const_ptr (Reuse_Addr_Option'Address),
             Reuse_Addr_Option'Size / Standard'Storage_Unit) < 0
          then
-            Close_Listener (Server, Raise_On_Error => False);
-            C.netdb.freeaddrinfo (Data);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
          --  bind
          Socket_Address_Argument.sockaddr :=
@@ -207,18 +231,13 @@ package body System.Native_IO.Sockets is
             Socket_Address_Argument,
             Data.ai_addrlen) < 0
          then
-            Close_Listener (Server, Raise_On_Error => False);
-            C.netdb.freeaddrinfo (Data);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
-         --  free
-         C.netdb.freeaddrinfo (Data);
          --  listen
          if C.sys.socket.listen (Server, C.sys.socket.SOMAXCONN) < 0 then
-            Close_Listener (Server, Raise_On_Error => False);
-            Server := Invalid_Listener; -- Use_Error
+            Raise_Exception (Use_Error'Identity);
          end if;
-      end if;
+      end;
    end Listen;
 
    procedure Accept_Socket (
@@ -245,8 +264,7 @@ package body System.Native_IO.Sockets is
             Synchronous_Control.Lock_Abort;
             if R < 0 then
                if errno /= C.errno.EINTR then
-                  Handle := Invalid_Handle; -- Use_Error
-                  exit;
+                  Raise_Exception (Use_Error'Identity);
                end if;
                --  interrupted and the signal is not "abort", then retry
             else
@@ -257,14 +275,5 @@ package body System.Native_IO.Sockets is
          end;
       end loop;
    end Accept_Socket;
-
-   procedure Close_Listener (Server : Listener; Raise_On_Error : Boolean) is
-      R : C.signed_int;
-   begin
-      R := C.unistd.close (Server);
-      if R < 0 and then Raise_On_Error then
-         Raise_Exception (Use_Error'Identity);
-      end if;
-   end Close_Listener;
 
 end System.Native_IO.Sockets;

@@ -171,8 +171,14 @@ package body Ada.Naked_Text_IO is
 
    --  non-controlled
 
-   procedure Free is
-      new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
+   procedure Free (X : in out Non_Controlled_File_Type);
+   procedure Free (X : in out Non_Controlled_File_Type) is
+      procedure Raw_Free is
+         new Unchecked_Deallocation (Text_Type, Non_Controlled_File_Type);
+   begin
+      System.Native_IO.Free (X.Name);
+      Raw_Free (X);
+   end Free;
 
    type Open_Access is not null access procedure (
       File : in out Streams.Naked_Stream_IO.Non_Controlled_File_Type;
@@ -194,12 +200,11 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form)
    is
       New_File : aliased Non_Controlled_File_Type := new Text_Type'(
-         Name_Length => 0,
          Stream => <>,
+         Name => null,
          Mode => Mode,
          External => <>,
          New_Line => <>,
-         Name => "",
          others => <>);
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Non_Controlled_File_Type, Free);
@@ -274,7 +279,10 @@ package body Ada.Naked_Text_IO is
                      Streams.Naked_Stream_IO.Handle (File.File),
                      File.Buffer (File.Last + 1)'Address,
                      1,
-                     Read_Length); -- Read_Length can be > 1
+                     Read_Length);
+                  if Read_Length = 0 then
+                     File.End_Of_File := True;
+                  end if;
                else
                   System.Native_Text_IO.Terminal_Get_Immediate (
                      Streams.Naked_Stream_IO.Handle (File.File),
@@ -302,9 +310,6 @@ package body Ada.Naked_Text_IO is
                if Wait and then File.Last = Old_Last then
                   File.End_Of_File := True;
                end if;
-            exception
-               when End_Error =>
-                  File.End_Of_File := True;
             end;
          end if;
       end if;
@@ -684,6 +689,7 @@ package body Ada.Naked_Text_IO is
                Raise_Exception (Device_Error'Identity);
             end if;
          end;
+         File.Ahead_Col := Sequence_Length; -- for fallback
       elsif File.External = IO_Modes.Locale
          and then File.Buffer (1) >= Character'Val (16#80#)
       then
@@ -753,7 +759,7 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       pragma Check (Pre,
-         not Is_Open (File) or else raise Status_Error);
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
       Open_File (
          Open_Proc => Streams.Naked_Stream_IO.Create'Access,
@@ -770,7 +776,7 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form := Default_Form)
    is
       pragma Check (Pre,
-         not Is_Open (File) or else raise Status_Error);
+         Check => not Is_Open (File) or else raise Status_Error);
    begin
       Open_File (
          Open_Proc => Streams.Naked_Stream_IO.Open'Access,
@@ -803,7 +809,11 @@ package body Ada.Naked_Text_IO is
 
    procedure Delete (File : aliased in out Non_Controlled_File_Type) is
       pragma Check (Pre,
-         Check => Is_Open (File) or else raise Status_Error);
+         Check =>
+            (Is_Open (File)
+               and then Streams.Naked_Stream_IO.Is_Open (File.File)
+               and then not Streams.Naked_Stream_IO.Is_Standard (File.File))
+            or else raise Status_Error);
       Internal : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
          File.File;
    begin
@@ -818,11 +828,13 @@ package body Ada.Naked_Text_IO is
       pragma Check (Pre,
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Pre,
-         Check => not Streams.Naked_Stream_IO.Is_Standard (File.File)
+         Check =>
+            not Streams.Naked_Stream_IO.Is_Standard (File.File)
             or else Naked_Text_IO.Mode (File) = Mode
             or else raise Mode_Error);
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
       Current_Mode : constant IO_Modes.File_Mode := Naked_Text_IO.Mode (File);
    begin
@@ -875,7 +887,7 @@ package body Ada.Naked_Text_IO is
       if Streams.Naked_Stream_IO.Is_Open (File.File) then
          return Streams.Naked_Stream_IO.Name (File.File);
       else
-         return File.Name;
+         return System.Native_IO.Value (File.Name);
       end if;
    end Name;
 
@@ -920,8 +932,7 @@ package body Ada.Naked_Text_IO is
          File.Col := File.Col + File.Ahead_Col;
       end if;
       if Streams.Naked_Stream_IO.Is_Open (File.File)
-         and then File.External /=
-            IO_Modes.Terminal -- console can not flush
+         and then File.External /= IO_Modes.Terminal -- console can not flush
       then
          Streams.Naked_Stream_IO.Flush (File.File);
       end if;
@@ -1067,8 +1078,10 @@ package body Ada.Naked_Text_IO is
             return True;
          when others =>
             return End_Of_File (File) -- End_Of_File calls Read_Buffer
-               or else (File.Last > 0 -- page mark is ASCII
+               or else (
+                  File.Last > 0
                   and then File.Buffer (1) = Character'Val (16#0c#));
+                  --  page mark is ASCII
       end case;
    end End_Of_Page;
 
@@ -1086,7 +1099,10 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Col (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Set_Terminal_Col (
             Streams.Naked_Stream_IO.Handle (File.File),
             To);
@@ -1120,7 +1136,10 @@ package body Ada.Naked_Text_IO is
 
    procedure Set_Line (File : Non_Controlled_File_Type; To : Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Set_Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
             Col => 1,
@@ -1150,7 +1169,10 @@ package body Ada.Naked_Text_IO is
       File : Non_Controlled_File_Type;
       Col, Line : out Positive) is
    begin
-      if File.External = IO_Modes.Terminal then
+      if File.External = IO_Modes.Terminal
+         and then System.Native_Text_IO.Use_Terminal_Position (
+            Streams.Naked_Stream_IO.Handle (File.File))
+      then
          System.Native_Text_IO.Terminal_Position (
             Streams.Naked_Stream_IO.Handle (File.File),
             Col,
@@ -1503,7 +1525,8 @@ package body Ada.Naked_Text_IO is
 
    procedure Skip_Ahead (File : Non_Controlled_File_Type) is
       pragma Check (Pre,
-         Check => File.Looked_Ahead_Last /= 0
+         Check =>
+            File.Looked_Ahead_Last /= 0
             or else raise Status_Error); -- Look_Ahead should be called before
    begin
       if File.Ahead_Last = 0 then -- File.End_Of_File = True
@@ -1597,15 +1620,23 @@ package body Ada.Naked_Text_IO is
       function To_Address (Value : access Streams.Root_Stream_Type'Class)
          return System.Address
          with Import, Convention => Intrinsic;
+      package Name_Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            System.Native_IO.Name_Pointer,
+            System.Native_IO.Free);
+      Full_Name : aliased System.Native_IO.Name_Pointer;
    begin
+      Name_Holder.Assign (Full_Name);
+      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
       File := new Text_Type'(
-         Name_Length => Name'Length + 1,
          Stream => To_Address (Stream),
+         Name => Full_Name,
          Mode => Mode,
          External => Select_External (Form.External),
          New_Line => Select_New_Line (Form.New_Line),
-         Name => '*' & Name,
          others => <>);
+      --  complete
+      Name_Holder.Clear;
    end Open;
 
    function Stream (File : Non_Controlled_File_Type)
@@ -1619,7 +1650,8 @@ package body Ada.Naked_Text_IO is
          Streams.Naked_Stream_IO.Non_Controlled_File_Type
    is
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
    begin
       return File.File'Access;
@@ -1629,7 +1661,8 @@ package body Ada.Naked_Text_IO is
       return System.Native_IO.Handle_Type
    is
       pragma Check (Pre,
-         Check => Streams.Naked_Stream_IO.Is_Open (File.File)
+         Check =>
+            Streams.Naked_Stream_IO.Is_Open (File.File)
             or else raise Status_Error); -- external stream mode
    begin
       if File.External /= IO_Modes.Terminal then

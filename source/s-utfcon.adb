@@ -151,8 +151,8 @@ package body System.UTF_Conversions is
             Shortest_Leading,
             Shortest_Length,
             Status); -- set Illegal_Sequence if surrogate pair
-         if Shortest_Length /= Length then
-            Status := Illegal_Sequence; -- too long
+         if Length > Shortest_Length then
+            Status := Non_Shortest;
          end if;
       end if;
       Last := I;

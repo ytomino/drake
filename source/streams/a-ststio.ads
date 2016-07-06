@@ -158,7 +158,6 @@ package Ada.Streams.Stream_IO is
       File : File_Type); -- Output_File_Type
 
    --  exceptions
-
    Status_Error : exception
       renames IO_Exceptions.Status_Error;
    Mode_Error : exception

@@ -112,10 +112,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Capacity : Count_Type)
    is
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Rebuild (New_Data.Table, Capacity);
       Target := Upcast (New_Data);
@@ -136,10 +134,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    is
       pragma Unreferenced (Length);
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Copy (
          New_Data.Table,
@@ -237,8 +233,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          return Boolean is
       begin
          return Equivalent_Keys (
-            Downcast (Left).Key.all,
-            Downcast (Right).Key.all)
+               Downcast (Left).Key.all,
+               Downcast (Right).Key.all)
             and then Downcast (Left).Element.all =
                Downcast (Right).Element.all;
       end Equivalent;
@@ -450,9 +446,6 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    end Insert;
 
 --  diff (Insert)
---
---
---
 --
 --
 --

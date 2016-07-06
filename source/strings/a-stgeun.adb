@@ -1,8 +1,8 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Allocators.Allocated_Size;
 with System.Standard_Allocators;
 with System.Storage_Elements;
+with System.System_Allocators.Allocated_Size;
 package body Ada.Strings.Generic_Unbounded is
    use type Streams.Stream_Element_Offset;
    use type System.Address;
@@ -62,23 +62,18 @@ package body Ada.Strings.Generic_Unbounded is
       Header_Size : constant System.Storage_Elements.Storage_Count :=
          Generic_Unbounded.Data'Size / Standard'Storage_Unit;
       M : constant System.Address := Data_Cast.To_Address (Data);
-      Usable_Size : constant
-         System.Storage_Elements.Storage_Count :=
-         System.Native_Allocators.Allocated_Size (M)
-         - Header_Size;
+      Usable_Size : constant System.Storage_Elements.Storage_Count :=
+         System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
       if String_Type'Component_Size
          rem Standard'Storage_Unit = 0
       then -- optimized for packed
          Data.Capacity := Integer (
             Usable_Size
-            / (String_Type'Component_Size
-               / Standard'Storage_Unit));
+            / (String_Type'Component_Size / Standard'Storage_Unit));
       else -- unpacked
          Data.Capacity := Integer (
-            Usable_Size
-            * Standard'Storage_Unit
-            / String_Type'Component_Size);
+            Usable_Size * Standard'Storage_Unit / String_Type'Component_Size);
       end if;
       Data.Items := Fixed_String_Access_Conv.To_Pointer (M + Header_Size);
    end Adjust_Allocated;
@@ -441,7 +436,8 @@ package body Ada.Strings.Generic_Unbounded is
       return String_Type
    is
       pragma Check (Pre,
-         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+         Check =>
+            (Low <= Source.Length + 1 and then High <= Source.Length)
             or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
@@ -466,7 +462,8 @@ package body Ada.Strings.Generic_Unbounded is
       High : Natural)
    is
       pragma Check (Pre,
-         Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+         Check =>
+            (Low <= Source.Length + 1 and then High <= Source.Length)
             or else raise Index_Error);
       pragma Suppress (Access_Check);
    begin
@@ -692,7 +689,8 @@ package body Ada.Strings.Generic_Unbounded is
          return Unbounded_String
       is
          pragma Check (Pre,
-            Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+            Check =>
+               (Low <= Source.Length + 1 and then High <= Source.Length)
                or else raise Index_Error);
          pragma Suppress (Access_Check);
       begin
@@ -735,7 +733,8 @@ package body Ada.Strings.Generic_Unbounded is
          By : String_Type)
       is
          pragma Check (Pre,
-            Check => (Low <= Source.Length + 1 and then High <= Source.Length)
+            Check =>
+               (Low <= Source.Length + 1 and then High <= Source.Length)
                or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
@@ -809,7 +808,8 @@ package body Ada.Strings.Generic_Unbounded is
          New_Item : String_Type)
       is
          pragma Check (Pre,
-            Check => Before <= Source.Length + 1
+            Check =>
+               Before <= Source.Length + 1
                or else raise Index_Error); -- CXA4032
          pragma Suppress (Access_Check);
       begin
@@ -878,9 +878,7 @@ package body Ada.Strings.Generic_Unbounded is
                   Assign (Result, Source); -- shared
                   Set_Length (Result, From - 1);
                else
-                  Set_Length (
-                     Result,
-                     Source.Length - (Through - From + 1));
+                  Set_Length (Result, Source.Length - (Through - From + 1));
                   declare
                      Dummy_Last : Natural;
                   begin

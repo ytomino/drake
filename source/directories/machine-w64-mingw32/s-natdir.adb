@@ -34,7 +34,9 @@ package body System.Native_Directories is
          Directory'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
-      if C.winbase.SetCurrentDirectory (W_Directory (0)'Access) = 0 then
+      if C.winbase.SetCurrentDirectory (W_Directory (0)'Access) =
+         C.windef.FALSE
+      then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Set_Directory;
@@ -47,7 +49,9 @@ package body System.Native_Directories is
       Zero_Terminated_WStrings.To_C (
          New_Directory,
          W_New_Directory (0)'Access);
-      if C.winbase.CreateDirectory (W_New_Directory (0)'Access, null) = 0 then
+      if C.winbase.CreateDirectory (W_New_Directory (0)'Access, null) =
+         C.windef.FALSE
+      then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Create_Directory;
@@ -58,7 +62,9 @@ package body System.Native_Directories is
          Directory'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Directory, W_Directory (0)'Access);
-      if C.winbase.RemoveDirectory (W_Directory (0)'Access) = 0 then
+      if C.winbase.RemoveDirectory (W_Directory (0)'Access) =
+         C.windef.FALSE
+      then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_Directory;
@@ -69,7 +75,7 @@ package body System.Native_Directories is
          Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      if C.winbase.DeleteFile (W_Name (0)'Access) = 0 then
+      if C.winbase.DeleteFile (W_Name (0)'Access) = C.windef.FALSE then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_File;
@@ -95,9 +101,10 @@ package body System.Native_Directories is
          Overwrite_Flag := 0;
       end if;
       if C.winbase.MoveFileEx (
-         W_Old (0)'Access,
-         W_New (0)'Access,
-         dwFlags => C.winbase.MOVEFILE_COPY_ALLOWED or Overwrite_Flag) = 0
+            W_Old (0)'Access,
+            W_New (0)'Access,
+            dwFlags => C.winbase.MOVEFILE_COPY_ALLOWED or Overwrite_Flag) =
+         C.windef.FALSE
       then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -118,9 +125,10 @@ package body System.Native_Directories is
       Zero_Terminated_WStrings.To_C (Source_Name, W_Source_Name (0)'Access);
       Zero_Terminated_WStrings.To_C (Target_Name, W_Target_Name (0)'Access);
       if C.winbase.CopyFile (
-         W_Source_Name (0)'Access,
-         W_Target_Name (0)'Access,
-         bFailIfExists => Boolean'Pos (not Overwrite)) = 0
+            W_Source_Name (0)'Access,
+            W_Target_Name (0)'Access,
+            bFailIfExists => Boolean'Pos (not Overwrite)) =
+         C.windef.FALSE
       then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -136,26 +144,27 @@ package body System.Native_Directories is
       W_Target_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Target_Name'Length * Zero_Terminated_WStrings.Expanding);
-      Error : Boolean;
    begin
       Zero_Terminated_WStrings.To_C (Source_Name, W_Source_Name (0)'Access);
       Zero_Terminated_WStrings.To_C (Target_Name, W_Target_Name (0)'Access);
-      Error := C.winbase.ReplaceFile (
-         W_Source_Name (0)'Access,
-         W_Target_Name (0)'Access,
-         null,
-         0,
-         C.windef.LPVOID (Null_Address),
-         C.windef.LPVOID (Null_Address)) = 0;
-      if Error then
+      if C.winbase.ReplaceFile (
+            W_Source_Name (0)'Access,
+            W_Target_Name (0)'Access,
+            null,
+            0,
+            C.windef.LPVOID (Null_Address),
+            C.windef.LPVOID (Null_Address)) =
+         C.windef.FALSE
+      then
          --  Target_Name is not existing.
-         Error := C.winbase.MoveFileEx (
-             W_Source_Name (0)'Access,
-             W_Target_Name (0)'Access,
-             dwFlags => C.winbase.MOVEFILE_REPLACE_EXISTING) = 0;
-      end if;
-      if Error then
-         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
+         if C.winbase.MoveFileEx (
+               W_Source_Name (0)'Access,
+               W_Target_Name (0)'Access,
+               dwFlags => C.winbase.MOVEFILE_REPLACE_EXISTING) =
+            C.windef.FALSE
+         then
+            Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
+         end if;
       end if;
    end Replace_File;
 
@@ -220,9 +229,10 @@ package body System.Native_Directories is
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       return C.winbase.GetFileAttributesEx (
-         W_Name (0)'Access,
-         C.winbase.GetFileExInfoStandard,
-         C.windef.LPVOID (Information'Address)) /= 0;
+            W_Name (0)'Access,
+            C.winbase.GetFileExInfoStandard,
+            C.windef.LPVOID (Information'Address)) /=
+         C.windef.FALSE;
    end Exists;
 
    procedure Get_Information (
@@ -235,9 +245,10 @@ package body System.Native_Directories is
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetFileAttributesEx (
-         W_Name (0)'Access,
-         C.winbase.GetFileExInfoStandard,
-         C.windef.LPVOID (Information'Address)) = 0
+            W_Name (0)'Access,
+            C.winbase.GetFileExInfoStandard,
+            C.windef.LPVOID (Information'Address)) =
+         C.windef.FALSE
       then
          Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -248,7 +259,8 @@ package body System.Native_Directories is
       if (Attributes and C.winnt.FILE_ATTRIBUTE_DIRECTORY) /= 0 then
          return Directory;
       elsif (Attributes
-         and (C.winnt.FILE_ATTRIBUTE_DEVICE
+         and (
+            C.winnt.FILE_ATTRIBUTE_DEVICE
             or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
             or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
       then
@@ -273,7 +285,7 @@ package body System.Native_Directories is
          LowPart => Information.nFileSizeLow,
          HighPart => Information.nFileSizeHigh);
    begin
-      return Ada.Streams.Stream_Element_Count (U.QuadPart);
+      return Ada.Streams.Stream_Element_Offset (U.QuadPart);
    end Size;
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
@@ -297,9 +309,10 @@ package body System.Native_Directories is
    begin
       Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
       if C.winbase.GetFileAttributesEx (
-         W_Name (0)'Access,
-         C.winbase.GetFileExInfoStandard,
-         C.windef.LPVOID (Information'Address)) = 0
+            W_Name (0)'Access,
+            C.winbase.GetFileExInfoStandard,
+            C.windef.LPVOID (Information'Address)) =
+         C.windef.FALSE
       then
          Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
       else
@@ -309,21 +322,23 @@ package body System.Native_Directories is
             dwShareMode => C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE,
             lpSecurityAttributes => null,
             dwCreationDisposition => C.winbase.OPEN_EXISTING,
-            dwFlagsAndAttributes => C.winbase.FILE_FLAG_BACKUP_SEMANTICS
+            dwFlagsAndAttributes =>
+               C.winbase.FILE_FLAG_BACKUP_SEMANTICS
                or C.winbase.FILE_FLAG_OPEN_REPARSE_POINT,
             hTemplateFile => C.windef.LPVOID (Null_Address));
          if Handle = C.winbase.INVALID_HANDLE_VALUE then
             Exception_Id := Named_IO_Exception_Id (C.winbase.GetLastError);
          else
             if C.winbase.SetFileTime (
-               Handle,
-               Information.ftCreationTime'Access,
-               Information.ftLastAccessTime'Access,
-               Aliased_Time'Access) = 0
+                  Handle,
+                  Information.ftCreationTime'Access,
+                  Information.ftLastAccessTime'Access,
+                  Aliased_Time'Access) =
+               C.windef.FALSE
             then
                Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
             end if;
-            if C.winbase.CloseHandle (Handle) = 0 then
+            if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
                if Exception_Id = Ada.Exception_Identification.Null_Id then
                   Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
                end if;

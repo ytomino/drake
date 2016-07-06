@@ -106,7 +106,7 @@ package body Interfaces.C.Generic_Strings is
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
       Size : constant System.Storage_Elements.Storage_Count :=
-         (System.Storage_Elements.Storage_Count (Length) + 1) -- appending nul
+         (System.Storage_Elements.Storage_Offset (Length) + 1) -- appending nul
          * (Element_Array'Component_Size / Standard'Storage_Unit);
       Result : constant chars_ptr := libc.malloc (C.size_t (Size));
    begin
@@ -219,7 +219,8 @@ package body Interfaces.C.Generic_Strings is
       return Element_Array
    is
       pragma Check (Pre,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else Length = 0
             or else raise Dereference_Error); -- CXB3010
       pragma Suppress (Alignment_Check);
@@ -286,7 +287,8 @@ package body Interfaces.C.Generic_Strings is
       return String_Type
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item, Limit => Length);
@@ -313,7 +315,8 @@ package body Interfaces.C.Generic_Strings is
       return size_t
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
    begin
       if Element'Size = char'Size
@@ -417,7 +420,8 @@ package body Interfaces.C.Generic_Strings is
       Check : Boolean := True)
    is
       pragma Check (Dynamic_Predicate,
-         Check => Standard."/=" (Item, null) -- operator for anonymous access
+         Check =>
+            Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
       Chars_Length : constant C.size_t := Chars'Length;
    begin

@@ -11,7 +11,6 @@ package System.Native_IO is
    pragma Preelaborate;
    use type C.signed_int;
 
-   subtype Name_Length is C.size_t;
    subtype Name_Character is C.char;
    subtype Name_String is C.char_array;
    subtype Name_Pointer is C.char_ptr;
@@ -22,30 +21,21 @@ package System.Native_IO is
 
    --  name
 
-   function Value (
-      First : not null access constant Name_Character;
-      Length : Name_Length)
+   function Value (First : not null access constant Name_Character)
       return String
       renames Zero_Terminated_Strings.Value;
 
    procedure Free (Item : in out Name_Pointer);
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer; -- Full_Name (Name) & NUL
-      Out_Length : out Name_Length);
-
    procedure New_External_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer; -- '*' & Name & NUL
-      Out_Length : out Name_Length);
+      Out_Item : aliased out Name_Pointer); -- '*' & Name & NUL
 
    --  file management
 
    procedure Open_Temporary (
       Handle : aliased out Handle_Type;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length);
+      Out_Item : aliased out Name_Pointer);
 
    type Open_Method is (Open, Create, Reset);
    pragma Discard_Names (Open_Method);
@@ -68,17 +58,17 @@ package System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean);
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer; -- not null
       Raise_On_Error : Boolean);
 
    procedure Close_Temporary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer; -- not null
       Raise_On_Error : Boolean)
       renames Delete_Ordinary;
 
@@ -110,6 +100,8 @@ package System.Native_IO is
 
    --  position within file
 
+   subtype Whence_Type is C.signed_int;
+
    From_Begin : constant := C.unistd.SEEK_SET;
    From_Current : constant := C.unistd.SEEK_CUR;
    From_End : constant := C.unistd.SEEK_END;
@@ -117,7 +109,7 @@ package System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset; -- 0-origin
-      Whence : C.signed_int;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset); -- 1-origin
 
    function Index (Handle : Handle_Type)

@@ -124,10 +124,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    is
       pragma Unreferenced (Max_Length);
       pragma Unreferenced (Capacity);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Root => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Root => null, Length => 0);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;
@@ -213,8 +211,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          return Boolean is
       begin
          return Equivalent_Keys (
-            Downcast (Left).Key.all,
-            Downcast (Right).Key.all)
+               Downcast (Left).Key.all,
+               Downcast (Right).Key.all)
             and then Downcast (Left).Element.all =
                Downcast (Right).Element.all;
       end Equivalent;
@@ -429,9 +427,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 --
 --
 --
---
---
---
 
    procedure Insert (
       Container : in out Map;
@@ -521,13 +516,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    function First_Element (Container : Map'Class)
       return Element_Type is
    begin
-      return Element (Last (Map (Container)));
+      return Element (First (Map (Container)));
    end First_Element;
 
    function First_Key (Container : Map'Class)
       return Key_Type is
    begin
-      return Key (Last (Map (Container)));
+      return Key (First (Map (Container)));
    end First_Key;
 
    function Last (Container : Map) return Cursor is
@@ -645,10 +640,30 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return Left /= Right and then Left.Key.all < Right.Key.all;
    end "<";
 
+   function ">" (Left, Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
    function "<" (Left : Cursor; Right : Key_Type) return Boolean is
    begin
       return Left.Key.all < Right;
    end "<";
+
+   function ">" (Left : Cursor; Right : Key_Type) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
+
+   function "<" (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Left < Right.Key.all;
+   end "<";
+
+   function ">" (Left : Key_Type; Right : Cursor) return Boolean is
+   begin
+      return Right < Left;
+   end ">";
 
    procedure Iterate (
       Container : Map'Class;

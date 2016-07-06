@@ -5,16 +5,10 @@ package Ada.Containers is
    type Hash_Type is mod 2 ** 32; -- implementation-defined
 
    --  extended
-   --  A convenience to make hash functions.
-   function Shift_Left (Value : Hash_Type; Amount : Natural) return Hash_Type
-      with Import, Convention => Intrinsic;
-   function Shift_Right (Value : Hash_Type; Amount : Natural) return Hash_Type
-      with Import, Convention => Intrinsic;
-   function Rotate_Left (Value : Hash_Type; Amount : Natural) return Hash_Type
-      with Import, Convention => Intrinsic;
-   function Rotate_Right (Value : Hash_Type; Amount : Natural)
-      return Hash_Type
-      with Import, Convention => Intrinsic;
+   --  Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left,
+   --    and Rotate_Right.
+   --  These subprograms are convenience to make hash functions.
+   pragma Provide_Shift_Operators (Hash_Type);
 
    --  modified
    --  Count_Type is essentially same as Natural.

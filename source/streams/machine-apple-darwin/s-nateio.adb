@@ -1,6 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
 with C.sys.ioctl;
+with C.unistd;
 package body System.Native_Text_IO is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Streams.Stream_Element_Offset;
@@ -87,19 +88,15 @@ package body System.Native_Text_IO is
    is
       P : Natural;
       Error : Boolean;
+      L : constant Natural := Item'First + (Prefix'Length - 1);
    begin
-      if Item'Length >= Prefix'Length
-         and then Item (Item'First .. Item'First + Prefix'Length - 1) = Prefix
-      then
+      if L <= Item'Last and then Item (Item'First .. L) = Prefix then
          Formatting.Value (
-            Item (Item'First + Prefix'Length .. Item'Last),
+            Item (L + 1 .. Item'Last),
             P,
             X1,
             Error => Error);
-         if not Error
-            and then P < Item'Last
-            and then Item (P + 1) = ';'
-         then
+         if not Error and then P < Item'Last and then Item (P + 1) = ';' then
             Formatting.Value (
                Item (P + 2 .. Item'Last),
                P,
@@ -190,12 +187,20 @@ package body System.Native_Text_IO is
       Top := 1;
    end Terminal_View;
 
+   function Use_Terminal_Position (Handle : Handle_Type) return Boolean is
+   begin
+      --  It's a workaround for that in some kinds of combinations of
+      --    commands like timeout(1), the process may be run as background,
+      --    so it may receive SIGTTOU by tcsetattr and be stopped.
+      return C.unistd.tcgetpgrp (Handle) = C.unistd.getpgrp;
+   end Use_Terminal_Position;
+
    procedure Terminal_Position (
       Handle : Handle_Type;
       Col, Line : out Positive)
    is
-      Seq : constant String (1 .. 4) := (
-         Character'Val (16#1b#), '[', '6', 'n');
+      Seq : constant String (1 .. 4) :=
+         (Character'Val (16#1b#), '[', '6', 'n');
       Old_Settings : aliased C.termios.struct_termios;
       Buffer : String (1 .. 256);
       Last : Natural;
@@ -322,8 +327,7 @@ package body System.Native_Text_IO is
    end Restore;
 
    procedure Save_State (Handle : Handle_Type; To_State : out Output_State) is
-      Seq : constant String (1 .. 2) := (
-         Character'Val (16#1b#), '7');
+      Seq : constant String (1 .. 2) := (Character'Val (16#1b#), '7');
    begin
       State_Stack_Count := State_Stack_Count + 1;
       To_State := State_Stack_Count;
@@ -333,8 +337,7 @@ package body System.Native_Text_IO is
    procedure Reset_State (Handle : Handle_Type; From_State : Output_State) is
       pragma Check (Pre,
          Check => From_State = State_Stack_Count or else raise Status_Error);
-      Seq : constant String (1 .. 2) := (
-         Character'Val (16#1b#), '8');
+      Seq : constant String (1 .. 2) := (Character'Val (16#1b#), '8');
    begin
       State_Stack_Count := State_Stack_Count - 1;
       Write_Just (Handle, Seq);

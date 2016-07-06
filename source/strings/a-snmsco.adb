@@ -70,8 +70,8 @@ package body Ada.Strings.Naked_Maps.Set_Constants is
       ISO_646_Set_Data := new Character_Set_Data'(
          Length => 1,
          Reference_Count => System.Reference_Counting.Static,
-         Items => (
-            1 => (Character_Type'Val (0), Character_Type'Val (16#7F#))));
+         Items =>
+            (1 => (Character_Type'Val (0), Character_Type'Val (16#7F#))));
       pragma Check (Validate, Debug.Valid (ISO_646_Set_Data.all));
    end ISO_646_Init;
 

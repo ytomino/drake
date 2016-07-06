@@ -9,10 +9,8 @@ package Ada.Streams.Naked_Stream_IO is
 
    --  the parameter Form
 
-   Default_Form : constant System.Native_IO.Packed_Form := (
-      Shared => IO_Modes.By_Mode,
-      Wait => False,
-      Overwrite => True);
+   Default_Form : constant System.Native_IO.Packed_Form :=
+      (Shared => IO_Modes.By_Mode, Wait => False, Overwrite => True);
 
    subtype Form_String is String (1 .. 256);
 
@@ -181,12 +179,12 @@ private
 
       pragma Compile_Time_Error (
          Seekable_Dispatcher'Size /= Root_Dispatcher'Size
-         or else Dispatcher'Size /= Root_Dispatcher'Size,
+            or else Dispatcher'Size /= Root_Dispatcher'Size,
          "size mismatch");
 
       pragma Compile_Time_Error (
          Seekable_Dispatcher'Alignment /= Root_Dispatcher'Alignment
-         or else Dispatcher'Alignment /= Root_Dispatcher'Alignment,
+            or else Dispatcher'Alignment /= Root_Dispatcher'Alignment,
          "misaligned");
 
    end Dispatchers;
@@ -203,7 +201,7 @@ private
 
    type Close_Handler is access procedure (
       Handle : System.Native_IO.Handle_Type;
-      Name : not null System.Native_IO.Name_Pointer;
+      Name : System.Native_IO.Name_Pointer;
       Raise_On_Error : Boolean);
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
@@ -211,8 +209,8 @@ private
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
       Buffer_Inline : aliased Stream_Element;
+      Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
-      Name_Length : System.Native_IO.Name_Length;
       Form : System.Native_IO.Packed_Form;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;
@@ -220,9 +218,8 @@ private
       Reading_Index : Stream_Element_Offset;
       Writing_Index : Stream_Element_Offset;
       Closer : Close_Handler;
-      Dispatcher : aliased Dispatchers.Dispatcher := (
-         Tag => Tags.No_Tag,
-         File => null);
+      Dispatcher : aliased Dispatchers.Dispatcher :=
+         (Tag => Tags.No_Tag, File => null);
    end record;
    pragma Suppress_Initialization (Stream_Type);
 

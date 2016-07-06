@@ -359,8 +359,8 @@ package body Ada.Numerics.Generic_Complex_Types is
          begin
             if Is_Infinity (Result.Re) then
                declare
-                  Re_2 : constant Real'Base :=
-                     4.0 * (
+                  Re_2 : constant Real'Base := 4.0
+                     * (
                         Real'Base'(Left.Re / 2.0)
                            * Real'Base'(Right.Re / 2.0)
                         - Real'Base'(Left.Im / 2.0)
@@ -373,8 +373,8 @@ package body Ada.Numerics.Generic_Complex_Types is
             end if;
             if Is_Infinity (Result.Im) then
                declare
-                  Im_2 : constant Real'Base :=
-                     4.0 * (
+                  Im_2 : constant Real'Base := 4.0
+                     * (
                         Real'Base'(Left.Re / 2.0)
                            * Real'Base'(Right.Im / 2.0)
                         + Real'Base'(Left.Im / 2.0)
@@ -520,9 +520,11 @@ package body Ada.Numerics.Generic_Complex_Types is
    function "/" (Left : Real'Base; Right : Complex) return Complex is
    begin
       return (
-         Re => (Left * Right.Re)
+         Re =>
+            (Left * Right.Re)
             / (Right.Re * Right.Re + Right.Im * Right.Im),
-         Im => -(Left * Right.Im)
+         Im =>
+            -(Left * Right.Im)
             / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 
@@ -570,9 +572,11 @@ package body Ada.Numerics.Generic_Complex_Types is
    function "/" (Left : Imaginary; Right : Complex) return Complex is
    begin
       return (
-         Re => (Real'Base (Left) * Right.Im)
+         Re =>
+            (Real'Base (Left) * Right.Im)
             / (Right.Re * Right.Re + Right.Im * Right.Im),
-         Im => (Real'Base (Left) * Right.Re)
+         Im =>
+            (Real'Base (Left) * Right.Re)
             / (Right.Re * Right.Re + Right.Im * Right.Im));
    end "/";
 

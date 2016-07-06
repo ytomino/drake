@@ -39,8 +39,7 @@ package body System.Native_Environment_Encoding is
       Limit : in out C.icucore.UChar_ptr) is
    begin
       if UChar_const_ptr_Conv.To_Address (First) >=
-         Buffer'Address
-         + Storage_Elements.Storage_Offset'(Half_Buffer_Length)
+         Buffer'Address + Storage_Elements.Storage_Offset'(Half_Buffer_Length)
       then
          --  shift
          declare
@@ -248,8 +247,7 @@ package body System.Native_Environment_Encoding is
          char_const_ptr_Conv.To_Pointer (Item'Address);
       Limit : constant C.char_const_ptr :=
          char_const_ptr_Conv.To_Pointer (
-            Item'Address
-            + Storage_Elements.Storage_Offset'(Item'Length));
+            Item'Address + Storage_Elements.Storage_Offset'(Item'Length));
       Out_Pointer : aliased C.char_ptr :=
          char_ptr_Conv.To_Pointer (Out_Item'Address);
       Out_Limit : constant C.char_ptr :=
@@ -344,9 +342,10 @@ package body System.Native_Environment_Encoding is
          Out_Last,
          False,
          Subsequence_Status);
-      pragma Assert (Subsequence_Status in
-         Subsequence_Status_Type (Continuing_Status_Type'First) ..
-         Subsequence_Status_Type (Continuing_Status_Type'Last));
+      pragma Assert (
+         Subsequence_Status in
+            Subsequence_Status_Type (Continuing_Status_Type'First) ..
+            Subsequence_Status_Type (Continuing_Status_Type'Last));
       Status := Continuing_Status_Type (Subsequence_Status);
    end Convert_No_Check;
 
@@ -418,9 +417,10 @@ package body System.Native_Environment_Encoding is
                Out_Last,
                Finish => Finish,
                Status => Subsequence_Status);
-            pragma Assert (Subsequence_Status in
-               Subsequence_Status_Type (Status_Type'First) ..
-               Subsequence_Status_Type (Status_Type'Last));
+            pragma Assert (
+               Subsequence_Status in
+                  Subsequence_Status_Type (Status_Type'First) ..
+                  Subsequence_Status_Type (Status_Type'Last));
             case Status_Type (Subsequence_Status) is
                when Finished =>
                   Status := Finished;

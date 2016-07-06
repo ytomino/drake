@@ -29,10 +29,7 @@ package body System.Native_Directories.Volumes is
    begin
       Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       FS.Case_Sensitive_Valid := False;
-      if C.sys.mount.statfs64 (
-         C_Name (0)'Access,
-         FS.Statistics'Access) < 0
-      then
+      if C.sys.mount.statfs (C_Name (0)'Access, FS.Statistics'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Get;

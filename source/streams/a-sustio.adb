@@ -1,8 +1,8 @@
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Allocators.Allocated_Size;
 with System.Standard_Allocators;
+with System.System_Allocators.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
    use type System.Storage_Elements.Storage_Offset;
 
@@ -61,14 +61,13 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Unbounded_Storage_IO.Data'Size / Standard'Storage_Unit;
       M : constant System.Address := Data_Cast.To_Address (Data);
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
-         System.Native_Allocators.Allocated_Size (M) - Header_Size;
+         System.System_Allocators.Allocated_Size (M) - Header_Size;
       Allocated_Capacity : Stream_Element_Count;
    begin
       if Dividable then -- optimized for packed
          Allocated_Capacity := Stream_Element_Offset (
             Usable_Size
-            / (Stream_Element_Array'Component_Size
-               / Standard'Storage_Unit));
+            / (Stream_Element_Array'Component_Size / Standard'Storage_Unit));
       else -- unpacked
          Allocated_Capacity := Stream_Element_Offset (
             Usable_Size
@@ -282,7 +281,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
       NC_Object : Non_Controlled_Buffer_Type
          renames Controlled.Reference (Object).all;
    begin
-      return System.Storage_Elements.Storage_Count (NC_Object.Last);
+      return System.Storage_Elements.Storage_Offset (NC_Object.Last);
    end Storage_Size;
 
    function Stream (Object : Buffer_Type)

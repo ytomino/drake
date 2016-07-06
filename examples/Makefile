@@ -19,10 +19,11 @@ export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 ifeq ($(TARGET),$(HOST))
-GNATPREFIX=
+GCCPREFIX=
 else
-GNATPREFIX=$(TARGET)-
+GCCPREFIX=$(TARGET)-
 endif
+GCCSUFFIX=
 
 ifneq ($(findstring mingw,$(TARGET)),)
 EXEEXT=.exe
@@ -116,43 +117,46 @@ FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
 .PHONY: all tree cleanup-rts clean xfind xfindall
 
-all: $(BUILDDIR)/adalib/libgnat.a $(EXAMPLES)
+all: $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
-cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/libgnat.a
-	@sh -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat.build) ; do \
+cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a
+	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
 		if [[ -f $(BUILDDIR)/$$I ]] ; then \
 			echo rm $$I ; \
 			rm $(BUILDDIR)/$$I ; \
-			rm $(BUILDDIR)/adalib/libgnat.build/$$I ; \
+			rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/$$I ; \
+			if [[ -f $(BUILDDIR)/adalib/$$I ]] ; then \
+				rm -f $(BUILDDIR)/adalib/$$I ; \
+			fi ; \
 			REMOVED_A=1 ; \
 			if [[ $$I =~ ^c- ]] ; then \
 				REMOVED_C=1 ; \
 			fi ; \
 		fi ; \
 	done ; \
-	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat.build/c.o ]] ; then \
+	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ]] ; then \
 		echo rm c.o ; \
-		rm $(BUILDDIR)/adalib/libgnat.build/c.o ; \
+		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ; \
 	fi ; \
-	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/libgnat.a ]] ; then \
-		echo rm libgnat.a ; \
-		rm $(BUILDDIR)/adalib/libgnat.a ; \
+	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a ]] ; then \
+		echo rm libgnat$(GCCSUFFIX).a ; \
+		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a ; \
 	fi'
 
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
 
-$(BUILDDIR)/adalib/libgnat.a: $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildcard ../source/obj/*.ad?)
+$(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a: $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildcard ../source/obj/*.ad?)
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 
-$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat.a
-	$(GNATPREFIX)gnatmake -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
-	cd $(BUILDDIR) && $(GNATPREFIX)gnatbind $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
-	cd $(BUILDDIR) && $(GNATPREFIX)gnatlink -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
+$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a
+	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
 $(BUILDDIR)/nop$(EXEEXT): BFLAGS_ALL:=$(filter-out -E,$(BFLAGS_ALL))
 $(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
@@ -163,7 +167,7 @@ clean:
 	-rm -rf $(BINLN) *.build
 
 xfind:
-	gnatfind -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's/^$(subst /,\/,$(PWD))\///'
+	$(GCCPREFIX)gnatfind$(GCCSUFFIX) -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's|^$(PWD)/||'
 
 xfindall: xfind
 xfindall: FFLAGS_ALL+=-r

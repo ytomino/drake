@@ -112,10 +112,8 @@ package body Ada.Containers.Hashed_Maps is
       Capacity : Count_Type)
    is
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Rebuild (New_Data.Table, Capacity);
       Target := Upcast (New_Data);
@@ -136,10 +134,8 @@ package body Ada.Containers.Hashed_Maps is
    is
       pragma Unreferenced (Length);
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Copy (
          New_Data.Table,
@@ -237,8 +233,8 @@ package body Ada.Containers.Hashed_Maps is
          return Boolean is
       begin
          return Equivalent_Keys (
-            Downcast (Left).Key,
-            Downcast (Right).Key)
+               Downcast (Left).Key,
+               Downcast (Right).Key)
             and then Downcast (Left).Element =
                Downcast (Right).Element;
       end Equivalent;
@@ -461,10 +457,7 @@ package body Ada.Containers.Hashed_Maps is
       Inserted := Position = null;
       if Inserted then
          Unique (Container, True);
-         Position := new Node'(
-            Super => <>,
-            Key => Key,
-            Element => <>);
+         Position := new Node'(Super => <>, Key => Key, Element => <>);
          Hash_Tables.Insert (
             Downcast (Container.Super.Data).Table,
             Downcast (Container.Super.Data).Length,

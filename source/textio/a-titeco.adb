@@ -28,8 +28,8 @@ package body Ada.Text_IO.Terminal.Colors is
       Underline_Item : Boolean;
       Blink_Item : Boolean;
       Reversed_Item : Boolean;
-      Foreground_Item : System.Terminal_Colors.Color;
-      Background_Item : System.Terminal_Colors.Color;
+      Foreground_Item : System.Native_Text_IO.Terminal_Colors.Color;
+      Background_Item : System.Native_Text_IO.Terminal_Colors.Color;
    begin
       if Bold.Changing then
          Bold_Item := Bold.Item;
@@ -44,16 +44,18 @@ package body Ada.Text_IO.Terminal.Colors is
          Reversed_Item := Reversed.Item;
       end if;
       if Foreground.Changing then
-         Foreground_Item := System.Terminal_Colors.Color (Foreground.Item);
+         Foreground_Item :=
+            System.Native_Text_IO.Terminal_Colors.Color (Foreground.Item);
       end if;
       if Background.Changing then
-         Background_Item := System.Terminal_Colors.Color (Background.Item);
+         Background_Item :=
+            System.Native_Text_IO.Terminal_Colors.Color (Background.Item);
       end if;
       declare
          NC_File : Naked_Text_IO.Non_Controlled_File_Type
             renames Controlled.Reference (File).all;
       begin
-         System.Terminal_Colors.Set (
+         System.Native_Text_IO.Terminal_Colors.Set (
             Naked_Text_IO.Terminal_Handle (NC_File),
             Reset,
             Bold.Changing,
@@ -81,7 +83,8 @@ package body Ada.Text_IO.Terminal.Colors is
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Controlled.Reference (File).all;
    begin
-      System.Terminal_Colors.Reset (Naked_Text_IO.Terminal_Handle (NC_File));
+      System.Native_Text_IO.Terminal_Colors.Reset (
+         Naked_Text_IO.Terminal_Handle (NC_File));
    end Reset_Color;
 
 end Ada.Text_IO.Terminal.Colors;

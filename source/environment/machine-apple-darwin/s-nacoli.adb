@@ -14,7 +14,7 @@ package body System.Native_Command_Line is
       type char_const_ptr_array_const_ptr is
          access constant Fixed_char_const_ptr_array;
       package Conv is
-         new System.Address_To_Constant_Access_Conversions (
+         new Address_To_Constant_Access_Conversions (
             Fixed_char_const_ptr_array,
             char_const_ptr_array_const_ptr);
    begin

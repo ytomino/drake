@@ -4,7 +4,7 @@ ac3207a C unimplemented tasking features (select)
 c250002 C on GNAT, it can not use non-ASCII source filename
 c34007j C unimplemented tasking features (select)
 c34008a C unimplemented tasking features (select)
-c352001 F unicode ('Image of 16#80#..16#ff#)
+c352001 F unicode incompatibility of Character'Image, @testsuite
 c380004 C unimplemented tasking features (select)
 c3a1002 C unimplemented tasking features (select)
 c45322a N Float'Machine_Overflows
@@ -219,22 +219,22 @@ ce3410c F strict End_Of_Line
 ce3413b N Text_IO.Count'Last is too large for test
 ce3606a F strict End_Of_Line
 ce3606b F strict End_Of_Line
-cxa3001 C unicode (latin-1)
-cxa3002 C unicode (latin-1)
-cxa3003 C unicode (latin-1)
-cxa3004 F unicode (Is_String, To_Character, To_String)
-cxa4025 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
-cxa4026 A unicode (latin-1)
-cxa4028 C "use" and "use type" Ada.Strings.Bounded at the same time
-cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded at the same time
-cxa4030 F unicode (translate latin-1)
-cxa4033 F unicode (translate Wide_String with To_Upper, To_Lower for Character)
+cxa3001 C unicode incompatibility of Handling.Is_XXX, Latin_1, @testsuite
+cxa3002 C unicode incompatibility of To_Basic, Latin_1, @testsuite
+cxa3003 C unicode incompatibility of Is_/To_ISO_646, Latin_1, @testsuite
+cxa3004 F unicode incompatibility of Is_/To_String, To_Character, @testsuite
+cxa4025 F unicode incompatibility of To_Upper, @testsuite
+cxa4026 A unicode incompatibility of To_Upper, Latin_1, @testsuite
+cxa4028 C "use" and "use type" Ada.Strings.Bounded, @testsuite
+cxa4029 C "use" and "use type" Ada.Strings.Wide_Bounded, @testsuite
+cxa4030 F unicode incompatibility of To_Upper, @testsuite
+cxa4033 F unicode incompatibility of To_Upper, @testsuite
 cxa5013 P unexpected passed, unimplemented tasking features (select)
 cxaa006 F strict End_Of_Line
 cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
-cxac004 C unicode (latin-1)
+cxac004 C unicode incompatibility of Latin_1.Yen_Sign, @testsuite
 cxb4005 C Ada_To_COBOL and COBOL_To_Ada are not variables
 cxb4009 C it requites COBOL compiler
 cxc7001 C unimplemented tasking features (select)

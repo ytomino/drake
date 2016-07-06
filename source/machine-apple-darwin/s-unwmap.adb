@@ -1,6 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
-with System.Native_Stack;
+with System.Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
 with C.string;
@@ -12,6 +12,10 @@ package body System.Unwind.Mapping is
    use type C.size_t;
    use type C.unsigned_int;
    use type C.unsigned_long;
+
+   function strlen (s : not null access constant C.char) return C.size_t
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_strlen";
 
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
@@ -53,17 +57,17 @@ package body System.Unwind.Mapping is
             declare
                Dummy : Address;
             begin
-               Native_Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+               Stack.Get (Top => Stack_Guard, Bottom => Dummy);
             end;
             Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
-            Native_Stack.Fake_Return_From_Signal_Handler;
+            Stack.Fake_Return_From_Signal_Handler;
             Eexception_Id := Standard.Storage_Error'Access;
          when others =>
             Eexception_Id := Standard.Program_Error'Access;
       end case;
       Raising.Raise_From_Signal_Handler (
          Eexception_Id,
-         Message => Message (1 .. Integer (C.string.strlen (C_Message))),
+         Message => Message (1 .. Integer (strlen (C_Message))),
          Stack_Guard => Stack_Guard);
    end sigaction_Handler;
 

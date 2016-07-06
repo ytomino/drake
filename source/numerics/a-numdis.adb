@@ -20,9 +20,7 @@ package body Ada.Numerics.Distributions is
          return Target'First;
       elsif Source_W = Target_W then
          --  1:1 mapping
-         return Target'Val (
-            Longest_Unsigned (X)
-            + Target'Pos (Target'First));
+         return Target'Val (Longest_Unsigned (X) + Target'Pos (Target'First));
       elsif Longest_Unsigned'Max (Source_W, Target_W) < Longest_Unsigned'Last
          and then (Source_W + 1) * (Target_W + 1) >= Source_W
          and then (Source_W + 1) * (Target_W + 1) >= Target_W
@@ -103,97 +101,103 @@ package body Ada.Numerics.Distributions is
    --  Simple distributions for random number
 
    function Linear_Discrete_Random (Gen : aliased in out Generator)
-      return Target
-   is
-      function To_Target is new Linear_Discrete (Source, Target);
+      return Target is
    begin
-      return To_Target (Get (Gen));
+      if Target'First > Target'Last then
+         raise Constraint_Error;
+      end if;
+      declare
+         function To_Target is new Linear_Discrete (Source, Target);
+      begin
+         return To_Target (Get (Gen));
+      end;
    end Linear_Discrete_Random;
 
    --  Strict uniform distributions for random number
 
    function Uniform_Discrete_Random (Gen : aliased in out Generator)
-      return Target
-   is
-      Source_W : constant Longest_Unsigned :=
-         Source'Pos (Source'Last) - Source'Pos (Source'First);
-      Target_W : constant Longest_Unsigned :=
-         Target'Pos (Target'Last) - Target'Pos (Target'First);
+      return Target is
    begin
-      if Source_W = 0 or else Target_W = 0 then
-         --  0 bit value
-         return Target'First;
-      elsif Source_W = Target_W then
-         --  1:1 mapping
-         declare
-            X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
-         begin
-            return Target'Val (
-               X
-               + Target'Pos (Target'First));
-         end;
-      elsif Source_W > Target_W
-         and then (
-            Source_W = Longest_Unsigned'Last
-            or else popcountll (Source_W + 1) = 1)
-         and then popcountll (Target_W + 1) = 1
-      then
-         --  narrow, and 2 ** n
-         declare
-            X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
-         begin
-            return Target'Val (
-               X / (Source_W / (Target_W + 1) + 1)
-               + Target'Pos (Target'First));
-         end;
-      else
-         loop
-            declare
-               Max : Longest_Unsigned;
-               X : Longest_Unsigned;
-            begin
-               if Source_W > Target_W then
-                  --  narrow
-                  Max := Source_W;
-                  X := Longest_Unsigned (Get (Gen));
-               else
-                  --  wide
-                  Max := 0;
-                  X := 0;
-                  loop
-                     declare
-                        Old_Max : constant Longest_Unsigned := Max;
-                     begin
-                        Max := (Max * (Source_W + 1)) + Source_W;
-                        X := (X * (Source_W + 1))
-                           + Longest_Unsigned (Get (Gen));
-                        exit when Max >= Target_W
-                           or else Max <= Old_Max; -- overflow
-                     end;
-                  end loop;
-               end if;
-               if Target_W = Longest_Unsigned'Last then
-                  --  Source'Range_Length < Target'RL = Longest_Unsigned'RL
-                  return Target'Val (
-                     X
-                     + Target'Pos (Target'First));
-               else
-                  declare
-                     --  (Max + 1) mod (Target_W + 1)
-                     R : constant Longest_Unsigned :=
-                        (Max mod (Target_W + 1) + 1) mod (Target_W + 1);
-                  begin
-                     --  (Max - R + 1) mod (Target_W + 1) = 0
-                     if R = 0 or else X <= Max - R then
-                        return Target'Val (
-                           X mod (Target_W + 1)
-                           + Target'Pos (Target'First));
-                     end if;
-                  end;
-               end if;
-            end;
-         end loop;
+      if Target'First > Target'Last then
+         raise Constraint_Error;
       end if;
+      declare
+         Source_W : constant Longest_Unsigned :=
+            Source'Pos (Source'Last) - Source'Pos (Source'First);
+         Target_W : constant Longest_Unsigned :=
+            Target'Pos (Target'Last) - Target'Pos (Target'First);
+      begin
+         if Source_W = 0 or else Target_W = 0 then
+            --  0 bit value
+            return Target'First;
+         elsif Source_W = Target_W then
+            --  1:1 mapping
+            declare
+               X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
+            begin
+               return Target'Val (X + Target'Pos (Target'First));
+            end;
+         elsif Source_W > Target_W
+            and then (
+               Source_W = Longest_Unsigned'Last
+               or else popcountll (Source_W + 1) = 1)
+            and then popcountll (Target_W + 1) = 1
+         then
+            --  narrow, and 2 ** n
+            declare
+               X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
+            begin
+               return Target'Val (
+                  X / (Source_W / (Target_W + 1) + 1)
+                  + Target'Pos (Target'First));
+            end;
+         else
+            loop
+               declare
+                  Max : Longest_Unsigned;
+                  X : Longest_Unsigned;
+               begin
+                  if Source_W > Target_W then
+                     --  narrow
+                     Max := Source_W;
+                     X := Longest_Unsigned (Get (Gen));
+                  else
+                     --  wide
+                     Max := 0;
+                     X := 0;
+                     loop
+                        declare
+                           Old_Max : constant Longest_Unsigned := Max;
+                        begin
+                           Max := (Max * (Source_W + 1)) + Source_W;
+                           X := (X * (Source_W + 1))
+                              + Longest_Unsigned (Get (Gen));
+                           exit when Max >= Target_W
+                              or else Max <= Old_Max; -- overflow
+                        end;
+                     end loop;
+                  end if;
+                  if Target_W = Longest_Unsigned'Last then
+                     --  Source'Range_Length < Target'RL = Longest_Unsigned'RL
+                     return Target'Val (X + Target'Pos (Target'First));
+                  else
+                     declare
+                        --  (Max + 1) mod (Target_W + 1)
+                        R : constant Longest_Unsigned :=
+                           (Max mod (Target_W + 1) + 1) mod (Target_W + 1);
+                     begin
+                        --  (Max - R + 1) mod (Target_W + 1) = 0
+                        if R = 0 or else X <= Max - R then
+                           return Target'Val (
+                              X mod (Target_W + 1)
+                                 + Target'Pos (Target'First));
+                        end if;
+                     end;
+                  end if;
+               end;
+            end loop;
+         end if;
+      end;
    end Uniform_Discrete_Random;
 
    function Uniform_Float_Random_0_To_1 (Gen : aliased in out Generator)

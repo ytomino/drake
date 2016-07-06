@@ -1,6 +1,6 @@
-with Ada.Numerics.Initiator;
 with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
+with System.Random_Initiators;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT is
    pragma Check_Policy (Validate => Ignore);
@@ -263,10 +263,7 @@ package body Ada.Numerics.SFMT is
       pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
-      if Gen.sfmt.idx /= N32
-         or else size rem 4 /= 0
-         or else size < N32
-      then
+      if Gen.sfmt.idx /= N32 or else size rem 4 /= 0 or else size < N32 then
          for I in Item'Range loop
             Item (I) := Random_32 (Gen);
          end loop;
@@ -294,10 +291,7 @@ package body Ada.Numerics.SFMT is
       pragma Suppress (Range_Check);
       size : constant Integer := Item'Length;
    begin
-      if Gen.sfmt.idx /= N32
-         or else size rem 2 /= 0
-         or else size < N64
-      then
+      if Gen.sfmt.idx /= N32 or else size rem 2 /= 0 or else size < N64 then
          for I in Item'Range loop
             Item (I) := Random_64 (Gen);
          end loop;
@@ -356,7 +350,9 @@ package body Ada.Numerics.SFMT is
    function Initialize return State is
       Init : Unsigned_32_Array (0 .. N32 - 1);
    begin
-      Initiator (Init'Address, Init'Size / Standard'Storage_Unit);
+      System.Random_Initiators.Get (
+         Init'Address,
+         Init'Size / Standard'Storage_Unit);
       return Initialize (Init);
    end Initialize;
 
@@ -364,10 +360,7 @@ package body Ada.Numerics.SFMT is
    --  integer seed.
    function Initialize (Initiator : Unsigned_32) return State is
    begin
-      return Result : State := (
-         state => <>,
-         idx => N32)
-      do
+      return Result : State := (state => <>, idx => N32) do
          declare
             pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
@@ -379,10 +372,9 @@ package body Ada.Numerics.SFMT is
                   1812433253
                      * (
                         psfmt32 (idxof (i - 1))
-                        xor (
-                           Interfaces.Shift_Right (
-                              psfmt32 (idxof (i - 1)),
-                              30)))
+                        xor Interfaces.Shift_Right (
+                           psfmt32 (idxof (i - 1)),
+                           30))
                   + Unsigned_32 (i);
             end loop;
             period_certification (psfmt32);
@@ -410,9 +402,8 @@ package body Ada.Numerics.SFMT is
          lag := 3;
       end if;
       mid := (size - lag) / 2;
-      return Result : State := (
-         state => (others => (others => 16#8b8b8b8b#)),
-         idx => N32)
+      return Result : State :=
+         (state => (others => (others => 16#8b8b8b8b#)), idx => N32)
       do
          declare
             pragma Suppress (Alignment_Check);

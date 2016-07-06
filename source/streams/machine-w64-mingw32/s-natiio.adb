@@ -1,7 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Allocators;
 with System.Standard_Allocators;
+with System.System_Allocators;
 with C.basetsd;
 with C.string;
 with C.wincon;
@@ -12,7 +12,7 @@ package body System.Native_IO is
    use type Ada.IO_Modes.File_Shared_Spec;
    use type Ada.Streams.Stream_Element_Offset;
    use type Storage_Elements.Storage_Offset;
-   use type C.size_t; -- Name_Length
+   use type C.size_t;
    use type C.windef.DWORD;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
@@ -35,85 +35,32 @@ package body System.Native_IO is
       Item := null;
    end Free;
 
-   procedure New_Full_Name (
-      Item : String;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
-   is
-      W_Item : aliased Name_String (
-         0 ..
-         Item'Length * Zero_Terminated_WStrings.Expanding);
-      W_Item_Length : Name_Length;
-      Full_Path_Buffer : aliased Name_String (0 .. C.windef.MAX_PATH - 1);
-      Full_Path_Pointer : not null access C.winnt.WCHAR :=
-         Full_Path_Buffer (0)'Access;
-      Full_Path_Length : Name_Length;
-   begin
-      Zero_Terminated_WStrings.To_C (
-         Item,
-         W_Item (0)'Access,
-         W_Item_Length);
-      Full_Path_Length := Name_Length (
-         C.winbase.GetFullPathName (
-            W_Item (0)'Access,
-            Full_Path_Buffer'Length,
-            Full_Path_Pointer,
-            null));
-      if Full_Path_Length = 0 then -- GetFullPathName failed
-         Full_Path_Pointer := W_Item (0)'Access;
-         Full_Path_Length := W_Item_Length;
-      end if;
-      --  allocate filename
-      Out_Length := Full_Path_Length;
-      Out_Item := Name_Pointer_Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (Out_Length + 1) -- NUL
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
-      declare
-         pragma Suppress (Alignment_Check);
-         Full_Path_A : Name_String (Name_Length);
-         for Full_Path_A'Address use
-            Name_Pointer_Conv.To_Address (Full_Path_Pointer);
-         Out_Item_A : Name_String (Name_Length);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
-      begin
-         Out_Item_A (0 .. Out_Length) := Full_Path_A (0 .. Out_Length);
-      end;
-   end New_Full_Name;
-
    procedure New_External_Name (
       Item : String;
-      Out_Item : aliased out Name_Pointer; -- '*' & Name & NUL
-      Out_Length : out Name_Length) is
+      Out_Item : aliased out Name_Pointer) is
    begin
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (
-               Item'Length * Zero_Terminated_WStrings.Expanding
-               + 2) -- '*' & NUL
+            (Item'Length * Zero_Terminated_WStrings.Expanding + 2) -- '*' & NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
-         Out_Item_A : Name_String (Name_Length);
+         Out_Item_A : Name_String (C.size_t);
          for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
          Out_Item_A (0) := Name_Character'Val (Wide_Character'Pos ('*'));
-         Zero_Terminated_WStrings.To_C (
-            Item,
-            Out_Item_A (1)'Access,
-            Out_Length);
+         Zero_Terminated_WStrings.To_C (Item, Out_Item_A (1)'Access);
       end;
-      Out_Length := Out_Length + 1; -- '*'
    end New_External_Name;
 
    procedure Open_Temporary (
       Handle : aliased out Handle_Type;
-      Out_Item : aliased out Name_Pointer;
-      Out_Length : out Name_Length)
+      Out_Item : aliased out Name_Pointer)
    is
       use type C.winnt.HANDLE;
       Temp_Dir : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
       Temp_Name : C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
+      Out_Length : C.size_t;
    begin
       --  compose template
       if C.winbase.GetTempPath (Temp_Dir'Length, Temp_Dir (0)'Access) = 0
@@ -135,9 +82,7 @@ package body System.Native_IO is
             C.winnt.FILE_SHARE_READ
             or C.winnt.FILE_SHARE_WRITE,
          lpSecurityAttributes => null,
-         dwCreationDisposition =>
-            C.winbase.OPEN_EXISTING
-            or C.winbase.TRUNCATE_EXISTING,
+         dwCreationDisposition => C.winbase.TRUNCATE_EXISTING,
          dwFlagsAndAttributes =>
             C.winnt.FILE_ATTRIBUTE_TEMPORARY
             or C.winbase.FILE_FLAG_DELETE_ON_CLOSE,
@@ -149,7 +94,7 @@ package body System.Native_IO is
       Out_Length := C.string.wcslen (Temp_Name (0)'Access);
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (Out_Length + 1)
+            (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
@@ -287,16 +232,17 @@ package body System.Native_IO is
                Ada.IO_Modes.Deny) of C.windef.DWORD := (
                   Ada.IO_Modes.Read_Only => 0,
                   Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
-            Overlapped : aliased C.winbase.OVERLAPPED := (
-               0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
+            Overlapped : aliased C.winbase.OVERLAPPED :=
+               (0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
          begin
             if C.winbase.LockFileEx (
-               hFile => Handle,
-               dwFlags => Flags (Shared),
-               dwReserved => 0,
-               nNumberOfBytesToLockLow => C.windef.DWORD'Last,
-               nNumberOfBytesToLockHigh => C.windef.DWORD'Last,
-               lpOverlapped => Overlapped'Access) = 0
+                  hFile => Handle,
+                  dwFlags => Flags (Shared),
+                  dwReserved => 0,
+                  nNumberOfBytesToLockLow => C.windef.DWORD'Last,
+                  nNumberOfBytesToLockHigh => C.windef.DWORD'Last,
+                  lpOverlapped => Overlapped'Access) =
+               C.windef.FALSE
             then
                Raise_Exception (Tasking_Error'Identity);
                --  Is Tasking_Error suitable?
@@ -307,30 +253,30 @@ package body System.Native_IO is
 
    procedure Close_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
       pragma Unreferenced (Name);
-      Error : Boolean;
+      Success : C.windef.WINBOOL;
    begin
-      Error := C.winbase.CloseHandle (Handle) = 0;
-      if Error and then Raise_On_Error then
+      Success := C.winbase.CloseHandle (Handle);
+      if Success = C.windef.FALSE and then Raise_On_Error then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Close_Ordinary;
 
    procedure Delete_Ordinary (
       Handle : Handle_Type;
-      Name : not null Name_Pointer;
+      Name : Name_Pointer;
       Raise_On_Error : Boolean)
    is
-      Error : Boolean;
+      Success : C.windef.WINBOOL;
    begin
-      Error := C.winbase.CloseHandle (Handle) = 0;
-      if not Error then
-         Error := C.winbase.DeleteFile (Name) = 0;
+      Success := C.winbase.CloseHandle (Handle);
+      if Success /= C.windef.FALSE then
+         Success := C.winbase.DeleteFile (Name);
       end if;
-      if Error and then Raise_On_Error then
+      if Success = C.windef.FALSE and then Raise_On_Error then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
    end Delete_Ordinary;
@@ -339,16 +285,18 @@ package body System.Native_IO is
       Mode : aliased C.windef.DWORD;
    begin
       return C.winbase.GetFileType (Handle) = C.winbase.FILE_TYPE_CHAR
-         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /= 0;
+         and then C.wincon.GetConsoleMode (Handle, Mode'Access) /=
+            C.windef.FALSE;
    end Is_Terminal;
 
    function Is_Seekable (Handle : Handle_Type) return Boolean is
    begin
       return C.winbase.SetFilePointerEx (
-         Handle,
-         (Unchecked_Tag => 2, QuadPart => 0),
-         null,
-         C.winbase.FILE_CURRENT) /= 0;
+            Handle,
+            (Unchecked_Tag => 2, QuadPart => 0),
+            null,
+            C.winbase.FILE_CURRENT) /=
+         C.windef.FALSE;
    end Is_Seekable;
 
    function Block_Size (Handle : Handle_Type)
@@ -364,7 +312,7 @@ package body System.Native_IO is
       else
          --  disk file
          Result := Ada.Streams.Stream_Element_Offset (
-            Native_Allocators.Page_Size);
+            System_Allocators.Page_Size);
       end if;
       return Result;
    end Block_Size;
@@ -376,16 +324,16 @@ package body System.Native_IO is
       Out_Length : out Ada.Streams.Stream_Element_Offset)
    is
       Read_Size : aliased C.windef.DWORD;
-      ReadFile_Result : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      ReadFile_Result := C.winbase.ReadFile (
+      Success := C.winbase.ReadFile (
          Handle,
          C.windef.LPVOID (Item),
          C.windef.DWORD (Length),
          Read_Size'Access,
          lpOverlapped => null);
       Out_Length := Ada.Streams.Stream_Element_Offset (Read_Size);
-      if ReadFile_Result = 0 then
+      if Success = C.windef.FALSE then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_BROKEN_PIPE
                | C.winerror.ERROR_NO_DATA =>
@@ -406,16 +354,16 @@ package body System.Native_IO is
       Out_Length : out Ada.Streams.Stream_Element_Offset)
    is
       Written_Size : aliased C.windef.DWORD;
-      WriteFile_Result : C.windef.WINBOOL;
+      Success : C.windef.WINBOOL;
    begin
-      WriteFile_Result := C.winbase.WriteFile (
+      Success := C.winbase.WriteFile (
          Handle,
          C.windef.LPCVOID (Item),
          C.windef.DWORD (Length),
          Written_Size'Access,
          lpOverlapped => null);
       Out_Length := Ada.Streams.Stream_Element_Offset (Written_Size);
-      if WriteFile_Result = 0 then
+      if Success = C.windef.FALSE then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_BROKEN_PIPE
                | C.winerror.ERROR_NO_DATA =>
@@ -428,7 +376,7 @@ package body System.Native_IO is
 
    procedure Flush (Handle : Handle_Type) is
    begin
-      if C.winbase.FlushFileBuffers (Handle) = 0 then
+      if C.winbase.FlushFileBuffers (Handle) = C.windef.FALSE then
          case C.winbase.GetLastError is
             when C.winerror.ERROR_INVALID_HANDLE =>
                null; -- means fd is not file but terminal, pipe, etc
@@ -441,7 +389,7 @@ package body System.Native_IO is
    procedure Set_Relative_Index (
       Handle : Handle_Type;
       Relative_To : Ada.Streams.Stream_Element_Offset;
-      Whence : C.windef.DWORD;
+      Whence : Whence_Type;
       New_Index : out Ada.Streams.Stream_Element_Offset)
    is
       liDistanceToMove : C.winnt.LARGE_INTEGER;
@@ -449,10 +397,11 @@ package body System.Native_IO is
    begin
       liDistanceToMove.QuadPart := C.winnt.LONGLONG (Relative_To);
       if C.winbase.SetFilePointerEx (
-         Handle,
-         liDistanceToMove,
-         liNewFilePointer'Access,
-         Whence) = 0
+            Handle,
+            liDistanceToMove,
+            liNewFilePointer'Access,
+            Whence) =
+         C.windef.FALSE
       then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -468,10 +417,11 @@ package body System.Native_IO is
    begin
       liDistanceToMove.QuadPart := 0;
       if C.winbase.SetFilePointerEx (
-         Handle,
-         liDistanceToMove,
-         liNewFilePointer'Access,
-         C.winbase.FILE_CURRENT) = 0
+            Handle,
+            liDistanceToMove,
+            liNewFilePointer'Access,
+            C.winbase.FILE_CURRENT) =
+         C.windef.FALSE
       then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
@@ -483,7 +433,9 @@ package body System.Native_IO is
    is
       liFileSize : aliased C.winnt.LARGE_INTEGER;
    begin
-      if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) = 0 then
+      if C.winbase.GetFileSizeEx (Handle, liFileSize'Access) =
+         C.windef.FALSE
+      then
          Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
       end if;
       return Ada.Streams.Stream_Element_Offset (liFileSize.QuadPart);
@@ -519,10 +471,11 @@ package body System.Native_IO is
       Writing_Handle : aliased out Handle_Type) is
    begin
       if C.winbase.CreatePipe (
-         Reading_Handle'Access,
-         Writing_Handle'Access,
-         null,
-         0) = 0
+            Reading_Handle'Access,
+            Writing_Handle'Access,
+            null,
+            0) =
+         C.windef.FALSE
       then
          Raise_Exception (Use_Error'Identity);
       end if;
@@ -536,12 +489,10 @@ package body System.Native_IO is
       Writable : Boolean)
    is
       use type C.winnt.HANDLE;
-      Protects : constant array (Boolean) of C.windef.DWORD := (
-         C.winnt.PAGE_READONLY,
-         C.winnt.PAGE_READWRITE);
-      Accesses : constant array (Boolean) of C.windef.DWORD := (
-         C.winbase.FILE_MAP_READ,
-         C.winbase.FILE_MAP_WRITE);
+      Protects : constant array (Boolean) of C.windef.DWORD :=
+         (C.winnt.PAGE_READONLY, C.winnt.PAGE_READWRITE);
+      Accesses : constant array (Boolean) of C.windef.DWORD :=
+         (C.winbase.FILE_MAP_READ, C.winbase.FILE_MAP_WRITE);
       Mapped_Offset : C.winnt.ULARGE_INTEGER;
       Mapped_Size : C.winnt.ULARGE_INTEGER;
       Mapped_Address : C.windef.LPVOID;
@@ -567,13 +518,13 @@ package body System.Native_IO is
          C.basetsd.SIZE_T (Mapped_Size.QuadPart),
          C.windef.LPVOID (Null_Address));
       if Address (Mapped_Address) = Null_Address then
-         if C.winbase.CloseHandle (File_Mapping) = 0 then
+         if C.winbase.CloseHandle (File_Mapping) = C.windef.FALSE then
             null; -- raise Use_Error;
          end if;
          Raise_Exception (Use_Error'Identity);
       end if;
       Mapping.Storage_Address := Address (Mapped_Address);
-      Mapping.Storage_Size := Storage_Elements.Storage_Count (Size);
+      Mapping.Storage_Size := Storage_Elements.Storage_Offset (Size);
       Mapping.File_Mapping := File_Mapping;
    end Map;
 
@@ -582,8 +533,9 @@ package body System.Native_IO is
       Raise_On_Error : Boolean) is
    begin
       if C.winbase.UnmapViewOfFile (
-         C.windef.LPCVOID (Mapping.Storage_Address)) = 0
-         or else C.winbase.CloseHandle (Mapping.File_Mapping) = 0
+               C.windef.LPCVOID (Mapping.Storage_Address)) =
+            C.windef.FALSE
+         or else C.winbase.CloseHandle (Mapping.File_Mapping) = C.windef.FALSE
       then
          if Raise_On_Error then
             Raise_Exception (Use_Error'Identity);

@@ -3,9 +3,28 @@ pragma License (Unrestricted);
 with Ada.Command_Line;
 with Ada.IO_Exceptions;
 with Ada.Streams.Stream_IO.Standard_Files;
+private with Ada.Finalization;
 private with System.Native_Processes;
 package Ada.Processes is
    --  This package provides the way to execute new child process.
+
+   type Command_Type is limited private;
+
+   function Image (Command : Command_Type) return String;
+   function Value (Command_Line : String) return Command_Type;
+
+   procedure Append (Command : in out Command_Type; New_Item : String);
+   procedure Append (
+      Command : in out Command_Type;
+      New_Item :
+         Ada.Command_Line.Iterator_Interfaces.Reversible_Iterator'Class);
+      --  Copy arguments from (subsequence of) Ada.Command_Line.
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String);
+   pragma Inline (Append_Argument); -- renamed
 
    type Process is limited private;
 
@@ -21,6 +40,17 @@ package Ada.Processes is
 
    procedure Create (
       Child : in out Process;
+      Command : Command_Type;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Error.all);
+   procedure Create (
+      Child : in out Process;
       Command_Line : String;
       Directory : String := "";
       Search_Path : Boolean := False;
@@ -30,6 +60,17 @@ package Ada.Processes is
          Streams.Stream_IO.Standard_Files.Standard_Output.all;
       Error : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standard_Files.Standard_Error.all);
+   function Create (
+      Command : Command_Type;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
+      return Process;
    function Create (
       Command_Line : String;
       Directory : String := "";
@@ -44,7 +85,7 @@ package Ada.Processes is
 
    procedure Wait (
       Child : in out Process; -- Open_Process
-      Status : out Command_Line.Exit_Status);
+      Status : out Ada.Command_Line.Exit_Status);
    procedure Wait (
       Child : in out Process); -- Open_Process
    pragma Inline (Wait);
@@ -52,7 +93,7 @@ package Ada.Processes is
    procedure Wait_Immediate (
       Child : in out Process; -- Open_Process
       Terminated : out Boolean;
-      Status : out Command_Line.Exit_Status);
+      Status : out Ada.Command_Line.Exit_Status);
    procedure Wait_Immediate (
       Child : in out Process; -- Open_Process
       Terminated : out Boolean);
@@ -67,19 +108,14 @@ package Ada.Processes is
    --  Pass a command to the shell
 
    procedure Shell (
-      Command_Line : String;
+      Command : Command_Type;
       Status : out Ada.Command_Line.Exit_Status);
    procedure Shell (
-      Command_Line : String);
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status);
+   procedure Shell (Command : Command_Type);
+   procedure Shell (Command_Line : String);
    pragma Inline (Shell); -- renamed, or for shorthand
-
-   --  Command line
-
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String);
-   pragma Inline (Append_Argument); -- renamed
 
    --  Exceptions
 
@@ -94,6 +130,34 @@ package Ada.Processes is
 
 private
 
+   package Controlled_Commands is
+
+      type Command_Type is limited private;
+
+      function Reference (Object : Processes.Command_Type)
+         return not null access System.Native_Processes.Command_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type Command_Type is
+         limited new Finalization.Limited_Controlled
+      with record
+         Native_Command : aliased System.Native_Processes.Command_Type := null;
+      end record;
+
+      overriding procedure Finalize (Object : in out Command_Type);
+
+   end Controlled_Commands;
+
+   type Command_Type is new Controlled_Commands.Command_Type;
+
+   procedure Append_Argument (
+      Command_Line : in out String;
+      Last : in out Natural;
+      Argument : String)
+      renames System.Native_Processes.Append_Argument;
+
    type Process is new System.Native_Processes.Process;
 
    function Is_Open (Child : Process) return Boolean
@@ -103,11 +167,5 @@ private
       Command_Line : String;
       Status : out Ada.Command_Line.Exit_Status)
       renames System.Native_Processes.Shell;
-
-   procedure Append_Argument (
-      Command_Line : in out String;
-      Last : in out Natural;
-      Argument : String)
-      renames System.Native_Processes.Append_Argument;
 
 end Ada.Processes;

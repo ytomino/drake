@@ -20,8 +20,7 @@ package body System.Native_Time is
       return (
          tv_sec =>
             C.sys.types.time_t ((Nanosecond - Sub_Second) / 1_000_000_000),
-         tv_nsec =>
-            C.signed_long (Sub_Second));
+         tv_nsec => C.signed_long (Sub_Second));
    end To_timespec;
 
    function To_Duration (D : C.time.struct_timespec) return Duration is

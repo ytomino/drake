@@ -118,12 +118,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
---
---
 
 --  diff (Copy_Data)
---
---
 --
 --
 --
@@ -469,9 +465,6 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
---
---
---
 
    procedure Insert (
       Container : in out Map;
@@ -638,8 +631,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
             return Boolean is
          begin
             return Equivalent_Keys (
-               Downcast (Left).Key.all,
-               Downcast (Right).Key.all)
+                  Downcast (Left).Key.all,
+                  Downcast (Right).Key.all)
                and then Downcast (Left).Element.all =
                   Downcast (Right).Element.all;
          end Equivalent;

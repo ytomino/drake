@@ -241,8 +241,8 @@ package body Ada.Environment_Encoding.Generic_Strings is
       return Result : Encoder do
          Open (
             Converter (Result),
-            From => System.Native_Environment_Encoding.Encoding_Id (
-               Current_Id),
+            From =>
+               System.Native_Environment_Encoding.Encoding_Id (Current_Id),
             To => System.Native_Environment_Encoding.Encoding_Id (Id));
       end return;
    end To;
@@ -344,11 +344,10 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Holder.Assign (Out_Item);
       Out_Item := new Streams.Stream_Element_Array (
          0 ..
-         Streams.Stream_Element_Count'(
-            Streams.Stream_Element_Offset'Max (
+         Streams.Stream_Element_Offset'Max (
                2 * Item'Length * CS_In_SE,
                Minimal_Size)
-            - 1));
+            - 1);
       Out_Last := -1;
       loop
          declare

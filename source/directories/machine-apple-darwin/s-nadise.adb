@@ -79,12 +79,12 @@ package body System.Native_Directories.Searching is
       Result : constant Directory_Entry_Access :=
          dirent_ptr_Conv.To_Pointer (
             Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Count (Source.d_reclen)));
+               Storage_Elements.Storage_Offset (Source.d_reclen)));
    begin
       memcpy (
          Result,
          Source,
-         Storage_Elements.Storage_Count (Source.d_reclen));
+         Storage_Elements.Storage_Offset (Source.d_reclen));
       return Result;
    end New_Directory_Entry;
 
@@ -121,8 +121,8 @@ package body System.Native_Directories.Searching is
       Search.Filter := Filter;
       Search.Pattern := char_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (
-               Pattern'Length * Zero_Terminated_Strings.Expanding)
+            Storage_Elements.Storage_Offset (Pattern'Length)
+               * Zero_Terminated_Strings.Expanding
             + 1)); -- NUL
       Zero_Terminated_Strings.To_C (Pattern, Search.Pattern);
       Get_Next_Entry (Search, Directory_Entry, Has_Next_Entry);
@@ -189,11 +189,11 @@ package body System.Native_Directories.Searching is
    is
       Dummy_dirent : C.sys.dirent.struct_dirent; -- to use 'Position
       Name_Length : constant C.size_t := Name'Length;
-      Record_Length : constant System.Storage_Elements.Storage_Count :=
-         System.Storage_Elements.Storage_Offset'Max (
+      Record_Length : constant Storage_Elements.Storage_Count :=
+         Storage_Elements.Storage_Offset'Max (
             C.sys.dirent.struct_dirent'Size / Standard'Storage_Unit,
             Dummy_dirent.d_name'Position
-               + System.Storage_Elements.Storage_Offset (Name_Length + 1));
+               + Storage_Elements.Storage_Offset (Name_Length + 1));
       errno : C.signed_int;
    begin
       --  allocation
@@ -217,9 +217,7 @@ package body System.Native_Directories.Searching is
       begin
          Directory_Entry.d_namlen := To_namlen (Name_Length);
       end;
-      System.Zero_Terminated_Strings.To_C (
-         Name,
-         Directory_Entry.d_name (0)'Access);
+      Zero_Terminated_Strings.To_C (Name, Directory_Entry.d_name (0)'Access);
       Get_Information (Directory, Directory_Entry, Additional.Information,
          errno => errno);
       if errno /= 0 then

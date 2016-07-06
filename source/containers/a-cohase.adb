@@ -106,10 +106,8 @@ package body Ada.Containers.Hashed_Sets is
       Capacity : Count_Type)
    is
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Rebuild (New_Data.Table, Capacity);
       Target := Upcast (New_Data);
@@ -130,10 +128,8 @@ package body Ada.Containers.Hashed_Sets is
    is
       pragma Unreferenced (Length);
       pragma Unreferenced (Max_Length);
-      New_Data : constant Data_Access := new Data'(
-         Super => <>,
-         Table => null,
-         Length => 0);
+      New_Data : constant Data_Access :=
+         new Data'(Super => <>, Table => null, Length => 0);
    begin
       Hash_Tables.Copy (
          New_Data.Table,

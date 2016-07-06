@@ -1,4 +1,4 @@
-with System.Native_Allocators;
+with System.System_Allocators;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
 package body System.Standard_Allocators is
@@ -12,7 +12,7 @@ package body System.Standard_Allocators is
       Size : Storage_Elements.Storage_Count)
       return Address
    is
-      Result : constant Address := Native_Allocators.Allocate (Size);
+      Result : constant Address := System_Allocators.Allocate (Size);
    begin
       if Result = Null_Address then
          Unwind.Raising.Raise_Exception_From_Here_With (
@@ -24,7 +24,7 @@ package body System.Standard_Allocators is
 
    procedure Free (Storage_Address : Address) is
    begin
-      Native_Allocators.Free (Storage_Address);
+      System_Allocators.Free (Storage_Address);
    end Free;
 
    function Reallocate (
@@ -33,7 +33,7 @@ package body System.Standard_Allocators is
       return Address
    is
       Result : constant Address :=
-         Native_Allocators.Reallocate (Storage_Address, Size);
+         System_Allocators.Reallocate (Storage_Address, Size);
    begin
       if Result = Null_Address then
          Unwind.Raising.Raise_Exception_From_Here_With (

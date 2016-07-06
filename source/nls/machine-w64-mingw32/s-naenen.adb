@@ -1,7 +1,6 @@
 pragma Check_Policy (Trace => Ignore);
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Constant_Access_Conversions;
-with System.UTF_Conversions;
 with System.UTF_Conversions.From_32_To_16;
 with System.UTF_Conversions.From_16_To_32;
 with System.Zero_Terminated_WStrings;
@@ -12,7 +11,7 @@ package body System.Native_Environment_Encoding is
    use Ada.Exception_Identification.From_Here;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
-   use type C.windef.WINBOOL;
+   use type C.signed_int; -- C.windef.WINBOOL
 
    package char_Conv is
       new Address_To_Constant_Access_Conversions (
@@ -91,10 +90,8 @@ package body System.Native_Environment_Encoding is
    function Get_Image (Encoding : Encoding_Id) return String is
       Info : aliased C.winnls.CPINFOEX;
    begin
-      if C.winnls.GetCPInfoEx (
-         C.windef.UINT (Encoding),
-         0,
-         Info'Access) = 0
+      if C.winnls.GetCPInfoEx (C.windef.UINT (Encoding), 0, Info'Access) =
+         C.windef.FALSE
       then
          Raise_Exception (Use_Error'Identity); -- ?
       end if;
@@ -191,7 +188,6 @@ package body System.Native_Environment_Encoding is
       Buffer_Length : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      pragma Check (Trace, Ada.Debug.Put ("Finish = " & Finish'Img));
       if Item'First > Item'Last then
          Last := Item'First - 1;
          Out_Last := Out_Item'First - 1;
@@ -212,19 +208,24 @@ package body System.Native_Environment_Encoding is
                      Integer (Length),
                      Dummy_Code,
                      From_Status);
-                  if From_Status /= UTF_Conversions.Success then
-                     Last := Item'First - 1;
-                     Out_Last := Out_Item'First - 1;
-                     if From_Status = UTF_Conversions.Truncated then
-                        Status := Truncated;
-                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                     else
+                  case From_Status is
+                     when UTF_Conversions.Success =>
+                        null;
+                     when UTF_Conversions.Illegal_Sequence
+                        | UTF_Conversions.Non_Shortest =>
+                        Last := Item'First - 1;
+                        Out_Last := Out_Item'First - 1;
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
-                           Ada.Debug.Put ("illegal sequence"));
-                     end if;
-                     return;
-                  end if;
+                           Check => Ada.Debug.Put ("illegal sequence"));
+                        return;
+                     when UTF_Conversions.Truncated =>
+                        Last := Item'First - 1;
+                        Out_Last := Out_Item'First - 1;
+                        Status := Truncated;
+                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
+                        return;
+                  end case;
                   Buffer_Length := C.winnls.MultiByteToWideChar (
                      C.windef.UINT (Object.From),
                      C.winnls.MB_ERR_INVALID_CHARS,
@@ -266,19 +267,25 @@ package body System.Native_Environment_Encoding is
                      Integer (Buffer_Length),
                      Dummy_Code,
                      From_Status);
-                  if From_Status /= UTF_Conversions.Success then
-                     Last := Item'First - 1;
-                     Out_Last := Out_Item'First - 1;
-                     if From_Status = UTF_Conversions.Truncated then
-                        Status := Truncated;
-                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                     else
+                  case From_Status is
+                     when UTF_Conversions.Success =>
+                        null;
+                     when UTF_Conversions.Illegal_Sequence
+                        | UTF_Conversions.Non_Shortest =>
+                           --  Non_Shortest do not returned in UTF_16
+                        Last := Item'First - 1;
+                        Out_Last := Out_Item'First - 1;
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
-                           Ada.Debug.Put ("illegal sequence"));
-                     end if;
-                     return;
-                  end if;
+                           Check => Ada.Debug.Put ("illegal sequence"));
+                        return;
+                     when UTF_Conversions.Truncated =>
+                        Last := Item'First - 1;
+                        Out_Last := Out_Item'First - 1;
+                        Status := Truncated;
+                        pragma Check (Trace, Ada.Debug.Put ("truncated"));
+                        return;
+                  end case;
                end;
                Last := 2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
             when UTF_32 =>
@@ -318,8 +325,9 @@ package body System.Native_Environment_Encoding is
                   Length : C.signed_int;
                begin
                   if C.winnls.IsDBCSLeadByteEx (
-                     C.windef.UINT (Object.From),
-                     C.char'Pos (Item_As_C (0))) /= 0
+                        C.windef.UINT (Object.From),
+                        C.char'Pos (Item_As_C (0))) /=
+                     C.windef.FALSE
                   then
                      if Item'First + 1 > Item'Last then
                         Last := Item'First - 1;
@@ -349,8 +357,6 @@ package body System.Native_Environment_Encoding is
                   end if;
                end;
          end case;
-         pragma Check (Trace, Ada.Debug.Put ("Item'First =" & Item'First'Img));
-         pragma Check (Trace, Ada.Debug.Put ("Last =" & Last'Img));
          case Object.To is
             when UTF_16 =>
                declare
@@ -428,7 +434,7 @@ package body System.Native_Environment_Encoding is
                         when others =>
                            Status := Illegal_Sequence;
                            pragma Check (Trace,
-                              Ada.Debug.Put ("illegal sequence"));
+                              Check => Ada.Debug.Put ("illegal sequence"));
                      end case;
                      return;
                   end if;
@@ -436,9 +442,6 @@ package body System.Native_Environment_Encoding is
                      + (Ada.Streams.Stream_Element_Offset (Out_Length) - 1);
                end;
          end case;
-         pragma Check (Trace,
-            Ada.Debug.Put ("Out_Item'First =" & Out_Item'First'Img));
-         pragma Check (Trace, Ada.Debug.Put ("Out_Last =" & Out_Last'Img));
       end if;
       if Finish and then Last = Item'Last then
          Status := Finished;
@@ -468,9 +471,10 @@ package body System.Native_Environment_Encoding is
          Out_Last,
          False,
          Subsequence_Status);
-      pragma Assert (Subsequence_Status in
-         Subsequence_Status_Type (Continuing_Status_Type'First) ..
-         Subsequence_Status_Type (Continuing_Status_Type'Last));
+      pragma Assert (
+         Subsequence_Status in
+            Subsequence_Status_Type (Continuing_Status_Type'First) ..
+            Subsequence_Status_Type (Continuing_Status_Type'Last));
       Status := Continuing_Status_Type (Subsequence_Status);
    end Convert_No_Check;
 

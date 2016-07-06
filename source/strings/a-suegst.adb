@@ -3,7 +3,6 @@ with Ada.Strings.UTF_Encoding.Conversions;
 with System.UTF_Conversions;
 package body Ada.Strings.UTF_Encoding.Generic_Strings is
    use Exception_Identification.From_Here;
-   use type System.UTF_Conversions.From_Status_Type;
 
    generic
       type UTF_Character_Type is (<>);
@@ -27,8 +26,8 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       --  Expanding_From_N is not static because formal object of generic
       pragma Compile_Time_Error (
          UTF_Character_Type'Size /= 8
-         and then UTF_Character_Type'Size /= 16
-         and then UTF_Character_Type'Size /= 32,
+            and then UTF_Character_Type'Size /= 16
+            and then UTF_Character_Type'Size /= 32,
          "bad UTF_Character_Type'Size");
       Expanding : Positive;
    begin
@@ -109,8 +108,8 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       --  Expanding_To_N is not static because formal object of generic
       pragma Compile_Time_Error (
          UTF_Character_Type'Size /= 8
-         and then UTF_Character_Type'Size /= 16
-         and then UTF_Character_Type'Size /= 32,
+            and then UTF_Character_Type'Size /= 16
+            and then UTF_Character_Type'Size /= 32,
          "bad UTF_Character_Type'Size");
       Expanding : Positive;
    begin
@@ -126,9 +125,13 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
          Result : String_Type (1 .. Item'Length * Expanding);
          Result_Last : Natural := Result'First - 1;
       begin
-         if Item (Item_Last + 1 .. Item_Last + BOM'Length) = BOM then
-            Item_Last := Item_Last + BOM'Length;
-         end if;
+         declare
+            L : constant Natural := Item_Last + BOM'Length;
+         begin
+            if L <= Item'Last and then Item (Item_Last + 1 .. L) = BOM then
+               Item_Last := L;
+            end if;
+         end;
          while Item_Last < Item'Last loop
             declare
                Code : System.UTF_Conversions.UCS_4;
@@ -139,9 +142,15 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
                   Item_Last,
                   Code,
                   From_Status);
-               if From_Status /= System.UTF_Conversions.Success then
-                  Raise_Exception (Encoding_Error'Identity);
-               end if;
+               case From_Status is
+                  when System.UTF_Conversions.Success
+                     | System.UTF_Conversions.Non_Shortest =>
+                        --  AARM A.4.11(54.a/4)
+                     null;
+                  when System.UTF_Conversions.Illegal_Sequence
+                     | System.UTF_Conversions.Truncated =>
+                     Raise_Exception (Encoding_Error'Identity);
+               end case;
                Put (
                   Wide_Wide_Character'Val (Code),
                   Result (Result_Last + 1 .. Result'Last),

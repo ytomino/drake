@@ -154,7 +154,7 @@ begin
 		Ada.Streams.Set_Index (
 			Ada.Streams.Seekable_Stream_Type'Class (USIO.Stream (Buffer).all),
 			1);
-		pragma Assert (Ada.Streams.Stream_Element_Count'(USIO.Size (Buffer)) = 300);
+		pragma Assert (USIO.Size (Buffer) = 300);
 		for I in 1 .. 100 loop
 			String'Read (
 				USIO.Stream (Buffer),
