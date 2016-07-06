@@ -239,7 +239,6 @@ cxb4005 C Ada_To_COBOL and COBOL_To_Ada are not variables
 cxb4009 C it requites COBOL compiler
 cxc7001 C unimplemented tasking features (select)
 cxc7004 C unimplemented tasking features
-cxc7006 C unimplemented tasking features (Ada.Task_Termination)
 cxd1001 C unimplemented tasking features
 cxd1002 C unimplemented tasking features
 cxd1003 F unimplemented tasking features (priority)
