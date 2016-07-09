@@ -239,14 +239,6 @@ package body Ada.Naked_Text_IO is
       File := New_File;
    end Open_File;
 
-   function Unchecked_Stream (File : Non_Controlled_File_Type)
-      return not null access Streams.Root_Stream_Type'Class;
-   function Unchecked_Stream (File : Non_Controlled_File_Type)
-      return not null access Streams.Root_Stream_Type'Class is
-   begin
-      return To_Pointer (File.Stream);
-   end Unchecked_Stream;
-
    --  Input
    --  * Read_Buffer sets (or keeps) Ahead_Col.
    --  * Get adds Ahead_Col to current Col.
@@ -305,7 +297,7 @@ package body Ada.Naked_Text_IO is
                for Buffer'Address use File.Buffer (Old_Last + 1)'Address;
                Last : Streams.Stream_Element_Offset;
             begin
-               Streams.Read (Unchecked_Stream (File).all, Buffer, Last);
+               Streams.Read (Stream (File).all, Buffer, Last);
                File.Last := Natural'Base (Last);
                if Wait and then File.Last = Old_Last then
                   File.End_Of_File := True;
@@ -634,7 +626,7 @@ package body Ada.Naked_Text_IO is
          declare
             Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
          begin
-            Streams.Write (Unchecked_Stream (File).all, Code);
+            Streams.Write (Stream (File).all, Code);
          end;
       end if;
       File.Page := File.Page + 1;
@@ -654,7 +646,7 @@ package body Ada.Naked_Text_IO is
          begin
             F := Boolean'Pos (File.New_Line = IO_Modes.LF);
             L := Boolean'Pos (File.New_Line /= IO_Modes.CR);
-            Streams.Write (Unchecked_Stream (File).all, Line_Mark (F .. L));
+            Streams.Write (Stream (File).all, Line_Mark (F .. L));
          end;
          File.Line := File.Line + 1;
          File.Col := 1;
@@ -725,7 +717,7 @@ package body Ada.Naked_Text_IO is
                   Streams.Stream_Element_Offset (DBCS_Last));
                for Buffer'Address use DBCS_Buffer'Address;
             begin
-               Streams.Write (Unchecked_Stream (File).all, Buffer);
+               Streams.Write (Stream (File).all, Buffer);
             end;
             File.Ahead_Col := DBCS_Last;
          end;
@@ -741,7 +733,7 @@ package body Ada.Naked_Text_IO is
                Streams.Stream_Element_Offset (Sequence_Length));
             for Buffer'Address use File.Buffer'Address;
          begin
-            Streams.Write (Unchecked_Stream (File).all, Buffer);
+            Streams.Write (Stream (File).all, Buffer);
          end;
          File.Ahead_Col := Sequence_Length;
       end if;
@@ -1639,10 +1631,10 @@ package body Ada.Naked_Text_IO is
       Name_Holder.Clear;
    end Open;
 
-   function Stream (File : Non_Controlled_File_Type)
+   function Stream (File : not null Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class is
    begin
-      return Unchecked_Stream (File);
+      return To_Pointer (File.Stream);
    end Stream;
 
    function Stream_IO (File : Non_Controlled_File_Type)

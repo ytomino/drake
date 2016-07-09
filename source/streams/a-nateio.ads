@@ -176,7 +176,7 @@ package Ada.Naked_Text_IO is
       Name : String := "";
       Form : System.Native_Text_IO.Packed_Form := Default_Form);
 
-   function Stream (File : Non_Controlled_File_Type)
+   function Stream (File : not null Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class;
    function Stream_IO (File : Non_Controlled_File_Type)
       return not null access
