@@ -519,8 +519,8 @@ package body System.Tasks is
          T.Signal_Stack'Access);
       --  execute
       declare
-         procedure On_Exception;
-         procedure On_Exception is
+         procedure On_Exception (T : not null Task_Id);
+         procedure On_Exception (T : not null Task_Id) is
             Aborted : Boolean; -- ignored
          begin
             pragma Check (Trace, Ada.Debug.Put ("enter"));
@@ -547,10 +547,10 @@ package body System.Tasks is
             if not ZCX_By_Default then
                T.Abort_Locking := T.Abort_Locking - 1;
             end if;
-            On_Exception;
+            On_Exception (T);
             Cause := Abnormal;
          when E : others =>
-            On_Exception;
+            On_Exception (T);
             declare
                Handled : Boolean;
             begin
