@@ -188,7 +188,7 @@ package body System.Finalization_Masters is
                end loop;
             end;
             if Raised then
-               Ada.Exceptions.Unchecked_Reraise_Occurrence (X);
+               Ada.Exceptions.Reraise_Nonnull_Occurrence (X);
             end if;
          end;
       end if;

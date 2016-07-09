@@ -11,18 +11,18 @@ package body Ada.Strings.Maps is
 
    --  sets
 
-   subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
+   subtype Nonnull_Set_Data_Access is not null Set_Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (
-         Not_Null_Set_Data_Access,
+         Nonnull_Set_Data_Access,
          System.Reference_Counting.Container);
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Set_Data_Access);
+         Nonnull_Set_Data_Access);
 
-   type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
+   type Set_Data_Access_Access is access all Nonnull_Set_Data_Access;
    type Container_Access is access all System.Reference_Counting.Container;
 
    function Upcast is
@@ -731,14 +731,14 @@ package body Ada.Strings.Maps is
 
    --  maps
 
-   subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
+   subtype Nonnull_Map_Data_Access is not null Map_Data_Access;
 
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Map_Data_Access);
+         Nonnull_Map_Data_Access);
 
-   type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
+   type Map_Data_Access_Access is access all Nonnull_Map_Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (Map_Data_Access_Access, Container_Access);

@@ -12,18 +12,18 @@ package body Ada.Streams.Unbounded_Storage_IO is
    package Data_Cast is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
-   subtype Not_Null_Data_Access is not null Data_Access;
+   subtype Nonnull_Data_Access is not null Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (
-         Not_Null_Data_Access,
+         Nonnull_Data_Access,
          System.Reference_Counting.Container);
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Data_Access);
+         Nonnull_Data_Access);
 
-   type Data_Access_Access is access all Not_Null_Data_Access;
+   type Data_Access_Access is access all Nonnull_Data_Access;
    type Container_Access is access all System.Reference_Counting.Container;
 
    function Upcast is

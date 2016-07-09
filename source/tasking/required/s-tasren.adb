@@ -77,7 +77,7 @@ package body System.Tasking.Rendezvous is
          Tasks.Unlock_Abort;
          --  Abort_Undefer will not be called by compiler
       end if;
-      Ada.Exceptions.Unchecked_Reraise_Occurrence (X);
+      Ada.Exceptions.Reraise_Nonnull_Occurrence (X);
    end Exceptional_Complete_Rendezvous;
 
    --  implementation
@@ -204,7 +204,7 @@ package body System.Tasking.Rendezvous is
                if X_Id = Standard'Abort_Signal'Identity then
                   Raise_Exception (Tasking_Error'Identity); -- C9A011A
                else
-                  Ada.Exceptions.Unchecked_Reraise_Occurrence (The_Node.X);
+                  Ada.Exceptions.Reraise_Nonnull_Occurrence (The_Node.X);
                end if;
             end if;
          end;
