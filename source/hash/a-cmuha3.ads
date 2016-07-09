@@ -14,7 +14,25 @@ package Ada.Containers.Murmur_Hash_3 is
    function Initialize (Initiator : Hash_Type) return State;
    pragma Inline (Initialize);
 
+   --  Body
+
    procedure Update (S : in out State; Item : Hash_Type);
+
+   --  Tail
+
+   type Hash_8 is mod 2 ** 8;
+   for Hash_8'Size use 8;
+   type Hash_16 is mod 2 ** 16;
+   for Hash_16'Size use 16;
+   type Hash_24 is mod 2 ** 24;
+   for Hash_24'Size use 24;
+
+   procedure Update (S : in out State; Item : Hash_8);
+   procedure Update (S : in out State; Item : Hash_16);
+   procedure Update (S : in out State; Item : Hash_24);
+
+   --  Finalization
+
    procedure Update (S : in out State; Item : Count_Type);
 
    procedure Finalize (S : in out State; Digest : out Hash_Type);
