@@ -1,5 +1,31 @@
 package body Ada.Containers.Binary_Trees is
 
+   function Nonnull_First (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_First (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      while I.Left /= null loop
+         I := I.Left;
+      end loop;
+      return I;
+   end Nonnull_First;
+
+   function Nonnull_Last (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_Last (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      while I.Right /= null loop
+         I := I.Right;
+      end loop;
+      return I;
+   end Nonnull_Last;
+
    function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
       return not null Node_Access;
    function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
@@ -26,31 +52,23 @@ package body Ada.Containers.Binary_Trees is
       if Container = null then
          return null;
       else
-         declare
-            It : not null Node_Access := Container;
-         begin
-            while It.Left /= null loop
-               It := It.Left;
-            end loop;
-            return It;
-         end;
+         return Nonnull_First (Container);
       end if;
    end First;
 
    function Next (Item : not null Node_Access) return Node_Access is
-      It : not null Node_Access := Item;
    begin
-      if It.Right /= null then
-         It := It.Right;
-         while It.Left /= null loop
-            It := It.Left;
-         end loop;
-         return It;
+      if Item.Right /= null then
+         return Nonnull_First (Item.Right);
       else
-         while It.Parent /= null and then It.Parent.Right = It loop
-            It := It.Parent;
-         end loop;
-         return It.Parent;
+         declare
+            I : not null Node_Access := Item;
+         begin
+            while I.Parent /= null and then I.Parent.Right = I loop
+               I := I.Parent;
+            end loop;
+            return I.Parent;
+         end;
       end if;
    end Next;
 
@@ -59,31 +77,23 @@ package body Ada.Containers.Binary_Trees is
       if Container = null then
          return null;
       else
-         declare
-            It : not null Node_Access := Container;
-         begin
-            while It.Right /= null loop
-               It := It.Right;
-            end loop;
-            return It;
-         end;
+         return Nonnull_Last (Container);
       end if;
    end Last;
 
    function Previous (Item : not null Node_Access) return Node_Access is
-      It : not null Node_Access := Item;
    begin
-      if It.Left /= null then
-         It := It.Left;
-         while It.Right /= null loop
-            It := It.Right;
-         end loop;
-         return It;
+      if Item.Left /= null then
+         return Nonnull_Last (Item.Left);
       else
-         while It.Parent /= null and then It.Parent.Left = It loop
-            It := It.Parent;
-         end loop;
-         return It.Parent;
+         declare
+            I : not null Node_Access := Item;
+         begin
+            while I.Parent /= null and then I.Parent.Left = I loop
+               I := I.Parent;
+            end loop;
+            return I.Parent;
+         end;
       end if;
    end Previous;
 
