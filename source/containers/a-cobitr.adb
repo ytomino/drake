@@ -1,5 +1,26 @@
 package body Ada.Containers.Binary_Trees is
 
+   function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      loop
+         if I.Left /= null then
+            I := I.Left;
+         elsif I.Right /= null then
+            I := I.Right;
+         else -- I.Left = null and then I.Right = null
+            exit;
+         end if;
+      end loop;
+      return I;
+   end Nonnull_Leaf_To_Root_First;
+
+   --  implementation
+
    function First (Container : Node_Access) return Node_Access is
    begin
       if Container = null then
@@ -68,13 +89,14 @@ package body Ada.Containers.Binary_Trees is
 
    procedure Iterate (
       Container : Node_Access;
-      Process : not null access procedure (Position : not null Node_Access)) is
+      Process : not null access procedure (Position : not null Node_Access))
+   is
+      I : Node_Access := First (Container);
    begin
-      if Container /= null then
-         Iterate (Container.Left, Process);
-         Process (Container);
-         Iterate (Container.Right, Process);
-      end if;
+      while I /= null loop
+         Process (I);
+         I := Next (I);
+      end loop;
    end Iterate;
 
    procedure Iterate (
@@ -82,25 +104,78 @@ package body Ada.Containers.Binary_Trees is
       Params : System.Address;
       Process : not null access procedure (
          Position : not null Node_Access;
-         Params : System.Address)) is
+         Params : System.Address))
+   is
+      I : Node_Access := First (Container);
    begin
-      if Container /= null then
-         Iterate (Container.Left, Params, Process);
-         Process (Container, Params);
-         Iterate (Container.Right, Params, Process);
-      end if;
+      while I /= null loop
+         Process (I, Params);
+         I := Next (I);
+      end loop;
    end Iterate;
 
    procedure Reverse_Iterate (
       Container : Node_Access;
-      Process : not null access procedure (Position : not null Node_Access)) is
+      Process : not null access procedure (Position : not null Node_Access))
+   is
+      I : Node_Access := Last (Container);
    begin
-      if Container /= null then
-         Reverse_Iterate (Container.Right, Process);
-         Process (Container);
-         Reverse_Iterate (Container.Left, Process);
-      end if;
+      while I /= null loop
+         Process (I);
+         I := Previous (I);
+      end loop;
    end Reverse_Iterate;
+
+   function Leaf_To_Root_First (Container : Node_Access) return Node_Access is
+   begin
+      if Container = null then
+         return null;
+      else
+         return Nonnull_Leaf_To_Root_First (Container);
+      end if;
+   end Leaf_To_Root_First;
+
+   function Leaf_To_Root_Next (Item : not null Node_Access)
+      return Node_Access is
+   begin
+      if Item.Parent = null then
+         return null;
+      elsif Item.Parent.Right /= null and then Item.Parent.Right /= Item then
+         return Nonnull_Leaf_To_Root_First (Item.Parent.Right);
+      else
+         return Item.Parent;
+      end if;
+   end Leaf_To_Root_Next;
+
+   procedure Root_To_Leaf_Next (
+      Previous_Source_Item : not null Node_Access;
+      Source_Parent_Item : out Node_Access;
+      Previous_Target_Item : not null Node_Access;
+      Target_Parent_Item : out Node_Access;
+      Index : out Index_Type) is
+   begin
+      Source_Parent_Item := Previous_Source_Item;
+      Target_Parent_Item := Previous_Target_Item;
+      if Previous_Source_Item.Left /= null then
+         Index := Left;
+      elsif Previous_Source_Item.Right /= null then
+         Index := Right;
+      else
+         loop
+            declare
+               P : constant Node_Access := Source_Parent_Item;
+            begin
+               Source_Parent_Item := Source_Parent_Item.Parent;
+               Target_Parent_Item := Target_Parent_Item.Parent;
+               exit when Source_Parent_Item = null
+                  or else (
+                     Source_Parent_Item.Right /= null
+                     and then Source_Parent_Item.Right /= P);
+            end;
+         end loop;
+         Index := Right;
+      end if;
+   end Root_To_Leaf_Next;
 
    function Find (
       Container : Node_Access;
@@ -221,14 +296,21 @@ package body Ada.Containers.Binary_Trees is
    procedure Free (
       Container : in out Node_Access;
       Length : in out Count_Type;
-      Free : not null access procedure (Object : in out Node_Access)) is
+      Free : not null access procedure (Object : in out Node_Access))
+   is
+      I : Node_Access := Leaf_To_Root_First (Container);
    begin
-      if Container /= null then
-         Binary_Trees.Free (Container.Left, Length, Free);
-         Binary_Trees.Free (Container.Right, Length, Free);
-         Free (Container);
-         Length := Length - 1;
-      end if;
+      while I /= null loop
+         declare
+            Next : constant Node_Access := Leaf_To_Root_Next (I);
+         begin
+            Free (I);
+            Length := Length - 1;
+            I := Next;
+         end;
+      end loop;
+      Container := null;
+      pragma Assert (Length = 0);
    end Free;
 
    procedure Merge (

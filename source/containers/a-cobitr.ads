@@ -33,6 +33,24 @@ private package Ada.Containers.Binary_Trees is
       Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access));
 
+   --  traversing in leaf-to-root order
+
+   function Leaf_To_Root_First (Container : Node_Access) return Node_Access;
+   function Leaf_To_Root_Next (Item : not null Node_Access)
+      return Node_Access;
+
+   --  traversing in root-to-leaf order
+
+   type Index_Type is (Left, Right);
+   pragma Discard_Names (Index_Type);
+
+   procedure Root_To_Leaf_Next (
+      Previous_Source_Item : not null Node_Access;
+      Source_Parent_Item : out Node_Access;
+      Previous_Target_Item : not null Node_Access;
+      Target_Parent_Item : out Node_Access;
+      Index : out Index_Type);
+
    --  binary search
 
    type Find_Mode is (Just, Floor, Ceiling);
