@@ -174,7 +174,7 @@ begin
 		Put ("   ");
 		Put (Kind_Type'Image (Kind));
 		Put ("_Total : constant := ");
-		Put (Length (Table (Kind)), Width => 1);
+		Put (Integer (Length (Table (Kind))), Width => 1);
 		Put (";");
 		New_Line;
 	end loop;

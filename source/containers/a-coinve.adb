@@ -77,15 +77,15 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Move_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
-      Length : Natural;
+      Length : Count_Type;
       Max_Length : Count_Type;
-      Capacity : Natural);
+      Capacity : Count_Type);
    procedure Move_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
-      Length : Natural;
+      Length : Count_Type;
       Max_Length : Count_Type;
-      Capacity : Natural) is
+      Capacity : Count_Type) is
    begin
       Allocate_Data (Target, Max_Length, Capacity);
       declare
@@ -104,15 +104,15 @@ package body Ada.Containers.Indefinite_Vectors is
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
-      Length : Natural;
+      Length : Count_Type;
       Max_Length : Count_Type;
-      Capacity : Natural);
+      Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
-      Length : Natural;
+      Length : Count_Type;
       Max_Length : Count_Type;
-      Capacity : Natural) is
+      Capacity : Count_Type) is
    begin
       Allocate_Data (Target, Max_Length, Capacity);
       declare

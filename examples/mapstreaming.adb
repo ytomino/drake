@@ -3,13 +3,14 @@ with Ada.Containers.Ordered_Maps;
 with Ada.Streams.Unbounded_Storage_IO;
 with Ada.Strings.Maps.Constants;
 procedure mapstreaming is
+	use type Ada.Containers.Count_Type;
 	use type Ada.Streams.Stream_Element_Offset;
 	use type Ada.Strings.Maps.Character_Mapping;
 	Source : constant Ada.Strings.Maps.Character_Mapping :=
 		Ada.Strings.Maps.Constants.Case_Folding_Map;
 	Source_Domain : constant Wide_Wide_String :=
 		Ada.Strings.Maps.Overloaded_To_Domain (Source);
-	Source_Length : constant Natural := Source_Domain'Length;
+	Source_Length : constant Ada.Containers.Count_Type := Source_Domain'Length;
 	Buffer : Ada.Streams.Unbounded_Storage_IO.Buffer_Type;
 begin
 	Ada.Strings.Maps.Character_Mapping'Write (
