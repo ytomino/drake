@@ -143,7 +143,7 @@ package body Ada.Strings.Generic_Bounded is
       Set_Bounded_String (Target, Source.Element (Low .. High));
    end Bounded_Slice;
 
-   function "=" (Left, Right : Bounded_String) return Boolean is
+   overriding function "=" (Left, Right : Bounded_String) return Boolean is
    begin
       return Left.Element (1 .. Left.Length) =
          Right.Element (1 .. Right.Length);
