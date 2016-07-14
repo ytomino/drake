@@ -77,7 +77,7 @@ package System.Synchronous_Objects is
       Params : Address;
       Filter : Queue_Filter);
 
-   --  event for Ada.Synchronous_Task_Control
+   --  event
 
    type Event is limited private;
 

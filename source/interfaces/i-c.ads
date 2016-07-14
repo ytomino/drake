@@ -262,7 +262,7 @@ package Interfaces.C is
       renames To_Wide_String;
 
    --  extended
-   --  Wide Wide Character and Wide Wide String
+   --  Wide Wide Character and Wide Wide String:
    function To_wchar_t (
       Item : Wide_Wide_Character;
       Substitute : wchar_t := Character'Pos ('?')) -- Windows only

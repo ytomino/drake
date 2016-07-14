@@ -308,7 +308,7 @@ package body System.Synchronous_Objects is
       end if;
    end Notify_All;
 
-   --  event for Ada.Synchronous_Task_Control
+   --  event
 
    procedure Initialize (Object : in out Event; Manual : Boolean := True) is
    begin
