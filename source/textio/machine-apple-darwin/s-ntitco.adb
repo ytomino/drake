@@ -143,7 +143,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end RGB_To_Color;
 
    procedure Set (
-      Handle : Native_IO.Handle_Type;
+      Handle : Handle_Type;
       Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
@@ -275,7 +275,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end Set;
 
    procedure Reset (
-      Handle : Native_IO.Handle_Type)
+      Handle : Handle_Type)
    is
       Seq : constant String (1 .. 4) :=
          (Character'Val (16#1b#), '[', '0', 'm');
