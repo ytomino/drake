@@ -11,6 +11,9 @@ package body Ada.Tags is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
+   --  (a-tags.ads)
+   type Object_Specific_Data_Ptr is access all Object_Specific_Data;
+
    Nested_Prefix : constant String := "Internal tag at 16#";
 
    package Tag_Conv is
@@ -26,11 +29,10 @@ package body Ada.Tags is
       new System.Address_To_Named_Access_Conversions (
          Type_Specific_Data,
          Type_Specific_Data_Ptr);
-
-   package OTT_Ptr_Conv is
+   package OSD_Ptr_Conv is
       new System.Address_To_Named_Access_Conversions (
-         System.Storage_Elements.Storage_Offset,
-         Offset_To_Top_Ptr);
+         Object_Specific_Data,
+         Object_Specific_Data_Ptr);
 
    function strlen (Item : not null Cstring_Ptr)
       return System.Storage_Elements.Storage_Count
@@ -348,18 +350,21 @@ package body Ada.Tags is
          T : constant Tag := Tag_Ptr_Conv.To_Pointer (This).all;
          T_DT : constant Dispatch_Table_Ptr := DT (T);
       begin
-         if T_DT.Offset_To_Top =
-            System.Storage_Elements.Storage_Offset'Last
-         then
-            declare
-               Tag_Size : constant :=
-                  Standard'Address_Size / Standard'Storage_Unit;
-            begin
-               return OTT_Ptr_Conv.To_Pointer (This + Tag_Size).all;
-            end;
-         else
-            return T_DT.Offset_To_Top;
-         end if;
+--       if T_DT.Offset_To_Top =
+--          System.Storage_Elements.Storage_Offset'Last
+--       then -- set by Set_Dynamic_Offset_To_Top
+--          declare
+--             package OTT_Ptr_Conv is
+--                new System.Address_To_Named_Access_Conversions (
+--                   System.Storage_Elements.Storage_Offset,
+--                   Offset_To_Top_Ptr);
+--             Tag_Size : constant :=
+--                Standard'Address_Size / Standard'Storage_Unit;
+--          begin
+--             return OTT_Ptr_Conv.To_Pointer (This + Tag_Size).all;
+--          end;
+--       end if;
+         return T_DT.Offset_To_Top;
       end Offset_To_Top;
    begin
       return This - Offset_To_Top (This);
@@ -438,6 +443,21 @@ package body Ada.Tags is
       return T_TSD.SSD.SSD_Table (Position).Index;
    end Get_Entry_Index;
 
+   function Get_Offset_Index (T : Tag; Position : Positive) return Positive is
+      T_DT : constant Dispatch_Table_Ptr := DT (T);
+   begin
+      if T_DT.Signature = Primary_DT then
+         return Position;
+      else
+         declare
+            T_OSD : constant Object_Specific_Data_Ptr :=
+               OSD_Ptr_Conv.To_Pointer (T_DT.TSD);
+         begin
+            return T_OSD.OSD_Table (Position);
+         end;
+      end if;
+   end Get_Offset_Index;
+
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind
    is
@@ -447,6 +467,12 @@ package body Ada.Tags is
    begin
       return T_TSD.SSD.SSD_Table (Position).Kind;
    end Get_Prim_Op_Kind;
+
+   function Get_Tagged_Kind (T : Tag) return Tagged_Kind is
+      T_DT : constant Dispatch_Table_Ptr := DT (T);
+   begin
+      return T_DT.Tag_Kind;
+   end Get_Tagged_Kind;
 
    function IW_Membership (This : System.Address; T : Tag) return Boolean is
       Base_Object : constant System.Address := Base_Address (This);
@@ -515,6 +541,28 @@ package body Ada.Tags is
       end loop;
       --  should it raise some error ???
    end Register_Interface_Offset;
+
+   function Secondary_Tag (T, Iface : Tag) return Tag is
+      T_DT : constant Dispatch_Table_Ptr := DT (T);
+      T_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (T_DT.TSD);
+      T_Interfaces_Table : constant Interface_Data_Ptr :=
+         T_TSD.Interfaces_Table;
+   begin
+      if T_Interfaces_Table /= null then
+         for I in 1 .. T_Interfaces_Table.Nb_Ifaces loop
+            declare
+               E : Interface_Data_Element
+                  renames T_Interfaces_Table.Ifaces_Table (I);
+            begin
+               if E.Iface_Tag = Iface then
+                  return E.Secondary_DT;
+               end if;
+            end;
+         end loop;
+      end if;
+      raise Constraint_Error; -- invalid interface conversion
+   end Secondary_Tag;
 
    procedure Set_Entry_Index (
       T : Tag;

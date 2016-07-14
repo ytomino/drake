@@ -161,7 +161,7 @@ private
       Tag_Kind : Tagged_Kind;
       Predef_Prims : System.Address;
       Offset_To_Top : System.Storage_Elements.Storage_Offset;
-      TSD : System.Address;
+      TSD : System.Address; -- or OSD, if Signature = Secondary_DT
       Prims_Ptr : aliased Address_Array (1 .. Num_Prims);
    end record;
    pragma Suppress_Initialization (Dispatch_Table_Wrapper);
@@ -229,7 +229,10 @@ private
    --  for requeue statements using synchronized interface (exp_ch9.adb)
    --  for implicit primitives of synchronized interface (exp_disp.adb)
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive;
---  function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
+
+   --  required by compiler (a-tags.ads)
+   --  for select statements using synchronized interface (exp_sel.adb)
+   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
 
    --  required by compiler (a-tags.ads)
    --  for select statements using synchronized interface (exp_atag.adb)
@@ -239,7 +242,7 @@ private
 
    --  required by compiler (a-tags.ads)
    --  for select statements using synchronized interface (exp_sel.adb)
---  function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
+   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
 
    --  required by compiler (a-tags.ads)
    --  for Object in INTERFACE'Class (exp_ch4.adb)
@@ -252,7 +255,7 @@ private
    function Needs_Finalization (T : Tag) return Boolean;
 
    --  optionally required by compiler (a-tags.ads)
-   --  for abstract types implementing abstract interfaces (exp_disp.adb)
+   --  for implicit primitives derived from plural parent types (exp_disp.adb)
 --  function Offset_To_Top (This : System.Address)
 --    return System.Storage_Elements.Storage_Offset;
 
@@ -274,7 +277,7 @@ private
 
    --  required by compiler (a-tags.ads)
    --  for Generic_Dispatching_Constructor (exp_intr.adb)
---  function Secondary_Tag (T, Iface : Tag) return Tag;
+   function Secondary_Tag (T, Iface : Tag) return Tag;
 
    --  required by compiler (a-tags.ads)
    --  for variable-sized types implementing interfaces (exp_ch3.adb)
