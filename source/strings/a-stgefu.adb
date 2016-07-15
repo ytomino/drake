@@ -237,20 +237,24 @@ package body Ada.Strings.Generic_Functions is
       else
          declare
             Pattern_Length : constant Natural := Pattern'Length;
-            Current : Natural := Source'First;
             Last : constant Integer := Source'Last - (Pattern_Length - 1);
+            Searched_Last : Natural := Source'First - 1;
          begin
-            while Current <= Last loop
-               Current := Index_Element_Forward (
-                  Source (Current .. Last),
-                  Pattern (Pattern'First));
-               exit when Current = 0;
-               if Source (Current .. Current + (Pattern_Length - 1)) =
-                  Pattern
-               then
-                  return Current;
-               end if;
-               Current := Current + 1;
+            while Searched_Last < Last loop
+               declare
+                  Position : constant Natural :=
+                     Index_Element_Forward (
+                        Source (Searched_Last + 1 .. Last),
+                        Pattern (Pattern'First));
+               begin
+                  exit when Position = 0;
+                  if Source (Position .. Position + (Pattern_Length - 1)) =
+                     Pattern
+                  then
+                     return Position;
+                  end if;
+                  Searched_Last := Position;
+               end;
             end loop;
             return 0;
          end;
@@ -265,19 +269,23 @@ package body Ada.Strings.Generic_Functions is
       else
          declare
             Pattern_Length : constant Natural := Pattern'Length;
-            Current : Integer := Source'Last - (Pattern_Length - 1);
+            Unsearched_Last : Natural := Source'Last - (Pattern_Length - 1);
          begin
-            while Current >= Source'First loop
-               Current := Index_Element_Backward (
-                  Source (Source'First .. Current),
-                  Pattern (Pattern'First));
-               exit when Current = 0;
-               if Source (Current .. Current + (Pattern_Length - 1)) =
-                  Pattern
-               then
-                  return Current;
-               end if;
-               Current := Current - 1;
+            while Unsearched_Last >= Source'First loop
+               declare
+                  Position : constant Natural :=
+                     Index_Element_Backward (
+                        Source (Source'First .. Unsearched_Last),
+                        Pattern (Pattern'First));
+               begin
+                  exit when Position = 0;
+                  if Source (Position .. Position + (Pattern_Length - 1)) =
+                     Pattern
+                  then
+                     return Position;
+                  end if;
+                  Unsearched_Last := Position - 1;
+               end;
             end loop;
             return 0;
          end;
@@ -952,21 +960,25 @@ package body Ada.Strings.Generic_Functions is
             raise Pattern_Error;
          else
             declare
-               Buffer : String_Type (1 .. Expanding);
-               Last : Natural := Source'First - 1;
+               Searched_Last : Natural := Source'First - 1;
             begin
-               while Last < Source'Last loop
+               while Searched_Last < Source'Last loop
                   declare
-                     Current : constant Positive := Last + 1;
+                     Source_Index : constant Positive := Searched_Last + 1;
+                     Buffer : String_Type (1 .. Expanding);
                      J, J_Last, Pattern_Last, Character_Length : Positive;
                      Code : Wide_Wide_Character;
                      Error : Boolean;
                   begin
-                     Get (Source (Current .. Source'Last), Last, Code, Error);
+                     Get (
+                        Source (Source_Index .. Source'Last),
+                        Searched_Last,
+                        Code,
+                        Error);
                      if Error then
-                        Character_Length := Last - Current + 1;
+                        Character_Length := Searched_Last - Source_Index + 1;
                         Buffer (1 .. Character_Length) :=
-                           Source (Current .. Last);
+                           Source (Source_Index .. Searched_Last);
                      else
                         Code := Mapping (Code, Params);
                         Put (Code, Buffer, Character_Length);
@@ -975,10 +987,10 @@ package body Ada.Strings.Generic_Functions is
                      if Buffer (1 .. Character_Length) =
                         Pattern (Pattern'First .. Pattern_Last)
                      then
-                        J_Last := Last;
+                        J_Last := Searched_Last;
                         loop
                            if Pattern_Last >= Pattern'Last then
-                              return Current;
+                              return Source_Index;
                            end if;
                            J := J_Last + 1;
                            exit when J > Source'Last;
@@ -1032,26 +1044,26 @@ package body Ada.Strings.Generic_Functions is
             raise Pattern_Error;
          else
             declare
-               Buffer : String_Type (1 .. Expanding);
                Unsearched_Last : Natural := Source'Last;
             begin
                while Unsearched_Last >= Source'First loop
                   declare
-                     Current : constant Natural := Unsearched_Last;
+                     Source_Index : constant Positive := Unsearched_Last;
+                     Buffer : String_Type (1 .. Expanding);
                      J, J_First, Pattern_First, Character_Length : Natural;
                      Code : Wide_Wide_Character;
                      Error : Boolean;
                   begin
                      Get_Reverse (
-                        Source (Source'First .. Current),
+                        Source (Source'First .. Source_Index),
                         J_First,
                         Code,
                         Error);
                      Unsearched_Last := J_First - 1;
                      if Error then
-                        Character_Length := Current - J_First + 1;
+                        Character_Length := Source_Index - J_First + 1;
                         Buffer (1 .. Character_Length) :=
-                           Source (J_First .. Current);
+                           Source (J_First .. Source_Index);
                      else
                         Code := Mapping (Code, Params);
                         Put (Code, Buffer, Character_Length);
@@ -1188,13 +1200,13 @@ package body Ada.Strings.Generic_Functions is
       begin
          while Unsearched_Last >= Source'First loop
             declare
-               New_First : Positive;
+               Code_First : Positive;
                Code : Wide_Wide_Character;
                Error : Boolean;
             begin
                Get_Reverse (
                   Source (Source'First .. Unsearched_Last),
-                  New_First,
+                  Code_First,
                   Code,
                   Error);
                if Error then
@@ -1202,7 +1214,7 @@ package body Ada.Strings.Generic_Functions is
                else
                   exit when Is_In (Code, Set) /= (Test = Inside);
                end if;
-               Unsearched_Last := New_First - 1;
+               Unsearched_Last := Code_First - 1;
             end;
          end loop;
          return Unsearched_Last;
@@ -1403,20 +1415,18 @@ package body Ada.Strings.Generic_Functions is
          if Pattern'Length = 0 then
             raise Pattern_Error;
          else
-            for Current in
-               Source'First .. Source'Last - Pattern'Length + 1
-            loop
+            for I in Source'First .. Source'Last - Pattern'Length + 1 loop
                declare
                   J, P : Positive;
                   Code : Character_Type;
                begin
-                  Code := Mapping (Source (Current));
+                  Code := Mapping (Source (I));
                   if Code = Pattern (Pattern'First) then
                      P := Pattern'First;
-                     J := Current;
+                     J := I;
                      loop
                         if P >= Pattern'Last then
-                           return Current;
+                           return I;
                         end if;
                         P := P + 1;
                         J := J + 1;
@@ -1440,17 +1450,17 @@ package body Ada.Strings.Generic_Functions is
          if Pattern'Length = 0 then
             raise Pattern_Error;
          else
-            for Current in reverse
+            for I in reverse
                Source'First + (Pattern'Length - 1) .. Source'Last
             loop
                declare
                   J, P : Natural;
                   Code : Character_Type;
                begin
-                  Code := Mapping (Source (Current));
+                  Code := Mapping (Source (I));
                   if Code = Pattern (Pattern'Last) then
                      P := Pattern'Last;
-                     J := Current;
+                     J := I;
                      loop
                         if P <= Pattern'First then
                            return J;
@@ -1507,22 +1517,26 @@ package body Ada.Strings.Generic_Functions is
          Test : Membership := Inside)
          return Natural
       is
-         Last : Natural := Source'First - 1;
+         Searched_Last : Natural := Source'First - 1;
       begin
-         while Last < Source'Last loop
+         while Searched_Last < Source'Last loop
             declare
-               Index : constant Positive := Last + 1;
+               Source_Index : constant Positive := Searched_Last + 1;
                Code : Wide_Wide_Character;
                Error : Boolean;
             begin
-               Get (Source (Index .. Source'Last), Last, Code, Error);
+               Get (
+                  Source (Source_Index .. Source'Last),
+                  Searched_Last,
+                  Code,
+                  Error);
                if Error then
                   if Test /= Inside then -- illegal sequence is outside
-                     return Index;
+                     return Source_Index;
                   end if;
                else
                   if Is_In (Code, Set) = (Test = Inside) then
-                     return Index;
+                     return Source_Index;
                   end if;
                end if;
             end;
@@ -1636,10 +1650,10 @@ package body Ada.Strings.Generic_Functions is
          First : out Positive;
          Last : out Natural)
       is
-         F : constant Natural := Index_Forward (Source, Set, Test);
+         Position : constant Natural := Index_Forward (Source, Set, Test);
       begin
-         if F >= Source'First then
-            First := F;
+         if Position >= Source'First then
+            First := Position;
             Last := Find_Token_Last (Source (First .. Source'Last), Set, Test);
          else
             First := Source'First;

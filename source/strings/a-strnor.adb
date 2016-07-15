@@ -816,12 +816,11 @@ package body Ada.Strings.Normalization is
       begin
          for I in Map'Range loop
             declare
-               Item : Canonical_Composites.D_Map_Element
-                  renames Map (I);
+               E : Canonical_Composites.D_Map_Element renames Map (I);
                Decomposed_Length : constant Natural :=
-                  Canonical_Composites.Decomposed_Length (Item.To);
+                  Canonical_Composites.Decomposed_Length (E.To);
             begin
-               Process (Item.From, Item.To (1 .. Decomposed_Length));
+               Process (E.From, E.To (1 .. Decomposed_Length));
             end;
          end loop;
       end Do_Iterate;

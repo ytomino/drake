@@ -647,7 +647,6 @@ package body Ada.Strings.Maps is
          Controlled_Sets.Reference (Set);
       pragma Check (Validate, Naked_Maps.Debug.Valid (Set_Data.all));
       Length : Natural := 0;
-      Position : Positive;
    begin
       for I in Set_Data.Items'Range loop
          Length := Length
@@ -657,13 +656,16 @@ package body Ada.Strings.Maps is
                + 1);
       end loop;
       return Result : Wide_Wide_String (1 .. Length) do
-         Position := 1;
-         for I in Set_Data.Items'Range loop
-            for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
-               Result (Position) := J;
-               Position := Position + 1;
+         declare
+            Last : Natural := 0;
+         begin
+            for I in Set_Data.Items'Range loop
+               for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
+                  Last := Last + 1;
+                  Result (Last) := J;
+               end loop;
             end loop;
-         end loop;
+         end;
       end return;
    end Overloaded_To_Sequence;
 

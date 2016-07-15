@@ -15,18 +15,18 @@ package body System.Random_Initiators is
       Item : Address;
       Size : Storage_Elements.Storage_Count)
    is
-      F : C.signed_int;
+      Handle : C.signed_int;
       Read_Size : C.sys.types.ssize_t;
       Closed : C.signed_int;
    begin
-      F := C.fcntl.open (
+      Handle := C.fcntl.open (
          Random_File_Name (0)'Access,
          C.fcntl.O_RDONLY);
-      if F < 0 then
+      if Handle < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
-      Read_Size := C.unistd.read (F, C.void_ptr (Item), C.size_t (Size));
-      Closed := C.unistd.close (F);
+      Read_Size := C.unistd.read (Handle, C.void_ptr (Item), C.size_t (Size));
+      Closed := C.unistd.close (Handle);
       if Read_Size /= C.sys.types.ssize_t (Size) or else Closed < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;

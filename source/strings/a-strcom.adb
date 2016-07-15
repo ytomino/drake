@@ -292,29 +292,25 @@ package body Ada.Strings.Composites is
    begin
       for I in UCD.Combining_Class.Table_XXXX'Range loop
          declare
-            Item : UCD.Combining_Class.Table_16_Item_Type
+            E : UCD.Combining_Class.Table_16_Item_Type
                renames UCD.Combining_Class.Table_XXXX (I);
          begin
-            for J in
-               Item.Start .. Item.Start + UCD.UCS_4 (Item.Length) - 1
-            loop
+            for J in E.Start .. E.Start + UCD.UCS_4 (E.Length) - 1 loop
                Process (
                   Wide_Wide_Character'Val (J),
-                  Class (Item.Combining_Class));
+                  Class (E.Combining_Class));
             end loop;
          end;
       end loop;
       for I in UCD.Combining_Class.Table_1XXXX'Range loop
          declare
-            Item : UCD.Combining_Class.Table_16_Item_Type
+            E : UCD.Combining_Class.Table_16_Item_Type
                renames UCD.Combining_Class.Table_1XXXX (I);
          begin
-            for J in
-               Item.Start .. Item.Start + UCD.UCS_4 (Item.Length) - 1
-            loop
+            for J in E.Start .. E.Start + UCD.UCS_4 (E.Length) - 1 loop
                Process (
                   Wide_Wide_Character'Val (J + 16#10000#),
-                  Class (Item.Combining_Class));
+                  Class (E.Combining_Class));
             end loop;
          end;
       end loop;

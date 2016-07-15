@@ -29,22 +29,22 @@ package body Ada.Directories.Information is
    function Is_Executable (Name : String) return Boolean is
       --  Currently, check only that an extension is ".COM" or ".EXE".
       --  It should check PATHEXT, or look PE header?
-      E_First : Positive;
-      E_Last : Natural;
+      Ext_First : Positive;
+      Ext_Last : Natural;
       Result : Boolean;
    begin
       Hierarchical_File_Names.Extension (Name,
-         First => E_First, Last => E_Last);
-      if E_Last - E_First + 1 = 3 then
+         First => Ext_First, Last => Ext_Last);
+      if Ext_Last - Ext_First + 1 = 3 then
          declare
-            E : String (1 .. 3) := Name (E_First .. E_Last);
+            Ext : String (1 .. 3) := Name (Ext_First .. Ext_Last);
          begin
-            for I in E'Range loop
-               if E (I) in 'a' .. 'z' then
-                  E (I) := Character'Val (Character'Pos (E (I)) - 16#20#);
+            for I in Ext'Range loop
+               if Ext (I) in 'a' .. 'z' then
+                  Ext (I) := Character'Val (Character'Pos (Ext (I)) - 16#20#);
                end if;
             end loop;
-            Result := E = "COM" or else E = "EXE";
+            Result := Ext = "COM" or else Ext = "EXE";
          end;
       else
          Result := False;

@@ -642,11 +642,11 @@ package body Ada.Naked_Text_IO is
          declare
             Line_Mark : constant Streams.Stream_Element_Array (0 .. 1) :=
                (16#0d#, 16#0a#);
-            F, L : Streams.Stream_Element_Offset;
+            First, Last : Streams.Stream_Element_Offset;
          begin
-            F := Boolean'Pos (File.New_Line = IO_Modes.LF);
-            L := Boolean'Pos (File.New_Line /= IO_Modes.CR);
-            Streams.Write (Stream (File).all, Line_Mark (F .. L));
+            First := Boolean'Pos (File.New_Line = IO_Modes.LF);
+            Last := Boolean'Pos (File.New_Line /= IO_Modes.CR);
+            Streams.Write (Stream (File).all, Line_Mark (First .. Last));
          end;
          File.Line := File.Line + 1;
          File.Col := 1;

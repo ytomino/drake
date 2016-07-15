@@ -102,23 +102,23 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       end if;
       System.Termination.Error_Put_Line (Buffer (1 .. Last));
       declare
-         Current : Node_Access := First (Container);
+         Position : Node_Access := First (Container);
       begin
-         while Current /= null loop
+         while Position /= null loop
             declare
                Indent : Natural := 2;
                B : Character;
                C : Character;
             begin
                declare
-                  P : Node_Access := Current.Parent;
+                  P : Node_Access := Position.Parent;
                begin
                   while P /= null loop
                      Indent := Indent + 2;
                      P := P.Parent;
                   end loop;
                end;
-               if Current.Left = null then
+               if Position.Left = null then
                   Indent_S (Indent) := '|';
                end if;
                if Indent > 2 then
@@ -129,9 +129,9 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                   end if;
                   Indent_S (Indent - 2) := '+';
                end if;
-               Indent_S (Indent - 1) := Mark (Current = Marker);
+               Indent_S (Indent - 1) := Mark (Position = Marker);
                B := Indent_S (Indent);
-               if Current.Left = null and then Current.Right = null then
+               if Position.Left = null and then Position.Right = null then
                   Indent_S (Indent) := '-';
                else
                   Indent_S (Indent) := '+';
@@ -140,7 +140,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                Put (Buffer, Last, Indent_S);
                Put (Buffer, Last, " 0x");
                System.Formatting.Address.Image (
-                  Current.all'Address,
+                  Position.all'Address,
                   Buffer (
                      Last + 1 ..
                      Last + System.Formatting.Address.Address_String'Length),
@@ -151,7 +151,8 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                   Error : Boolean;
                begin
                   System.Formatting.Image (
-                     System.Formatting.Unsigned'Mod (Downcast (Current).Level),
+                     System.Formatting.Unsigned'Mod (
+                        Downcast (Position).Level),
                      Buffer (Last + 1 .. Buffer'Last),
                      Last,
                      Error => Error);
@@ -163,11 +164,11 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                if Indent > 2 then
                   Indent_S (Indent - 2) := C;
                end if;
-               if Current.Right = null then
+               if Position.Right = null then
                   Indent_S (Indent) := ' ';
                end if;
             end;
-            Current := Next (Current);
+            Position := Next (Position);
          end loop;
       end;
       return True;

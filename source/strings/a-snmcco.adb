@@ -74,11 +74,11 @@ package body Ada.Strings.Naked_Maps.Canonical_Composites is
          To => <>);
       for I in Strings.Canonical_Composites.D_Map_Array'Range loop
          declare
-            Item : Strings.Canonical_Composites.D_Map_Element
+            E : Strings.Canonical_Composites.D_Map_Element
                renames Strings.Canonical_Composites.D_Map (I);
          begin
-            Base_Mapping.From (I) := Item.From;
-            Base_Mapping.To (I) := Item.To (1);
+            Base_Mapping.From (I) := E.From;
+            Base_Mapping.To (I) := E.To (1);
          end;
       end loop;
       pragma Check (Validate, Debug.Valid (Base_Mapping.all));

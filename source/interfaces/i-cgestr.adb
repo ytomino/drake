@@ -183,11 +183,10 @@ package body Interfaces.C.Generic_Strings is
          --  copy
          for I in Items'Range loop
             declare
-               Item : const_chars_ptr_With_Length
-                  renames Items (I);
+               E : const_chars_ptr_With_Length renames Items (I);
             begin
-               Pointers.Copy_Array (Item.ptr, P, ptrdiff_t (Item.Length));
-               P := P + ptrdiff_t (Item.Length);
+               Pointers.Copy_Array (E.ptr, P, ptrdiff_t (E.Length));
+               P := P + ptrdiff_t (E.Length);
             end;
          end loop;
          P.all := Element'Val (0);

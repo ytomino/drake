@@ -1635,10 +1635,10 @@ package body System.Tasks is
       --  search unused index
       for I in 0 .. Attribute_Indexes_Length - 1 loop
          if Attribute_Indexes (I) /= not 0 then
-            for B in Integer range 0 .. Word'Size - 1 loop
-               if (Attribute_Indexes (I) and (2 ** B)) = 0 then
-                  Attribute_Indexes (I) := Attribute_Indexes (I) or (2 ** B);
-                  Index.Index := I * Word'Size + B;
+            for J in Integer range 0 .. Word'Size - 1 loop
+               if (Attribute_Indexes (I) and (2 ** J)) = 0 then
+                  Attribute_Indexes (I) := Attribute_Indexes (I) or (2 ** J);
+                  Index.Index := I * Word'Size + J;
                   goto Found;
                end if;
             end loop;
