@@ -9,7 +9,7 @@ package System.Finally is
 
    --  implementation of Save_Library_Occurrence (s-soflin.ads)
    procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence_Access)
+      X : Ada.Exceptions.Exception_Occurrence_Access)
       with Export,
          Convention => Ada,
          External_Name => "system__soft_links__save_library_occurrence";

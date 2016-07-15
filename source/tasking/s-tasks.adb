@@ -446,10 +446,10 @@ package body System.Tasks is
 
    procedure Report (
       T : not null Task_Id;
-      Current : Ada.Exceptions.Exception_Occurrence);
+      X : Ada.Exceptions.Exception_Occurrence);
    procedure Report (
       T : not null Task_Id;
-      Current : Ada.Exceptions.Exception_Occurrence)
+      X : Ada.Exceptions.Exception_Occurrence)
    is
       function Cast is
          new Ada.Unchecked_Conversion (
@@ -477,7 +477,7 @@ package body System.Tasks is
             Name_Last + Formatting.Address.Address_String'Length),
          Set => Formatting.Upper_Case);
       Name_Last := Name_Last + Formatting.Address.Address_String'Length;
-      Unwind.Occurrences.Report (Cast (Current), Name (1 .. Name_Last));
+      Unwind.Occurrences.Report (Cast (X), Name (1 .. Name_Last));
    end Report;
 
    --  Native_Tasks.Result_Type is void * in POSIX, or DWORD in Windows.

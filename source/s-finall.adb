@@ -29,7 +29,7 @@ package body System.Finally is
    --  implementation
 
    procedure Save_Library_Occurrence (
-      E : Ada.Exceptions.Exception_Occurrence_Access)
+      X : Ada.Exceptions.Exception_Occurrence_Access)
    is
       function Cast is
          new Ada.Unchecked_Conversion (
@@ -38,10 +38,10 @@ package body System.Finally is
    begin
       if not Library_Exception_Set then
          Library_Exception_Set := True;
-         if E /= null then
+         if X /= null then
             Unwind.Occurrences.Save_Occurrence (
                Library_Exception.X,
-               Cast (E).all);
+               Cast (X).all);
          end if;
       end if;
    end Save_Library_Occurrence;
