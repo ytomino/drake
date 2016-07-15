@@ -138,13 +138,17 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
-         end if;
+         declare
+            E : Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (
+                  Items,
+                  Last,
+                  Naked_Maps.To_Wide_Wide_Character (E.Low),
+                  Naked_Maps.To_Wide_Wide_Character (E.High));
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -159,13 +163,17 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
-         end if;
+         declare
+            E : Wide_Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (
+                  Items,
+                  Last,
+                  Naked_Maps.To_Wide_Wide_Character (E.Low),
+                  Naked_Maps.To_Wide_Wide_Character (E.High));
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -180,13 +188,13 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Ranges (I).Low,
-               Ranges (I).High);
-         end if;
+         declare
+            E : Wide_Wide_Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (Items, Last, E.Low, E.High);
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -589,11 +597,11 @@ package body Ada.Strings.Maps is
    begin
       --  it should be more optimized...
       for I in Sequence'Range loop
-         Naked_Maps.Add (
-            Items,
-            Last,
-            Sequence (I),
-            Sequence (I));
+         declare
+            E : Wide_Wide_Character renames Sequence (I);
+         begin
+            Naked_Maps.Add (Items, Last, E, E);
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));

@@ -12,12 +12,16 @@ package body System.Value_Errors is
       Last := Last + 9;
       Message (Last - 8 .. Last) := "'Value (""";
       for I in S'Range loop
-         if S (I) = '"' then
+         declare
+            E : Character renames S (I);
+         begin
+            if E = '"' then
+               Last := Last + 1;
+               Message (Last) := '"';
+            end if;
             Last := Last + 1;
-            Message (Last) := '"';
-         end if;
-         Last := Last + 1;
-         Message (Last) := S (I);
+            Message (Last) := E;
+         end;
       end loop;
       Last := Last + 1;
       Message (Last) := '"';

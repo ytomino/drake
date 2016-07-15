@@ -288,21 +288,25 @@ package body System.Native_Processes is
          Command_Line (Last) := ' ';
       end if;
       for I in Argument'Range loop
-         if Argument (I) = ' ' then
-            if Last + 1 >= Command_Line'Last then
-               raise Constraint_Error;
+         declare
+            E : Character renames Argument (I);
+         begin
+            if E = ' ' then
+               if Last + 1 >= Command_Line'Last then
+                  raise Constraint_Error;
+               end if;
+               Last := Last + 1;
+               Command_Line (Last) := '\';
+               Last := Last + 1;
+               Command_Line (Last) := ' ';
+            else
+               if Last >= Command_Line'Last then
+                  raise Constraint_Error;
+               end if;
+               Last := Last + 1;
+               Command_Line (Last) := E;
             end if;
-            Last := Last + 1;
-            Command_Line (Last) := '\';
-            Last := Last + 1;
-            Command_Line (Last) := ' ';
-         else
-            if Last >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := Argument (I);
-         end if;
+         end;
       end loop;
    end Append_Argument;
 
