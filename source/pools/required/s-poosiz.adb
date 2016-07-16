@@ -1,4 +1,4 @@
-pragma Check_Policy (Trace => Disable, Validate => Ignore);
+pragma Check_Policy (Trace => Disable);
 --  with Ada;
 with System.Shared_Locking;
 --  with System.Storage_Elements.Formatting;
@@ -71,7 +71,7 @@ package body System.Pool_Size is
                         end if;
                         Previous_Index := Index;
                         exit when Chunk.Next < 0;
-                        pragma Check (Validate, Chunk.Next > Index);
+                        pragma Assert (Chunk.Next > Index);
                         Index := Chunk.Next;
                      end;
                   end loop;
@@ -190,7 +190,7 @@ package body System.Pool_Size is
                            Allocator.Storage'Address + Index;
                      begin
                         exit when Chunk.Next < 0;
-                        pragma Check (Validate, Chunk.Next > Index);
+                        pragma Assert (Chunk.Next > Index);
                         Index := Chunk.Next;
                      end;
                   end loop;
@@ -262,7 +262,7 @@ package body System.Pool_Size is
             begin
                New_Chunk.Size := Actual_Size;
                if Previous_Index >= 0 then
-                  pragma Check (Validate, Previous_Index < Actual_Index);
+                  pragma Assert (Previous_Index < Actual_Index);
                   declare
                      Previous_Chunk : Freed_Chunk;
                      for Previous_Chunk'Address use

@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with Ada.Exception_Identification.From_Here;
 with System.Storage_Elements;
 with System.UTF_Conversions;
@@ -17,8 +16,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_16_Wide_String
    is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 2
-      pragma Check (Validate, Length rem 2 = 0);
-      pragma Check (Validate, Item mod 2 = 0); -- stack may be aligned
+      pragma Assert (Length rem 2 = 0);
+      pragma Assert (Item mod 2 = 0); -- stack may be aligned
       Item_As : UTF_16_Wide_String (1 .. Length / 2);
       for Item_As'Address use Item;
    begin
@@ -35,8 +34,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_32_Wide_Wide_String
    is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 4
-      pragma Check (Validate, Length rem 4 = 0);
-      pragma Check (Validate, Item mod 4 = 0); -- stack may be aligned
+      pragma Assert (Length rem 4 = 0);
+      pragma Assert (Item mod 4 = 0); -- stack may be aligned
       Item_As : UTF_32_Wide_Wide_String (1 .. Length / 4);
       for Item_As'Address use Item;
    begin
@@ -137,7 +136,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                      end;
                   end if;
                else
-                  pragma Check (Validate, Length = 1);
+                  pragma Assert (Length = 1);
                   Result := Wide_Character'Pos (Leading);
                end if;
             end if;
@@ -223,7 +222,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                      end;
                   end if;
                else
-                  pragma Check (Validate, Length = 1);
+                  pragma Assert (Length = 1);
                   Result := Wide_Character'Pos (Leading);
                end if;
             end if;

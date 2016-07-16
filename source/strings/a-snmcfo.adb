@@ -101,7 +101,7 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
             I,
             UCD.Case_Folding.C_Table_1XXXXx1_Compressed,
             Offset => 16#10000#);
-         pragma Check (Validate, I = Mapping.From'Last + 1);
+         pragma Assert (I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
       pragma Check (Validate, Debug.Valid (Mapping.all));

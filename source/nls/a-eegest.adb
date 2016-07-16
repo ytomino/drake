@@ -1,6 +1,7 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Deallocation;
 package body Ada.Environment_Encoding.Generic_Strings is
+   pragma Check_Policy (Validate => Ignore);
    use type Streams.Stream_Element_Offset;
 
    pragma Compile_Time_Error (
@@ -99,7 +100,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Assert (Out_Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
       Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
@@ -119,7 +120,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Status);
-      pragma Assert (Out_Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
       Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
@@ -138,7 +139,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Assert (Out_Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
       Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
@@ -159,7 +160,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Assert (Out_Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
       Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
@@ -180,7 +181,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Out_Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Assert (Out_Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
       Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
    end Decode;
 
@@ -263,7 +264,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Assert (Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
       Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
@@ -282,7 +283,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Status);
-      pragma Assert (Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
       Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
@@ -302,7 +303,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Assert (Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
       Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 
@@ -322,7 +323,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
       Last_2 : Streams.Stream_Element_Offset;
    begin
       Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Assert (Last_2 rem CS_In_SE = 0);
+      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
       Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
    end Encode;
 

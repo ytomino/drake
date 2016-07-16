@@ -150,7 +150,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Check (Validate, I = Mapping.From'Last + 1);
+         pragma Assert (I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
       pragma Check (Validate, Debug.Valid (Mapping.all));
@@ -204,7 +204,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Check (Validate, I = Mapping.From'Last + 1);
+         pragma Assert (I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
       pragma Check (Validate, Debug.Valid (Mapping.all));

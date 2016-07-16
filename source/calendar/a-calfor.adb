@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
 with System.Long_Long_Integer_Divisions;
@@ -145,7 +144,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 2,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       Last := Last + 1;
       Item (Last) := ':';
       System.Formatting.Image (
@@ -154,7 +153,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 2,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       Last := Last + 1;
       Item (Last) := ':';
       System.Formatting.Image (
@@ -163,7 +162,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 2,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       if Include_Time_Fraction then
          Last := Last + 1;
          Item (Last) := '.';
@@ -173,7 +172,7 @@ package body Ada.Calendar.Formatting is
             Last,
             Width => 2,
             Error => Error);
-            pragma Check (Validate, not Error);
+            pragma Assert (not Error);
       end if;
    end Image;
 
@@ -460,7 +459,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 4,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       Last := Last + 1;
       Result (Last) := '-';
       System.Formatting.Image (
@@ -469,7 +468,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 2,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       Last := Last + 1;
       Result (Last) := '-';
       System.Formatting.Image (
@@ -478,7 +477,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Width => 2,
          Error => Error);
-      pragma Check (Validate, not Error);
+      pragma Assert (not Error);
       Last := Last + 1;
       Result (Last) := ' ';
       Image (
@@ -695,7 +694,7 @@ package body Ada.Calendar.Formatting is
             Last,
             Width => 2,
             Error => Error);
-         pragma Check (Validate, not Error and then Last = 3);
+         pragma Assert (not Error and then Last = 3);
          Result (4) := ':';
          System.Formatting.Image (
             System.Formatting.Unsigned (Minute),
@@ -703,7 +702,7 @@ package body Ada.Calendar.Formatting is
             Last,
             Width => 2,
             Error => Error);
-         pragma Check (Validate, not Error and then Last = 6);
+         pragma Assert (not Error and then Last = 6);
       end return;
    end Image;
 

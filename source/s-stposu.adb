@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with Ada.Exceptions;
 with System.Address_To_Named_Access_Conversions;
 with System.Runtime_Context;
@@ -33,7 +32,7 @@ package body System.Storage_Pools.Subpools is
    is
       pragma Unreferenced (Pool);
       pragma Unreferenced (Fin_Address);
-      pragma Check (Validate, Context_Subpool = null);
+      pragma Assert (Context_Subpool = null);
    begin
       Subpool := null;
       Master := Context_Master;
@@ -104,7 +103,7 @@ package body System.Storage_Pools.Subpools is
       Owner : not null Root_Storage_Pool_With_Subpools_Access;
       Item : not null Subpool_Handle) is
    begin
-      pragma Check (Validate, Item.Owner = null);
+      pragma Assert (Item.Owner = null);
       Shared_Locking.Enter;
       Item.Owner := Owner;
       Item.Previous := Owner.Last;
@@ -118,7 +117,7 @@ package body System.Storage_Pools.Subpools is
 
    procedure Detach (Item : not null Subpool_Handle) is
    begin
-      pragma Check (Validate, Item.Owner /= null);
+      pragma Assert (Item.Owner /= null);
       Shared_Locking.Enter;
       if Item.Previous /= null then
          Item.Previous.Next := Item.Next;
@@ -268,7 +267,7 @@ package body System.Storage_Pools.Subpools is
          Fin_Address,
          Subpool,
          Master);
-      pragma Check (Validate, On_Subpool <= (Subpool /= null));
+      pragma Assert (On_Subpool <= (Subpool /= null));
       if Is_Controlled then
          if Master = null
             or else Finalization_Masters.Finalization_Started (Master.all)

@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with System.Random_Initiators;
 with System.Storage_Elements;
 with System.Formatting;
@@ -175,7 +174,7 @@ package body Ada.Numerics.MT19937 is
             Base => 16,
             Width => Cardinal'Size / 4,
             Error => Error);
-         pragma Check (Validate, not Error and then Last = Result'Last);
+         pragma Assert (not Error and then Last = Result'Last);
       end Hex;
       Last : Natural := 0;
    begin
