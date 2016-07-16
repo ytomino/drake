@@ -82,6 +82,7 @@ package body System.Finalization_Masters is
             New_List.Finalize_Address := Fin_Addr_Ptr;
             New_List.Next := Master.List.Next;
             Master.List.Next := New_List;
+            List := New_List;
          end;
       end if;
    end Get_List_Unprotected;
