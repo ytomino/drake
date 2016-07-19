@@ -213,6 +213,12 @@ else
 IMPORT_HEADERS=$(IMPORTDIR)/c.ads
 endif
 
+NOFASTMATH_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
+	s-fatflt.o \
+	s-fatlfl.o \
+	s-fatllf.o \
+	s-fatsfl.o)
+
 # files to be compiled with -O2 instead of -Os
 SPEED_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-arit64.o \
@@ -580,6 +586,9 @@ $(RTSDIR)/adainclude/%.ads: $(EH)/%.ads
 
 $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
+
+# do not apply -ffast-math
+$(NOFASTMATH_OBJS): CFLAGS_MATH:=$(filter-out -ffast-math,$(CFLAGS_MATH))
 
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
