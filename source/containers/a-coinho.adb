@@ -144,7 +144,8 @@ package body Ada.Containers.Indefinite_Holders is
          Free => Free_Data'Access);
    end Clear;
 
-   function Element (Container : Holder'Class) return Element_Type is
+   function Element (Container : Holder'Class)
+      return Element_Type is
    begin
       return Constant_Reference (Holder (Container)).Element.all;
    end Element;
@@ -172,16 +173,14 @@ package body Ada.Containers.Indefinite_Holders is
       Process (Reference (Holder (Container)).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Holder)
+   function Constant_Reference (Container : aliased Holder)
       return Constant_Reference_Type is
    begin
       Unique (Container'Unrestricted_Access.all, False);
       return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Holder)
+   function Reference (Container : aliased in out Holder)
       return Reference_Type is
    begin
       Unique (Container, True);

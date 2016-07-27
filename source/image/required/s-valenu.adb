@@ -154,7 +154,7 @@ package body System.Val_Enum is
          if S (I) in 'a' .. 'z' then
             S (I) := Character'Val (
                Character'Pos (S (I))
-               - (Character'Pos ('a') - Character'Pos ('A')));
+                  - (Character'Pos ('a') - Character'Pos ('A')));
          end if;
       end loop;
    end To_Upper;

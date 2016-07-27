@@ -121,10 +121,7 @@ package body System.Formatting.Float is
             R : Long_Long_Float;
          begin
             Long_Long_Float_Divisions.Divide (X, Long_Long_Float (Base), Q, R);
-            Image (
-               Digit (R),
-               Item (I),
-               Set => Set);
+            Image (Digit (R), Item (I), Set => Set);
             X := Q;
          end;
       end loop;
@@ -273,10 +270,7 @@ package body System.Formatting.Float is
                Item (Last + 1 .. Last + Fore_Width - 1),
                Fore_Padding);
             Last := Last + Fore_Width; -- including one digit
-            Image (
-               Fore,
-               Item (Last),
-               Set => Set);
+            Image (Fore, Item (Last), Set => Set);
             --  '.' and decimal part
             pragma Assert (Last + 1 + Aft_Width <= Item'Last);
             Aft_Image (

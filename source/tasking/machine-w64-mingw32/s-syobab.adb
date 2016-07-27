@@ -32,9 +32,7 @@ package body System.Synchronous_Objects.Abortable is
                loop
                   Object.Waiting := True;
                   Leave (Object.Mutex.all);
-                  Wait (
-                     Object.Event,
-                     Aborted => Aborted);
+                  Wait (Object.Event, Aborted => Aborted);
                   Enter (Object.Mutex.all);
                   Object.Waiting := False;
                   exit Taking when Aborted;

@@ -236,9 +236,7 @@ package body Ada.Strings.Normalization is
 
       function Compose (Item : String_Type) return String_Type;
 
-      function Equal (
-         Left, Right : String_Type)
-         return Boolean;
+      function Equal (Left, Right : String_Type) return Boolean;
 
       function Equal (
          Left, Right : String_Type;
@@ -247,9 +245,7 @@ package body Ada.Strings.Normalization is
             return Boolean)
          return Boolean;
 
-      function Less (
-         Left, Right : String_Type)
-         return Boolean;
+      function Less (Left, Right : String_Type) return Boolean;
 
       function Less (
          Left, Right : String_Type;
@@ -524,9 +520,7 @@ package body Ada.Strings.Normalization is
          return Result (Result'First .. Result_Last);
       end Compose;
 
-      function Equal (
-         Left, Right : String_Type)
-         return Boolean is
+      function Equal (Left, Right : String_Type) return Boolean is
       begin
          return Equal (Left, Right, Standard_Equal'Access);
       end Equal;
@@ -640,9 +634,7 @@ package body Ada.Strings.Normalization is
          end;
       end Equal;
 
-      function Less (
-         Left, Right : String_Type)
-         return Boolean is
+      function Less (Left, Right : String_Type) return Boolean is
       begin
          return Less (Left, Right, Standard_Less'Access);
       end Less;
@@ -885,9 +877,7 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Strings.Decompose;
 
-   function Decompose (
-      Item : String)
-      return String
+   function Decompose (Item : String) return String
       renames Strings.Decompose;
 
    procedure Decompose (
@@ -896,9 +886,7 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Wide_Strings.Decompose;
 
-   function Decompose (
-      Item : Wide_String)
-      return Wide_String
+   function Decompose (Item : Wide_String) return Wide_String
       renames Wide_Strings.Decompose;
 
    procedure Decompose (
@@ -907,9 +895,7 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Wide_Wide_Strings.Decompose;
 
-   function Decompose (
-      Item : Wide_Wide_String)
-      return Wide_Wide_String
+   function Decompose (Item : Wide_Wide_String) return Wide_Wide_String
       renames Wide_Wide_Strings.Decompose;
 
    procedure Compose (
@@ -963,9 +949,7 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Strings.Compose;
 
-   function Compose (
-      Item : String)
-      return String
+   function Compose (Item : String) return String
       renames Strings.Compose;
 
    procedure Compose (
@@ -974,9 +958,7 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Wide_Strings.Compose;
 
-   function Compose (
-      Item : Wide_String)
-      return Wide_String
+   function Compose (Item : Wide_String) return Wide_String
       renames Wide_Strings.Compose;
 
    procedure Compose (
@@ -985,14 +967,10 @@ package body Ada.Strings.Normalization is
       Out_Last : out Natural)
       renames Wide_Wide_Strings.Compose;
 
-   function Compose (
-      Item : Wide_Wide_String)
-      return Wide_Wide_String
+   function Compose (Item : Wide_Wide_String) return Wide_Wide_String
       renames Wide_Wide_Strings.Compose;
 
-   function Equal (
-      Left, Right : String)
-      return Boolean
+   function Equal (Left, Right : String) return Boolean
       renames Strings.Equal;
 
    function Equal (
@@ -1003,9 +981,7 @@ package body Ada.Strings.Normalization is
       return Boolean
       renames Strings.Equal;
 
-   function Equal (
-      Left, Right : Wide_String)
-      return Boolean
+   function Equal (Left, Right : Wide_String) return Boolean
       renames Wide_Strings.Equal;
 
    function Equal (
@@ -1016,9 +992,7 @@ package body Ada.Strings.Normalization is
       return Boolean
       renames Wide_Strings.Equal;
 
-   function Equal (
-      Left, Right : Wide_Wide_String)
-      return Boolean
+   function Equal (Left, Right : Wide_Wide_String) return Boolean
       renames Wide_Wide_Strings.Equal;
 
    function Equal (
@@ -1029,9 +1003,7 @@ package body Ada.Strings.Normalization is
       return Boolean
       renames Wide_Wide_Strings.Equal;
 
-   function Less (
-      Left, Right : String)
-      return Boolean
+   function Less (Left, Right : String) return Boolean
       renames Strings.Less;
 
    function Less (
@@ -1042,9 +1014,7 @@ package body Ada.Strings.Normalization is
       return Boolean
       renames Strings.Less;
 
-   function Less (
-      Left, Right : Wide_String)
-      return Boolean
+   function Less (Left, Right : Wide_String) return Boolean
       renames Wide_Strings.Less;
 
    function Less (
@@ -1055,9 +1025,7 @@ package body Ada.Strings.Normalization is
       return Boolean
       renames Wide_Strings.Less;
 
-   function Less (
-      Left, Right : Wide_Wide_String)
-      return Boolean
+   function Less (Left, Right : Wide_Wide_String) return Boolean
       renames Wide_Wide_Strings.Less;
 
    function Less (

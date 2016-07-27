@@ -21,7 +21,7 @@ package body Interfaces.Fortran is
       Substitute : Character := '?')
       return Character is
    begin
-      if Item  < Character_Set'Val (16#80#) then
+      if Item < Character_Set'Val (16#80#) then
          return Character (Item);
       else
          return Substitute;

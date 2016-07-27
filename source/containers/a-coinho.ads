@@ -26,8 +26,7 @@ package Ada.Containers.Indefinite_Holders is
    procedure Clear (Container : in out Holder);
 
    --  modified
-   function Element (
-      Container : Holder'Class) -- not primitive
+   function Element (Container : Holder'Class) -- not primitive
       return Element_Type;
 
    procedure Replace_Element (
@@ -52,12 +51,10 @@ package Ada.Containers.Indefinite_Holders is
       Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased Holder)
+   function Constant_Reference (Container : aliased Holder)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out Holder)
+   function Reference (Container : aliased in out Holder)
       return Reference_Type;
 
    procedure Assign (Target : in out Holder; Source : Holder);

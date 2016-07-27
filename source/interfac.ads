@@ -20,13 +20,13 @@ package Interfaces is
    type Unsigned_64 is mod 2 ** 64;
    for Unsigned_64'Size use 64;
 
---  function Shift_Left  (Value : Unsigned_n; Amount : Natural)
+--  function Shift_Left (Value : Unsigned_n; Amount : Natural)
 --    return Unsigned_n;
 --  function Shift_Right (Value : Unsigned_n; Amount : Natural)
 --    return Unsigned_n;
 --  function Shift_Right_Arithmetic (Value : Unsigned_n; Amount : Natural)
 --    return Unsigned_n;
---  function Rotate_Left  (Value : Unsigned_n; Amount : Natural)
+--  function Rotate_Left (Value : Unsigned_n; Amount : Natural)
 --    return Unsigned_n;
 --  function Rotate_Right (Value : Unsigned_n; Amount : Natural)
 --    return Unsigned_n;

@@ -196,27 +196,19 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
          Output_BOM);
    end Encode;
 
-   function Encode (
-      Item : String_Type;
-      Output_BOM : Boolean := False)
+   function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_8_String
       renames Encode_To_8;
 
-   function Encode (
-      Item : String_Type;
-      Output_BOM : Boolean := False)
+   function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_16_Wide_String
       renames Encode_To_16;
 
-   function Encode (
-      Item : String_Type;
-      Output_BOM : Boolean := False)
+   function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_32_Wide_Wide_String
       renames Encode_To_32;
 
-   function Decode (
-      Item : UTF_String;
-      Input_Scheme : Encoding_Scheme)
+   function Decode (Item : UTF_String; Input_Scheme : Encoding_Scheme)
       return String_Type is
    begin
       return Decode_From_32 (

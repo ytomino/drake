@@ -137,11 +137,9 @@ package Interfaces.Fortran is
       new Ada.Numerics.Generic_Complex_Types (Double_Precision);
       --  AARM B.5(21.a)
 
-   package Complex_Types_Kind_4
-      renames Single_Precision_Complex_Types;
+   package Complex_Types_Kind_4 renames Single_Precision_Complex_Types;
    subtype Complex_Kind_4 is Complex_Types_Kind_4.Complex;
-   package Complex_Types_Kind_8
-      renames Double_Precision_Complex_Types;
+   package Complex_Types_Kind_8 renames Double_Precision_Complex_Types;
    subtype Complex_Kind_8 is Complex_Types_Kind_8.Complex;
    package Complex_Types_Kind_10 is
       new Ada.Numerics.Generic_Complex_Types (Real_Kind_10);

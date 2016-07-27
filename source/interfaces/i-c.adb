@@ -62,9 +62,7 @@ package body Interfaces.C is
 
       function Is_Nul_Terminated (Item : Element_Array) return Boolean is
          nul_Pos : constant Element_ptr :=
-            Find_nul (
-               Item (Item'First)'Unchecked_Access,
-               Item'Length);
+            Find_nul (Item (Item'First)'Unchecked_Access, Item'Length);
       begin
          return nul_Pos /= null;
       end Is_Nul_Terminated;

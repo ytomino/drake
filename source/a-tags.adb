@@ -432,7 +432,7 @@ package body Ada.Tags is
    begin
       return DT_Ptr_Conv.To_Pointer (
          Tag_Conv.To_Address (T)
-         - Dispatch_Table_Wrapper_0'Size / Standard'Storage_Unit);
+            - Dispatch_Table_Wrapper_0'Size / Standard'Storage_Unit);
    end DT;
 
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive is

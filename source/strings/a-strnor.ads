@@ -55,23 +55,17 @@ package Ada.Strings.Normalization is
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural);
-   function Decompose (
-      Item : String)
-      return String;
+   function Decompose (Item : String) return String;
    procedure Decompose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural);
-   function Decompose (
-      Item : Wide_String)
-      return Wide_String;
+   function Decompose (Item : Wide_String) return Wide_String;
    procedure Decompose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural);
-   function Decompose (
-      Item : Wide_Wide_String)
-      return Wide_Wide_String;
+   function Decompose (Item : Wide_Wide_String) return Wide_Wide_String;
 
    --  NFC (only reversible)
 
@@ -115,47 +109,35 @@ package Ada.Strings.Normalization is
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural);
-   function Compose (
-      Item : String)
-      return String;
+   function Compose (Item : String) return String;
    procedure Compose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural);
-   function Compose (
-      Item : Wide_String)
-      return Wide_String;
+   function Compose (Item : Wide_String) return Wide_String;
    procedure Compose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural);
-   function Compose (
-      Item : Wide_Wide_String)
-      return Wide_Wide_String;
+   function Compose (Item : Wide_Wide_String) return Wide_Wide_String;
 
    --  comparison (use NFD)
 
-   function Equal (
-      Left, Right : String)
-      return Boolean;
+   function Equal (Left, Right : String) return Boolean;
    function Equal (
       Left, Right : String;
       Equal_Combined : not null access function (
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean;
-   function Equal (
-      Left, Right : Wide_String)
-      return Boolean;
+   function Equal (Left, Right : Wide_String) return Boolean;
    function Equal (
       Left, Right : Wide_String;
       Equal_Combined : not null access function (
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean;
-   function Equal (
-      Left, Right : Wide_Wide_String)
-      return Boolean;
+   function Equal (Left, Right : Wide_Wide_String) return Boolean;
    function Equal (
       Left, Right : Wide_Wide_String;
       Equal_Combined : not null access function (
@@ -163,27 +145,21 @@ package Ada.Strings.Normalization is
          return Boolean)
       return Boolean;
 
-   function Less (
-      Left, Right : String)
-      return Boolean;
+   function Less (Left, Right : String) return Boolean;
    function Less (
       Left, Right : String;
       Less_Combined : not null access function (
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean;
-   function Less (
-      Left, Right : Wide_String)
-      return Boolean;
+   function Less (Left, Right : Wide_String) return Boolean;
    function Less (
       Left, Right : Wide_String;
       Less_Combined : not null access function (
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean;
-   function Less (
-      Left, Right : Wide_Wide_String)
-      return Boolean;
+   function Less (Left, Right : Wide_Wide_String) return Boolean;
    function Less (
       Left, Right : Wide_Wide_String;
       Less_Combined : not null access function (
