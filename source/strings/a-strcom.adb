@@ -55,23 +55,6 @@ package body Ada.Strings.Composites is
          Is_Illegal_Sequence : out Boolean);
    package Generic_Composites is
 
-      procedure Start (Item : String_Type; State : out Composites.State);
-
-      procedure Get_Combined (
-         Item : String_Type;
-         Last : out Natural;
-         Is_Illegal_Sequence : out Boolean);
-
-      procedure Get_Combined (
-         State : in out Composites.State;
-         Item : String_Type;
-         Last : out Natural;
-         Is_Illegal_Sequence : out Boolean);
-
-   end Generic_Composites;
-
-   package body Generic_Composites is
-
       procedure Start_No_Length_Check (
          Item : String_Type;
          State : out Composites.State);
@@ -81,6 +64,10 @@ package body Ada.Strings.Composites is
          Item : String_Type;
          Last : out Natural;
          Is_Illegal_Sequence : out Boolean);
+
+   end Generic_Composites;
+
+   package body Generic_Composites is
 
       procedure Start_No_Length_Check (
          Item : String_Type;
@@ -98,17 +85,6 @@ package body Ada.Strings.Composites is
                Combining_Class (State.Next_Character);
          end if;
       end Start_No_Length_Check;
-
-      procedure Start (Item : String_Type; State : out Composites.State) is
-      begin
-         if Item'Length = 0 then
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Last := Item'Last;
-         else
-            Start_No_Length_Check (Item, State);
-         end if;
-      end Start;
 
       procedure Get_Combined_No_Length_Check (
          State : in out Composites.State;
@@ -208,53 +184,97 @@ package body Ada.Strings.Composites is
          end;
       end Get_Combined_No_Length_Check;
 
-      procedure Get_Combined (
-         Item : String_Type;
-         Last : out Natural;
-         Is_Illegal_Sequence : out Boolean) is
-      begin
-         if Item'Length = 0 then
-            --  finished
-            Last := Item'Last;
-            Is_Illegal_Sequence := True; -- ??
-         else
-            declare
-               St : State;
-            begin
-               Start_No_Length_Check (Item, St);
-               Get_Combined_No_Length_Check (
-                  St,
-                  Item,
-                  Last,
-                  Is_Illegal_Sequence);
-            end;
-         end if;
-      end Get_Combined;
+   end Generic_Composites;
 
-      procedure Get_Combined (
-         State : in out Composites.State;
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with procedure Start_No_Length_Check (
          Item : String_Type;
-         Last : out Natural;
-         Is_Illegal_Sequence : out Boolean) is
-      begin
-         if Item'Length = 0 then
-            --  finished
-            Last := Item'Last;
-            Is_Illegal_Sequence := True; -- ??
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Is_Illegal_Sequence := False;
-            State.Next_Last := Last;
-         else
-            Get_Combined_No_Length_Check (
-               State,
+         State : out Composites.State);
+   procedure Generic_Start (
+      Item : String_Type;
+      State : out Composites.State);
+
+   procedure Generic_Start (
+      Item : String_Type;
+      State : out Composites.State) is
+   begin
+      if Item'Length = 0 then
+         State.Next_Character := Wide_Wide_Character'Val (0);
+         State.Next_Combining_Class := 0;
+         State.Next_Last := Item'Last;
+      else
+         Start_No_Length_Check (Item, State);
+      end if;
+   end Generic_Start;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package C is
+         new Generic_Composites (Character_Type, String_Type, others => <>);
+   procedure Generic_Get_Combined (
+      Item : String_Type;
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
+
+   procedure Generic_Get_Combined (
+      Item : String_Type;
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean) is
+   begin
+      if Item'Length = 0 then
+         --  finished
+         Last := Item'Last;
+         Is_Illegal_Sequence := True; -- ??
+      else
+         declare
+            St : State;
+         begin
+            C.Start_No_Length_Check (Item, St);
+            C.Get_Combined_No_Length_Check (
+               St,
                Item,
                Last,
                Is_Illegal_Sequence);
-         end if;
-      end Get_Combined;
+         end;
+      end if;
+   end Generic_Get_Combined;
 
-   end Generic_Composites;
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package C is
+         new Generic_Composites (Character_Type, String_Type, others => <>);
+   procedure Generic_Get_Combined_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean);
+
+   procedure Generic_Get_Combined_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Is_Illegal_Sequence : out Boolean) is
+   begin
+      if Item'Length = 0 then
+         --  finished
+         Last := Item'Last;
+         Is_Illegal_Sequence := True; -- ??
+         State.Next_Character := Wide_Wide_Character'Val (0);
+         State.Next_Combining_Class := 0;
+         State.Next_Is_Illegal_Sequence := False;
+         State.Next_Last := Last;
+      else
+         C.Get_Combined_No_Length_Check (
+            State,
+            Item,
+            Last,
+            Is_Illegal_Sequence);
+      end if;
+   end Generic_Get_Combined_With_State;
 
    package Strings is
       new Generic_Composites (
@@ -334,52 +354,109 @@ package body Ada.Strings.Composites is
       end case;
    end Is_Variation_Selector;
 
-   procedure Start (Item : String; State : out Composites.State)
-      renames Strings.Start;
+   procedure Start (Item : String; State : out Composites.State) is
+      procedure Start_String is
+         new Generic_Start (Character, String, Strings.Start_No_Length_Check);
+   begin
+      Start_String (Item, State);
+   end Start;
 
-   procedure Start (Item : Wide_String; State : out Composites.State)
-      renames Wide_Strings.Start;
+   procedure Start (Item : Wide_String; State : out Composites.State) is
+      procedure Start_Wide_String is
+         new Generic_Start (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings.Start_No_Length_Check);
+   begin
+      Start_Wide_String (Item, State);
+   end Start;
 
-   procedure Start (Item : Wide_Wide_String; State : out Composites.State)
-      renames Wide_Wide_Strings.Start;
+   procedure Start (Item : Wide_Wide_String; State : out Composites.State) is
+      procedure Start_Wide_Wide_String is
+         new Generic_Start (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings.Start_No_Length_Check);
+   begin
+      Start_Wide_Wide_String (Item, State);
+   end Start;
 
    procedure Get_Combined (
       Item : String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Strings.Get_Combined;
+   is
+      procedure Get_Combined_String is
+         new Generic_Get_Combined (Character, String, Strings);
+   begin
+      Get_Combined_String (Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Strings.Get_Combined;
+   is
+      procedure Get_Combined_String is
+         new Generic_Get_Combined_With_State (Character, String, Strings);
+   begin
+      Get_Combined_String (State, Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
    procedure Get_Combined (
       Item : Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Wide_Strings.Get_Combined;
+   is
+      procedure Get_Combined_Wide_String is
+         new Generic_Get_Combined (Wide_Character, Wide_String, Wide_Strings);
+   begin
+      Get_Combined_Wide_String (Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Wide_Strings.Get_Combined;
+   is
+      procedure Get_Combined_Wide_String is
+         new Generic_Get_Combined_With_State (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings);
+   begin
+      Get_Combined_Wide_String (State, Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
    procedure Get_Combined (
       Item : Wide_Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Wide_Wide_Strings.Get_Combined;
+   is
+      procedure Get_Combined_Wide_Wide_String is
+         new Generic_Get_Combined (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings);
+   begin
+      Get_Combined_Wide_Wide_String (Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
    procedure Get_Combined (
       State : in out Composites.State;
       Item : Wide_Wide_String;
       Last : out Natural;
       Is_Illegal_Sequence : out Boolean)
-      renames Wide_Wide_Strings.Get_Combined;
+   is
+      procedure Get_Combined_Wide_Wide_String is
+         new Generic_Get_Combined_With_State (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings);
+   begin
+      Get_Combined_Wide_Wide_String (State, Item, Last, Is_Illegal_Sequence);
+   end Get_Combined;
 
 end Ada.Strings.Composites;

@@ -72,27 +72,6 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       end;
    end Generic_Encode;
 
-   function Encode_To_8 is
-      new Generic_Encode (
-         Character,
-         UTF_8_String,
-         BOM_8,
-         System.UTF_Conversions.To_UTF_8);
-
-   function Encode_To_16 is
-      new Generic_Encode (
-         Wide_Character,
-         UTF_16_Wide_String,
-         BOM_16,
-         System.UTF_Conversions.To_UTF_16);
-
-   function Encode_To_32 is
-      new Generic_Encode (
-         Wide_Wide_Character,
-         UTF_32_Wide_Wide_String,
-         BOM_32,
-         System.UTF_Conversions.To_UTF_32);
-
    generic
       type UTF_Character_Type is (<>);
       type UTF_String_Type is array (Positive range <>) of UTF_Character_Type;
@@ -161,27 +140,6 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       end;
    end Generic_Decode;
 
-   function Decode_From_8 is
-      new Generic_Decode (
-         Character,
-         UTF_8_String,
-         BOM_8,
-         System.UTF_Conversions.From_UTF_8);
-
-   function Decode_From_16 is
-      new Generic_Decode (
-         Wide_Character,
-         UTF_16_Wide_String,
-         BOM_16,
-         System.UTF_Conversions.From_UTF_16);
-
-   function Decode_From_32 is
-      new Generic_Decode (
-         Wide_Wide_Character,
-         UTF_32_Wide_Wide_String,
-         BOM_32,
-         System.UTF_Conversions.From_UTF_32);
-
    --  implementation
 
    function Encode (
@@ -191,37 +149,89 @@ package body Ada.Strings.UTF_Encoding.Generic_Strings is
       return UTF_String is
    begin
       return Conversions.Convert (
-         Encode_To_32 (Item, Output_BOM => False),
+         UTF_32_Wide_Wide_String'(Encode (Item, Output_BOM => False)),
          Output_Scheme,
          Output_BOM);
    end Encode;
 
    function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_8_String
-      renames Encode_To_8;
+   is
+      function Encode_To_8 is
+         new Generic_Encode (
+            Character,
+            UTF_8_String,
+            BOM_8,
+            System.UTF_Conversions.To_UTF_8);
+   begin
+      return Encode_To_8 (Item, Output_BOM);
+   end Encode;
 
    function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_16_Wide_String
-      renames Encode_To_16;
+   is
+      function Encode_To_16 is
+         new Generic_Encode (
+            Wide_Character,
+            UTF_16_Wide_String,
+            BOM_16,
+            System.UTF_Conversions.To_UTF_16);
+   begin
+      return Encode_To_16 (Item, Output_BOM);
+   end Encode;
 
    function Encode (Item : String_Type; Output_BOM : Boolean := False)
       return UTF_32_Wide_Wide_String
-      renames Encode_To_32;
+   is
+      function Encode_To_32 is
+         new Generic_Encode (
+            Wide_Wide_Character,
+            UTF_32_Wide_Wide_String,
+            BOM_32,
+            System.UTF_Conversions.To_UTF_32);
+   begin
+      return Encode_To_32 (Item, Output_BOM);
+   end Encode;
 
    function Decode (Item : UTF_String; Input_Scheme : Encoding_Scheme)
       return String_Type is
    begin
-      return Decode_From_32 (
-         Conversions.Convert (Item, Input_Scheme, Output_BOM => False));
+      return Decode (
+         UTF_32_Wide_Wide_String'(
+            Conversions.Convert (Item, Input_Scheme, Output_BOM => False)));
    end Decode;
 
-   function Decode (Item : UTF_8_String) return String_Type
-      renames Decode_From_8;
+   function Decode (Item : UTF_8_String) return String_Type is
+      function Decode_From_8 is
+         new Generic_Decode (
+            Character,
+            UTF_8_String,
+            BOM_8,
+            System.UTF_Conversions.From_UTF_8);
+   begin
+      return Decode_From_8 (Item);
+   end Decode;
 
-   function Decode (Item : UTF_16_Wide_String) return String_Type
-      renames Decode_From_16;
+   function Decode (Item : UTF_16_Wide_String) return String_Type is
+      function Decode_From_16 is
+         new Generic_Decode (
+            Wide_Character,
+            UTF_16_Wide_String,
+            BOM_16,
+            System.UTF_Conversions.From_UTF_16);
+   begin
+      return Decode_From_16 (Item);
+   end Decode;
 
-   function Decode (Item : UTF_32_Wide_Wide_String) return String_Type
-      renames Decode_From_32;
+   function Decode (Item : UTF_32_Wide_Wide_String) return String_Type is
+      function Decode_From_32 is
+         new Generic_Decode (
+            Wide_Wide_Character,
+            UTF_32_Wide_Wide_String,
+            BOM_32,
+            System.UTF_Conversions.From_UTF_32);
+   begin
+      return Decode_From_32 (Item);
+   end Decode;
 
 end Ada.Strings.UTF_Encoding.Generic_Strings;

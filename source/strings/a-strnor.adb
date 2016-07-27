@@ -165,7 +165,6 @@ package body Ada.Strings.Normalization is
          Code : Wide_Wide_Character;
          Result : out String_Type;
          Last : out Natural);
-      with procedure Start (Item : String_Type; State : out Composites.State);
       with procedure Get_Combined (
          State : in out Composites.State;
          Item : String_Type;
@@ -189,70 +188,12 @@ package body Ada.Strings.Normalization is
          Out_Item : out String_Type;
          Out_Last : out Natural);
 
-      procedure Decompose (
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      procedure Decompose (
-         State : in out Composites.State;
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      procedure Decompose (
-         Item : String_Type;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      function Decompose (Item : String_Type) return String_Type;
-
       procedure Compose_No_Length_Check (
          State : in out Composites.State;
          Item : String_Type;
          Last : out Natural;
          Out_Item : out String_Type;
          Out_Last : out Natural);
-
-      procedure Compose (
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      procedure Compose (
-         State : in out Composites.State;
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      procedure Compose (
-         Item : String_Type;
-         Out_Item : out String_Type;
-         Out_Last : out Natural);
-
-      function Compose (Item : String_Type) return String_Type;
-
-      function Equal (Left, Right : String_Type) return Boolean;
-
-      function Equal (
-         Left, Right : String_Type;
-         Equal_Combined : not null access function (
-            Left, Right : Wide_Wide_String)
-            return Boolean)
-         return Boolean;
-
-      function Less (Left, Right : String_Type) return Boolean;
-
-      function Less (
-         Left, Right : String_Type;
-         Less_Combined : not null access function (
-            Left, Right : Wide_Wide_String)
-            return Boolean)
-         return Boolean;
 
    end Generic_Normalization;
 
@@ -331,80 +272,6 @@ package body Ada.Strings.Normalization is
          Out_Item (Out_Item'First .. Out_Last) := Item (Item'First .. Last);
       end Decompose_No_Length_Check;
 
-      procedure Decompose (
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            Last := Item'First - 1;
-            Out_Last := Out_Item'First - 1;
-         else
-            Canonical_Composites.Initialize_D;
-            declare
-               St : Composites.State;
-            begin
-               Start (Item, St);
-               Decompose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
-            end;
-         end if;
-      end Decompose;
-
-      procedure Decompose (
-         State : in out Composites.State;
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            --  finished
-            Last := Item'Last;
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Is_Illegal_Sequence := False;
-            State.Next_Last := Last;
-            Out_Last := Out_Item'First - 1;
-         else
-            Canonical_Composites.Initialize_D;
-            Decompose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
-         end if;
-      end Decompose;
-
-      procedure Decompose (
-         Item : String_Type;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
-         Out_Last := Out_Item'First - 1;
-         if Item'Length > 0 then
-            Canonical_Composites.Initialize_D;
-            declare
-               St : Composites.State;
-               Last : Natural := Item'First - 1;
-            begin
-               Start (Item, St);
-               while Last < Item'Last loop
-                  Decompose_No_Length_Check (
-                     St,
-                     Item (Last + 1 .. Item'Last),
-                     Last,
-                     Out_Item (Out_Last + 1 .. Out_Item'Last),
-                     Out_Last);
-               end loop;
-            end;
-         end if;
-      end Decompose;
-
-      function Decompose (Item : String_Type) return String_Type is
-         Result : String_Type (1 .. Expanding * Max_Length * Item'Length);
-         Result_Last : Natural := Result'First - 1;
-      begin
-         Decompose (Item, Result, Result_Last);
-         return Result (Result'First .. Result_Last);
-      end Decompose;
-
       procedure Compose_No_Length_Check (
          State : in out Composites.State;
          Item : String_Type;
@@ -446,318 +313,535 @@ package body Ada.Strings.Normalization is
          Out_Item (Out_Item'First .. Out_Last) := Item (Item'First .. Last);
       end Compose_No_Length_Check;
 
-      procedure Compose (
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            Last := Item'First - 1;
-            Out_Last := Out_Item'First - 1;
-         else
-            Canonical_Composites.Initialize_C;
-            declare
-               St : Composites.State;
-            begin
-               Start (Item, St);
-               Compose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
-            end;
-         end if;
-      end Compose;
+   end Generic_Normalization;
 
-      procedure Compose (
-         State : in out Composites.State;
-         Item : String_Type;
-         Last : out Natural;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
-         if Item'Length = 0 then
-            --  finished
-            Last := Item'Last;
-            State.Next_Character := Wide_Wide_Character'Val (0);
-            State.Next_Combining_Class := 0;
-            State.Next_Is_Illegal_Sequence := False;
-            State.Next_Last := Last;
-            Out_Last := Out_Item'First - 1;
-         else
-            Canonical_Composites.Initialize_C;
-            Compose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
-         end if;
-      end Compose;
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   procedure Generic_Decompose (
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
 
-      procedure Compose (
-         Item : String_Type;
-         Out_Item : out String_Type;
-         Out_Last : out Natural) is
-      begin
+   procedure Generic_Decompose (
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      if Item'Length = 0 then
+         Last := Item'First - 1;
          Out_Last := Out_Item'First - 1;
-         if Item'Length > 0 then
-            Canonical_Composites.Initialize_C;
-            declare
-               St : Composites.State;
-               Last : Natural := Item'First - 1;
-            begin
-               Start (Item, St);
-               while Last < Item'Last loop
-                  Compose_No_Length_Check (
-                     St,
-                     Item (Last + 1 .. Item'Last),
-                     Last,
-                     Out_Item (Out_Last + 1 .. Out_Item'Last),
-                     Out_Last);
-               end loop;
-            end;
-         end if;
-      end Compose;
+      else
+         Canonical_Composites.Initialize_D;
+         declare
+            St : Composites.State;
+         begin
+            Start (Item, St);
+            N.Decompose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
+         end;
+      end if;
+   end Generic_Decompose;
 
-      function Compose (Item : String_Type) return String_Type is
-         Result : String_Type (1 .. Expanding * Max_Length * Item'Length);
-         Result_Last : Natural := Result'First - 1;
-      begin
-         Compose (Item, Result, Result_Last);
-         return Result (Result'First .. Result_Last);
-      end Compose;
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+   procedure Generic_Decompose_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
 
-      function Equal (Left, Right : String_Type) return Boolean is
-      begin
-         return Equal (Left, Right, Standard_Equal'Access);
-      end Equal;
+   procedure Generic_Decompose_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      if Item'Length = 0 then
+         --  finished
+         Last := Item'Last;
+         State.Next_Character := Wide_Wide_Character'Val (0);
+         State.Next_Combining_Class := 0;
+         State.Next_Is_Illegal_Sequence := False;
+         State.Next_Last := Last;
+         Out_Last := Out_Item'First - 1;
+      else
+         Canonical_Composites.Initialize_D;
+         N.Decompose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
+      end if;
+   end Generic_Decompose_With_State;
 
-      function Equal (
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   procedure Generic_Decompose_All (
+      Item : String_Type;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
+
+   procedure Generic_Decompose_All (
+      Item : String_Type;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      Out_Last := Out_Item'First - 1;
+      if Item'Length > 0 then
+         Canonical_Composites.Initialize_D;
+         declare
+            St : Composites.State;
+            Last : Natural := Item'First - 1;
+         begin
+            Start (Item, St);
+            while Last < Item'Last loop
+               N.Decompose_No_Length_Check (
+                  St,
+                  Item (Last + 1 .. Item'Last),
+                  Last,
+                  Out_Item (Out_Last + 1 .. Out_Item'Last),
+                  Out_Last);
+            end loop;
+         end;
+      end if;
+   end Generic_Decompose_All;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Decompose (
+         Item : String_Type;
+         Out_Item : out String_Type;
+         Out_Last : out Natural);
+   function Generic_Decompose_All_Func (Item : String_Type)
+      return String_Type;
+
+   function Generic_Decompose_All_Func (Item : String_Type)
+      return String_Type
+   is
+      Result : String_Type (1 .. Expanding * N.Max_Length * Item'Length);
+      Result_Last : Natural := Result'First - 1;
+   begin
+      Decompose (Item, Result, Result_Last);
+      return Result (Result'First .. Result_Last);
+   end Generic_Decompose_All_Func;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   procedure Generic_Compose (
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
+
+   procedure Generic_Compose (
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      if Item'Length = 0 then
+         Last := Item'First - 1;
+         Out_Last := Out_Item'First - 1;
+      else
+         Canonical_Composites.Initialize_C;
+         declare
+            St : Composites.State;
+         begin
+            Start (Item, St);
+            N.Compose_No_Length_Check (St, Item, Last, Out_Item, Out_Last);
+         end;
+      end if;
+   end Generic_Compose;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+   procedure Generic_Compose_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
+
+   procedure Generic_Compose_With_State (
+      State : in out Composites.State;
+      Item : String_Type;
+      Last : out Natural;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      if Item'Length = 0 then
+         --  finished
+         Last := Item'Last;
+         State.Next_Character := Wide_Wide_Character'Val (0);
+         State.Next_Combining_Class := 0;
+         State.Next_Is_Illegal_Sequence := False;
+         State.Next_Last := Last;
+         Out_Last := Out_Item'First - 1;
+      else
+         Canonical_Composites.Initialize_C;
+         N.Compose_No_Length_Check (State, Item, Last, Out_Item, Out_Last);
+      end if;
+   end Generic_Compose_With_State;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   procedure Generic_Compose_All (
+      Item : String_Type;
+      Out_Item : out String_Type;
+      Out_Last : out Natural);
+
+   procedure Generic_Compose_All (
+      Item : String_Type;
+      Out_Item : out String_Type;
+      Out_Last : out Natural) is
+   begin
+      Out_Last := Out_Item'First - 1;
+      if Item'Length > 0 then
+         Canonical_Composites.Initialize_C;
+         declare
+            St : Composites.State;
+            Last : Natural := Item'First - 1;
+         begin
+            Start (Item, St);
+            while Last < Item'Last loop
+               N.Compose_No_Length_Check (
+                  St,
+                  Item (Last + 1 .. Item'Last),
+                  Last,
+                  Out_Item (Out_Last + 1 .. Out_Item'Last),
+                  Out_Last);
+            end loop;
+         end;
+      end if;
+   end Generic_Compose_All;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Compose (
+         Item : String_Type;
+         Out_Item : out String_Type;
+         Out_Last : out Natural);
+   function Generic_Compose_All_Func (Item : String_Type) return String_Type;
+
+   function Generic_Compose_All_Func (Item : String_Type) return String_Type is
+      Result : String_Type (1 .. Expanding * N.Max_Length * Item'Length);
+      Result_Last : Natural := Result'First - 1;
+   begin
+      Compose (Item, Result, Result_Last);
+      return Result (Result'First .. Result_Last);
+   end Generic_Compose_All_Func;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with function Equal (
          Left, Right : String_Type;
          Equal_Combined : not null access function (
             Left, Right : Wide_Wide_String)
             return Boolean)
-         return Boolean is
+         return Boolean;
+   function Generic_Equal (Left, Right : String_Type) return Boolean;
+
+   function Generic_Equal (Left, Right : String_Type) return Boolean is
+   begin
+      return Equal (Left, Right, Standard_Equal'Access);
+   end Generic_Equal;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   function Generic_Equal_With_Comparator (
+      Left, Right : String_Type;
+      Equal_Combined : not null access function (
+         Left, Right : Wide_Wide_String)
+         return Boolean)
+      return Boolean;
+
+   function Generic_Equal_With_Comparator (
+      Left, Right : String_Type;
+      Equal_Combined : not null access function (
+         Left, Right : Wide_Wide_String)
+         return Boolean)
+      return Boolean is
+   begin
+      if Left'Length = 0 then
+         return Right'Length = 0;
+      elsif Right'Length = 0 then
+         return False;
+      end if;
+      Canonical_Composites.Initialize_D;
+      declare
+         Left_State : Composites.State;
+         Left_Last : Natural := Left'First - 1;
+         Right_State : Composites.State;
+         Right_Last : Natural := Right'First - 1;
       begin
-         if Left'Length = 0 then
-            return Right'Length = 0;
-         elsif Right'Length = 0 then
-            return False;
-         end if;
-         Canonical_Composites.Initialize_D;
-         declare
-            Left_State : Composites.State;
-            Left_Last : Natural := Left'First - 1;
-            Right_State : Composites.State;
-            Right_Last : Natural := Right'First - 1;
-         begin
-            Start (Left, Left_State);
-            Start (Right, Right_State);
-            loop
-               --  get one combining character sequence
-               declare
-                  Left_First : constant Positive := Left_Last + 1;
-                  Right_First : constant Positive := Right_Last + 1;
-                  Left_Is_Illegal_Sequence : Boolean;
-                  Right_Is_Illegal_Sequence : Boolean;
-               begin
-                  Get_Combined (
-                     Left_State,
-                     Left (Left_First .. Left'Last),
-                     Left_Last,
-                     Left_Is_Illegal_Sequence);
-                  Get_Combined (
-                     Right_State,
-                     Right (Right_First .. Right'Last),
-                     Right_Last,
-                     Right_Is_Illegal_Sequence);
-                  if not Left_Is_Illegal_Sequence then
-                     if not Right_Is_Illegal_Sequence then
-                        --  left and right are legal
-                        declare
-                           Left_Buffer : Wide_Wide_String (
-                              1 ..
-                              Expanding
-                                 * Max_Length
-                                 * (Left_Last - Left_First + 1));
-                           Left_Buffer_Last : Natural;
-                           Left_Decomposed : Boolean; -- ignore
-                           Right_Buffer : Wide_Wide_String (
-                              1 ..
-                              Expanding
-                                 * Max_Length
-                                 * (Right_Last - Right_First + 1));
-                           Right_Buffer_Last : Natural;
-                           Right_Decomposed : Boolean; -- ignore
-                        begin
-                           Decode (
-                              Left (Left_First .. Left_Last),
-                              Left_Buffer,
-                              Left_Buffer_Last);
-                           D_Buff (
-                              Left_Buffer,
-                              Left_Buffer_Last,
-                              Left_Decomposed);
-                           Decode (
-                              Right (Right_First .. Right_Last),
-                              Right_Buffer,
-                              Right_Buffer_Last);
-                           D_Buff (
-                              Right_Buffer,
-                              Right_Buffer_Last,
-                              Right_Decomposed);
-                           if not Equal_Combined (
-                              Left_Buffer (1 .. Left_Buffer_Last),
-                              Right_Buffer (1 .. Right_Buffer_Last))
-                           then
-                              return False;
-                           end if;
-                        end;
-                     else
-                        --  left is legal, right is illegal
-                        return False;
-                     end if;
-                  else
-                     if not Right_Is_Illegal_Sequence then
-                        --  left is illegal, right is legal
-                        return False;
-                     else
-                        --  left and right are illegal
-                        if Left (Left_First .. Left_Last) /=
-                           Right (Right_First .. Right_Last)
+         Start (Left, Left_State);
+         Start (Right, Right_State);
+         loop
+            --  get one combining character sequence
+            declare
+               Left_First : constant Positive := Left_Last + 1;
+               Right_First : constant Positive := Right_Last + 1;
+               Left_Is_Illegal_Sequence : Boolean;
+               Right_Is_Illegal_Sequence : Boolean;
+            begin
+               N.Get_Combined (
+                  Left_State,
+                  Left (Left_First .. Left'Last),
+                  Left_Last,
+                  Left_Is_Illegal_Sequence);
+               N.Get_Combined (
+                  Right_State,
+                  Right (Right_First .. Right'Last),
+                  Right_Last,
+                  Right_Is_Illegal_Sequence);
+               if not Left_Is_Illegal_Sequence then
+                  if not Right_Is_Illegal_Sequence then
+                     --  left and right are legal
+                     declare
+                        Left_Buffer : Wide_Wide_String (
+                           1 ..
+                           Expanding
+                              * N.Max_Length
+                              * (Left_Last - Left_First + 1));
+                        Left_Buffer_Last : Natural;
+                        Left_Decomposed : Boolean; -- ignore
+                        Right_Buffer : Wide_Wide_String (
+                           1 ..
+                           Expanding
+                              * N.Max_Length
+                              * (Right_Last - Right_First + 1));
+                        Right_Buffer_Last : Natural;
+                        Right_Decomposed : Boolean; -- ignore
+                     begin
+                        N.Decode (
+                           Left (Left_First .. Left_Last),
+                           Left_Buffer,
+                           Left_Buffer_Last);
+                        D_Buff (
+                           Left_Buffer,
+                           Left_Buffer_Last,
+                           Left_Decomposed);
+                        N.Decode (
+                           Right (Right_First .. Right_Last),
+                           Right_Buffer,
+                           Right_Buffer_Last);
+                        D_Buff (
+                           Right_Buffer,
+                           Right_Buffer_Last,
+                           Right_Decomposed);
+                        if not Equal_Combined (
+                           Left_Buffer (1 .. Left_Buffer_Last),
+                           Right_Buffer (1 .. Right_Buffer_Last))
                         then
                            return False;
                         end if;
+                     end;
+                  else
+                     --  left is legal, right is illegal
+                     return False;
+                  end if;
+               else
+                  if not Right_Is_Illegal_Sequence then
+                     --  left is illegal, right is legal
+                     return False;
+                  else
+                     --  left and right are illegal
+                     if Left (Left_First .. Left_Last) /=
+                        Right (Right_First .. Right_Last)
+                     then
+                        return False;
                      end if;
                   end if;
-               end;
-               --  detect ends
-               if Left_Last >= Left'Last then
-                  return Right_Last >= Right'Last;
-               elsif Right_Last >= Right'Last then
-                  return False;
                end if;
-            end loop;
-         end;
-      end Equal;
+            end;
+            --  detect ends
+            if Left_Last >= Left'Last then
+               return Right_Last >= Right'Last;
+            elsif Right_Last >= Right'Last then
+               return False;
+            end if;
+         end loop;
+      end;
+   end Generic_Equal_With_Comparator;
 
-      function Less (Left, Right : String_Type) return Boolean is
-      begin
-         return Less (Left, Right, Standard_Less'Access);
-      end Less;
-
-      function Less (
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with function Less (
          Left, Right : String_Type;
          Less_Combined : not null access function (
             Left, Right : Wide_Wide_String)
             return Boolean)
-         return Boolean is
+         return Boolean;
+   function Generic_Less (Left, Right : String_Type) return Boolean;
+
+   function Generic_Less (Left, Right : String_Type) return Boolean is
+   begin
+      return Less (Left, Right, Standard_Less'Access);
+   end Generic_Less;
+
+   generic
+      type Character_Type is (<>);
+      type String_Type is array (Positive range <>) of Character_Type;
+      with package N is
+         new Generic_Normalization (Character_Type, String_Type, others => <>);
+      with procedure Start (Item : String_Type; State : out Composites.State);
+   function Generic_Less_With_Comparator (
+      Left, Right : String_Type;
+      Less_Combined : not null access function (
+         Left, Right : Wide_Wide_String)
+         return Boolean)
+      return Boolean;
+
+   function Generic_Less_With_Comparator (
+      Left, Right : String_Type;
+      Less_Combined : not null access function (
+         Left, Right : Wide_Wide_String)
+         return Boolean)
+      return Boolean is
+   begin
+      if Left'Length = 0 then
+         return Right'Length > 0;
+      elsif Right'Length = 0 then
+         return False;
+      end if;
+      Canonical_Composites.Initialize_D;
+      declare
+         Left_State : Composites.State;
+         Left_Last : Natural := Left'First - 1;
+         Right_State : Composites.State;
+         Right_Last : Natural := Right'First - 1;
       begin
-         if Left'Length = 0 then
-            return Right'Length > 0;
-         elsif Right'Length = 0 then
-            return False;
-         end if;
-         Canonical_Composites.Initialize_D;
-         declare
-            Left_State : Composites.State;
-            Left_Last : Natural := Left'First - 1;
-            Right_State : Composites.State;
-            Right_Last : Natural := Right'First - 1;
-         begin
-            Start (Left, Left_State);
-            Start (Right, Right_State);
-            loop
-               --  get one combining character sequence
-               declare
-                  Left_First : constant Positive := Left_Last + 1;
-                  Right_First : constant Positive := Right_Last + 1;
-                  Left_Is_Illegal_Sequence : Boolean;
-                  Right_Is_Illegal_Sequence : Boolean;
-               begin
-                  Get_Combined (
-                     Left_State,
-                     Left (Left_First .. Left'Last),
-                     Left_Last,
-                     Left_Is_Illegal_Sequence);
-                  Get_Combined (
-                     Right_State,
-                     Right (Right_First .. Right'Last),
-                     Right_Last,
-                     Right_Is_Illegal_Sequence);
-                  if not Left_Is_Illegal_Sequence then
-                     if not Right_Is_Illegal_Sequence then
-                        --  left and right are legal
-                        declare
-                           Left_Buffer : Wide_Wide_String (
-                              1 ..
-                              Expanding
-                                 * Max_Length
-                                 * (Left_Last - Left_First + 1));
-                           Left_Buffer_Last : Natural;
-                           Left_Decomposed : Boolean; -- ignore
-                           Right_Buffer : Wide_Wide_String (
-                              1 ..
-                              Expanding
-                                 * Max_Length
-                                 * (Right_Last - Right_First + 1));
-                           Right_Buffer_Last : Natural;
-                           Right_Decomposed : Boolean; -- ignore
-                        begin
-                           Decode (
-                              Left (Left_First .. Left_Last),
-                              Left_Buffer,
-                              Left_Buffer_Last);
-                           D_Buff (
-                              Left_Buffer,
-                              Left_Buffer_Last,
-                              Left_Decomposed);
-                           Decode (
-                              Right (Right_First .. Right_Last),
-                              Right_Buffer,
-                              Right_Buffer_Last);
-                           D_Buff (
-                              Right_Buffer,
-                              Right_Buffer_Last,
-                              Right_Decomposed);
-                           if Less_Combined (
-                              Left_Buffer (1 .. Left_Buffer_Last),
-                              Right_Buffer (1 .. Right_Buffer_Last))
-                           then
-                              return True;
-                           elsif Less_Combined (
-                              Right_Buffer (1 .. Right_Buffer_Last),
-                              Left_Buffer (1 .. Left_Buffer_Last))
-                           then
-                              return False;
-                           end if;
-                        end;
-                     else
-                        --  left is legal, right is illegal
-                        return True;
-                     end if;
-                  else
-                     if not Right_Is_Illegal_Sequence then
-                        --  left is illegal, right is legal
-                        return False;
-                     else
-                        --  left and right are illegal
-                        if Left (Left_First .. Left_Last) <
-                           Right (Right_First .. Right_Last)
+         Start (Left, Left_State);
+         Start (Right, Right_State);
+         loop
+            --  get one combining character sequence
+            declare
+               Left_First : constant Positive := Left_Last + 1;
+               Right_First : constant Positive := Right_Last + 1;
+               Left_Is_Illegal_Sequence : Boolean;
+               Right_Is_Illegal_Sequence : Boolean;
+            begin
+               N.Get_Combined (
+                  Left_State,
+                  Left (Left_First .. Left'Last),
+                  Left_Last,
+                  Left_Is_Illegal_Sequence);
+               N.Get_Combined (
+                  Right_State,
+                  Right (Right_First .. Right'Last),
+                  Right_Last,
+                  Right_Is_Illegal_Sequence);
+               if not Left_Is_Illegal_Sequence then
+                  if not Right_Is_Illegal_Sequence then
+                     --  left and right are legal
+                     declare
+                        Left_Buffer : Wide_Wide_String (
+                           1 ..
+                           Expanding
+                              * N.Max_Length
+                              * (Left_Last - Left_First + 1));
+                        Left_Buffer_Last : Natural;
+                        Left_Decomposed : Boolean; -- ignore
+                        Right_Buffer : Wide_Wide_String (
+                           1 ..
+                           Expanding
+                              * N.Max_Length
+                              * (Right_Last - Right_First + 1));
+                        Right_Buffer_Last : Natural;
+                        Right_Decomposed : Boolean; -- ignore
+                     begin
+                        N.Decode (
+                           Left (Left_First .. Left_Last),
+                           Left_Buffer,
+                           Left_Buffer_Last);
+                        D_Buff (
+                           Left_Buffer,
+                           Left_Buffer_Last,
+                           Left_Decomposed);
+                        N.Decode (
+                           Right (Right_First .. Right_Last),
+                           Right_Buffer,
+                           Right_Buffer_Last);
+                        D_Buff (
+                           Right_Buffer,
+                           Right_Buffer_Last,
+                           Right_Decomposed);
+                        if Less_Combined (
+                           Left_Buffer (1 .. Left_Buffer_Last),
+                           Right_Buffer (1 .. Right_Buffer_Last))
                         then
                            return True;
-                        elsif Left (Left_First .. Left_Last) <
-                           Right (Right_First .. Right_Last)
+                        elsif Less_Combined (
+                           Right_Buffer (1 .. Right_Buffer_Last),
+                           Left_Buffer (1 .. Left_Buffer_Last))
                         then
                            return False;
                         end if;
+                     end;
+                  else
+                     --  left is legal, right is illegal
+                     return True;
+                  end if;
+               else
+                  if not Right_Is_Illegal_Sequence then
+                     --  left is illegal, right is legal
+                     return False;
+                  else
+                     --  left and right are illegal
+                     if Left (Left_First .. Left_Last) <
+                        Right (Right_First .. Right_Last)
+                     then
+                        return True;
+                     elsif Left (Left_First .. Left_Last) <
+                        Right (Right_First .. Right_Last)
+                     then
+                        return False;
                      end if;
                   end if;
-               end;
-               --  detect ends
-               if Left_Last >= Left'Last then
-                  return Right_Last < Right'Last;
-               elsif Right_Last >= Right'Last then
-                  return False;
                end if;
-            end loop;
-         end;
-      end Less;
-
-   end Generic_Normalization;
+            end;
+            --  detect ends
+            if Left_Last >= Left'Last then
+               return Right_Last < Right'Last;
+            elsif Right_Last >= Right'Last then
+               return False;
+            end if;
+         end loop;
+      end;
+   end Generic_Less_With_Comparator;
 
    package Strings is
       new Generic_Normalization (
@@ -766,7 +850,6 @@ package body Ada.Strings.Normalization is
          Characters.Conversions.Max_Length_In_String,
          Characters.Conversions.Get,
          Characters.Conversions.Put,
-         Composites.Start,
          Composites.Get_Combined);
    package Wide_Strings is
       new Generic_Normalization (
@@ -775,7 +858,6 @@ package body Ada.Strings.Normalization is
          Characters.Conversions.Max_Length_In_Wide_String,
          Characters.Conversions.Get,
          Characters.Conversions.Put,
-         Composites.Start,
          Composites.Get_Combined);
    package Wide_Wide_Strings is
       new Generic_Normalization (
@@ -784,7 +866,6 @@ package body Ada.Strings.Normalization is
          Characters.Conversions.Max_Length_In_Wide_Wide_String, -- 1
          Characters.Conversions.Get,
          Characters.Conversions.Put,
-         Composites.Start,
          Composites.Get_Combined);
 
    --  implementation
@@ -831,7 +912,12 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Decompose;
+   is
+      procedure Decompose_String is
+         new Generic_Decompose (Character, String, Strings, Composites.Start);
+   begin
+      Decompose_String (Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -839,14 +925,28 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Decompose;
+   is
+      procedure Decompose_String is
+         new Generic_Decompose_With_State (Character, String, Strings);
+   begin
+      Decompose_String (State, Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_String is
+         new Generic_Decompose (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+   begin
+      Decompose_Wide_String (Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -854,14 +954,31 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_String is
+         new Generic_Decompose_With_State (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings);
+   begin
+      Decompose_Wide_String (State, Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_Wide_String is
+         new Generic_Decompose (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+   begin
+      Decompose_Wide_Wide_String (Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       State : in out Composites.State;
@@ -869,41 +986,108 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_Wide_String is
+         new Generic_Decompose_With_State (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings);
+   begin
+      Decompose_Wide_Wide_String (State, Item, Last, Out_Item, Out_Last);
+   end Decompose;
 
    procedure Decompose (
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Decompose;
+   is
+      procedure Decompose_String is
+         new Generic_Decompose_All (
+            Character,
+            String,
+            Strings,
+            Composites.Start);
+      pragma Inline_Always (Decompose_String);
+   begin
+      Decompose_String (Item, Out_Item, Out_Last);
+   end Decompose;
 
-   function Decompose (Item : String) return String
-      renames Strings.Decompose;
+   function Decompose (Item : String) return String is
+      function Decompose_String is
+         new Generic_Decompose_All_Func (
+            Character,
+            String,
+            Strings,
+            Decompose);
+   begin
+      return Decompose_String (Item);
+   end Decompose;
 
    procedure Decompose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_String is
+         new Generic_Decompose_All (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Decompose_Wide_String);
+   begin
+      Decompose_Wide_String (Item, Out_Item, Out_Last);
+   end Decompose;
 
-   function Decompose (Item : Wide_String) return Wide_String
-      renames Wide_Strings.Decompose;
+   function Decompose (Item : Wide_String) return Wide_String is
+      function Decompose_Wide_String is
+         new Generic_Decompose_All_Func (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Decompose);
+   begin
+      return Decompose_Wide_String (Item);
+   end Decompose;
 
    procedure Decompose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Decompose;
+   is
+      procedure Decompose_Wide_Wide_String is
+         new Generic_Decompose_All (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Decompose_Wide_Wide_String);
+   begin
+      Decompose_Wide_Wide_String (Item, Out_Item, Out_Last);
+   end Decompose;
 
-   function Decompose (Item : Wide_Wide_String) return Wide_Wide_String
-      renames Wide_Wide_Strings.Decompose;
+   function Decompose (Item : Wide_Wide_String) return Wide_Wide_String is
+      function Decompose_Wide_Wide_String is
+         new Generic_Decompose_All_Func (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Decompose);
+   begin
+      return Decompose_Wide_Wide_String (Item);
+   end Decompose;
 
    procedure Compose (
       Item : String;
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Compose;
+   is
+      procedure Compose_String is
+         new Generic_Compose (Character, String, Strings, Composites.Start);
+   begin
+      Compose_String (Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -911,14 +1095,28 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Compose;
+   is
+      procedure Compose_String is
+         new Generic_Compose_With_State (Character, String, Strings);
+   begin
+      Compose_String (State, Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       Item : Wide_String;
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_String is
+         new Generic_Compose (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+   begin
+      Compose_Wide_String (Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -926,14 +1124,31 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_String is
+         new Generic_Compose_With_State (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings);
+   begin
+      Compose_Wide_String (State, Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       Item : Wide_Wide_String;
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_Wide_String is
+         new Generic_Compose (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+   begin
+      Compose_Wide_Wide_String (Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       State : in out Composites.State;
@@ -941,37 +1156,98 @@ package body Ada.Strings.Normalization is
       Last : out Natural;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_Wide_String is
+         new Generic_Compose_With_State (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings);
+   begin
+      Compose_Wide_Wide_String (State, Item, Last, Out_Item, Out_Last);
+   end Compose;
 
    procedure Compose (
       Item : String;
       Out_Item : out String;
       Out_Last : out Natural)
-      renames Strings.Compose;
+   is
+      procedure Compose_String is
+         new Generic_Compose_All (
+            Character,
+            String,
+            Strings,
+            Composites.Start);
+      pragma Inline_Always (Compose_String);
+   begin
+      Compose_String (Item, Out_Item, Out_Last);
+   end Compose;
 
-   function Compose (Item : String) return String
-      renames Strings.Compose;
+   function Compose (Item : String) return String is
+      function Compose_String is
+         new Generic_Compose_All_Func (Character, String, Strings, Compose);
+   begin
+      return Compose_String (Item);
+   end Compose;
 
    procedure Compose (
       Item : Wide_String;
       Out_Item : out Wide_String;
       Out_Last : out Natural)
-      renames Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_String is
+         new Generic_Compose_All (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Compose_Wide_String);
+   begin
+      Compose_Wide_String (Item, Out_Item, Out_Last);
+   end Compose;
 
-   function Compose (Item : Wide_String) return Wide_String
-      renames Wide_Strings.Compose;
+   function Compose (Item : Wide_String) return Wide_String is
+      function Compose_Wide_String is
+         new Generic_Compose_All_Func (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Compose);
+   begin
+      return Compose_Wide_String (Item);
+   end Compose;
 
    procedure Compose (
       Item : Wide_Wide_String;
       Out_Item : out Wide_Wide_String;
       Out_Last : out Natural)
-      renames Wide_Wide_Strings.Compose;
+   is
+      procedure Compose_Wide_Wide_String is
+         new Generic_Compose_All (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Compose_Wide_Wide_String);
+   begin
+      Compose_Wide_Wide_String (Item, Out_Item, Out_Last);
+   end Compose;
 
-   function Compose (Item : Wide_Wide_String) return Wide_Wide_String
-      renames Wide_Wide_Strings.Compose;
+   function Compose (Item : Wide_Wide_String) return Wide_Wide_String is
+      function Compose_Wide_Wide_String is
+         new Generic_Compose_All_Func (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Compose);
+   begin
+      return Compose_Wide_Wide_String (Item);
+   end Compose;
 
-   function Equal (Left, Right : String) return Boolean
-      renames Strings.Equal;
+   function Equal (Left, Right : String) return Boolean is
+      function Equal_String is new Generic_Equal (Character, String, Equal);
+   begin
+      return Equal_String (Left, Right);
+   end Equal;
 
    function Equal (
       Left, Right : String;
@@ -979,10 +1255,24 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Strings.Equal;
+   is
+      function Equal_String is
+         new Generic_Equal_With_Comparator (
+            Character,
+            String,
+            Strings,
+            Composites.Start);
+      pragma Inline_Always (Equal_String);
+   begin
+      return Equal_String (Left, Right, Equal_Combined);
+   end Equal;
 
-   function Equal (Left, Right : Wide_String) return Boolean
-      renames Wide_Strings.Equal;
+   function Equal (Left, Right : Wide_String) return Boolean is
+      function Equal_Wide_String is
+         new Generic_Equal (Wide_Character, Wide_String, Equal);
+   begin
+      return Equal_Wide_String (Left, Right);
+   end Equal;
 
    function Equal (
       Left, Right : Wide_String;
@@ -990,10 +1280,24 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Wide_Strings.Equal;
+   is
+      function Equal_Wide_String is
+         new Generic_Equal_With_Comparator (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Equal_Wide_String);
+   begin
+      return Equal_Wide_String (Left, Right, Equal_Combined);
+   end Equal;
 
-   function Equal (Left, Right : Wide_Wide_String) return Boolean
-      renames Wide_Wide_Strings.Equal;
+   function Equal (Left, Right : Wide_Wide_String) return Boolean is
+      function Equal_Wide_Wide_String is
+         new Generic_Equal (Wide_Wide_Character, Wide_Wide_String, Equal);
+   begin
+      return Equal_Wide_Wide_String (Left, Right);
+   end Equal;
 
    function Equal (
       Left, Right : Wide_Wide_String;
@@ -1001,10 +1305,23 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Wide_Wide_Strings.Equal;
+   is
+      function Equal_Wide_Wide_String is
+         new Generic_Equal_With_Comparator (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Equal_Wide_Wide_String);
+   begin
+      return Equal_Wide_Wide_String (Left, Right, Equal_Combined);
+   end Equal;
 
-   function Less (Left, Right : String) return Boolean
-      renames Strings.Less;
+   function Less (Left, Right : String) return Boolean is
+      function Less_String is new Generic_Less (Character, String, Less);
+   begin
+      return Less_String (Left, Right);
+   end Less;
 
    function Less (
       Left, Right : String;
@@ -1012,10 +1329,24 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Strings.Less;
+   is
+      function Less_String is
+         new Generic_Less_With_Comparator (
+            Character,
+            String,
+            Strings,
+            Composites.Start);
+      pragma Inline_Always (Less_String);
+   begin
+      return Less_String (Left, Right, Less_Combined);
+   end Less;
 
-   function Less (Left, Right : Wide_String) return Boolean
-      renames Wide_Strings.Less;
+   function Less (Left, Right : Wide_String) return Boolean is
+      function Less_Wide_String is
+         new Generic_Less (Wide_Character, Wide_String, Less);
+   begin
+      return Less_Wide_String (Left, Right);
+   end Less;
 
    function Less (
       Left, Right : Wide_String;
@@ -1023,10 +1354,24 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Wide_Strings.Less;
+   is
+      function Less_Wide_String is
+         new Generic_Less_With_Comparator (
+            Wide_Character,
+            Wide_String,
+            Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Less_Wide_String);
+   begin
+      return Less_Wide_String (Left, Right, Less_Combined);
+   end Less;
 
-   function Less (Left, Right : Wide_Wide_String) return Boolean
-      renames Wide_Wide_Strings.Less;
+   function Less (Left, Right : Wide_Wide_String) return Boolean is
+      function Less_Wide_Wide_String is
+         new Generic_Less (Wide_Wide_Character, Wide_Wide_String, Less);
+   begin
+      return Less_Wide_Wide_String (Left, Right);
+   end Less;
 
    function Less (
       Left, Right : Wide_Wide_String;
@@ -1034,6 +1379,16 @@ package body Ada.Strings.Normalization is
          Left, Right : Wide_Wide_String)
          return Boolean)
       return Boolean
-      renames Wide_Wide_Strings.Less;
+   is
+      function Less_Wide_Wide_String is
+         new Generic_Less_With_Comparator (
+            Wide_Wide_Character,
+            Wide_Wide_String,
+            Wide_Wide_Strings,
+            Composites.Start);
+      pragma Inline_Always (Less_Wide_Wide_String);
+   begin
+      return Less_Wide_Wide_String (Left, Right, Less_Combined);
+   end Less;
 
 end Ada.Strings.Normalization;

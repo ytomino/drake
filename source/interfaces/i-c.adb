@@ -50,35 +50,33 @@ package body Interfaces.C is
       type Element_ptr is access constant Element;
       with function Find_nul (s : not null Element_ptr; n : size_t)
          return Element_ptr;
-   package Lengths is
+   function Generic_Is_Nul_Terminated (Item : Element_Array) return Boolean;
 
-      function Is_Nul_Terminated (Item : Element_Array) return Boolean;
+   function Generic_Is_Nul_Terminated (Item : Element_Array) return Boolean is
+      nul_Pos : constant Element_ptr :=
+         Find_nul (Item (Item'First)'Unchecked_Access, Item'Length);
+   begin
+      return nul_Pos /= null;
+   end Generic_Is_Nul_Terminated;
 
-      function Length (Item : Element_Array) return size_t;
+   generic
+      type Element is (<>);
+      type Element_Array is array (size_t range <>) of aliased Element;
+      type Element_ptr is access constant Element;
+      with function Find_nul (s : not null Element_ptr; n : size_t)
+         return Element_ptr;
+   function Generic_Length (Item : Element_Array) return size_t;
 
-   end Lengths;
-
-   package body Lengths is
-
-      function Is_Nul_Terminated (Item : Element_Array) return Boolean is
-         nul_Pos : constant Element_ptr :=
-            Find_nul (Item (Item'First)'Unchecked_Access, Item'Length);
-      begin
-         return nul_Pos /= null;
-      end Is_Nul_Terminated;
-
-      function Length (Item : Element_Array) return size_t is
-         function "-" is new Pointer_Sub (Element, Element_Array, Element_ptr);
-         Item_ptr : constant Element_ptr := Item (Item'First)'Unchecked_Access;
-         nul_Pos : constant Element_ptr := Find_nul (Item_ptr, Item'Length);
-      begin
-         if nul_Pos = null then
-            Raise_Exception (Terminator_Error'Identity); -- CXB3005
-         end if;
-         return size_t (nul_Pos - Item_ptr);
-      end Length;
-
-   end Lengths;
+   function Generic_Length (Item : Element_Array) return size_t is
+      function "-" is new Pointer_Sub (Element, Element_Array, Element_ptr);
+      Item_ptr : constant Element_ptr := Item (Item'First)'Unchecked_Access;
+      nul_Pos : constant Element_ptr := Find_nul (Item_ptr, Item'Length);
+   begin
+      if nul_Pos = null then
+         Raise_Exception (Terminator_Error'Identity); -- CXB3005
+      end if;
+      return size_t (nul_Pos - Item_ptr);
+   end Generic_Length;
 
    generic
       type Character_Type is (<>);
@@ -390,20 +388,13 @@ package body Interfaces.C is
          Substitute => Substitute);
    end From_Non_Nul_Terminated;
 
-   package char_Lengths is
-      new Lengths (
-         char,
-         char_array,
-         char_const_ptr,
-         Find_nul);
-
    package char_Func is
       new Functions (
          Character,
          String,
          char,
          char_array,
-         char_Lengths.Length,
+         Length,
          To_Non_Nul_Terminated,
          From_Non_Nul_Terminated,
          Expanding_To_C => System.C_Encoding.Expanding_To_char,
@@ -534,20 +525,13 @@ package body Interfaces.C is
          Substitute => Substitute);
    end From_Non_Nul_Terminated;
 
-   package wchar_Lengths is
-      new Lengths (
-         wchar_t,
-         wchar_array,
-         wchar_t_const_ptr,
-         Find_nul);
-
    package wchar_Wide_Func is
       new Functions (
          Wide_Character,
          Wide_String,
          wchar_t,
          wchar_array,
-         wchar_Lengths.Length,
+         Length,
          To_Non_Nul_Terminated,
          From_Non_Nul_Terminated,
          Expanding_To_C => System.C_Encoding.Expanding_From_Wide_To_wchar_t,
@@ -559,7 +543,7 @@ package body Interfaces.C is
          Wide_Wide_String,
          wchar_t,
          wchar_array,
-         wchar_Lengths.Length,
+         Length,
          To_Non_Nul_Terminated,
          From_Non_Nul_Terminated,
          Expanding_To_C =>
@@ -592,13 +576,6 @@ package body Interfaces.C is
       return null;
    end Find_nul;
 
-   package char16_Lengths is
-      new Lengths (
-         char16_t,
-         char16_array,
-         char16_t_const_ptr,
-         Find_nul);
-
    package char16_Conv is
       new Simple_Conversions (
          Wide_Character,
@@ -612,7 +589,7 @@ package body Interfaces.C is
          Wide_String,
          char16_t,
          char16_array,
-         char16_Lengths.Length,
+         Length,
          char16_Conv.To_Non_Nul_Terminated,
          char16_Conv.From_Non_Nul_Terminated,
          Expanding_To_C => 1,
@@ -643,13 +620,6 @@ package body Interfaces.C is
       return null;
    end Find_nul;
 
-   package char32_Lengths is
-      new Lengths (
-         char32_t,
-         char32_array,
-         char32_t_const_ptr,
-         Find_nul);
-
    package char32_Conv is
       new Simple_Conversions (
          Wide_Wide_Character,
@@ -663,7 +633,7 @@ package body Interfaces.C is
          Wide_Wide_String,
          char32_t,
          char32_array,
-         char32_Lengths.Length,
+         Length,
          char32_Conv.To_Non_Nul_Terminated,
          char32_Conv.From_Non_Nul_Terminated,
          Expanding_To_C => 1,
@@ -706,11 +676,28 @@ package body Interfaces.C is
       return To_Character (Item, Substitute => '?');
    end To_Character;
 
-   function Is_Nul_Terminated (Item : char_array) return Boolean
-      renames char_Lengths.Is_Nul_Terminated;
+   function Is_Nul_Terminated (Item : char_array) return Boolean is
+      function Is_Nul_Terminated_char_array is
+         new Generic_Is_Nul_Terminated (
+            char,
+            char_array,
+            char_const_ptr,
+            Find_nul);
+   begin
+      return Is_Nul_Terminated_char_array (Item);
+   end Is_Nul_Terminated;
 
-   function Length (Item : char_array) return size_t
-      renames char_Lengths.Length;
+   function Length (Item : char_array) return size_t is
+      function Length_char_array is
+         new Generic_Length (
+            char,
+            char_array,
+            char_const_ptr,
+            Find_nul);
+      pragma Inline_Always (Length_char_array);
+   begin
+      return Length_char_array (Item);
+   end Length;
 
    function To_char_array (
       Item : String;
@@ -811,11 +798,28 @@ package body Interfaces.C is
       return To_Wide_Character (Item, Substitute => '?');
    end To_Wide_Character;
 
-   function Is_Nul_Terminated (Item : wchar_array) return Boolean
-      renames wchar_Lengths.Is_Nul_Terminated;
+   function Is_Nul_Terminated (Item : wchar_array) return Boolean is
+      function Is_Nul_Terminated_wchar_array is
+         new Generic_Is_Nul_Terminated (
+            wchar_t,
+            wchar_array,
+            wchar_t_const_ptr,
+            Find_nul);
+   begin
+      return Is_Nul_Terminated_wchar_array (Item);
+   end Is_Nul_Terminated;
 
-   function Length (Item : wchar_array) return size_t
-      renames wchar_Lengths.Length;
+   function Length (Item : wchar_array) return size_t is
+      function Length_wchar_array is
+         new Generic_Length (
+            wchar_t,
+            wchar_array,
+            wchar_t_const_ptr,
+            Find_nul);
+      pragma Inline_Always (Length_wchar_array);
+   begin
+      return Length_wchar_array (Item);
+   end Length;
 
    function To_wchar_array (
       Item : Wide_String;
@@ -979,11 +983,28 @@ package body Interfaces.C is
       return Wide_Character (Item);
    end To_Ada;
 
-   function Is_Nul_Terminated (Item : char16_array) return Boolean
-      renames char16_Lengths.Is_Nul_Terminated;
+   function Is_Nul_Terminated (Item : char16_array) return Boolean is
+      function Is_Nul_Terminated_char16_array is
+         new Generic_Is_Nul_Terminated (
+            char16_t,
+            char16_array,
+            char16_t_const_ptr,
+            Find_nul);
+   begin
+      return Is_Nul_Terminated_char16_array (Item);
+   end Is_Nul_Terminated;
 
-   function Length (Item : char16_array) return size_t
-      renames char16_Lengths.Length;
+   function Length (Item : char16_array) return size_t is
+      function Length_char16_array is
+         new Generic_Length (
+            char16_t,
+            char16_array,
+            char16_t_const_ptr,
+            Find_nul);
+      pragma Inline_Always (Length_char16_array);
+   begin
+      return Length_char16_array (Item);
+   end Length;
 
    function To_C (
       Item : Wide_String;
@@ -1067,11 +1088,28 @@ package body Interfaces.C is
       return Wide_Wide_Character (Item);
    end To_Ada;
 
-   function Is_Nul_Terminated (Item : char32_array) return Boolean
-      renames char32_Lengths.Is_Nul_Terminated;
+   function Is_Nul_Terminated (Item : char32_array) return Boolean is
+      function Is_Nul_Terminated_char32_array is
+         new Generic_Is_Nul_Terminated (
+            char32_t,
+            char32_array,
+            char32_t_const_ptr,
+            Find_nul);
+   begin
+      return Is_Nul_Terminated_char32_array (Item);
+   end Is_Nul_Terminated;
 
-   function Length (Item : char32_array) return size_t
-      renames char32_Lengths.Length;
+   function Length (Item : char32_array) return size_t is
+      function Length_char32_array is
+         new Generic_Length (
+            char32_t,
+            char32_array,
+            char32_t_const_ptr,
+            Find_nul);
+      pragma Inline_Always (Length_char32_array);
+   begin
+      return Length_char32_array (Item);
+   end Length;
 
    function To_C (
       Item : Wide_Wide_String;
