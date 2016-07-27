@@ -73,6 +73,5 @@ package System.Native_Calendar is
       Simple_Delay_Until'Access;
 
    procedure Delay_Until (T : Native_Time);
-   pragma Inline (Delay_Until);
 
 end System.Native_Calendar;

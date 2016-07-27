@@ -25,6 +25,5 @@ package System.Native_Time is
    Delay_For_Hook : not null Delay_For_Handler := Simple_Delay_For'Access;
 
    procedure Delay_For (D : Duration);
-   pragma Inline (Delay_For);
 
 end System.Native_Time;

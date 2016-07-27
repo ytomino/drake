@@ -32,6 +32,5 @@ package System.Native_Real_Time is
       Simple_Delay_Until'Access;
 
    procedure Delay_Until (T : Native_Time);
-   pragma Inline (Delay_Until);
 
 end System.Native_Real_Time;
