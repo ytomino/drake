@@ -53,8 +53,11 @@ package body Interfaces.C is
    function Generic_Is_Nul_Terminated (Item : Element_Array) return Boolean;
 
    function Generic_Is_Nul_Terminated (Item : Element_Array) return Boolean is
+      function To_Pointer (Value : System.Address) return Element_ptr
+         with Import, Convention => Intrinsic;
+         --  System.Address_To_Constant_Access_Conversions is "preelaborate".
       nul_Pos : constant Element_ptr :=
-         Find_nul (Item (Item'First)'Unchecked_Access, Item'Length);
+         Find_nul (To_Pointer (Item'Address), Item'Length);
    begin
       return nul_Pos /= null;
    end Generic_Is_Nul_Terminated;
@@ -69,7 +72,10 @@ package body Interfaces.C is
 
    function Generic_Length (Item : Element_Array) return size_t is
       function "-" is new Pointer_Sub (Element, Element_Array, Element_ptr);
-      Item_ptr : constant Element_ptr := Item (Item'First)'Unchecked_Access;
+      function To_Pointer (Value : System.Address) return Element_ptr
+         with Import, Convention => Intrinsic;
+         --  Same as above.
+      Item_ptr : constant Element_ptr := To_Pointer (Item'Address);
       nul_Pos : constant Element_ptr := Find_nul (Item_ptr, Item'Length);
    begin
       if nul_Pos = null then

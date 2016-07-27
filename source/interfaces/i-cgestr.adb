@@ -1,4 +1,5 @@
 with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
    use type Pointers.Constant_Pointer;
@@ -17,6 +18,8 @@ package body Interfaces.C.Generic_Strings is
 
    end libc;
 
+   package chars_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (Element, chars_ptr);
    package const_Conv is
       new System.Address_To_Constant_Access_Conversions (
          Element,
@@ -74,21 +77,21 @@ package body Interfaces.C.Generic_Strings is
                end;
             end if;
          end if;
-         return Item (Item'First)'Unchecked_Access;
+         return chars_ptr_Conv.To_Pointer (Item'Address);
       end if;
    end To_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr is
    begin
-      return Item (Item'First)'Unchecked_Access;
+      return const_Conv.To_Pointer (Item'Address);
    end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
       return not null chars_ptr is
    begin
       return New_Chars_Ptr (
-         Chars (Chars'First)'Access,
+         const_Conv.To_Pointer (Chars'Address),
          Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
 
@@ -101,7 +104,7 @@ package body Interfaces.C.Generic_Strings is
       C : constant Element_Array :=
          To_C (Str, Append_Nul => False, Substitute => Substitute);
    begin
-      return New_Chars_Ptr (C (C'First)'Access, C'Length);
+      return New_Chars_Ptr (const_Conv.To_Pointer (C'Address), C'Length);
    end New_String;
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
@@ -431,7 +434,7 @@ package body Interfaces.C.Generic_Strings is
          Target : constant not null chars_ptr := Item;
       begin
          Pointers.Copy_Array (
-            Source => Chars (Chars'First)'Unchecked_Access,
+            Source => chars_ptr_Conv.To_Pointer (Chars'Address),
             Target => Target + ptrdiff_t (Offset),
             Length => ptrdiff_t (Chars_Length));
       end;
