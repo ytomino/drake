@@ -13,7 +13,6 @@ package Ada.Strings.Maps is
    --  modified
 --  Null_Set : constant Character_Set;
    function Null_Set return Character_Set;
-   pragma Inline (Null_Set);
 
    --  extended
    function Is_Null (Set : Character_Set) return Boolean;
@@ -174,7 +173,6 @@ package Ada.Strings.Maps is
    --  modified
 --  Identity : constant Character_Mapping;
    function Identity return Character_Mapping;
-   pragma Inline (Identity);
 
    --  extended
    function Is_Identity (Map : Character_Mapping) return Boolean;

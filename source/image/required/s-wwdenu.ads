@@ -29,6 +29,9 @@ package System.WWd_Enum is
    pragma Pure_Function (Wide_Width_Enumeration_8);
    pragma Pure_Function (Wide_Width_Enumeration_16);
    pragma Pure_Function (Wide_Width_Enumeration_32);
+   pragma Inline (Wide_Width_Enumeration_8);
+   pragma Inline (Wide_Width_Enumeration_16);
+   pragma Inline (Wide_Width_Enumeration_32);
 
    --  required for Enum'Wide_Wide_Width by compiler (s-wwdenu.ads)
    function Wide_Wide_Width_Enumeration_8 (
@@ -53,6 +56,9 @@ package System.WWd_Enum is
    pragma Pure_Function (Wide_Wide_Width_Enumeration_8);
    pragma Pure_Function (Wide_Wide_Width_Enumeration_16);
    pragma Pure_Function (Wide_Wide_Width_Enumeration_32);
+   pragma Inline (Wide_Wide_Width_Enumeration_8);
+   pragma Inline (Wide_Wide_Width_Enumeration_16);
+   pragma Inline (Wide_Wide_Width_Enumeration_32);
 
    --  [gcc 4.5/4.6] it needs default values for EM to avoiding bug of compiler
    --  (missing argument for parameter "EM" in call to ...)

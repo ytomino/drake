@@ -44,6 +44,9 @@ package Interfaces.Fortran is
       Substitute : Character := '?') -- additional
       return Character;
 
+   pragma Inline (To_Fortran);
+   pragma Inline (To_Ada);
+
    --  modified
    function To_Fortran (
       Item : String;

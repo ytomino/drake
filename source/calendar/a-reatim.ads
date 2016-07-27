@@ -16,7 +16,6 @@ package Ada.Real_Time is
 
    Tick : constant Time_Span;
    function Clock return Time;
-   pragma Inline (Clock);
 
    function "+" (Left : Time; Right : Time_Span) return Time
       with Import, Convention => Intrinsic;

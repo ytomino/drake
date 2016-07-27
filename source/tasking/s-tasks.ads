@@ -29,6 +29,7 @@ package System.Tasks is
 
    --  this shold be called when Standard'Abort_Signal
    procedure When_Abort_Signal;
+   pragma Inline (When_Abort_Signal);
 
    type Task_Record (<>) is limited private;
    type Task_Id is access all Task_Record;
@@ -72,6 +73,8 @@ package System.Tasks is
       T : not null Task_Id;
       Mode : Free_Mode);
 
+   pragma Inline (Preferred_Free_Mode);
+
    procedure Get_Stack (
       T : not null Task_Id;
       Addr : out Address;
@@ -110,6 +113,8 @@ package System.Tasks is
    procedure Leave_Master;
    procedure Leave_All_Masters; -- for System.Tasking.Stages.Complete_Task
    function Master_Of_Parent (Level : Master_Level) return Master_Access;
+
+   pragma Inline (Master_Level_Of);
 
    --  for rendezvous
    procedure Cancel_Calls; -- for System.Tasking.Stages.Complete_Task
@@ -180,10 +185,14 @@ package System.Tasks is
    function Dependents_Fallback_Handler (T : Task_Id)
       return Termination_Handler;
 
+   pragma Inline (Dependents_Fallback_Handler);
+
    procedure Set_Specific_Handler (
       T : Task_Id;
       Handler : Termination_Handler);
    function Specific_Handler (T : Task_Id) return Termination_Handler;
+
+   pragma Inline (Specific_Handler);
 
 private
 

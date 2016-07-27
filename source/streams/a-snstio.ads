@@ -60,7 +60,6 @@ package Ada.Streams.Naked_Stream_IO is
       return System.Native_IO.Packed_Form;
 
    pragma Inline (Mode);
-   pragma Inline (Name);
    pragma Inline (Form);
 
    function Is_Open (File : Non_Controlled_File_Type) return Boolean;

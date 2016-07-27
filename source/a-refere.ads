@@ -30,6 +30,7 @@ package Ada.References is
          First : Index_Type;
          Last : Index_Type'Base)
          return Reference_Type;
+      pragma Inline (Slice);
 
    private
 

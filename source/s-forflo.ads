@@ -31,7 +31,6 @@ package System.Formatting.Float is
       First, Last : Long_Long_Float;
       Base : Number_Base := 10)
       return Positive;
-   pragma Inline (Fore_Width);
 
    procedure Image (
       Value : Long_Long_Float;

@@ -42,9 +42,4 @@ package System.Atomic_Primitives is
       Desired : Interfaces.Unsigned_64)
       return Boolean;
 
-   pragma Inline (Lock_Free_Try_Write_8);
-   pragma Inline (Lock_Free_Try_Write_16);
-   pragma Inline (Lock_Free_Try_Write_32);
-   pragma Inline (Lock_Free_Try_Write_64);
-
 end System.Atomic_Primitives;

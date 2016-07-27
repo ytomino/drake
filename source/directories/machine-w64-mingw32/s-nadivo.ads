@@ -20,6 +20,7 @@ package System.Native_Directories.Volumes is
    pragma Suppress_Initialization (Non_Controlled_File_System);
 
    function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+   pragma Inline (Is_Assigned);
 
    procedure Get (
       Name : String;

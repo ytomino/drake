@@ -77,6 +77,8 @@ package System.Synchronous_Objects is
       Params : Address;
       Filter : Queue_Filter);
 
+   pragma Inline (Canceled);
+
    --  event
 
    type Event is limited private;

@@ -50,6 +50,8 @@ package Ada.Exceptions is
       --  Same as Wide_Wide_Exception_Name (Exception_Identity (X)).
    function Exception_Information (X : Exception_Occurrence) return String;
 
+   pragma Inline (Exception_Identity);
+
    procedure Save_Occurrence (
       Target : out Exception_Occurrence;
       Source : Exception_Occurrence)
