@@ -37,6 +37,8 @@ package System.Tasks is
       with Export, Convention => Ada, External_Name => "__drake_current_task";
    function Environment_Task_Id return Task_Id;
 
+   pragma Pure_Function (Environment_Task_Id);
+
    type Master_Record is limited private;
    type Master_Access is access all Master_Record;
 

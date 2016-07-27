@@ -156,6 +156,9 @@ package Ada.Text_IO is
    function Standard_Output return File_Access;
    function Standard_Error return File_Access;
 
+   pragma Pure_Function (Standard_Input);
+   pragma Pure_Function (Standard_Output);
+   pragma Pure_Function (Standard_Error);
    pragma Inline (Standard_Input);
    pragma Inline (Standard_Output);
    pragma Inline (Standard_Error);

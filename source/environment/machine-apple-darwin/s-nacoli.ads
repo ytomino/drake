@@ -4,6 +4,7 @@ package System.Native_Command_Line is
    pragma Preelaborate;
 
    function Argument_Count return Natural;
+   pragma Pure_Function (Argument_Count);
    pragma Inline (Argument_Count);
 
    function Argument (Number : Natural) return String;
