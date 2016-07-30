@@ -267,11 +267,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 
    function Capacity (Container : Vector) return Count_Type is
+      Data : constant Data_Access := Container.Data;
    begin
-      if Container.Data = null then
+      if Data = null then
          return 0;
       else
-         return Container.Data.Items'Length;
+         return Count_Type'Base (Data.Capacity_Last - Index_Type'First + 1);
       end if;
    end Capacity;
 

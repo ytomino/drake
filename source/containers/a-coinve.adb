@@ -267,11 +267,12 @@ package body Ada.Containers.Indefinite_Vectors is
    end "&";
 
    function Capacity (Container : Vector) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Items'Length;
+         return Count_Type'Base (Data.Capacity_Last - Index_Type'First + 1);
       end if;
    end Capacity;
 
