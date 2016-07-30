@@ -216,20 +216,20 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       begin
          return Downcast (Left).Element.all = Downcast (Right).Element.all;
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Left.Super.Data = Right.Super.Data then
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Length (Left) = Length (Right) then
+      else
          Unique (Left'Unrestricted_Access.all, False);
          Unique (Right'Unrestricted_Access.all, False);
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
             Equivalent'Access);
-      else
-         return False;
       end if;
    end "=";
 
@@ -243,20 +243,20 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Downcast (Left).Element.all,
             Downcast (Right).Element.all);
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Left.Super.Data = Right.Super.Data then
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Length (Left) = Length (Right) then
+      else
          Unique (Left'Unrestricted_Access.all, False);
          Unique (Right'Unrestricted_Access.all, False);
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
             Equivalent'Access);
-      else
-         return False;
       end if;
    end Equivalent_Sets;
 

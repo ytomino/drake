@@ -228,14 +228,16 @@ package body Ada.Containers.Hashed_Sets is
       begin
          return Downcast (Left).Element = Downcast (Right).Element;
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
+      if Left_Length /= Right_Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
+         Unique (Left'Unrestricted_Access.all, False);
+         Unique (Right'Unrestricted_Access.all, False);
          return Hash_Tables.Equivalent (
             Downcast (Left.Super.Data).Table,
             Downcast (Left.Super.Data).Length,
@@ -246,14 +248,16 @@ package body Ada.Containers.Hashed_Sets is
    end "=";
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
+      if Left_Length /= Right_Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
+         Unique (Left'Unrestricted_Access.all, False);
+         Unique (Right'Unrestricted_Access.all, False);
          return Hash_Tables.Equivalent (
             Downcast (Left.Super.Data).Table,
             Downcast (Left.Super.Data).Length,

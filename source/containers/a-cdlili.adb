@@ -181,20 +181,20 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return Downcast (Left).Element =
             Downcast (Right).Element;
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Left.Super.Data = Right.Super.Data then
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Length (Left) = Length (Right) then
+      else
          Unique (Left'Unrestricted_Access.all, False);
          Unique (Right'Unrestricted_Access.all, False);
          return Linked_Lists.Equivalent (
             Downcast (Left.Super.Data).Last,
             Downcast (Right.Super.Data).Last,
             Equivalent'Access);
-      else
-         return False;
       end if;
    end "=";
 

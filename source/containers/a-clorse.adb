@@ -243,21 +243,21 @@ package body Ada.Containers.Limited_Ordered_Sets is
             Downcast (Left).Element.all,
             Downcast (Right).Element.all);
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      return Left.Length = Right.Length
-         and then Binary_Trees.Equivalent (
+      if Left_Length /= Right_Length then
+         return False;
+--  diff
+--  diff
+      else
+--  diff
+--  diff
+         return Binary_Trees.Equivalent (
             Left.Root,
             Right.Root,
             Equivalent => Equivalent'Access);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
+      end if;
    end Equivalent_Sets;
 
 --  diff (To_Set)

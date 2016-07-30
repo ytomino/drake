@@ -113,12 +113,16 @@ package body Ada.Containers.Indefinite_Holders is
    end Empty_Holder;
 
    overriding function "=" (Left, Right : Holder) return Boolean is
+      Left_Is_Empty : constant Boolean := Is_Empty (Left);
+      Right_Is_Empty : constant Boolean := Is_Empty (Right);
    begin
-      if Left.Super.Data = Right.Super.Data then
+      if Left_Is_Empty /= Right_Is_Empty then
+         return False;
+      elsif Left_Is_Empty or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Is_Empty (Left) or else Is_Empty (Right) then
-         return Is_Empty (Left) and then Is_Empty (Right);
       else
+         Unique (Left'Unrestricted_Access.all, False);
+         Unique (Right'Unrestricted_Access.all, False);
          return Downcast (Left.Super.Data).Element.all =
             Downcast (Right.Super.Data).Element.all;
       end if;

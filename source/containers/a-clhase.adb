@@ -244,9 +244,13 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff

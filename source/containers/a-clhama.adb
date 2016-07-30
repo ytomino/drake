@@ -254,6 +254,8 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
 
    function Capacity (Container : Map) return Count_Type is
    begin
