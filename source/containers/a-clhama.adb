@@ -256,14 +256,19 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 --
 --
+--
+--
+--
+--
+--
 
    function Capacity (Container : Map) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Hash_Tables.Capacity (Container.Table);
---  diff
---  diff
---  diff
---  diff
 --  diff
    end Capacity;
 
@@ -278,18 +283,19 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Reserve_Capacity;
 
    function Length (Container : Map) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+--  diff
    begin
       return Container.Length = 0;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
@@ -444,10 +450,15 @@ package body Ada.Containers.Limited_Hashed_Maps is
             Container.Length,
             New_Hash,
             Upcast (Position));
+--  diff
       end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
 --
 --
 --
@@ -522,10 +533,11 @@ package body Ada.Containers.Limited_Hashed_Maps is
       Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
 --  diff
-      Hash_Tables.Remove (
-         Container.Table,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Hash_Tables.Remove (Container.Table, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;

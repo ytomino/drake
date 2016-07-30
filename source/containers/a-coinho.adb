@@ -136,9 +136,9 @@ package body Ada.Containers.Indefinite_Holders is
    end To_Holder;
 
    function Is_Empty (Container : Holder) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Element = null;
+      return Data = null or else Data.Element = null;
    end Is_Empty;
 
    procedure Clear (Container : in out Holder) is

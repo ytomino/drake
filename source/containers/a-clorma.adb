@@ -234,18 +234,19 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
    function Length (Container : Map) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+--  diff
    begin
       return Container.Root = null;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
@@ -400,12 +401,17 @@ package body Ada.Containers.Limited_Ordered_Maps is
             Container.Length,
             Upcast (Before),
             Upcast (Position));
+--  diff
       else
          Position := Before;
       end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
 --
 --
 --
@@ -482,10 +488,11 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
 --  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Base.Remove (Container.Root, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;

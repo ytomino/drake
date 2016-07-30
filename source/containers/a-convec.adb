@@ -659,19 +659,19 @@ package body Ada.Containers.Vectors is
       if Count > 0 then
          Set_Length (Container, Old_Length + Count);
          if Position < After_Last then -- Last_Index (Container) + 1
+            Unique (Container, True);
             declare
+               Data : constant Data_Access := Downcast (Container.Super.Data);
                subtype R1 is
                   Extended_Index range
                      Position + Index_Type'Base (Count) ..
                      After_Last - 1 + Index_Type'Base (Count);
                subtype R2 is Extended_Index range Position .. After_Last - 1;
             begin
-               Unique (Container, True);
 --  diff
 --  diff
 --  diff
-               Downcast (Container.Super.Data).Items (R1) :=
-                  Downcast (Container.Super.Data).Items (R2);
+               Data.Items (R1) := Data.Items (R2);
 --  diff
 --  diff
 --  diff
@@ -701,6 +701,8 @@ package body Ada.Containers.Vectors is
             if Position + Index_Type'Base (Count) < After_Last then
                Unique (Container, True);
                declare
+                  Data : constant Data_Access :=
+                     Downcast (Container.Super.Data);
                   subtype R1 is
                      Extended_Index range
                         Position ..
@@ -713,8 +715,7 @@ package body Ada.Containers.Vectors is
 --  diff
 --  diff
 --  diff
-                  Downcast (Container.Super.Data).Items (R1) :=
-                     Downcast (Container.Super.Data).Items (R2);
+                  Data.Items (R1) := Data.Items (R2);
 --  diff
 --  diff
 --  diff

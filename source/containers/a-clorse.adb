@@ -277,18 +277,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
    function Length (Container : Set) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : Set) return Boolean is
+--  diff
    begin
       return Container.Root = null;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Set) is
@@ -378,11 +379,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
+--  diff
+--  diff
+--  diff
          Base.Insert (
             Container.Root,
             Container.Length,
             Upcast (Before),
             Upcast (Position));
+--  diff
       else
          Position := Before;
       end if;
@@ -434,10 +439,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
 --  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Base.Remove (Container.Root, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -476,8 +482,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
+--
 
 --  diff (Union)
+--
+--
+--
+--
+--
 --
 --
 --
@@ -508,6 +524,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
       Binary_Trees.Merge (
          Target.Root,
          Target.Length,
@@ -520,6 +540,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Insert => null,
          Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
 --  diff
    end Intersection;
@@ -545,9 +566,17 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
       Binary_Trees.Merge (
@@ -562,6 +591,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Insert => null,
          Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Difference;
 
@@ -586,24 +616,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
@@ -611,6 +623,39 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
 --
 --
 --

@@ -234,18 +234,19 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    end "=";
 
    function Length (Container : Map) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Root = null;
+      return Data = null or else Data.Root = null;
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
@@ -392,20 +393,25 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, Key, New_Item);
---  diff
---  diff
---  diff
-         Base.Insert (
-            Downcast (Container.Super.Data).Root,
-            Downcast (Container.Super.Data).Length,
-            Upcast (Before),
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Base.Insert (
+               Data.Root,
+               Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
       else
          Position := Before;
       end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
 --
 --
 --
@@ -482,10 +488,11 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
-      Base.Remove (
-         Downcast (Container.Super.Data).Root,
-         Downcast (Container.Super.Data).Length,
-         Position_2);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Base.Remove (Data.Root, Data.Length, Position_2);
+      end;
       Free_Node (Position_2);
       Position := null;
    end Delete;

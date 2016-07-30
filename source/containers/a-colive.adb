@@ -659,21 +659,21 @@ package body Ada.Containers.Limited_Vectors is
       if Count > 0 then
          Set_Length (Container, Old_Length + Count);
          if Position < After_Last then -- Last_Index (Container) + 1
+--  diff
             declare
+               Data : constant Data_Access := Container.Data;
                subtype R1 is
                   Extended_Index range
                      Position + Index_Type'Base (Count) ..
                      After_Last - 1 + Index_Type'Base (Count);
                subtype R2 is Extended_Index range Position .. After_Last - 1;
             begin
---  diff
                for I in R2'Last + 1 .. R1'Last loop
-                  Free (Container.Data.Items (I));
+                  Free (Data.Items (I));
                end loop;
-               Container.Data.Items (R1) := Container.Data.Items (R2);
---  diff
+               Data.Items (R1) := Data.Items (R2);
                for I in R2'First .. R1'First - 1 loop
-                  Container.Data.Items (I) := null;
+                  Data.Items (I) := null;
                end loop;
             end;
          end if;
@@ -701,6 +701,8 @@ package body Ada.Containers.Limited_Vectors is
             if Position + Index_Type'Base (Count) < After_Last then
 --  diff
                declare
+                  Data : constant Data_Access :=
+                     Container.Data;
                   subtype R1 is
                      Extended_Index range
                         Position ..
@@ -711,12 +713,11 @@ package body Ada.Containers.Limited_Vectors is
                         After_Last - 1;
                begin
                   for I in R1'First .. R2'First - 1 loop
-                     Free (Container.Data.Items (I));
+                     Free (Data.Items (I));
                   end loop;
-                  Container.Data.Items (R1) := Container.Data.Items (R2);
---  diff
+                  Data.Items (R1) := Data.Items (R2);
                   for I in R1'Last + 1 .. R2'Last loop
-                     Container.Data.Items (I) := null;
+                     Data.Items (I) := null;
                   end loop;
                end;
             end if;

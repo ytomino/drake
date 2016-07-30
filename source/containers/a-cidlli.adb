@@ -199,18 +199,19 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end "=";
 
    function Length (Container : List) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : List) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Last = null;
+      return Data = null or else Data.Last = null;
    end Is_Empty;
 
    procedure Clear (Container : in out List) is
@@ -327,7 +328,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Unique (Container, True);
          for I in 1 .. Count loop
             declare
---  diff
+               Data : constant Data_Access := Downcast (Container.Super.Data);
 --  diff
                New_Node : Cursor;
             begin
@@ -335,9 +336,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 --  diff
 --  diff
                Base.Insert (
-                  Downcast (Container.Super.Data).First,
-                  Downcast (Container.Super.Data).Last,
-                  Downcast (Container.Super.Data).Length,
+                  Data.First,
+                  Data.Last,
+                  Data.Length,
                   Before => Upcast (Position),
                   New_Item => Upcast (New_Node));
                Position := New_Node;
@@ -347,6 +348,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    end Insert;
 
 --  diff (Insert)
+--
 --
 --
 --
@@ -396,15 +398,16 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Unique (Container, True);
          for I in 1 .. Count loop
             declare
+               Data : constant Data_Access := Downcast (Container.Super.Data);
                X : Linked_Lists.Node_Access;
                Next : Linked_Lists.Node_Access;
             begin
                X := Upcast (Position);
                Next := Position.Super.Next;
                Base.Remove (
-                  Downcast (Container.Super.Data).First,
-                  Downcast (Container.Super.Data).Last,
-                  Downcast (Container.Super.Data).Length,
+                  Data.First,
+                  Data.Last,
+                  Data.Length,
                   Position => X,
                   Next => Next);
                Free_Node (X);
@@ -444,12 +447,16 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       if not Is_Empty (Container) then
          Unique (Container, True);
-         Linked_Lists.Reverse_Elements (
-            Downcast (Container.Super.Data).First,
-            Downcast (Container.Super.Data).Last,
-            Downcast (Container.Super.Data).Length,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access);
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Linked_Lists.Reverse_Elements (
+               Data.First,
+               Data.Last,
+               Data.Length,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access);
+         end;
       end if;
    end Reverse_Elements;
 
@@ -467,11 +474,15 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    procedure Swap_Links (Container : in out List; I, J : Cursor) is
    begin
       Unique (Container, True);
-      Base.Swap_Links (
-         Downcast (Container.Super.Data).First,
-         Downcast (Container.Super.Data).Last,
-         Upcast (I),
-         Upcast (J));
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Base.Swap_Links (
+            Data.First,
+            Data.Last,
+            Upcast (I),
+            Upcast (J));
+      end;
    end Swap_Links;
 
    procedure Splice (
@@ -485,14 +496,19 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       if List_Access'(Target'Access) /= List_Access'(Source'Access) then
          Unique (Target, True);
          Unique (Source, True);
-         Base.Splice (
-            Downcast (Target.Super.Data).First,
-            Downcast (Target.Super.Data).Last,
-            Downcast (Target.Super.Data).Length,
-            Upcast (Before),
-            Downcast (Source.Super.Data).First,
-            Downcast (Source.Super.Data).Last,
-            Downcast (Source.Super.Data).Length);
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+            Source_Data : constant Data_Access := Downcast (Source.Super.Data);
+         begin
+            Base.Splice (
+               Target_Data.First,
+               Target_Data.Last,
+               Target_Data.Length,
+               Upcast (Before),
+               Source_Data.First,
+               Source_Data.Last,
+               Source_Data.Length);
+         end;
       end if;
    end Splice;
 
@@ -504,18 +520,23 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    begin
       Unique (Target, True);
       Unique (Source, True);
-      Base.Remove (
-         Downcast (Source.Super.Data).First,
-         Downcast (Source.Super.Data).Last,
-         Downcast (Source.Super.Data).Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Downcast (Target.Super.Data).First,
-         Downcast (Target.Super.Data).Last,
-         Downcast (Target.Super.Data).Length,
-         Upcast (Before),
-         Upcast (Position));
+      declare
+         Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+         Source_Data : constant Data_Access := Downcast (Source.Super.Data);
+      begin
+         Base.Remove (
+            Source_Data.First,
+            Source_Data.Last,
+            Source_Data.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Target_Data.First,
+            Target_Data.Last,
+            Target_Data.Length,
+            Upcast (Before),
+            Upcast (Position));
+      end;
    end Splice;
 
    procedure Splice (
@@ -524,18 +545,22 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Position : Cursor) is
    begin
       Unique (Container, True);
-      Base.Remove (
-         Downcast (Container.Super.Data).First,
-         Downcast (Container.Super.Data).Last,
-         Downcast (Container.Super.Data).Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Downcast (Container.Super.Data).First,
-         Downcast (Container.Super.Data).Last,
-         Downcast (Container.Super.Data).Length,
-         Upcast (Before),
-         Upcast (Position));
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Base.Remove (
+            Data.First,
+            Data.Last,
+            Data.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Data.First,
+            Data.Last,
+            Data.Length,
+            Upcast (Before),
+            Upcast (Position));
+      end;
    end Splice;
 
    function First (Container : List) return Cursor is
@@ -789,15 +814,19 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       begin
          if not Is_Empty (Container) then
             Unique (Container, True);
-            Linked_Lists.Merge_Sort (
-               Downcast (Container.Super.Data).First,
-               Downcast (Container.Super.Data).Last,
-               Downcast (Container.Super.Data).Length,
-               LT => LT'Access,
-               Splice => Base.Splice'Access,
-               Split => Base.Split'Access,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access);
+            declare
+               Data : constant Data_Access := Downcast (Container.Super.Data);
+            begin
+               Linked_Lists.Merge_Sort (
+                  Data.First,
+                  Data.Last,
+                  Data.Length,
+                  LT => LT'Access,
+                  Splice => Base.Splice'Access,
+                  Split => Base.Split'Access,
+                  Insert => Base.Insert'Access,
+                  Remove => Base.Remove'Access);
+            end;
          end if;
       end Sort;
 
@@ -809,16 +838,23 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             else
                Unique (Target, True);
                Unique (Source, True);
-               Linked_Lists.Merge (
-                  Downcast (Target.Super.Data).First,
-                  Downcast (Target.Super.Data).Last,
-                  Downcast (Target.Super.Data).Length,
-                  Downcast (Source.Super.Data).First,
-                  Downcast (Source.Super.Data).Last,
-                  Downcast (Source.Super.Data).Length,
-                  LT => LT'Access,
-                  Insert => Base.Insert'Access,
-                  Remove => Base.Remove'Access);
+               declare
+                  Target_Data : constant Data_Access :=
+                     Downcast (Target.Super.Data);
+                  Source_Data : constant Data_Access :=
+                     Downcast (Source.Super.Data);
+               begin
+                  Linked_Lists.Merge (
+                     Target_Data.First,
+                     Target_Data.Last,
+                     Target_Data.Length,
+                     Source_Data.First,
+                     Source_Data.Last,
+                     Source_Data.Length,
+                     LT => LT'Access,
+                     Insert => Base.Insert'Access,
+                     Remove => Base.Remove'Access);
+               end;
             end if;
          end if;
       end Merge;

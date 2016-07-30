@@ -246,9 +246,18 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
+--
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -264,6 +273,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Right.Table,
          Right.Length,
          Equivalent => Equivalent_Node'Access);
+--  diff
 --  diff
    end Equivalent_Sets;
 
@@ -285,12 +295,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 
    function Capacity (Container : Set) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Hash_Tables.Capacity (Container.Table);
---  diff
---  diff
---  diff
---  diff
 --  diff
    end Capacity;
 
@@ -305,6 +315,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Reserve_Capacity;
 
    function Length (Container : Set) return Count_Type is
+--  diff
    begin
 --  diff
 --  diff
@@ -314,9 +325,9 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Length;
 
    function Is_Empty (Container : Set) return Boolean is
+--  diff
    begin
       return Container.Length = 0;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Set) is
@@ -406,11 +417,15 @@ package body Ada.Containers.Limited_Hashed_Sets is
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
+--  diff
+--  diff
+--  diff
          Hash_Tables.Insert (
             Container.Table,
             Container.Length,
             New_Hash,
             Upcast (Position));
+--  diff
       end if;
    end Insert;
 
@@ -460,10 +475,11 @@ package body Ada.Containers.Limited_Hashed_Sets is
       Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
 --  diff
-      Hash_Tables.Remove (
-         Container.Table,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Hash_Tables.Remove (Container.Table, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -489,8 +505,23 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
 
 --  diff (Union)
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --
@@ -522,6 +553,12 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
       Hash_Tables.Merge (
          Target.Table,
          Target.Length,
@@ -533,6 +570,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
+--  diff
 --  diff
 --  diff
    end Intersection;
@@ -559,9 +597,21 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
       Hash_Tables.Merge (
@@ -575,6 +625,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Difference;
 
@@ -600,20 +651,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
@@ -624,6 +661,43 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
 --
 --
 --

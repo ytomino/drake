@@ -277,18 +277,19 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
 --
 
    function Length (Container : Set) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : Set) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Root = null;
+      return Data = null or else Data.Root = null;
    end Is_Empty;
 
    procedure Clear (Container : in out Set) is
@@ -378,11 +379,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
-         Base.Insert (
-            Downcast (Container.Super.Data).Root,
-            Downcast (Container.Super.Data).Length,
-            Upcast (Before),
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Base.Insert (
+               Data.Root,
+               Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
       else
          Position := Before;
       end if;
@@ -434,10 +439,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
-      Base.Remove (
-         Downcast (Container.Super.Data).Root,
-         Downcast (Container.Super.Data).Length,
-         Position_2);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Base.Remove (Data.Root, Data.Length, Position_2);
+      end;
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -461,18 +467,23 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Assign (Target, Source);
          else
             Unique (Target, True);
-            Binary_Trees.Merge (
-               Downcast (Target.Super.Data).Root,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Root,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => True,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Target_Data.Root,
+                  Target_Data.Length,
+                  Downcast (Source.Super.Data).Root,
+                  In_Only_Left => True,
+                  In_Only_Right => True,
+                  In_Both => True,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access,
+                  Remove => Base.Remove'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Union;
@@ -486,17 +497,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Binary_Trees.Merge (
-               Downcast (Result.Super.Data).Root,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Root,
-               Downcast (Right.Super.Data).Root,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => True,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Result_Data.Root,
+                  Result_Data.Length,
+                  Downcast (Left.Super.Data).Root,
+                  Downcast (Right.Super.Data).Root,
+                  In_Only_Left => True,
+                  In_Only_Right => True,
+                  In_Both => True,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access);
+            end;
          end if;
       end return;
    end Union;
@@ -508,18 +524,23 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Clear (Target);
          else
             Unique (Target, True);
-            Binary_Trees.Merge (
-               Downcast (Target.Super.Data).Root,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Root,
-               In_Only_Left => False,
-               In_Only_Right => False,
-               In_Both => True,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Target_Data.Root,
+                  Target_Data.Length,
+                  Downcast (Source.Super.Data).Root,
+                  In_Only_Left => False,
+                  In_Only_Right => False,
+                  In_Both => True,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access,
+                  Remove => Base.Remove'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Intersection;
@@ -531,17 +552,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             null; -- Empty_Set
          else
             Unique (Result, True);
-            Binary_Trees.Merge (
-               Downcast (Result.Super.Data).Root,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Root,
-               Downcast (Right.Super.Data).Root,
-               In_Only_Left => False,
-               In_Only_Right => False,
-               In_Both => True,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Result_Data.Root,
+                  Result_Data.Length,
+                  Downcast (Left.Super.Data).Root,
+                  Downcast (Right.Super.Data).Root,
+                  In_Only_Left => False,
+                  In_Only_Right => False,
+                  In_Both => True,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access);
+            end;
          end if;
       end return;
    end Intersection;
@@ -550,18 +576,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
    begin
       if not Is_Empty (Target) and then not Is_Empty (Source) then
          Unique (Target, True);
-         Binary_Trees.Merge (
-            Downcast (Target.Super.Data).Root,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Root,
-            In_Only_Left => True,
-            In_Only_Right => False,
-            In_Both => False,
-            Compare => Compare_Node'Access,
-            Copy => Copy_Node'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access,
-            Free => Free_Node'Access);
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+         begin
+            Binary_Trees.Merge (
+               Target_Data.Root,
+               Target_Data.Length,
+               Downcast (Source.Super.Data).Root,
+               In_Only_Left => True,
+               In_Only_Right => False,
+               In_Both => False,
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Insert => Base.Insert'Access,
+               Remove => Base.Remove'Access,
+               Free => Free_Node'Access);
+         end;
       end if;
    end Difference;
 
@@ -572,17 +602,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Binary_Trees.Merge (
-               Downcast (Result.Super.Data).Root,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Root,
-               Downcast (Right.Super.Data).Root,
-               In_Only_Left => True,
-               In_Only_Right => False,
-               In_Both => False,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Result_Data.Root,
+                  Result_Data.Length,
+                  Downcast (Left.Super.Data).Root,
+                  Downcast (Right.Super.Data).Root,
+                  In_Only_Left => True,
+                  In_Only_Right => False,
+                  In_Both => False,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access);
+            end;
          end if;
       end return;
    end Difference;
@@ -594,18 +629,23 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Assign (Target, Source);
          else
             Unique (Target, True);
-            Binary_Trees.Merge (
-               Downcast (Target.Super.Data).Root,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Root,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => False,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Target_Data.Root,
+                  Target_Data.Length,
+                  Downcast (Source.Super.Data).Root,
+                  In_Only_Left => True,
+                  In_Only_Right => True,
+                  In_Both => False,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access,
+                  Remove => Base.Remove'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Symmetric_Difference;
@@ -619,17 +659,22 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Binary_Trees.Merge (
-               Downcast (Result.Super.Data).Root,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Root,
-               Downcast (Right.Super.Data).Root,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => False,
-               Compare => Compare_Node'Access,
-               Copy => Copy_Node'Access,
-               Insert => Base.Insert'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+            begin
+               Binary_Trees.Merge (
+                  Result_Data.Root,
+                  Result_Data.Length,
+                  Downcast (Left.Super.Data).Root,
+                  Downcast (Right.Super.Data).Root,
+                  In_Only_Left => True,
+                  In_Only_Right => True,
+                  In_Both => False,
+                  Compare => Compare_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Insert => Base.Insert'Access);
+            end;
          end if;
       end return;
    end Symmetric_Difference;

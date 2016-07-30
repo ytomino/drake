@@ -199,18 +199,19 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 
    function Length (Container : List) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : List) return Boolean is
+--  diff
    begin
       return Container.Last = null;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out List) is
@@ -370,6 +371,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
 
 --  diff (Prepend)
 --
@@ -396,6 +398,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
          for I in 1 .. Count loop
             declare
+--  diff
                X : Linked_Lists.Node_Access;
                Next : Linked_Lists.Node_Access;
             begin
@@ -444,12 +447,16 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    begin
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
       Linked_Lists.Reverse_Elements (
          Container.First,
          Container.Last,
          Container.Length,
          Insert => Base.Insert'Access,
          Remove => Base.Remove'Access);
+--  diff
 --  diff
    end Reverse_Elements;
 
@@ -467,11 +474,15 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Swap_Links (Container : in out List; I, J : Cursor) is
    begin
 --  diff
+--  diff
+--  diff
+--  diff
       Base.Swap_Links (
          Container.First,
          Container.Last,
          Upcast (I),
          Upcast (J));
+--  diff
    end Swap_Links;
 
    procedure Splice (
@@ -485,6 +496,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       if Target.First /= Source.First then
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
          Base.Splice (
             Target.First,
             Target.Last,
@@ -493,6 +508,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             Source.First,
             Source.Last,
             Source.Length);
+--  diff
       end if;
    end Splice;
 
@@ -502,6 +518,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Source : in out List;
       Position : in out Cursor) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
       Base.Remove (
@@ -516,6 +536,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Target.Length,
          Upcast (Before),
          Upcast (Position));
+--  diff
    end Splice;
 
    procedure Splice (
@@ -523,6 +544,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Before : Cursor;
       Position : Cursor) is
    begin
+--  diff
+--  diff
+--  diff
 --  diff
       Base.Remove (
          Container.First,
@@ -536,6 +560,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Container.Length,
          Upcast (Before),
          Upcast (Position));
+--  diff
    end Splice;
 
    function First (Container : List) return Cursor is
@@ -789,6 +814,9 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       begin
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
          Linked_Lists.Merge_Sort (
             Container.First,
             Container.Last,
@@ -799,6 +827,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             Insert => Base.Insert'Access,
             Remove => Base.Remove'Access);
 --  diff
+--  diff
       end Sort;
 
       procedure Merge (Target : in out List; Source : in out List) is
@@ -807,6 +836,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             if Is_Empty (Target) then
                Move (Target, Source);
             else
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
                Linked_Lists.Merge (
@@ -819,6 +854,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
                   LT => LT'Access,
                   Insert => Base.Insert'Access,
                   Remove => Base.Remove'Access);
+--  diff
             end if;
          end if;
       end Merge;
