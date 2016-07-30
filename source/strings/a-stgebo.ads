@@ -253,6 +253,15 @@ package Ada.Strings.Generic_Bounded is
 --       return Boolean;
          --  "=", "<", "<=", ">", and ">=" are inherited
 
+      --  extended
+      --  Efficient copying.
+      procedure Assign (
+         Target : in out Bounded_String;
+         Source : Bounded_String);
+      procedure Move (
+         Target : in out Bounded_String;
+         Source : in out Bounded_String);
+
       --  String constructor subprograms
 
       function "*" (Left : Natural; Right : Character_Type)

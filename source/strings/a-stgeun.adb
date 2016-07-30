@@ -189,20 +189,6 @@ package body Ada.Strings.Generic_Unbounded is
       return (Finalization.Controlled with Data => Data, Length => Length);
    end Create;
 
-   procedure Assign (
-      Target : in out Unbounded_String;
-      Source : Unbounded_String);
-   procedure Assign (
-      Target : in out Unbounded_String;
-      Source : Unbounded_String) is
-   begin
-      System.Reference_Counting.Assign (
-         Upcast (Target.Data'Unchecked_Access),
-         Upcast (Source.Data'Unrestricted_Access),
-         Free => Free_Data'Access);
-      Target.Length := Source.Length;
-   end Assign;
-
    --  implementation
 
    function Null_Unbounded_String return Unbounded_String is
@@ -571,6 +557,30 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return not (Left < Right);
    end ">=";
+
+   procedure Assign (
+      Target : in out Unbounded_String;
+      Source : Unbounded_String) is
+   begin
+      System.Reference_Counting.Assign (
+         Upcast (Target.Data'Unchecked_Access),
+         Upcast (Source.Data'Unrestricted_Access),
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+   end Assign;
+
+   procedure Move (
+      Target : in out Unbounded_String;
+      Source : in out Unbounded_String) is
+   begin
+      System.Reference_Counting.Move (
+         Upcast (Target.Data'Unchecked_Access),
+         Upcast (Source.Data'Unrestricted_Access),
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+      Source.Length := 0;
+   end Move;
 
    function Constant_Reference (
       Source : aliased Unbounded_String)

@@ -148,6 +148,15 @@ package Ada.Strings.Generic_Unbounded is
    pragma Inline (">=");
 
    --  extended
+   --  Efficient copying.
+   procedure Assign (
+      Target : in out Unbounded_String;
+      Source : Unbounded_String);
+   procedure Move (
+      Target : in out Unbounded_String;
+      Source : in out Unbounded_String);
+
+   --  extended
    --  These functions provides a convenient way to directly access.
    function Constant_Reference (
       Source : aliased Unbounded_String)

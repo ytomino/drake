@@ -254,7 +254,7 @@ package body Ada.Strings.Generic_Bounded is
          return Bounded_String is
       begin
          return Result : Bounded_String do
-            Set_Bounded_String (Result, Left.Element (1 .. Left.Length), Drop);
+            Assign (Result, Left);
             Append (Result, Right, Drop);
          end return;
       end Append;
@@ -266,7 +266,7 @@ package body Ada.Strings.Generic_Bounded is
          return Bounded_String is
       begin
          return Result : Bounded_String do
-            Set_Bounded_String (Result, Left.Element (1 .. Left.Length), Drop);
+            Assign (Result, Left);
             Append (Result, Right, Drop);
          end return;
       end Append;
@@ -290,7 +290,7 @@ package body Ada.Strings.Generic_Bounded is
          return Bounded_String is
       begin
          return Result : Bounded_String do
-            Set_Bounded_String (Result, Left.Element (1 .. Left.Length), Drop);
+            Assign (Result, Left);
             Append_Element (Result, Right, Drop);
          end return;
       end Append_Element;
@@ -363,6 +363,23 @@ package body Ada.Strings.Generic_Bounded is
          Target.Length := Integer'Max (High - Low + 1, 0);
          Target.Element (1 .. Target.Length) := Source.Element (Low .. High);
       end Bounded_Slice;
+
+      procedure Assign (
+         Target : in out Bounded_String;
+         Source : Bounded_String) is
+      begin
+         Target.Element (1 .. Source.Length) :=
+            Source.Element (1 .. Source.Length);
+         Target.Length := Source.Length;
+      end Assign;
+
+      procedure Move (
+         Target : in out Bounded_String;
+         Source : in out Bounded_String) is
+      begin
+         Assign (Target, Source);
+         Source.Length := 0;
+      end Move;
 
       function "*" (Left : Natural; Right : Character_Type)
          return Bounded_String is
