@@ -67,12 +67,6 @@ package Ada.Strings.Generic_Bounded is
       return String_Type;
    pragma Inline (Slice);
 
-   procedure Bounded_Slice (
-      Source : Bounded_String;
-      Target : out Bounded_String;
-      Low : Positive;
-      High : Natural);
-
    overriding function "=" (Left, Right : Bounded_String) return Boolean;
    function "=" (Left : Bounded_String; Right : String_Type) return Boolean;
    function "=" (Left : String_Type; Right : Bounded_String) return Boolean;
@@ -232,12 +226,11 @@ package Ada.Strings.Generic_Bounded is
          High : Natural)
          return Bounded_String;
 
---    procedure Bounded_Slice (
---       Source : Bounded_String;
---       Target : out Bounded_String;
---       Low : Positive;
---       High : Natural);
-         --  procedure Bounded_Slice is inherited
+      procedure Bounded_Slice (
+         Source : Bounded_String;
+         Target : out Bounded_String;
+         Low : Positive;
+         High : Natural);
 
 --    function "=" (Left, Right : Bounded_String) return Boolean;
 --    function "=" (Left : Bounded_String; Right : String_Type) return Boolean;

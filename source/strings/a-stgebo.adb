@@ -129,20 +129,6 @@ package body Ada.Strings.Generic_Bounded is
       return Source.Element (Low .. High);
    end Slice;
 
-   procedure Bounded_Slice (
-      Source : Bounded_String;
-      Target : out Bounded_String;
-      Low : Positive;
-      High : Natural)
-   is
-      pragma Check (Pre,
-         Check =>
-            (Low <= Source.Length + 1 and then High <= Source.Length)
-            or else raise Index_Error);
-   begin
-      Set_Bounded_String (Target, Source.Element (Low .. High));
-   end Bounded_Slice;
-
    overriding function "=" (Left, Right : Bounded_String) return Boolean is
    begin
       return Left.Element (1 .. Left.Length) =
@@ -360,6 +346,22 @@ package body Ada.Strings.Generic_Bounded is
          return Result : Bounded_String do
             Bounded_Slice (Source, Result, Low, High); -- checking Index_Error
          end return;
+      end Bounded_Slice;
+
+      procedure Bounded_Slice (
+         Source : Bounded_String;
+         Target : out Bounded_String;
+         Low : Positive;
+         High : Natural)
+      is
+         pragma Check (Pre,
+            Check =>
+               (Low <= Source.Length + 1 and then High <= Source.Length)
+               or else raise Index_Error);
+      begin
+         --  Target.Length <= Max because High <= Source.Length
+         Target.Length := Integer'Max (High - Low + 1, 0);
+         Target.Element (1 .. Target.Length) := Source.Element (Low .. High);
       end Bounded_Slice;
 
       function "*" (Left : Natural; Right : Character_Type)
