@@ -684,6 +684,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
       return Binary_Trees.Overlap (
          Left.Root,
          Right.Root,
@@ -693,6 +697,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff

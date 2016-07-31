@@ -224,8 +224,8 @@ package body Ada.Containers.Ordered_Sets is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
@@ -251,8 +251,8 @@ package body Ada.Containers.Ordered_Sets is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
@@ -683,7 +683,11 @@ package body Ada.Containers.Ordered_Sets is
    begin
       if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
       else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Overlap (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
@@ -693,11 +697,13 @@ package body Ada.Containers.Ordered_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
-      if Is_Empty (Subset) then
+      if Is_Empty (Subset) or else Subset.Super.Data = Of_Set.Super.Data then
          return True;
       elsif Is_Empty (Of_Set) then
          return False;
       else
+         Unique (Subset'Unrestricted_Access.all, False); -- private
+         Unique (Of_Set'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Is_Subset (
             Downcast (Subset.Super.Data).Root,
             Downcast (Of_Set.Super.Data).Root,
@@ -1133,30 +1139,18 @@ package body Ada.Containers.Ordered_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Set)
       is
-         function To_Pointer (Value : System.Address)
-            return access Streams.Root_Stream_Type'Class
-            with Import, Convention => Intrinsic;
-         function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address
-            with Import, Convention => Intrinsic;
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address);
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address) is
-         begin
-            Element_Type'Write (
-               To_Pointer (Params),
-               Downcast (Position).Element);
-         end Process;
+         Length : constant Count_Type := Ordered_Sets.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         if Item.Length > 0 then
-            Binary_Trees.Iterate (
-               Downcast (Item.Super.Data).Root,
-               To_Address (Stream),
-               Process => Process'Access);
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := Position := First (Item);
+            begin
+               while Position /= null loop
+                  Element_Type'Write (Stream, Position.Element);
+                  Next (Position);
+               end loop;
+            end;
          end if;
       end Write;
 

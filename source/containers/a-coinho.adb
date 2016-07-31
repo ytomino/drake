@@ -121,8 +121,8 @@ package body Ada.Containers.Indefinite_Holders is
       elsif Left_Is_Empty or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Downcast (Left.Super.Data).Element.all =
             Downcast (Right.Super.Data).Element.all;
       end if;
@@ -242,6 +242,7 @@ package body Ada.Containers.Indefinite_Holders is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Holder) is
       begin
+         Unique (Item'Unrestricted_Access.all, False); -- private
          Element_Type'Output (
             Stream,
             Downcast (Item.Super.Data).Element.all);

@@ -727,6 +727,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
       return Hash_Tables.Overlap (
          Left.Table,
          Right.Table,
@@ -736,6 +740,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff

@@ -246,8 +246,8 @@ package body Ada.Containers.Hashed_Maps is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          declare
             Left_Data : constant Data_Access := Downcast (Left.Super.Data);
             Right_Data : constant Data_Access := Downcast (Right.Super.Data);
@@ -664,15 +664,20 @@ package body Ada.Containers.Hashed_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Map)
       is
-         Position : Cursor;
+         Length : constant Count_Type := Hashed_Maps.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         Position := First (Item);
-         while Position /= null loop
-            Key_Type'Write (Stream, Position.Key);
-            Element_Type'Write (Stream, Position.Element);
-            Next (Position);
-         end loop;
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := First (Item);
+            begin
+               while Position /= null loop
+                  Key_Type'Write (Stream, Position.Key);
+                  Element_Type'Write (Stream, Position.Element);
+                  Next (Position);
+               end loop;
+            end;
+         end if;
       end Write;
 
    end Streaming;

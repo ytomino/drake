@@ -224,8 +224,8 @@ package body Ada.Containers.Ordered_Maps is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
@@ -792,33 +792,19 @@ package body Ada.Containers.Ordered_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Map)
       is
-         function To_Pointer (Value : System.Address)
-            return access Streams.Root_Stream_Type'Class
-            with Import, Convention => Intrinsic;
-         function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address
-            with Import, Convention => Intrinsic;
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address);
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address) is
-         begin
-            Key_Type'Write (
-               To_Pointer (Params),
-               Downcast (Position).Key);
-            Element_Type'Write (
-               To_Pointer (Params),
-               Downcast (Position).Element);
-         end Process;
+         Length : constant Count_Type := Ordered_Maps.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         if Item.Length > 0 then
-            Binary_Trees.Iterate (
-               Downcast (Item.Super.Data).Root,
-               To_Address (Stream),
-               Process => Process'Access);
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := First (Item);
+            begin
+               while Position /= null loop
+                  Key_Type'Write (Stream, Position.Key);
+                  Element_Type'Write (Stream, Position.Element);
+                  Next (Position);
+               end loop;
+            end;
          end if;
       end Write;
 

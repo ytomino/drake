@@ -236,8 +236,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          declare
             Left_Data : constant Data_Access := Downcast (Left.Super.Data);
             Right_Data : constant Data_Access := Downcast (Right.Super.Data);
@@ -261,8 +261,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          declare
             Left_Data : constant Data_Access := Downcast (Left.Super.Data);
             Right_Data : constant Data_Access := Downcast (Right.Super.Data);
@@ -726,7 +726,11 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
    begin
       if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
       else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Hash_Tables.Overlap (
             Downcast (Left.Super.Data).Table,
             Downcast (Right.Super.Data).Table,
@@ -736,11 +740,13 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
-      if Is_Empty (Subset) then
+      if Is_Empty (Subset) or else Subset.Super.Data = Of_Set.Super.Data then
          return True;
       elsif Is_Empty (Of_Set) then
          return False;
       else
+         Unique (Subset'Unrestricted_Access.all, False); -- private
+         Unique (Of_Set'Unrestricted_Access.all, False); -- private
          return Hash_Tables.Is_Subset (
             Downcast (Subset.Super.Data).Table,
             Downcast (Of_Set.Super.Data).Table,
@@ -974,14 +980,19 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Set)
       is
-         Position : Cursor;
+         Length : constant Count_Type := Indefinite_Hashed_Sets.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         Position := First (Item);
-         while Position /= null loop
-            Element_Type'Output (Stream, Position.Element.all);
-            Next (Position);
-         end loop;
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := Position := First (Item);
+            begin
+               while Position /= null loop
+                  Element_Type'Output (Stream, Position.Element.all);
+                  Next (Position);
+               end loop;
+            end;
+         end if;
       end Write;
 
    end Streaming;

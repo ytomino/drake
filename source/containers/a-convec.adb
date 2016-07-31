@@ -187,6 +187,8 @@ package body Ada.Containers.Vectors is
       elsif Left.Super.Data = Right.Super.Data then
          return True;
       else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          for I in Index_Type'First .. Last (Left) loop
             if Downcast (Left.Super.Data).Items (I) /=
                Downcast (Right.Super.Data).Items (I)
@@ -845,15 +847,19 @@ package body Ada.Containers.Vectors is
             (Position in Index_Type'First .. Last (Container))
             or else (Is_Empty (Container) and then Position = Index_Type'First)
             or else raise Constraint_Error);
+      Last : constant Cursor := Vectors.Last (Container);
    begin
-      for I in Position .. Last (Container) loop
-         if Downcast (Container.Super.Data).Items (I) = Item then
+      if Position <= Last then
+         Unique (Container'Unrestricted_Access.all, False); -- private
+         for I in Position .. Last loop
+            if Downcast (Container.Super.Data).Items (I) = Item then
 --  diff
 --  diff
 --  diff
-            return I;
-         end if;
-      end loop;
+               return I;
+            end if;
+         end loop;
+      end if;
       return No_Element;
    end Find;
 
@@ -892,14 +898,17 @@ package body Ada.Containers.Vectors is
             or else (Is_Empty (Container) and then Position = No_Element)
             or else raise Constraint_Error);
    begin
-      for I in reverse Index_Type'First .. Position loop
-         if Downcast (Container.Super.Data).Items (I) = Item then
+      if Position >= Index_Type'First then
+         Unique (Container'Unrestricted_Access.all, False); -- private
+         for I in reverse Index_Type'First .. Position loop
+            if Downcast (Container.Super.Data).Items (I) = Item then
 --  diff
 --  diff
 --  diff
-            return I;
-         end if;
-      end loop;
+               return I;
+            end if;
+         end loop;
+      end if;
       return No_Element;
    end Reverse_Find;
 
@@ -1054,6 +1063,7 @@ package body Ada.Containers.Vectors is
          if Container.Length <= 1 then
             return True;
          else
+            Unique (Container'Unrestricted_Access.all, False); -- private
             return Array_Sorting.Is_Sorted (
                Index_Type'Pos (Index_Type'First),
                Index_Type'Pos (Last (Container)),
@@ -1140,6 +1150,7 @@ package body Ada.Containers.Vectors is
       begin
          Count_Type'Write (Stream, Length);
          if Length > 0 then
+            Unique (Item'Unrestricted_Access.all, False); -- private
             Element_Array'Write (
                Stream,
                Downcast (Item.Super.Data).Items (

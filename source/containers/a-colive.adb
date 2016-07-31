@@ -202,6 +202,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
    function To_Vector (Length : Count_Type) return Vector is
    begin
@@ -856,6 +858,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Reverse_Find_Index)
 --
@@ -881,6 +887,9 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Reverse_Find)
+--
+--
+--
 --
 --
 --
@@ -1051,6 +1060,7 @@ package body Ada.Containers.Limited_Vectors is
 
       function Is_Sorted (Container : Vector) return Boolean is
       begin
+--  diff
 --  diff
 --  diff
 --  diff

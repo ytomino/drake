@@ -189,8 +189,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Linked_Lists.Equivalent (
             Downcast (Left.Super.Data).Last,
             Downcast (Right.Super.Data).Last,
@@ -803,7 +803,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          if Length (Container) <= 1 then
             return True;
          else
-            Unique (Container'Unrestricted_Access.all, False);
+            Unique (Container'Unrestricted_Access.all, False); -- private
             return Linked_Lists.Is_Sorted (
                Downcast (Container.Super.Data).Last,
                LT'Access);
@@ -885,14 +885,20 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : List)
       is
-         Position : Cursor;
+         Length : constant Count_Type :=
+            Indefinite_Doubly_Linked_Lists.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         Position := First (Item);
-         while Position /= null loop
-            Element_Type'Output (Stream, Position.Element.all);
-            Next (Position);
-         end loop;
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := Position := First (Item);
+            begin
+               while Position /= null loop
+                  Element_Type'Output (Stream, Position.Element.all);
+                  Next (Position);
+               end loop;
+            end;
+         end if;
       end Write;
 
    end Streaming;
