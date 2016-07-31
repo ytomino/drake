@@ -750,12 +750,14 @@ package body Ada.Containers.Vectors is
 
    procedure Reverse_Elements (Container : in out Vector) is
    begin
-      Unique (Container, True);
-      Array_Sorting.In_Place_Reverse (
-         Index_Type'Pos (Index_Type'First),
-         Index_Type'Pos (Last (Container)),
-         Data_Cast.To_Address (Downcast (Container.Super.Data)),
-         Swap => Swap_Element'Access);
+      if Container.Length > 1 then
+         Unique (Container, True);
+         Array_Sorting.In_Place_Reverse (
+            Index_Type'Pos (Index_Type'First),
+            Index_Type'Pos (Last (Container)),
+            Data_Cast.To_Address (Downcast (Container.Super.Data)),
+            Swap => Swap_Element'Access);
+      end if;
    end Reverse_Elements;
 
    procedure Swap (Container : in out Vector; I, J : Cursor) is
@@ -1049,22 +1051,28 @@ package body Ada.Containers.Vectors is
 
       function Is_Sorted (Container : Vector) return Boolean is
       begin
-         return Array_Sorting.Is_Sorted (
-            Index_Type'Pos (Index_Type'First),
-            Index_Type'Pos (Last (Container)),
-            Data_Cast.To_Address (Downcast (Container.Super.Data)),
-            LT => LT'Access);
+         if Container.Length <= 1 then
+            return True;
+         else
+            return Array_Sorting.Is_Sorted (
+               Index_Type'Pos (Index_Type'First),
+               Index_Type'Pos (Last (Container)),
+               Data_Cast.To_Address (Downcast (Container.Super.Data)),
+               LT => LT'Access);
+         end if;
       end Is_Sorted;
 
       procedure Sort (Container : in out Vector) is
       begin
-         Unique (Container, True);
-         Array_Sorting.In_Place_Merge_Sort (
-            Index_Type'Pos (Index_Type'First),
-            Index_Type'Pos (Last (Container)),
-            Data_Cast.To_Address (Downcast (Container.Super.Data)),
-            LT => LT'Access,
-            Swap => Swap_Element'Access);
+         if Container.Length > 1 then
+            Unique (Container, True);
+            Array_Sorting.In_Place_Merge_Sort (
+               Index_Type'Pos (Index_Type'First),
+               Index_Type'Pos (Last (Container)),
+               Data_Cast.To_Address (Downcast (Container.Super.Data)),
+               LT => LT'Access,
+               Swap => Swap_Element'Access);
+         end if;
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is

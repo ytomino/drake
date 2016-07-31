@@ -445,7 +445,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    procedure Reverse_Elements (Container : in out List) is
    begin
-      if not Is_Empty (Container) then
+      if Length (Container) > 1 then
          Unique (Container, True);
          declare
             Data : constant Data_Access := Downcast (Container.Super.Data);
@@ -800,7 +800,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       function Is_Sorted (Container : List) return Boolean is
       begin
-         if Is_Empty (Container) then
+         if Length (Container) <= 1 then
             return True;
          else
             Unique (Container'Unrestricted_Access.all, False);
@@ -812,7 +812,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
       procedure Sort (Container : in out List) is
       begin
-         if not Is_Empty (Container) then
+         if Length (Container) > 1 then
             Unique (Container, True);
             declare
                Data : constant Data_Access := Downcast (Container.Super.Data);
