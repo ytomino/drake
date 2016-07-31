@@ -440,6 +440,7 @@ private
 
    type Data (Capacity_Last : Extended_Index) is limited record
 --  diff
+--  diff
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 

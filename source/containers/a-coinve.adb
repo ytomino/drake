@@ -68,7 +68,8 @@ package body Ada.Containers.Indefinite_Vectors is
    is
       New_Data : constant Data_Access := new Data'(
          Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Super => (Max_Length => Max_Length, others => <>),
+         Super => <>,
+         Max_Length => Max_Length,
          Items => <>);
    begin
       Target := Upcast (New_Data);
@@ -293,11 +294,13 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
+      Data : constant Data_Access := Downcast (Container.Super.Data);
       Failure : Boolean;
    begin
       Copy_On_Write.In_Place_Set_Length (
-         Target_Data => Container.Super.Data,
+         Target_Data => Upcast (Data),
          Target_Length => Container.Length,
+         Target_Max_Length => Data.Max_Length,
          Target_Capacity => Old_Capacity,
          New_Length => Length,
          Failure => Failure);

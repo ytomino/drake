@@ -88,23 +88,10 @@ private package Ada.Containers.Copy_On_Write is
 
    --  Copy and Reserve_Capacity also make it unique.
 
-   Data_Ex_Size : constant :=
-      (Data_Size + Count_Type'Base'Size + Standard'Address_Size - 1)
-      / Standard'Address_Size
-      * Standard'Address_Size;
-
-   type Data_Ex is limited record
-      Super : aliased Data;
-      Max_Length : aliased Count_Type; -- may be updated by In_Place_Set_Length
-   end record;
-
-   for Data_Ex'Size use Data_Ex_Size;
-
-   type Data_Ex_Access is access Data_Ex;
-
    procedure In_Place_Set_Length (
-      Target_Data : Data_Access; -- accessing Max_length
+      Target_Data : Data_Access;
       Target_Length : Count_Type;
+      Target_Max_Length : aliased in out Count_Type; -- may be updated
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
       Failure : out Boolean); -- reallocation is needed

@@ -439,13 +439,14 @@ private
 --  diff (Element_Array)
 
    type Data (Capacity_Last : Extended_Index) is limited record
-      Super : aliased Copy_On_Write.Data_Ex;
+      Super : aliased Copy_On_Write.Data;
+      Max_Length : aliased Count_Type;
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 
    --  place Super at first
    for Data use record
-      Super at 0 range 0 .. Copy_On_Write.Data_Ex_Size - 1;
+      Super at 0 range 0 .. Copy_On_Write.Data_Size - 1;
    end record;
 
    type Data_Access is access all Data;
