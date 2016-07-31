@@ -63,21 +63,19 @@ package body Ada.Strings.Generic_Bounded is
                   New_Item (New_Item'First .. New_Item'First + Rest - 1);
             when Left =>
                Source.Length := Source.Capacity;
-               if New_Item_Length < Source.Capacity then
-                  declare
-                     Moving : constant Natural :=
-                        Source.Capacity - New_Item_Length;
-                  begin
-                     Source.Element (1 .. Moving) :=
-                        Source.Element (Old_Length - Moving + 1 .. Old_Length);
-                     Source.Element (Moving + 1 .. Source.Capacity) :=
-                        New_Item;
-                  end;
-               else
-                  Source.Element := New_Item (
-                     New_Item'Last - Source.Capacity + 1 ..
-                     New_Item'Last);
-               end if;
+               declare
+                  Moving : constant Natural :=
+                     Integer'Max (Source.Capacity - New_Item_Length, 0);
+                  S : constant String_Type (1 .. Moving) :=
+                     Source.Element (Old_Length - Moving + 1 .. Old_Length);
+                     --  Save it before copying for Append (B, B).
+               begin
+                  Source.Element (Moving + 1 .. Source.Capacity) :=
+                     New_Item (
+                        New_Item'Last - (Source.Capacity - Moving) + 1 ..
+                        New_Item'Last);
+                  Source.Element (1 .. Moving) := S;
+               end;
             when Error =>
                raise Length_Error;
          end case;
