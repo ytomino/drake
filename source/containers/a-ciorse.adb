@@ -1117,7 +1117,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       is
          Length : Count_Type'Base;
       begin
-         Count_Type'Read (Stream, Length);
+         Count_Type'Base'Read (Stream, Length);
          Clear (Item);
          for I in 1 .. Length loop
             declare

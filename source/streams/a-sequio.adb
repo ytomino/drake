@@ -99,9 +99,9 @@ package body Ada.Sequential_IO is
       if not Element_Type'Definite or else Element_Type'Has_Discriminants then
          --  indefinite (or unconstrained) types
          declare
-            Read_Size : Streams.Stream_Element_Count;
+            Read_Size : Streams.Stream_Element_Offset;
          begin
-            Streams.Stream_Element_Count'Read (
+            Streams.Stream_Element_Offset'Read (
                Stream (File), -- checking the predicate
                Read_Size);
             declare
@@ -145,7 +145,7 @@ package body Ada.Sequential_IO is
    begin
       if not Element_Type'Definite or else Element_Type'Has_Discriminants then
          --  indefinite (or unconstrained) types
-         Streams.Stream_Element_Count'Write (
+         Streams.Stream_Element_Offset'Write (
             Stream (File), -- checking the predicate, or below
             Size);
       end if;

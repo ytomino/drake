@@ -1103,8 +1103,8 @@ package body Ada.Containers.Vectors is
       is
          Length : Count_Type'Base;
       begin
-         Clear (Item);
          Count_Type'Base'Read (Stream, Length);
+         Clear (Item);
          if Length > 0 then
             Set_Length (Item, Length);
             Element_Array'Read (
@@ -1125,7 +1125,7 @@ package body Ada.Containers.Vectors is
       is
          Length : constant Count_Type := Vectors.Length (Item);
       begin
-         Count_Type'Base'Write (Stream, Length);
+         Count_Type'Write (Stream, Length);
          if Length > 0 then
             Element_Array'Write (
                Stream,

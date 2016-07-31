@@ -49,8 +49,8 @@ package body Ada.Streams.Block_Transmission is
    is
       First, Last : Index_Type'Base;
    begin
-      Index_Type'Read (Stream, First);
-      Index_Type'Read (Stream, Last);
+      Index_Type'Base'Read (Stream, First);
+      Index_Type'Base'Read (Stream, Last);
       if First < Index_Type'First or else Last > Index_Type'Last then
          Raise_Exception (Data_Error'Identity);
       end if;

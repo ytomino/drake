@@ -869,7 +869,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
       is
          Length : Count_Type'Base;
       begin
-         Count_Type'Read (Stream, Length);
+         Count_Type'Base'Read (Stream, Length);
          Clear (Item);
          for I in 1 .. Length loop
             declare

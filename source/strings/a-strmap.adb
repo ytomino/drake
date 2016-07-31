@@ -712,9 +712,9 @@ package body Ada.Strings.Maps is
          is
             Length : Integer;
          begin
+            Integer'Read (Stream, Length);
             Finalize (Item);
             Item.Data := Empty_Set_Data'Unrestricted_Access;
-            Integer'Read (Stream, Length);
             if Length > 0 then
                Item.Data := new Set_Data'(
                   Length => Length,
@@ -986,9 +986,9 @@ package body Ada.Strings.Maps is
          is
             Length : Integer;
          begin
+            Integer'Read (Stream, Length);
             Finalize (Item);
             Item.Data := Empty_Map_Data'Unrestricted_Access;
-            Integer'Read (Stream, Length);
             if Length > 0 then
                Item.Data := new Map_Data'(
                   Length => Length,

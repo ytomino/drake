@@ -1103,8 +1103,8 @@ package body Ada.Containers.Indefinite_Vectors is
       is
          Length : Count_Type'Base;
       begin
-         Clear (Item);
          Count_Type'Base'Read (Stream, Length);
+         Clear (Item);
          if Length > 0 then
             Set_Length (Item, Length);
             for I in Index_Type'First .. Last (Item) loop
@@ -1125,7 +1125,7 @@ package body Ada.Containers.Indefinite_Vectors is
       is
          Length : constant Count_Type := Indefinite_Vectors.Length (Item);
       begin
-         Count_Type'Base'Write (Stream, Length);
+         Count_Type'Write (Stream, Length);
          if Length > 0 then
             for I in Index_Type'First .. Last (Item) loop
                Element_Type'Output (
