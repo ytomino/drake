@@ -488,11 +488,11 @@ package body Ada.Containers.Indefinite_Vectors is
             Before <= Last (Container) + 1 or else raise Constraint_Error);
       New_Item_Length : constant Count_Type := New_Item.Length;
    begin
-      if Container.Length = 0 then
+      if Container.Length = 0
+         and then Capacity (Container) < New_Item_Length -- New_Item_Length > 0
+      then
          Position := Index_Type'First;
-         if New_Item_Length > 0 then
-            Assign (Container, New_Item);
-         end if;
+         Assign (Container, New_Item);
       else
          Insert_Space (Container, Before, Position, New_Item_Length);
          declare
@@ -581,7 +581,9 @@ package body Ada.Containers.Indefinite_Vectors is
          declare
             Old_Length : constant Count_Type := Container.Length;
          begin
-            if Old_Length = 0 then
+            if Old_Length = 0
+               and then Capacity (Container) < New_Item_Length
+            then
                Assign (Container, New_Item);
             else
                Set_Length (Container, Old_Length + New_Item.Length);

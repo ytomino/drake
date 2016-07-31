@@ -300,7 +300,7 @@ package body Ada.Strings.Generic_Unbounded is
          declare
             Old_Length : constant Natural := Source.Length;
          begin
-            if Old_Length = 0 then
+            if Old_Length = 0 and then Capacity (Source) < New_Item_Length then
                Assign (Source, New_Item);
             else
                declare
