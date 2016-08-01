@@ -330,7 +330,7 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Release (Container.Data);
 --  diff
-      Container.Data := null;
+--  diff
       Container.Length := 0;
    end Clear;
 
