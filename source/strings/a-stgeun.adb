@@ -152,19 +152,20 @@ package body Ada.Strings.Generic_Unbounded is
    end Copy_Data;
 
    procedure Reallocate (
-      Item : in out Unbounded_String'Class;
+      Source : in out Unbounded_String;
       Length : Natural;
       Capacity : Natural);
    procedure Reallocate (
-      Item : in out Unbounded_String'Class;
+      Source : in out Unbounded_String;
       Length : Natural;
       Capacity : Natural) is
    begin
       System.Reference_Counting.Unique (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Length => System.Reference_Counting.Length_Type (Item.Length),
+         Target => Upcast (Source.Data'Unchecked_Access),
+         Target_Length =>
+            System.Reference_Counting.Length_Type (Source.Length),
          Target_Capacity => System.Reference_Counting.Length_Type (
-            Generic_Unbounded.Capacity (Item)),
+            Generic_Unbounded.Capacity (Source)),
          New_Length => System.Reference_Counting.Length_Type (Length),
          New_Capacity => System.Reference_Counting.Length_Type (Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
@@ -228,19 +229,19 @@ package body Ada.Strings.Generic_Unbounded is
       Source.Length := Length;
    end Set_Length;
 
-   function Capacity (Source : Unbounded_String'Class) return Natural is
+   function Capacity (Source : Unbounded_String) return Natural is
       pragma Suppress (Access_Check);
    begin
       return Source.Data.Capacity;
    end Capacity;
 
    procedure Reserve_Capacity (
-      Item : in out Unbounded_String;
+      Source : in out Unbounded_String;
       Capacity : Natural)
    is
-      New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
+      New_Capacity : constant Natural := Integer'Max (Capacity, Source.Length);
    begin
-      Reallocate (Item, Item.Length, New_Capacity);
+      Reallocate (Source, Source.Length, New_Capacity);
    end Reserve_Capacity;
 
    function To_Unbounded_String (Source : String_Type)
@@ -599,10 +600,13 @@ package body Ada.Strings.Generic_Unbounded is
          Source.Length);
    end Reference;
 
-   procedure Unique (Item : in out Unbounded_String'Class) is
+   procedure Unique (Source : in out Unbounded_String'Class) is
    begin
-      if System.Reference_Counting.Shared (Upcast (Item.Data)) then
-         Reallocate (Item, Item.Length, Item.Length); -- shrinking
+      if System.Reference_Counting.Shared (Upcast (Source.Data)) then
+         Reallocate (
+            Unbounded_String (Source),
+            Source.Length,
+            Source.Length); -- shrinking
       end if;
    end Unique;
 

@@ -38,9 +38,9 @@ package Ada.Strings.Generic_Unbounded is
 
    --  extended
    procedure Set_Length (Source : in out Unbounded_String; Length : Natural);
-   function Capacity (Source : Unbounded_String'Class) return Natural;
+   function Capacity (Source : Unbounded_String) return Natural;
    procedure Reserve_Capacity (
-      Item : in out Unbounded_String;
+      Source : in out Unbounded_String;
       Capacity : Natural);
 
    pragma Inline (Capacity);
@@ -203,7 +203,7 @@ private
       Length : aliased Natural := 0;
    end record;
 
-   procedure Unique (Item : in out Unbounded_String'Class);
+   procedure Unique (Source : in out Unbounded_String'Class);
 
    overriding procedure Adjust (Object : in out Unbounded_String);
    overriding procedure Finalize (Object : in out Unbounded_String);
