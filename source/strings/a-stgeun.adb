@@ -610,6 +610,17 @@ package body Ada.Strings.Generic_Unbounded is
       end if;
    end Unique;
 
+   procedure Unique_And_Set_Length (
+      Source : in out Unbounded_String'Class;
+      Length : Natural) is
+   begin
+      if System.Reference_Counting.Shared (Upcast (Source.Data)) then
+         Reallocate (Unbounded_String (Source), Length, Length); -- shrinking
+      else
+         Set_Length (Unbounded_String (Source), Length);
+      end if;
+   end Unique_And_Set_Length;
+
    overriding procedure Adjust (Object : in out Unbounded_String) is
    begin
       System.Reference_Counting.Adjust (Upcast (Object.Data'Unchecked_Access));

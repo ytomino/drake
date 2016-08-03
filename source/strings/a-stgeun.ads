@@ -204,6 +204,9 @@ private
    end record;
 
    procedure Unique (Source : in out Unbounded_String'Class);
+   procedure Unique_And_Set_Length (
+      Source : in out Unbounded_String'Class;
+      Length : Natural);
 
    overriding procedure Adjust (Object : in out Unbounded_String);
    overriding procedure Finalize (Object : in out Unbounded_String);

@@ -135,13 +135,12 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
                Old_Length : constant Natural := Source.Length;
                New_Length : Natural;
             begin
-               Set_Length (
+               Unique_And_Set_Length (
                   Source,
                   Old_Length
                      + Integer'Max (
                         By'Length - Integer'Max (High - Low + 1, 0),
                         0));
-               Unique (Source); -- for overwriting
                New_Length := Old_Length;
                Fixed_Functions.Replace_Slice (
                   Source.Data.Items.all, -- (1 .. Source.Length)
@@ -208,8 +207,7 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
                Old_Length : constant Natural := Source.Length;
                New_Length : Natural;
             begin
-               Set_Length (Source, Old_Length + New_Item'Length);
-               Unique (Source); -- for overwriting
+               Unique_And_Set_Length (Source, Old_Length + New_Item'Length);
                New_Length := Old_Length;
                Fixed_Functions.Insert (
                   Source.Data.Items.all, -- (1 .. Source.Length)
@@ -442,8 +440,7 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
             Old_Length : constant Natural := Source.Length;
             Dummy_Last : Natural;
          begin
-            Set_Length (Source, Integer'Max (Count, Old_Length));
-            Unique (Source); -- for overwriting
+            Unique_And_Set_Length (Source, Integer'Max (Count, Old_Length));
             Fixed_Functions.Tail (
                Source.Data.Items (1 .. Old_Length),
                Count,
