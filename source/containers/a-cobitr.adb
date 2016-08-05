@@ -327,9 +327,7 @@ package body Ada.Containers.Binary_Trees is
       Target : in out Node_Access;
       Length : in out Count_Type;
       Source : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : access procedure (
@@ -357,20 +355,20 @@ package body Ada.Containers.Binary_Trees is
          begin
             if Comparison < 0 then
                N := Next (I);
-               if not In_Only_Left then
+               if not Filter (In_Only_Left) then
                   Remove (Target, Length, I);
                   Free (I);
                end if;
                I := N;
             elsif Comparison > 0 then
-               if In_Only_Right then
+               if Filter (In_Only_Right) then
                   Copy (New_Node, J);
                   Insert (Target, Length, I, New_Node);
                end if;
                J := Next (J);
             else
                N := Next (I);
-               if not In_Both then
+               if not Filter (In_Both) then
                   Remove (Target, Length, I);
                   Free (I);
                end if;
@@ -379,7 +377,7 @@ package body Ada.Containers.Binary_Trees is
             end if;
          end;
       end loop;
-      if not In_Only_Left then
+      if not Filter (In_Only_Left) then
          while I /= null loop
             N := Next (I);
             Remove (Target, Length, I);
@@ -387,7 +385,7 @@ package body Ada.Containers.Binary_Trees is
             I := N;
          end loop;
       end if;
-      if In_Only_Right then
+      if Filter (In_Only_Right) then
          while J /= null loop
             Copy (New_Node, J);
             Insert (Target, Length, null, New_Node);
@@ -400,9 +398,7 @@ package body Ada.Containers.Binary_Trees is
       Target : out Node_Access;
       Length : out Count_Type;
       Left, Right : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : not null access procedure (
@@ -424,19 +420,19 @@ package body Ada.Containers.Binary_Trees is
             Comparison : constant Integer := Compare (I, J);
          begin
             if Comparison < 0 then
-               if In_Only_Left then
+               if Filter (In_Only_Left) then
                   Copy (New_Node, I);
                   Insert (Target, Length, null, New_Node);
                end if;
                I := Next (I);
             elsif Comparison > 0 then
-               if In_Only_Right then
+               if Filter (In_Only_Right) then
                   Copy (New_Node, J);
                   Insert (Target, Length, null, New_Node);
                end if;
                J := Next (J);
             else
-               if In_Both then
+               if Filter (In_Both) then
                   Copy (New_Node, I);
                   Insert (Target, Length, null, New_Node);
                end if;
@@ -445,14 +441,14 @@ package body Ada.Containers.Binary_Trees is
             end if;
          end;
       end loop;
-      if In_Only_Left then
+      if Filter (In_Only_Left) then
          while I /= null loop
             Copy (New_Node, I);
             Insert (Target, Length, null, New_Node);
             I := Next (I);
          end loop;
       end if;
-      if In_Only_Right then
+      if Filter (In_Only_Right) then
          while J /= null loop
             Copy (New_Node, J);
             Insert (Target, Length, null, New_Node);

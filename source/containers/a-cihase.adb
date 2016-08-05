@@ -500,9 +500,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Target_Data.Length,
                   Source_Data.Table,
                   Source_Data.Length,
-                  In_Only_Left => True,
-                  In_Only_Right => True,
-                  In_Both => True,
+                  (others => True),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access,
                   Free => Free_Node'Access);
@@ -534,9 +532,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Left_Data.Length,
                   Right_Data.Table,
                   Right_Data.Length,
-                  In_Only_Left => True,
-                  In_Only_Right => True,
-                  In_Both => True,
+                  (others => True),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access);
             end;
@@ -562,9 +558,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Target_Data.Length,
                   Source_Data.Table,
                   Source_Data.Length,
-                  In_Only_Left => False,
-                  In_Only_Right => False,
-                  In_Both => True,
+                  (Hash_Tables.In_Both => True, others => False),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access,
                   Free => Free_Node'Access);
@@ -594,9 +588,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Left_Data.Length,
                   Right_Data.Table,
                   Right_Data.Length,
-                  In_Only_Left => False,
-                  In_Only_Right => False,
-                  In_Both => True,
+                  (Hash_Tables.In_Both => True, others => False),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access);
             end;
@@ -617,9 +609,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                Target_Data.Length,
                Source_Data.Table,
                Source_Data.Length,
-               In_Only_Left => True,
-               In_Only_Right => False,
-               In_Both => False,
+               (Hash_Tables.In_Only_Left => True, others => False),
                Equivalent => Equivalent_Node'Access,
                Copy => Copy_Node'Access,
                Free => Free_Node'Access);
@@ -648,9 +638,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Left_Data.Length,
                   Right_Data.Table,
                   Right_Data.Length,
-                  In_Only_Left => True,
-                  In_Only_Right => False,
-                  In_Both => False,
+                  (Hash_Tables.In_Only_Left => True, others => False),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access);
             end;
@@ -676,9 +664,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Target_Data.Length,
                   Source_Data.Table,
                   Source_Data.Length,
-                  In_Only_Left => True,
-                  In_Only_Right => True,
-                  In_Both => False,
+                  (Hash_Tables.In_Both => False, others => True),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access,
                   Free => Free_Node'Access);
@@ -710,9 +696,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
                   Left_Data.Length,
                   Right_Data.Table,
                   Right_Data.Length,
-                  In_Only_Left => True,
-                  In_Only_Right => True,
-                  In_Both => False,
+                  (Hash_Tables.In_Both => False, others => True),
                   Equivalent => Equivalent_Node'Access,
                   Copy => Copy_Node'Access);
             end;

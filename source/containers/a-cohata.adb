@@ -376,9 +376,7 @@ package body Ada.Containers.Hash_Tables is
       Length : in out Count_Type;
       Source : Table_Access;
       Source_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
          Left, Right : not null Node_Access)
          return Boolean;
@@ -388,12 +386,12 @@ package body Ada.Containers.Hash_Tables is
       Free : access procedure (Object : in out Node_Access)) is
    begin
       if Length = 0 then
-         if In_Only_Right and then Source_Length > 0 then
+         if Filter (In_Only_Right) and then Source_Length > 0 then
             Hash_Tables.Free (Target);
             Hash_Tables.Copy (Target, Length, Source, Source_Length, Copy);
          end if;
       elsif Source_Length = 0 then
-         if not In_Only_Left then -- Length > 0
+         if not Filter (In_Only_Left) then -- Length > 0
             Hash_Tables.Free (Target, Length, Free);
          end if;
       else
@@ -402,7 +400,7 @@ package body Ada.Containers.Hash_Tables is
             New_Node : Node_Access;
             From_Right : Node_Access := null;
          begin
-            if In_Only_Right then
+            if Filter (In_Only_Right) then
                I := Source.First;
                while I /= null loop
                   if Find_Node (Target, I, Equivalent) = null then
@@ -418,12 +416,12 @@ package body Ada.Containers.Hash_Tables is
             while I /= null loop
                Next := I.Next;
                if Find_Node (Source, I, Equivalent) /= null then
-                  if not In_Both then
+                  if not Filter (In_Both) then
                      Remove (Target, Length, I);
                      Free (I);
                   end if;
                else
-                  if not In_Only_Left then
+                  if not Filter (In_Only_Left) then
                      Remove (Target, Length, I);
                      Free (I);
                   end if;
@@ -446,9 +444,7 @@ package body Ada.Containers.Hash_Tables is
       Left_Length : Count_Type;
       Right : Table_Access;
       Right_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
          Left, Right : not null Node_Access)
          return Boolean;
@@ -457,7 +453,7 @@ package body Ada.Containers.Hash_Tables is
          Source : not null Node_Access)) is
    begin
       if Left_Length = 0 then
-         if In_Only_Right and then Right_Length > 0 then
+         if Filter (In_Only_Right) and then Right_Length > 0 then
             Hash_Tables.Copy (Target, Length, Right, Right_Length,
                Copy => Copy);
          else
@@ -465,7 +461,7 @@ package body Ada.Containers.Hash_Tables is
             Length := 0;
          end if;
       elsif Right_Length = 0 then
-         if In_Only_Left then -- Left_Length > 0
+         if Filter (In_Only_Left) then -- Left_Length > 0
             Hash_Tables.Copy (Target, Length, Left, Left_Length, Copy => Copy);
          else
             Target := null;
@@ -481,19 +477,19 @@ package body Ada.Containers.Hash_Tables is
             I := Left.First;
             while I /= null loop
                if Find_Node (Right, I, Equivalent) /= null then
-                  if In_Both then
+                  if Filter (In_Both) then
                      Copy (New_Node, I);
                      Insert (Target, Length, I.Hash, New_Node);
                   end if;
                else
-                  if In_Only_Left then
+                  if Filter (In_Only_Left) then
                      Copy (New_Node, I);
                      Insert (Target, Length, I.Hash, New_Node);
                   end if;
                end if;
                I := I.Next;
             end loop;
-            if In_Only_Right then
+            if Filter (In_Only_Right) then
                I := Right.First;
                while I /= null loop
                   if Find_Node (Left, I, Equivalent) = null then

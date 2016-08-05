@@ -508,12 +508,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
 
 --  diff (Union)
---
---
 --
 --
 --
@@ -562,9 +558,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Target.Length,
          Source.Table,
          Source.Length,
-         In_Only_Left => False,
-         In_Only_Right => False,
-         In_Both => True,
+         (Hash_Tables.In_Both => True, others => False),
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
@@ -574,8 +568,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Intersection;
 
 --  diff (Intersection)
---
---
 --
 --
 --
@@ -617,9 +609,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Target.Length,
          Source.Table,
          Source.Length,
-         In_Only_Left => True,
-         In_Only_Right => False,
-         In_Both => False,
+         (Hash_Tables.In_Only_Left => True, others => False),
          Equivalent => Equivalent_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
@@ -655,8 +645,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
 
 --  diff (Symmetric_Difference)
 --
@@ -684,12 +672,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
 
 --  diff (Symmetric_Difference)
---
---
 --
 --
 --

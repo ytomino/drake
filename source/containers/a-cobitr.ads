@@ -96,13 +96,18 @@ private package Ada.Containers.Binary_Trees is
 
    --  set operations
 
+   type Containing is (In_Only_Left, In_Only_Right, In_Both);
+   pragma Discard_Names (Containing);
+
+   type Filter_Type is array (Containing) of Boolean;
+   pragma Pack (Filter_Type);
+   pragma Suppress_Initialization (Filter_Type);
+
    procedure Merge (
       Target : in out Node_Access;
       Length : in out Count_Type;
       Source : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : access procedure (
@@ -123,9 +128,7 @@ private package Ada.Containers.Binary_Trees is
       Target : out Node_Access;
       Length : out Count_Type;
       Left, Right : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : not null access procedure (

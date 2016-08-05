@@ -112,14 +112,19 @@ private package Ada.Containers.Hash_Tables is
 
    --  set operations
 
+   type Containing is (In_Only_Left, In_Only_Right, In_Both);
+   pragma Discard_Names (Containing);
+
+   type Filter_Type is array (Containing) of Boolean;
+   pragma Pack (Filter_Type);
+   pragma Suppress_Initialization (Filter_Type);
+
    procedure Merge (
       Target : in out Table_Access;
       Length : in out Count_Type;
       Source : Table_Access;
       Source_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
          Left, Right : not null Node_Access)
          return Boolean;
@@ -135,9 +140,7 @@ private package Ada.Containers.Hash_Tables is
       Left_Length : Count_Type;
       Right : Table_Access;
       Right_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
          Left, Right : not null Node_Access)
          return Boolean;

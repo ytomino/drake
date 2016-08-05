@@ -480,12 +480,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
 
 --  diff (Union)
---
---
 --
 --
 --
@@ -527,9 +523,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Target.Root,
          Target.Length,
          Source.Root,
-         In_Only_Left => False,
-         In_Only_Right => False,
-         In_Both => True,
+         (Binary_Trees.In_Both => True, others => False),
          Compare => Compare_Node'Access,
          Copy => null,
          Insert => null,
@@ -541,8 +535,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Intersection;
 
 --  diff (Intersection)
---
---
 --
 --
 --
@@ -578,9 +570,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Target.Root,
          Target.Length,
          Source.Root,
-         In_Only_Left => True,
-         In_Only_Right => False,
-         In_Both => False,
+         (Binary_Trees.In_Only_Left => True, others => False),
          Compare => Compare_Node'Access,
          Copy => null,
          Insert => null,
@@ -614,8 +604,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
 
 --  diff (Symmetric_Difference)
 --
@@ -642,12 +630,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
 
 --  diff (Symmetric_Difference)
---
---
 --
 --
 --
