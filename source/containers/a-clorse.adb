@@ -20,6 +20,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
+   function Compare_Elements (Left, Right : Element_Type) return Integer;
+   function Compare_Elements (Left, Right : Element_Type) return Integer is
+   begin
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
+   end Compare_Elements;
+
    type Context_Type is limited record
       Left : not null access Element_Type;
    end record;
@@ -36,41 +48,20 @@ package body Ada.Containers.Limited_Ordered_Sets is
    is
       Context : Context_Type;
       for Context'Address use Params;
-      Left : Element_Type
-         renames Context.Left.all;
-      Right : Element_Type
-         renames Downcast (Position).Element.all;
    begin
-      --  [gcc-4.9] outputs wrong code for combination of
-      --    constrained short String used as Key_Type (ex. String (1 .. 4))
-      --    and instantiation of Ada.Containers.Composites.Compare here
-      if Left < Right then
-         return -1;
-      elsif Right < Left then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Elements (
+         Context.Left.all,
+         Downcast (Position).Element.all);
    end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
-      return Integer
-   is
-      Left_E : Element_Type
-         renames Downcast (Left).Element.all;
-      Right_E : Element_Type
-         renames Downcast (Right).Element.all;
+      return Integer is
    begin
-      --  [gcc-4.9] same as above
-      if Left_E < Right_E then
-         return -1;
-      elsif Right_E < Left_E then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Elements (
+         Downcast (Left).Element.all,
+         Downcast (Right).Element.all);
    end Compare_Node;
 
 --  diff (Allocate_Element)
@@ -191,11 +182,41 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Binary_Trees.Node_Access)
+         return Boolean)
+      return Boolean;
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Binary_Trees.Node_Access)
+         return Boolean)
+      return Boolean
+   is
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
+   begin
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 then
+         return True;
+      else
+--  diff
+--  diff
+         return Binary_Trees.Equivalent (
+            Left.Root,
+            Right.Root,
+            Equivalent => Equivalent);
+      end if;
+   end Equivalent_Sets;
+
    --  implementation
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
+      return Compare_Elements (Left, Right) = 0;
    end Equivalent_Elements;
 
    function Empty_Set return Set is
@@ -219,19 +240,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
---
---
---
---
---
---
---
---
---
---
---
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Binary_Trees.Node_Access)
@@ -243,21 +251,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
             Downcast (Left).Element.all,
             Downcast (Right).Element.all);
       end Equivalent;
-      Left_Length : constant Count_Type := Length (Left);
-      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Left_Length /= Right_Length then
-         return False;
---  diff
---  diff
-      else
---  diff
---  diff
-         return Binary_Trees.Equivalent (
-            Left.Root,
-            Right.Root,
-            Equivalent => Equivalent'Access);
-      end if;
+      return Equivalent_Sets (Left, Right, Equivalent => Equivalent'Access);
    end Equivalent_Sets;
 
 --  diff (To_Set)

@@ -187,6 +187,43 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end Unique;
 
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean;
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean
+   is
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
+   begin
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
+         return True;
+      else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
+         declare
+            Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+            Right_Data : constant Data_Access := Downcast (Right.Super.Data);
+         begin
+            return Hash_Tables.Equivalent (
+               Left_Data.Table,
+               Left_Data.Length,
+               Right_Data.Table,
+               Right_Data.Length,
+               Equivalent => Equivalent);
+         end;
+      end if;
+   end Equivalent_Sets;
+
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
       return Cursor;
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
@@ -228,53 +265,14 @@ package body Ada.Containers.Hashed_Sets is
       begin
          return Downcast (Left).Element = Downcast (Right).Element;
       end Equivalent;
-      Left_Length : constant Count_Type := Length (Left);
-      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Left_Length /= Right_Length then
-         return False;
-      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         Unique (Left'Unrestricted_Access.all, False); -- private
-         Unique (Right'Unrestricted_Access.all, False); -- private
-         declare
-            Left_Data : constant Data_Access := Downcast (Left.Super.Data);
-            Right_Data : constant Data_Access := Downcast (Right.Super.Data);
-         begin
-            return Hash_Tables.Equivalent (
-               Left_Data.Table,
-               Left_Data.Length,
-               Right_Data.Table,
-               Right_Data.Length,
-               Equivalent => Equivalent'Access);
-         end;
-      end if;
+      return Equivalent_Sets (Left, Right, Equivalent => Equivalent'Access);
    end "=";
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
-      Left_Length : constant Count_Type := Length (Left);
-      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Left_Length /= Right_Length then
-         return False;
-      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         Unique (Left'Unrestricted_Access.all, False); -- private
-         Unique (Right'Unrestricted_Access.all, False); -- private
-         declare
-            Left_Data : constant Data_Access := Downcast (Left.Super.Data);
-            Right_Data : constant Data_Access := Downcast (Right.Super.Data);
-         begin
-            return Hash_Tables.Equivalent (
-               Left_Data.Table,
-               Left_Data.Length,
-               Right_Data.Table,
-               Right_Data.Length,
-               Equivalent => Equivalent_Node'Access);
-         end;
-      end if;
+      return Equivalent_Sets (Left, Right,
+         Equivalent => Equivalent_Node'Access);
    end Equivalent_Sets;
 
    function To_Set (New_Item : Element_Type) return Set is

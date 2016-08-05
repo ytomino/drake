@@ -20,6 +20,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
+   function Compare_Keys (Left, Right : Key_Type) return Integer;
+   function Compare_Keys (Left, Right : Key_Type) return Integer is
+   begin
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
+   end Compare_Keys;
+
    type Context_Type is limited record
       Left : not null access Key_Type;
    end record;
@@ -36,21 +48,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    is
       Context : Context_Type;
       for Context'Address use Params;
-      Left : Key_Type
-         renames Context.Left.all;
-      Right : Key_Type
-         renames Downcast (Position).Key.all;
    begin
-      --  [gcc-4.9] outputs wrong code for combination of
-      --    constrained short String used as Key_Type (ex. String (1 .. 4))
-      --    and instantiation of Ada.Containers.Composites.Compare here
-      if Left < Right then
-         return -1;
-      elsif Right < Left then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Keys (Context.Left.all, Downcast (Position).Key.all);
    end Compare_Key;
 
    procedure Allocate_Element (
@@ -191,7 +190,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
+      return Compare_Keys (Left, Right) = 0;
    end Equivalent_Keys;
 
    function Empty_Map return Map is

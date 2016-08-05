@@ -187,6 +187,43 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean;
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean is
+   begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
+      return Hash_Tables.Equivalent (
+         Left.Table,
+         Left.Length,
+         Right.Table,
+         Right.Length,
+         Equivalent => Equivalent);
+--  diff
+--  diff
+   end Equivalent_Sets;
+
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
       return Cursor;
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
@@ -231,50 +268,11 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
-      return Hash_Tables.Equivalent (
-         Left.Table,
-         Left.Length,
-         Right.Table,
-         Right.Length,
+      return Equivalent_Sets (Left, Right,
          Equivalent => Equivalent_Node'Access);
---  diff
---  diff
    end Equivalent_Sets;
 
 --  diff (To_Set)
