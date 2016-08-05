@@ -399,8 +399,7 @@ package body Ada.Containers.Binary_Trees is
    procedure Merge (
       Target : out Node_Access;
       Length : out Count_Type;
-      Left : Node_Access;
-      Right : Node_Access;
+      Left, Right : Node_Access;
       In_Only_Left : Boolean;
       In_Only_Right : Boolean;
       In_Both : Boolean;

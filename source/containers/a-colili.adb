@@ -35,8 +35,7 @@ package body Ada.Containers.Linked_Lists is
    function Equivalent (
       Left_Last, Right_Last : Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean
    is
@@ -140,8 +139,7 @@ package body Ada.Containers.Linked_Lists is
    function Is_Sorted (
       Last : Node_Access;
       LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean
    is
@@ -165,8 +163,7 @@ package body Ada.Containers.Linked_Lists is
       Target_Last : in out Node_Access;
       Length : in out Count_Type;
       LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Splice : not null access procedure (
          Target_First : in out Node_Access;
@@ -235,8 +232,7 @@ package body Ada.Containers.Linked_Lists is
       Source_Last : in out Node_Access;
       Source_Length : in out Count_Type;
       LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Insert : not null access procedure (
          First : in out Node_Access;

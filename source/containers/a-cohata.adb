@@ -22,16 +22,14 @@ package body Ada.Containers.Hash_Tables is
       Container : Table_Access;
       Node : not null Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Node_Access;
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Node_Access is
    begin
@@ -176,8 +174,7 @@ package body Ada.Containers.Hash_Tables is
       Right : Table_Access;
       Right_Length : Count_Type;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -188,8 +185,7 @@ package body Ada.Containers.Hash_Tables is
    function Overlap (
       Left, Right : Table_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -213,8 +209,7 @@ package body Ada.Containers.Hash_Tables is
    function Is_Subset (
       Subset, Of_Set : Table_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -385,8 +380,7 @@ package body Ada.Containers.Hash_Tables is
       In_Only_Right : Boolean;
       In_Both : Boolean;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Copy : access procedure (
          Target : out Node_Access;
@@ -456,8 +450,7 @@ package body Ada.Containers.Hash_Tables is
       In_Only_Right : Boolean;
       In_Both : Boolean;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Copy : not null access procedure (
          Target : out Node_Access;
