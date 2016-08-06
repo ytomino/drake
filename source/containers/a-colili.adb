@@ -78,13 +78,7 @@ package body Ada.Containers.Linked_Lists is
       Source_Last : Node_Access;
       Copy : not null access procedure (
          Target : out Node_Access;
-         Source : not null Node_Access);
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access))
+         Source : not null Node_Access))
    is
       I : Node_Access := Source_Last;
       New_Node : Node_Access;
@@ -107,19 +101,7 @@ package body Ada.Containers.Linked_Lists is
    procedure Reverse_Elements (
       Target_First : in out Node_Access;
       Target_Last : in out Node_Access;
-      Length : in out Count_Type;
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access))
+      Length : in out Count_Type)
    is
       Source_First : Node_Access := Target_First;
       Source_Last : Node_Access := Target_Last;
@@ -167,19 +149,7 @@ package body Ada.Containers.Linked_Lists is
       Source_Length : in out Count_Type;
       LT : not null access function (
          Left, Right : not null Node_Access)
-         return Boolean;
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access))
+         return Boolean)
    is
       Left_First : Node_Access := Target_First;
       Left_Last : Node_Access := Target_Last;
@@ -224,35 +194,7 @@ package body Ada.Containers.Linked_Lists is
       Length : in out Count_Type;
       LT : not null access function (
          Left, Right : not null Node_Access)
-         return Boolean;
-      Splice : not null access procedure (
-         Target_First : in out Node_Access;
-         Target_Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         Source_First : in out Node_Access;
-         Source_Last : in out Node_Access;
-         Source_Length : in out Count_Type);
-      Split : not null access procedure (
-         Target_First : out Node_Access;
-         Target_Last : out Node_Access;
-         Length : out Count_Type;
-         Source_First : in out Node_Access;
-         Source_Last : in out Node_Access;
-         Source_Length : in out Count_Type;
-         Count : Count_Type);
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access)) is
+         return Boolean) is
    begin
       if Length >= 2 then
          declare
@@ -269,14 +211,14 @@ package body Ada.Containers.Linked_Lists is
                Length / 2);
             Merge_Sort (
                Left_First, Left_Last, Left_Length,
-               LT, Splice, Split, Insert, Remove);
+               LT => LT);
             Merge_Sort (
                Right_First, Right_Last, Right_Length,
-               LT, Splice, Split, Insert, Remove);
+               LT => LT);
             Merge (
                Left_First, Left_Last, Left_Length,
                Right_First, Right_Last, Right_Length,
-               LT, Insert, Remove);
+               LT => LT);
             Target_First := Left_First;
             Target_Last := Left_Last;
             Length := Left_Length;

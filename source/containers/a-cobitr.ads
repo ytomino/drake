@@ -103,6 +103,16 @@ private package Ada.Containers.Binary_Trees is
    pragma Pack (Filter_Type);
    pragma Suppress_Initialization (Filter_Type);
 
+   generic
+      with procedure Insert (
+         Container : in out Node_Access;
+         Length : in out Count_Type;
+         Before : Node_Access;
+         New_Item : not null Node_Access);
+      with procedure Remove (
+         Container : in out Node_Access;
+         Length : in out Count_Type;
+         Position : not null Node_Access);
    procedure Merge (
       Target : in out Node_Access;
       Length : in out Count_Type;
@@ -113,18 +123,15 @@ private package Ada.Containers.Binary_Trees is
       Copy : access procedure (
          Target : out Node_Access;
          Source : not null Node_Access);
-      Insert : access procedure (
+      Free : access procedure (Object : in out Node_Access));
+
+   generic
+      with procedure Insert (
          Container : in out Node_Access;
          Length : in out Count_Type;
          Before : Node_Access;
          New_Item : not null Node_Access);
-      Remove : access procedure (
-         Container : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access);
-      Free : access procedure (Object : in out Node_Access));
-
-   procedure Merge (
+   procedure Copying_Merge (
       Target : out Node_Access;
       Length : out Count_Type;
       Left, Right : Node_Access;
@@ -133,11 +140,6 @@ private package Ada.Containers.Binary_Trees is
          return Integer;
       Copy : not null access procedure (
          Target : out Node_Access;
-         Source : not null Node_Access);
-      Insert : not null access procedure (
-         Container : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access));
+         Source : not null Node_Access));
 
 end Ada.Containers.Binary_Trees;

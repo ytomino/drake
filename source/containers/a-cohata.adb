@@ -437,7 +437,7 @@ package body Ada.Containers.Hash_Tables is
       end if;
    end Merge;
 
-   procedure Merge (
+   procedure Copying_Merge (
       Target : out Table_Access;
       Length : out Count_Type;
       Left : Table_Access;
@@ -501,6 +501,6 @@ package body Ada.Containers.Hash_Tables is
             end if;
          end;
       end if;
-   end Merge;
+   end Copying_Merge;
 
 end Ada.Containers.Hash_Tables;

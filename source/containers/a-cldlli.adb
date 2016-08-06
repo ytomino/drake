@@ -125,7 +125,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
 --  diff (Free)
 
@@ -450,12 +449,10 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-      Linked_Lists.Reverse_Elements (
+      Base.Reverse_Elements (
          Container.First,
          Container.Last,
-         Container.Length,
-         Insert => Base.Insert'Access,
-         Remove => Base.Remove'Access);
+         Container.Length);
 --  diff
 --  diff
    end Reverse_Elements;
@@ -817,15 +814,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-         Linked_Lists.Merge_Sort (
+         Base.Merge_Sort (
             Container.First,
             Container.Last,
             Container.Length,
-            LT => LT'Access,
-            Splice => Base.Splice'Access,
-            Split => Base.Split'Access,
-            Insert => Base.Insert'Access,
-            Remove => Base.Remove'Access);
+            LT => LT'Access);
 --  diff
 --  diff
       end Sort;
@@ -844,16 +837,14 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-               Linked_Lists.Merge (
+               Base.Merge (
                   Target.First,
                   Target.Last,
                   Target.Length,
                   Source.First,
                   Source.Last,
                   Source.Length,
-                  LT => LT'Access,
-                  Insert => Base.Insert'Access,
-                  Remove => Base.Remove'Access);
+                  LT => LT'Access);
 --  diff
             end if;
          end if;

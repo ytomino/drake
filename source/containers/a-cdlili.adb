@@ -118,13 +118,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       pragma Unreferenced (Capacity);
    begin
       Allocate_Data (Target, 0, 0);
-      Linked_Lists.Copy (
+      Base.Copy (
          Downcast (Target).First,
          Downcast (Target).Last,
          Downcast (Target).Length,
          Source_Last => Downcast (Source).Last,
-         Copy => Copy_Node'Access,
-         Insert => Base.Insert'Access);
+         Copy => Copy_Node'Access);
    end Copy_Data;
 
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
@@ -450,12 +449,10 @@ package body Ada.Containers.Doubly_Linked_Lists is
          declare
             Data : constant Data_Access := Downcast (Container.Super.Data);
          begin
-            Linked_Lists.Reverse_Elements (
+            Base.Reverse_Elements (
                Data.First,
                Data.Last,
-               Data.Length,
-               Insert => Base.Insert'Access,
-               Remove => Base.Remove'Access);
+               Data.Length);
          end;
       end if;
    end Reverse_Elements;
@@ -817,15 +814,11 @@ package body Ada.Containers.Doubly_Linked_Lists is
             declare
                Data : constant Data_Access := Downcast (Container.Super.Data);
             begin
-               Linked_Lists.Merge_Sort (
+               Base.Merge_Sort (
                   Data.First,
                   Data.Last,
                   Data.Length,
-                  LT => LT'Access,
-                  Splice => Base.Splice'Access,
-                  Split => Base.Split'Access,
-                  Insert => Base.Insert'Access,
-                  Remove => Base.Remove'Access);
+                  LT => LT'Access);
             end;
          end if;
       end Sort;
@@ -844,16 +837,14 @@ package body Ada.Containers.Doubly_Linked_Lists is
                   Source_Data : constant Data_Access :=
                      Downcast (Source.Super.Data);
                begin
-                  Linked_Lists.Merge (
+                  Base.Merge (
                      Target_Data.First,
                      Target_Data.Last,
                      Target_Data.Length,
                      Source_Data.First,
                      Source_Data.Last,
                      Source_Data.Length,
-                     LT => LT'Access,
-                     Insert => Base.Insert'Access,
-                     Remove => Base.Remove'Access);
+                     LT => LT'Access);
                end;
             end if;
          end if;

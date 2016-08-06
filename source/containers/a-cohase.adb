@@ -525,7 +525,7 @@ package body Ada.Containers.Hashed_Sets is
                Right_Data : constant Data_Access :=
                   Downcast (Right.Super.Data);
             begin
-               Hash_Tables.Merge (
+               Hash_Tables.Copying_Merge (
                   Result_Data.Table,
                   Result_Data.Length,
                   Left_Data.Table,
@@ -581,7 +581,7 @@ package body Ada.Containers.Hashed_Sets is
                Right_Data : constant Data_Access :=
                   Downcast (Right.Super.Data);
             begin
-               Hash_Tables.Merge (
+               Hash_Tables.Copying_Merge (
                   Result_Data.Table,
                   Result_Data.Length,
                   Left_Data.Table,
@@ -631,7 +631,7 @@ package body Ada.Containers.Hashed_Sets is
                Right_Data : constant Data_Access :=
                   Downcast (Right.Super.Data);
             begin
-               Hash_Tables.Merge (
+               Hash_Tables.Copying_Merge (
                   Result_Data.Table,
                   Result_Data.Length,
                   Left_Data.Table,
@@ -689,7 +689,7 @@ package body Ada.Containers.Hashed_Sets is
                Right_Data : constant Data_Access :=
                   Downcast (Right.Super.Data);
             begin
-               Hash_Tables.Merge (
+               Hash_Tables.Copying_Merge (
                   Result_Data.Table,
                   Result_Data.Length,
                   Left_Data.Table,

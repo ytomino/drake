@@ -133,7 +133,7 @@ private package Ada.Containers.Hash_Tables is
          Source : not null Node_Access);
       Free : access procedure (Object : in out Node_Access));
 
-   procedure Merge (
+   procedure Copying_Merge (
       Target : out Table_Access;
       Length : out Count_Type;
       Left : Table_Access;
