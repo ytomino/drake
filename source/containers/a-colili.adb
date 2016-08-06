@@ -52,6 +52,25 @@ package body Ada.Containers.Linked_Lists is
       return I = null and then J = null;
    end Equivalent;
 
+   procedure Free (
+      First : in out Node_Access;
+      Last : in out Node_Access;
+      Length : in out Count_Type;
+      Free : not null access procedure (Object : in out Node_Access))
+   is
+      Position : Node_Access := Last;
+      Previous : Node_Access;
+   begin
+      while Position /= null loop
+         Previous := Position.Previous;
+         Free (Position);
+         Length := Length - 1;
+         Position := Previous;
+      end loop;
+      First := null;
+      Last := null;
+   end Free;
+
    procedure Copy (
       Target_First : out Node_Access;
       Target_Last : out Node_Access;
@@ -84,25 +103,6 @@ package body Ada.Containers.Linked_Lists is
          I := I.Previous;
       end loop;
    end Copy;
-
-   procedure Free (
-      First : in out Node_Access;
-      Last : in out Node_Access;
-      Length : in out Count_Type;
-      Free : not null access procedure (Object : in out Node_Access))
-   is
-      Position : Node_Access := Last;
-      Previous : Node_Access;
-   begin
-      while Position /= null loop
-         Previous := Position.Previous;
-         Free (Position);
-         Length := Length - 1;
-         Position := Previous;
-      end loop;
-      First := null;
-      Last := null;
-   end Free;
 
    procedure Reverse_Elements (
       Target_First : in out Node_Access;
@@ -157,6 +157,66 @@ package body Ada.Containers.Linked_Lists is
          return True;
       end if;
    end Is_Sorted;
+
+   procedure Merge (
+      Target_First : in out Node_Access;
+      Target_Last : in out Node_Access;
+      Length : in out Count_Type;
+      Source_First : in out Node_Access;
+      Source_Last : in out Node_Access;
+      Source_Length : in out Count_Type;
+      LT : not null access function (
+         Left, Right : not null Node_Access)
+         return Boolean;
+      Insert : not null access procedure (
+         First : in out Node_Access;
+         Last : in out Node_Access;
+         Length : in out Count_Type;
+         Before : Node_Access;
+         New_Item : not null Node_Access);
+      Remove : not null access procedure (
+         First : in out Node_Access;
+         Last : in out Node_Access;
+         Length : in out Count_Type;
+         Position : not null Node_Access;
+         Next : Node_Access))
+   is
+      Left_First : Node_Access := Target_First;
+      Left_Last : Node_Access := Target_Last;
+      Left_Length : Count_Type := Length;
+      I : Node_Access := Left_Last;
+      J : Node_Access := Source_Last;
+      Previous : Node_Access;
+   begin
+      Target_First := null;
+      Target_Last := null;
+      Length := 0;
+      while I /= null and then J /= null loop
+         if LT (J, I) then
+            Previous := I.Previous;
+            Remove (Left_First, Left_Last, Left_Length, I, null);
+            Insert (Target_First, Target_Last, Length, Target_First, I);
+            I := Previous;
+         else
+            Previous := J.Previous;
+            Remove (Source_First, Source_Last, Source_Length, J, null);
+            Insert (Target_First, Target_Last, Length, Target_First, J);
+            J := Previous;
+         end if;
+      end loop;
+      while I /= null loop
+         Previous := I.Previous;
+         Remove (Left_First, Left_Last, Left_Length, I, null);
+         Insert (Target_First, Target_Last, Length, Target_First, I);
+         I := Previous;
+      end loop;
+      while J /= null loop
+         Previous := J.Previous;
+         Remove (Source_First, Source_Last, Source_Length, J, null);
+         Insert (Target_First, Target_Last, Length, Target_First, J);
+         J := Previous;
+      end loop;
+   end Merge;
 
    procedure Merge_Sort (
       Target_First : in out Node_Access;
@@ -223,65 +283,5 @@ package body Ada.Containers.Linked_Lists is
          end;
       end if;
    end Merge_Sort;
-
-   procedure Merge (
-      Target_First : in out Node_Access;
-      Target_Last : in out Node_Access;
-      Length : in out Count_Type;
-      Source_First : in out Node_Access;
-      Source_Last : in out Node_Access;
-      Source_Length : in out Count_Type;
-      LT : not null access function (
-         Left, Right : not null Node_Access)
-         return Boolean;
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access))
-   is
-      Left_First : Node_Access := Target_First;
-      Left_Last : Node_Access := Target_Last;
-      Left_Length : Count_Type := Length;
-      I : Node_Access := Left_Last;
-      J : Node_Access := Source_Last;
-      Previous : Node_Access;
-   begin
-      Target_First := null;
-      Target_Last := null;
-      Length := 0;
-      while I /= null and then J /= null loop
-         if LT (J, I) then
-            Previous := I.Previous;
-            Remove (Left_First, Left_Last, Left_Length, I, null);
-            Insert (Target_First, Target_Last, Length, Target_First, I);
-            I := Previous;
-         else
-            Previous := J.Previous;
-            Remove (Source_First, Source_Last, Source_Length, J, null);
-            Insert (Target_First, Target_Last, Length, Target_First, J);
-            J := Previous;
-         end if;
-      end loop;
-      while I /= null loop
-         Previous := I.Previous;
-         Remove (Left_First, Left_Last, Left_Length, I, null);
-         Insert (Target_First, Target_Last, Length, Target_First, I);
-         I := Previous;
-      end loop;
-      while J /= null loop
-         Previous := J.Previous;
-         Remove (Source_First, Source_Last, Source_Length, J, null);
-         Insert (Target_First, Target_Last, Length, Target_First, J);
-         J := Previous;
-      end loop;
-   end Merge;
 
 end Ada.Containers.Linked_Lists;
