@@ -13,6 +13,9 @@ package body Separated is
    type Address_Access is access constant Address;
    for Address_Access'Storage_Size use 0;
 
+   package AA_Conv is
+      new Address_To_Constant_Access_Conversions (Address, Address_Access);
+
    function builtin_frame_address (A1 : Natural) return Address_Access
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_frame_address";
@@ -32,18 +35,16 @@ package body Separated is
       Exclude_Max : Address;
       Skip_Frames : Natural)
    is
-      package Conv is
-         new Address_To_Constant_Access_Conversions (Address, Address_Access);
       BP : Address;
       IP : Address;
       Skip : Natural;
    begin
       pragma Check (Trace, Ada.Debug.Put ("start"));
-      BP := Conv.To_Address (builtin_frame_address (0));
+      BP := AA_Conv.To_Address (builtin_frame_address (0));
       Last := Tracebacks_Array'First - 1;
       Skip := Skip_Frames;
       loop
-         IP := Conv.To_Pointer (BP + Return_Offset).all - Call_Length;
+         IP := AA_Conv.To_Pointer (BP + Return_Offset).all - Call_Length;
          if Skip > 0 then
             Skip := Skip - 1;
             pragma Check (Trace, Ada.Debug.Put ("skip"));
@@ -58,7 +59,7 @@ package body Separated is
          end if;
          exit when IP >= main'Code_Address
             and then IP < main'Code_Address + Caller_In_main;
-         BP := Conv.To_Pointer (BP).all + Parent_Offset;
+         BP := AA_Conv.To_Pointer (BP).all + Parent_Offset;
          exit when BP = 0; -- dirty handling in thread
       end loop;
       pragma Check (Trace, Ada.Debug.Put ("end"));

@@ -40,7 +40,8 @@ package System.Unwind.Occurrences is
    --  (a-exexpr-gcc.adb)
    procedure Set_Foreign_Occurrence (
       X : in out Exception_Occurrence;
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access);
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access);
 
    --  equivalent to Get_Current_Excep_NT (s-soflin.adb),
    --     Get_Current_Excep (s-tarest.adb)

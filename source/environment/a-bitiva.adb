@@ -7,7 +7,7 @@ package body Ada.Bind_Time_Variables is
 
    type Length_Type is mod 2 ** Character'Size;
    type Length_Access is access constant Length_Type;
-   package Length_Access_Conv is
+   package LA_Conv is
       new System.Address_To_Constant_Access_Conversions (
          Length_Type,
          Length_Access);
@@ -18,7 +18,7 @@ package body Ada.Bind_Time_Variables is
 
    function Read_Length (Position : System.Address) return Length_Type is
    begin
-      return Length_Access_Conv.To_Pointer (Position).all;
+      return LA_Conv.To_Pointer (Position).all;
    end Read_Length;
 
    subtype Fixed_String is String (Positive);

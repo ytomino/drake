@@ -17,6 +17,9 @@ package body System.Native_Directories is
    use type C.size_t;
    use type C.sys.types.mode_t;
 
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
    procedure Get_Information (
       Name : String;
       Information : aliased out Directory_Entry_Information_Type;
@@ -39,10 +42,8 @@ package body System.Native_Directories is
    function Current_Directory return String is
       procedure Finally (X : in out C.char_ptr);
       procedure Finally (X : in out C.char_ptr) is
-         package Conv is
-            new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       begin
-         C.stdlib.free (C.void_ptr (Conv.To_Address (X)));
+         C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (X)));
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);

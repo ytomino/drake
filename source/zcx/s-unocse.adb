@@ -14,6 +14,16 @@ package body Separated is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_memset";
 
+   package Unwind_Exception_ptr_Conv is
+      new Address_To_Named_Access_Conversions (
+         C.unwind.struct_Unwind_Exception,
+         C.unwind.struct_Unwind_Exception_ptr);
+
+   package MOA_Conv is
+      new Address_To_Named_Access_Conversions (
+         Representation.Machine_Occurrence,
+         Representation.Machine_Occurrence_Access);
+
    --  equivalent to GNAT_GCC_Exception_Cleanup (a-exexpr-gcc.adb)
    procedure Cleanup (
       Reason : C.unwind.Unwind_Reason_Code;
@@ -25,13 +35,10 @@ package body Separated is
       Exception_Object : access C.unwind.struct_Unwind_Exception)
    is
       pragma Unreferenced (Reason);
-      package Conv is
-         new Address_To_Named_Access_Conversions (
-            C.unwind.struct_Unwind_Exception,
-            C.unwind.struct_Unwind_Exception_ptr);
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      System_Allocators.Free (Conv.To_Address (Exception_Object));
+      System_Allocators.Free (
+         Unwind_Exception_ptr_Conv.To_Address (Exception_Object));
       pragma Check (Trace, Ada.Debug.Put ("leave"));
    end Cleanup;
 
@@ -40,13 +47,9 @@ package body Separated is
    function New_Machine_Occurrence
       return not null Representation.Machine_Occurrence_Access
    is
-      package Conv is
-         new Address_To_Named_Access_Conversions (
-            Representation.Machine_Occurrence,
-            Representation.Machine_Occurrence_Access);
       Result : Representation.Machine_Occurrence_Access;
    begin
-      Result := Conv.To_Pointer (
+      Result := MOA_Conv.To_Pointer (
          System_Allocators.Allocate (
             Representation.Machine_Occurrence'Size / Standard'Storage_Unit));
       if Result = null then

@@ -16,6 +16,8 @@ package body System.Native_Environment_Variables is
    use type C.winnt.LPWCH;
    use type C.winnt.WCHAR;
 
+   package LPWCH_Conv is
+      new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWCH);
    package LPCWCH_Conv is
       new Address_To_Constant_Access_Conversions (
          C.winnt.WCHAR,
@@ -70,7 +72,7 @@ package body System.Native_Environment_Variables is
       --  skip first '=', it means special variable
       Next : constant C.winnt.LPCWCH :=
          LPCWCH_Conv.To_Pointer (
-            LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
+            LPCWCH_Conv.To_Address (Item)
                + Storage_Elements.Storage_Offset'(
                   C.winnt.WCHAR'Size / Standard'Storage_Unit));
       P : C.wchar_t_ptr;
@@ -79,20 +81,19 @@ package body System.Native_Environment_Variables is
       if P /= null then
          Name_Length :=
             C.size_t (
-               (LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
-                     - LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item)))
+               (LPWCH_Conv.To_Address (P) - LPCWCH_Conv.To_Address (Item))
                   / Storage_Elements.Storage_Offset'(
                      C.winnt.WCHAR'Size / Standard'Storage_Unit));
          Value :=
             LPCWCH_Conv.To_Pointer (
-               LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
+               LPWCH_Conv.To_Address (P)
                   + Storage_Elements.Storage_Offset'(
                      C.winnt.WCHAR'Size / Standard'Storage_Unit));
       else
          Name_Length := C.string.wcslen (Item);
          Value :=
             LPCWCH_Conv.To_Pointer (
-               LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
+               LPCWCH_Conv.To_Address (Item)
                   + Storage_Elements.Storage_Offset (Name_Length)
                      * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       end if;
@@ -256,15 +257,11 @@ package body System.Native_Environment_Variables is
       if Result = null then
          raise Constraint_Error;
       else
-         return LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Result));
+         return LPWCH_Conv.To_Address (Result);
       end if;
    end Get_Block;
 
    procedure Release_Block (Block : Address) is
-      package LPWCH_Conv is
-         new Address_To_Named_Access_Conversions (
-            C.winnt.WCHAR,
-            C.winnt.LPWCH);
       Success : C.windef.WINBOOL;
    begin
       Success :=

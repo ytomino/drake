@@ -25,6 +25,9 @@ package body Ada.Directories.Information is
       return Exception_Identification.Exception_Id
       renames System.Native_Directories.Named_IO_Exception_Id;
 
+   package char_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
    procedure Fill (
       Directory_Entry : aliased in out Non_Controlled_Directory_Entry_Type);
    procedure Fill (
@@ -340,12 +343,10 @@ package body Ada.Directories.Information is
    end Is_Socket;
 
    function Read_Symbolic_Link (Name : String) return String is
-      package Conv is
-         new System.Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       procedure Finally (X : in out C.char_ptr);
       procedure Finally (X : in out C.char_ptr) is
       begin
-         System.Standard_Allocators.Free (Conv.To_Address (X));
+         System.Standard_Allocators.Free (char_ptr_Conv.To_Address (X));
       end Finally;
       package Holder is
          new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
@@ -354,7 +355,7 @@ package body Ada.Directories.Information is
          Name'Length * System.Zero_Terminated_Strings.Expanding);
       Buffer_Length : C.size_t := 1024;
       Buffer : aliased C.char_ptr :=
-         Conv.To_Pointer (
+         char_ptr_Conv.To_Pointer (
             System.Standard_Allocators.Allocate (
                System.Storage_Elements.Storage_Offset (Buffer_Length)));
    begin
@@ -385,9 +386,9 @@ package body Ada.Directories.Information is
             end if;
             Buffer_Length := Buffer_Length * 2;
             Buffer :=
-               Conv.To_Pointer (
+               char_ptr_Conv.To_Pointer (
                   System.Standard_Allocators.Reallocate (
-                     Conv.To_Address (Buffer),
+                     char_ptr_Conv.To_Address (Buffer),
                      System.Storage_Elements.Storage_Offset (Buffer_Length)));
          end;
       end loop;

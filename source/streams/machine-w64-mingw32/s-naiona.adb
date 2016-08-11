@@ -23,10 +23,10 @@ package body System.Native_IO.Names is
          Name_Character,
          Name_Pointer);
 
-   package OBJECT_NAME_INFORMATION_ptr_Conv is
+   package POBJECT_NAME_INFORMATION_Conv is
       new Address_To_Named_Access_Conversions (
          C.winternl.struct_OBJECT_NAME_INFORMATION,
-         C.winternl.struct_OBJECT_NAME_INFORMATION_ptr);
+         C.winternl.POBJECT_NAME_INFORMATION);
 
    function "+" (Left : Name_Pointer; Right : C.ptrdiff_t)
       return Name_Pointer
@@ -159,8 +159,7 @@ package body System.Native_IO.Names is
          end if;
       end if;
       Unicode_Name :=
-         OBJECT_NAME_INFORMATION_ptr_Conv.To_Pointer (
-            Address (Info)).Name'Access;
+         POBJECT_NAME_INFORMATION_Conv.To_Pointer (Address (Info)).Name'Access;
       --  To DOS name.
       if C.winbase.GetLogicalDriveStrings (Drives'Length, Drives (0)'Access) >=
          Drives'Length

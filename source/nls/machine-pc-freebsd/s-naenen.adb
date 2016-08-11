@@ -11,6 +11,11 @@ package body System.Native_Environment_Encoding is
    use type C.signed_int;
    use type C.size_t;
 
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+   package char_const_ptr_Conv is
+      new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
+
    procedure Default_Substitute (
       Encoding : Encoding_Id;
       Item : out Ada.Streams.Stream_Element_Array;
@@ -194,15 +199,13 @@ package body System.Native_Environment_Encoding is
       Out_Last : out Ada.Streams.Stream_Element_Offset;
       Status : out Continuing_Status_Type)
    is
-      package C_Conv is
-         new Address_To_Constant_Access_Conversions (C.char, C.char_const_ptr);
-      package V_Conv is
-         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       NC_Object : Non_Controlled_Converter
          renames Controlled.Reference (Object).all;
-      Pointer : aliased C.char_const_ptr := C_Conv.To_Pointer (Item'Address);
+      Pointer : aliased C.char_const_ptr :=
+         char_const_ptr_Conv.To_Pointer (Item'Address);
       Size : aliased C.size_t := Item'Length;
-      Out_Pointer : aliased C.char_ptr := V_Conv.To_Pointer (Out_Item'Address);
+      Out_Pointer : aliased C.char_ptr :=
+         char_ptr_Conv.To_Pointer (Out_Item'Address);
       Out_Size : aliased C.size_t := Out_Item'Length;
       errno : C.signed_int;
    begin
@@ -242,11 +245,10 @@ package body System.Native_Environment_Encoding is
       Status : out Finishing_Status_Type)
    is
       pragma Unreferenced (Finish);
-      package V_Conv is
-         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       NC_Object : Non_Controlled_Converter
          renames Controlled.Reference (Object).all;
-      Out_Pointer : aliased C.char_ptr := V_Conv.To_Pointer (Out_Item'Address);
+      Out_Pointer : aliased C.char_ptr :=
+         char_ptr_Conv.To_Pointer (Out_Item'Address);
       Out_Size : aliased C.size_t := Out_Item'Length;
       errno : C.signed_int;
    begin

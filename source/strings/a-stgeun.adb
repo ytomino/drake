@@ -8,7 +8,12 @@ package body Ada.Strings.Generic_Unbounded is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
-   package Data_Cast is
+   package FSA_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         Fixed_String,
+         Fixed_String_Access);
+
+   package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
    subtype Nonnull_Data_Access is not null Data_Access;
@@ -55,13 +60,9 @@ package body Ada.Strings.Generic_Unbounded is
 
    procedure Adjust_Allocated (Data : not null Data_Access);
    procedure Adjust_Allocated (Data : not null Data_Access) is
-      package Fixed_String_Access_Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Fixed_String,
-            Fixed_String_Access);
       Header_Size : constant System.Storage_Elements.Storage_Count :=
          Generic_Unbounded.Data'Size / Standard'Storage_Unit;
-      M : constant System.Address := Data_Cast.To_Address (Data);
+      M : constant System.Address := DA_Conv.To_Address (Data);
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
          System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
@@ -79,7 +80,7 @@ package body Ada.Strings.Generic_Unbounded is
                   * Standard'Storage_Unit
                   / String_Type'Component_Size);
       end if;
-      Data.Items := Fixed_String_Access_Conv.To_Pointer (M + Header_Size);
+      Data.Items := FSA_Conv.To_Pointer (M + Header_Size);
    end Adjust_Allocated;
 
    function Allocate_Data (
@@ -93,7 +94,7 @@ package body Ada.Strings.Generic_Unbounded is
    is
       M : constant System.Address :=
          System.Standard_Allocators.Allocate (Allocation_Size (Capacity));
-      Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
+      Result : constant not null Data_Access := DA_Conv.To_Pointer (M);
    begin
       Result.Reference_Count := 1;
       Result.Max_Length := Max_Length;
@@ -104,7 +105,7 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access) is
    begin
-      System.Standard_Allocators.Free (Data_Cast.To_Address (Downcast (Data)));
+      System.Standard_Allocators.Free (DA_Conv.To_Address (Downcast (Data)));
       Data := null;
    end Free_Data;
 
@@ -122,10 +123,10 @@ package body Ada.Strings.Generic_Unbounded is
       pragma Unreferenced (Length);
       M : constant System.Address :=
          System.Standard_Allocators.Reallocate (
-            Data_Cast.To_Address (Downcast (Data)),
+            DA_Conv.To_Address (Downcast (Data)),
             Allocation_Size (Capacity));
    begin
-      Data := Upcast (Data_Cast.To_Pointer (M));
+      Data := Upcast (DA_Conv.To_Pointer (M));
       Downcast (Data).Max_Length := Max_Length;
       Adjust_Allocated (Downcast (Data));
    end Reallocate_Data;

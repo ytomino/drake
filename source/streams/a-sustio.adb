@@ -9,7 +9,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
    procedure Free is
       new Unchecked_Deallocation (Stream_Type, Stream_Access);
 
-   package Data_Cast is
+   package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
    subtype Nonnull_Data_Access is not null Data_Access;
@@ -59,7 +59,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Stream_Element_Array'Component_Size rem Standard'Storage_Unit = 0;
       Header_Size : constant System.Storage_Elements.Storage_Count :=
          Unbounded_Storage_IO.Data'Size / Standard'Storage_Unit;
-      M : constant System.Address := Data_Cast.To_Address (Data);
+      M : constant System.Address := DA_Conv.To_Address (Data);
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
          System.System_Allocators.Allocated_Size (M) - Header_Size;
       Allocated_Capacity : Stream_Element_Count;
@@ -89,7 +89,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
    is
       M : constant System.Address :=
          System.Standard_Allocators.Allocate (Allocation_Size (Capacity));
-      Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
+      Result : constant not null Data_Access := DA_Conv.To_Pointer (M);
    begin
       Result.Reference_Count := 1;
       Result.Max_Length := Max_Length;
@@ -100,7 +100,7 @@ package body Ada.Streams.Unbounded_Storage_IO is
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access) is
    begin
-      System.Standard_Allocators.Free (Data_Cast.To_Address (Downcast (Data)));
+      System.Standard_Allocators.Free (DA_Conv.To_Address (Downcast (Data)));
       Data := null;
    end Free_Data;
 
@@ -118,10 +118,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
       pragma Unreferenced (Length);
       M : constant System.Address :=
          System.Standard_Allocators.Reallocate (
-            Data_Cast.To_Address (Downcast (Data)),
+            DA_Conv.To_Address (Downcast (Data)),
             Allocation_Size (Capacity));
    begin
-      Data := Upcast (Data_Cast.To_Pointer (M));
+      Data := Upcast (DA_Conv.To_Pointer (M));
       Downcast (Data).Max_Length := Max_Length;
       Adjust_Allocated (Downcast (Data));
    end Reallocate_Data;

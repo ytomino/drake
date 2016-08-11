@@ -10,21 +10,22 @@ package body System.Program is
    use type Storage_Elements.Storage_Offset;
    use type C.windef.DWORD;
 
+   package LPWSTR_Conv is
+      new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
+
+   --  implementation
+
    function Full_Name return String is
-      package Conv is
-         new Address_To_Named_Access_Conversions (
-            C.winnt.WCHAR,
-            C.winnt.LPWSTR);
       procedure Finally (X : in out C.winnt.LPWSTR);
       procedure Finally (X : in out C.winnt.LPWSTR) is
       begin
-         Standard_Allocators.Free (Conv.To_Address (X));
+         Standard_Allocators.Free (LPWSTR_Conv.To_Address (X));
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
       Buffer_Length : C.windef.DWORD := 1024;
       Buffer : aliased C.winnt.LPWSTR :=
-         Conv.To_Pointer (
+         LPWSTR_Conv.To_Pointer (
             Standard_Allocators.Allocate (
                Storage_Elements.Storage_Offset (Buffer_Length)
                   * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
@@ -44,9 +45,9 @@ package body System.Program is
          end;
          Buffer_Length := Buffer_Length * 2;
          Buffer :=
-            Conv.To_Pointer (
+            LPWSTR_Conv.To_Pointer (
                Standard_Allocators.Reallocate (
-                  Conv.To_Address (Buffer),
+                  LPWSTR_Conv.To_Address (Buffer),
                   Storage_Elements.Storage_Offset (Buffer_Length)
                      * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       end loop;

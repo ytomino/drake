@@ -24,13 +24,13 @@ package body System.Atomic_Primitives is
    type uint64_Access is access all uint64;
    for uint64_Access'Storage_Size use 0;
 
-   package uint8_Conv is
+   package uint8_Access_Conv is
       new Address_To_Named_Access_Conversions (uint8, uint8_Access);
-   package uint16_Conv is
+   package uint16_Access_Conv is
       new Address_To_Named_Access_Conversions (uint16, uint16_Access);
-   package uint32_Conv is
+   package uint32_Access_Conv is
       new Address_To_Named_Access_Conversions (uint32, uint32_Access);
-   package uint64_Conv is
+   package uint64_Access_Conv is
       new Address_To_Named_Access_Conversions (uint64, uint64_Access);
 
    --  Use sequentially consistent model for general purpose.
@@ -106,22 +106,22 @@ package body System.Atomic_Primitives is
 
    function Lock_Free_Read_8 (Ptr : Address) return Interfaces.Unsigned_8 is
    begin
-      return atomic_load (uint8_Conv.To_Pointer (Ptr));
+      return atomic_load (uint8_Access_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_8;
 
    function Lock_Free_Read_16 (Ptr : Address) return Interfaces.Unsigned_16 is
    begin
-      return atomic_load (uint16_Conv.To_Pointer (Ptr));
+      return atomic_load (uint16_Access_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_16;
 
    function Lock_Free_Read_32 (Ptr : Address) return Interfaces.Unsigned_32 is
    begin
-      return atomic_load (uint32_Conv.To_Pointer (Ptr));
+      return atomic_load (uint32_Access_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_32;
 
    function Lock_Free_Read_64 (Ptr : Address) return Interfaces.Unsigned_64 is
    begin
-      return atomic_load (uint64_Conv.To_Pointer (Ptr));
+      return atomic_load (uint64_Access_Conv.To_Pointer (Ptr));
    end Lock_Free_Read_64;
 
    function Lock_Free_Try_Write_8 (
@@ -131,7 +131,7 @@ package body System.Atomic_Primitives is
       return Boolean is
    begin
       return atomic_compare_exchange (
-         uint8_Conv.To_Pointer (Ptr),
+         uint8_Access_Conv.To_Pointer (Ptr),
          Expected'Unrestricted_Access,
          Desired);
    end Lock_Free_Try_Write_8;
@@ -143,7 +143,7 @@ package body System.Atomic_Primitives is
       return Boolean is
    begin
       return atomic_compare_exchange (
-         uint16_Conv.To_Pointer (Ptr),
+         uint16_Access_Conv.To_Pointer (Ptr),
          Expected'Unrestricted_Access,
          Desired);
    end Lock_Free_Try_Write_16;
@@ -155,7 +155,7 @@ package body System.Atomic_Primitives is
       return Boolean is
    begin
       return atomic_compare_exchange (
-         uint32_Conv.To_Pointer (Ptr),
+         uint32_Access_Conv.To_Pointer (Ptr),
          Expected'Unrestricted_Access,
          Desired);
    end Lock_Free_Try_Write_32;
@@ -167,7 +167,7 @@ package body System.Atomic_Primitives is
       return Boolean is
    begin
       return atomic_compare_exchange (
-         uint64_Conv.To_Pointer (Ptr),
+         uint64_Access_Conv.To_Pointer (Ptr),
          Expected'Unrestricted_Access,
          Desired);
    end Lock_Free_Try_Write_64;

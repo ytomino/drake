@@ -9,7 +9,7 @@ package body System.Tasking.Rendezvous is
    use Ada.Exception_Identification.From_Here;
    use type Ada.Exceptions.Exception_Id;
 
-   package Task_Record_Conv is
+   package Task_Id_Conv is
       new Address_To_Named_Access_Conversions (
          Tasks.Task_Record,
          Tasks.Task_Id);
@@ -151,11 +151,11 @@ package body System.Tasking.Rendezvous is
       E : Task_Entry_Index;
       Uninterpreted_Data : Address) is
    begin
-      if Tasks.Elaborated (Task_Record_Conv.To_Pointer (Acceptor))
-         and then not Tasks.Activated (Task_Record_Conv.To_Pointer (Acceptor))
+      if Tasks.Elaborated (Task_Id_Conv.To_Pointer (Acceptor))
+         and then not Tasks.Activated (Task_Id_Conv.To_Pointer (Acceptor))
       then
          --  in extended return statement
-         Tasks.Activate (Task_Record_Conv.To_Pointer (Acceptor));
+         Tasks.Activate (Task_Id_Conv.To_Pointer (Acceptor));
       end if;
       declare
          package Holder is
@@ -167,7 +167,7 @@ package body System.Tasking.Rendezvous is
             Previous => null,
             E => E,
             Uninterpreted_Data => Uninterpreted_Data,
-            Caller => Task_Record_Conv.To_Address (Tasks.Current_Task_Id),
+            Caller => Task_Id_Conv.To_Address (Tasks.Current_Task_Id),
             Waiting => <>, -- default initializer
             X => <>); -- default initializer
          Aborted : Boolean;
@@ -175,7 +175,7 @@ package body System.Tasking.Rendezvous is
          Synchronous_Objects.Initialize (The_Node.Waiting);
          Holder.Assign (The_Node.Waiting);
          Tasks.Call (
-            Task_Record_Conv.To_Pointer (Acceptor),
+            Task_Id_Conv.To_Pointer (Acceptor),
             The_Node.Super'Unchecked_Access);
          Tasks.Enable_Abort;
          Synchronous_Objects.Abortable.Wait (
@@ -186,7 +186,7 @@ package body System.Tasking.Rendezvous is
                Already_Taken : Boolean;
             begin
                Tasks.Uncall (
-                  Task_Record_Conv.To_Pointer (Acceptor),
+                  Task_Id_Conv.To_Pointer (Acceptor),
                   The_Node.Super'Unchecked_Access,
                   Already_Taken => Already_Taken);
                if Already_Taken then
@@ -236,7 +236,7 @@ package body System.Tasking.Rendezvous is
 
    function Callable (T : Task_Id) return Boolean is
    begin
-      return Tasks.Callable (Task_Record_Conv.To_Pointer (T));
+      return Tasks.Callable (Task_Id_Conv.To_Pointer (T));
    end Callable;
 
    function Task_Entry_Caller (D : Task_Entry_Nesting_Depth) return Task_Id is

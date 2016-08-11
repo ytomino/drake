@@ -21,11 +21,11 @@ package body System.Unbounded_Stack_Allocators is
             + Storage_Elements.Integer_Address'Mod (-Required) mod Alignment);
    end Ceiling_Page_Size;
 
-   package Conv is
+   package BA_Conv is
       new Address_To_Named_Access_Conversions (Block, Block_Access);
 
    function Cast (X : Address) return Block_Access
-      renames Conv.To_Pointer;
+      renames BA_Conv.To_Pointer;
 
    --  implementation
 

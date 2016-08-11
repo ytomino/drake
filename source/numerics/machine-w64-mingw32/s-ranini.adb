@@ -9,14 +9,15 @@ package body System.Random_Initiators is
    use type C.windef.WINBOOL;
    use type C.windef.DWORD; -- error code
 
+   package LPBYTE_Conv is
+      new Address_To_Named_Access_Conversions (C.windef.BYTE, C.windef.LPBYTE);
+
+   --  implementation
+
    procedure Get (
       Item : Address;
       Size : Storage_Elements.Storage_Count)
    is
-      package BYTE_ptr_Conv is
-         new Address_To_Named_Access_Conversions (
-            C.windef.BYTE,
-            C.windef.BYTE_ptr);
       Context : aliased C.wincrypt.HCRYPTPROV;
       Success : C.windef.WINBOOL;
    begin
@@ -34,7 +35,7 @@ package body System.Random_Initiators is
          Success := C.wincrypt.CryptGenRandom (
             Context,
             C.windef.DWORD (Size),
-            BYTE_ptr_Conv.To_Pointer (Item));
+            LPBYTE_Conv.To_Pointer (Item));
          exit when Success /= C.windef.FALSE
             or else C.winbase.GetLastError /= C.winerror.ERROR_BUSY;
          C.winbase.Sleep (10); -- ???

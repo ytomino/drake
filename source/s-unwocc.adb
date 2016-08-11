@@ -34,6 +34,11 @@ package body System.Unwind.Occurrences is
 
    --  for Set_Foreign_Occurrence
 
+   package MOA_Conv is
+      new Address_To_Named_Access_Conversions (
+         Representation.Machine_Occurrence,
+         Representation.Machine_Occurrence_Access);
+
    Foreign_Exception : aliased Exception_Data
       with Import,
          Convention => Ada,
@@ -197,12 +202,8 @@ package body System.Unwind.Occurrences is
 
    procedure Set_Foreign_Occurrence (
       X : in out Exception_Occurrence;
-      Machine_Occurrence : not null Representation.Machine_Occurrence_Access)
-   is
-      package MOA_Conv is
-         new Address_To_Named_Access_Conversions (
-            Representation.Machine_Occurrence,
-            Representation.Machine_Occurrence_Access);
+      Machine_Occurrence :
+         not null Representation.Machine_Occurrence_Access) is
    begin
       X.Id := Foreign_Exception'Access;
       X.Machine_Occurrence := MOA_Conv.To_Address (Machine_Occurrence);

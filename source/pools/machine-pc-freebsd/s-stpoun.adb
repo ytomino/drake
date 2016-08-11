@@ -3,7 +3,7 @@ with System.Standard_Allocators;
 package body System.Storage_Pools.Unbounded is
    use type Storage_Elements.Storage_Offset;
 
-   package Conv is
+   package HA_Conv is
       new Address_To_Named_Access_Conversions (Header, Header_Access);
 
    --  implementation
@@ -14,7 +14,7 @@ package body System.Storage_Pools.Unbounded is
          declare
             Next : constant Header_Access := Object.List.Next;
          begin
-            Standard_Allocators.Free (Conv.To_Address (Object.List));
+            Standard_Allocators.Free (HA_Conv.To_Address (Object.List));
             Object.List := Next;
          end;
       end loop;
@@ -37,9 +37,9 @@ package body System.Storage_Pools.Unbounded is
          Standard_Allocators.Free (X);
          raise Storage_Error;
       end if;
-      Conv.To_Pointer (X).Previous := Pool.List;
-      Conv.To_Pointer (X).Next := null;
-      Pool.List := Conv.To_Pointer (X);
+      HA_Conv.To_Pointer (X).Previous := Pool.List;
+      HA_Conv.To_Pointer (X).Next := null;
+      Pool.List := HA_Conv.To_Pointer (X);
    end Allocate;
 
    overriding procedure Deallocate (
@@ -55,12 +55,12 @@ package body System.Storage_Pools.Unbounded is
       X := Storage_Address
          - Storage_Elements.Storage_Offset'(
             Header'Size / Standard'Storage_Unit);
-      if Conv.To_Pointer (X).Previous = null then
-         Pool.List := Conv.To_Pointer (X).Next;
+      if HA_Conv.To_Pointer (X).Previous = null then
+         Pool.List := HA_Conv.To_Pointer (X).Next;
       else
-         Conv.To_Pointer (X).Previous.Next := Conv.To_Pointer (X).Next;
+         HA_Conv.To_Pointer (X).Previous.Next := HA_Conv.To_Pointer (X).Next;
       end if;
-      Conv.To_Pointer (X).Next.Previous := Conv.To_Pointer (X).Previous;
+      HA_Conv.To_Pointer (X).Next.Previous := HA_Conv.To_Pointer (X).Previous;
       Standard_Allocators.Free (X);
    end Deallocate;
 

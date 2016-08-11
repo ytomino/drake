@@ -189,7 +189,7 @@ package body System.Tasks is
 
    --  task record
 
-   package Task_Record_Conv is
+   package Task_Id_Conv is
       new Address_To_Named_Access_Conversions (Task_Record, Task_Id);
 
    procedure Append_To_Completion_List (
@@ -471,7 +471,7 @@ package body System.Tasks is
          Name (Name_Last) := ':';
       end if;
       Formatting.Address.Image (
-         Task_Record_Conv.To_Address (T),
+         Task_Id_Conv.To_Address (T),
          Name (
             Name_Last + 1 ..
             Name_Last + Formatting.Address.Address_String'Length),
@@ -499,7 +499,7 @@ package body System.Tasks is
       Result : Native_Tasks.Result_Type;
       SEH : aliased array (1 .. 2) of Integer;
       Local : aliased Runtime_Context.Task_Local_Storage;
-      T : Task_Id := Task_Record_Conv.To_Pointer (To_Address (Rec));
+      T : Task_Id := Task_Id_Conv.To_Pointer (To_Address (Rec));
       No_Detached : Boolean;
       Cause : Cause_Of_Termination;
    begin
@@ -643,7 +643,7 @@ package body System.Tasks is
       else
          Native_Tasks.Create (
             T.Handle,
-            To_Parameter (Task_Record_Conv.To_Address (T)),
+            To_Parameter (Task_Id_Conv.To_Address (T)),
             Thread'Access,
             Error => Creation_Error);
          if Creation_Error then
@@ -891,7 +891,7 @@ package body System.Tasks is
 
    --  queue
 
-   package Queue_Node_Conv is
+   package QNA_Conv is
       new Address_To_Named_Access_Conversions (
          Synchronous_Objects.Queue_Node,
          Synchronous_Objects.Queue_Node_Access);
@@ -905,7 +905,7 @@ package body System.Tasks is
       Params : Address)
       return Boolean is
    begin
-      return The_Node = Queue_Node_Conv.To_Pointer (Params);
+      return The_Node = QNA_Conv.To_Pointer (Params);
    end Uncall_Filter;
 
    --  implementation
@@ -1575,7 +1575,7 @@ package body System.Tasks is
       Synchronous_Objects.Take (
          T.Rendezvous.Calling,
          Taken,
-         Queue_Node_Conv.To_Address (Item),
+         QNA_Conv.To_Address (Item),
          Uncall_Filter'Access);
       Already_Taken := Taken = null;
       pragma Assert (Taken = null or else Taken = Item);

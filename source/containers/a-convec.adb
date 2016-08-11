@@ -8,7 +8,7 @@ package body Ada.Containers.Vectors is
 
    type Element_Array_Access is access all Element_Array;
 
-   package Data_Cast is
+   package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
    function Upcast is
@@ -21,7 +21,7 @@ package body Ada.Containers.Vectors is
 
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
-      Data : constant Data_Access := Data_Cast.To_Pointer (Params);
+      Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Type := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
@@ -748,7 +748,7 @@ package body Ada.Containers.Vectors is
          Array_Sorting.In_Place_Reverse (
             Index_Type'Pos (Index_Type'First),
             Index_Type'Pos (Last (Container)),
-            Data_Cast.To_Address (Downcast (Container.Super.Data)),
+            DA_Conv.To_Address (Downcast (Container.Super.Data)),
             Swap => Swap_Element'Access);
       end if;
    end Reverse_Elements;
@@ -764,7 +764,7 @@ package body Ada.Containers.Vectors is
       Swap_Element (
          Index_Type'Pos (I),
          Index_Type'Pos (J),
-         Data_Cast.To_Address (Downcast (Container.Super.Data)));
+         DA_Conv.To_Address (Downcast (Container.Super.Data)));
    end Swap;
 
    function First_Index (Container : Vector'Class)
@@ -1041,7 +1041,7 @@ package body Ada.Containers.Vectors is
       function LT (Left, Right : Integer; Params : System.Address)
          return Boolean
       is
-         Data : constant Data_Access := Data_Cast.To_Pointer (Params);
+         Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       begin
          return Data.Items (Index_Type'Val (Left)) <
             Data.Items (Index_Type'Val (Right));
@@ -1056,7 +1056,7 @@ package body Ada.Containers.Vectors is
             return Array_Sorting.Is_Sorted (
                Index_Type'Pos (Index_Type'First),
                Index_Type'Pos (Last (Container)),
-               Data_Cast.To_Address (Downcast (Container.Super.Data)),
+               DA_Conv.To_Address (Downcast (Container.Super.Data)),
                LT => LT'Access);
          end if;
       end Is_Sorted;
@@ -1068,7 +1068,7 @@ package body Ada.Containers.Vectors is
             Array_Sorting.In_Place_Merge_Sort (
                Index_Type'Pos (Index_Type'First),
                Index_Type'Pos (Last (Container)),
-               Data_Cast.To_Address (Downcast (Container.Super.Data)),
+               DA_Conv.To_Address (Downcast (Container.Super.Data)),
                LT => LT'Access,
                Swap => Swap_Element'Access);
          end if;
@@ -1097,7 +1097,7 @@ package body Ada.Containers.Vectors is
                      Index_Type'Pos (Index_Type'First),
                      Integer (Index_Type'First) - 1 + Integer (Old_Length),
                      Index_Type'Pos (Last (Target)),
-                     Data_Cast.To_Address (Downcast (Target.Super.Data)),
+                     DA_Conv.To_Address (Downcast (Target.Super.Data)),
                      LT => LT'Access,
                      Swap => Swap_Element'Access);
                end if;

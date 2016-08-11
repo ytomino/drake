@@ -11,7 +11,7 @@ package body Separated is
    use type C.basetsd.DWORD64;
    use type C.winnt.PRUNTIME_FUNCTION;
 
-   package PCDWORD64_Conv is
+   package DWORD64_const_ptr_Conv is
       new Address_To_Constant_Access_Conversions (
          C.basetsd.DWORD64,
          C.basetsd.DWORD64_const_ptr);
@@ -75,7 +75,7 @@ package body Separated is
             if RuntimeFunction = null then
                --  In case of failure, assume this is a leaf function.
                context.Rip :=
-                  PCDWORD64_Conv.To_Pointer (
+                  DWORD64_const_ptr_Conv.To_Pointer (
                      System'To_Address (context.Rsp)).all;
                context.Rsp := context.Rsp + 8;
             else
