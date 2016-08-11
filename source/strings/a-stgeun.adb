@@ -8,21 +8,26 @@ package body Ada.Strings.Generic_Unbounded is
    use type System.Address;
    use type System.Storage_Elements.Storage_Offset;
 
-   package Data_Cast is
+   package FSA_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         Fixed_String,
+         Fixed_String_Access);
+
+   package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
-   subtype Not_Null_Data_Access is not null Data_Access;
+   subtype Nonnull_Data_Access is not null Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (
-         Not_Null_Data_Access,
+         Nonnull_Data_Access,
          System.Reference_Counting.Container);
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Data_Access);
+         Nonnull_Data_Access);
 
-   type Data_Access_Access is access all Not_Null_Data_Access;
+   type Data_Access_Access is access all Nonnull_Data_Access;
    type Container_Access is access all System.Reference_Counting.Container;
 
    function Upcast is
@@ -55,27 +60,27 @@ package body Ada.Strings.Generic_Unbounded is
 
    procedure Adjust_Allocated (Data : not null Data_Access);
    procedure Adjust_Allocated (Data : not null Data_Access) is
-      package Fixed_String_Access_Conv is
-         new System.Address_To_Named_Access_Conversions (
-            Fixed_String,
-            Fixed_String_Access);
       Header_Size : constant System.Storage_Elements.Storage_Count :=
          Generic_Unbounded.Data'Size / Standard'Storage_Unit;
-      M : constant System.Address := Data_Cast.To_Address (Data);
+      M : constant System.Address := DA_Conv.To_Address (Data);
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
          System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
       if String_Type'Component_Size
          rem Standard'Storage_Unit = 0
       then -- optimized for packed
-         Data.Capacity := Integer (
-            Usable_Size
-            / (String_Type'Component_Size / Standard'Storage_Unit));
+         Data.Capacity :=
+            Integer (
+               Usable_Size
+                  / (String_Type'Component_Size / Standard'Storage_Unit));
       else -- unpacked
-         Data.Capacity := Integer (
-            Usable_Size * Standard'Storage_Unit / String_Type'Component_Size);
+         Data.Capacity :=
+            Integer (
+               Usable_Size
+                  * Standard'Storage_Unit
+                  / String_Type'Component_Size);
       end if;
-      Data.Items := Fixed_String_Access_Conv.To_Pointer (M + Header_Size);
+      Data.Items := FSA_Conv.To_Pointer (M + Header_Size);
    end Adjust_Allocated;
 
    function Allocate_Data (
@@ -89,7 +94,7 @@ package body Ada.Strings.Generic_Unbounded is
    is
       M : constant System.Address :=
          System.Standard_Allocators.Allocate (Allocation_Size (Capacity));
-      Result : constant not null Data_Access := Data_Cast.To_Pointer (M);
+      Result : constant not null Data_Access := DA_Conv.To_Pointer (M);
    begin
       Result.Reference_Count := 1;
       Result.Max_Length := Max_Length;
@@ -100,7 +105,7 @@ package body Ada.Strings.Generic_Unbounded is
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access);
    procedure Free_Data (Data : in out System.Reference_Counting.Data_Access) is
    begin
-      System.Standard_Allocators.Free (Data_Cast.To_Address (Downcast (Data)));
+      System.Standard_Allocators.Free (DA_Conv.To_Address (Downcast (Data)));
       Data := null;
    end Free_Data;
 
@@ -118,10 +123,10 @@ package body Ada.Strings.Generic_Unbounded is
       pragma Unreferenced (Length);
       M : constant System.Address :=
          System.Standard_Allocators.Reallocate (
-            Data_Cast.To_Address (Downcast (Data)),
+            DA_Conv.To_Address (Downcast (Data)),
             Allocation_Size (Capacity));
    begin
-      Data := Upcast (Data_Cast.To_Pointer (M));
+      Data := Upcast (DA_Conv.To_Pointer (M));
       Downcast (Data).Max_Length := Max_Length;
       Adjust_Allocated (Downcast (Data));
    end Reallocate_Data;
@@ -152,19 +157,21 @@ package body Ada.Strings.Generic_Unbounded is
    end Copy_Data;
 
    procedure Reallocate (
-      Item : in out Unbounded_String;
+      Source : in out Unbounded_String;
       Length : Natural;
       Capacity : Natural);
    procedure Reallocate (
-      Item : in out Unbounded_String;
+      Source : in out Unbounded_String;
       Length : Natural;
       Capacity : Natural) is
    begin
       System.Reference_Counting.Unique (
-         Target => Upcast (Item.Data'Unchecked_Access),
-         Target_Length => System.Reference_Counting.Length_Type (Item.Length),
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Generic_Unbounded.Capacity (Item)),
+         Target => Upcast (Source.Data'Unchecked_Access),
+         Target_Length =>
+            System.Reference_Counting.Length_Type (Source.Length),
+         Target_Capacity =>
+            System.Reference_Counting.Length_Type (
+               Generic_Unbounded.Capacity (Source)),
          New_Length => System.Reference_Counting.Length_Type (Length),
          New_Capacity => System.Reference_Counting.Length_Type (Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),
@@ -173,14 +180,6 @@ package body Ada.Strings.Generic_Unbounded is
          Free => Free_Data'Access);
    end Reallocate;
 
-   procedure Unique (Item : in out Unbounded_String);
-   procedure Unique (Item : in out Unbounded_String) is
-   begin
-      if System.Reference_Counting.Shared (Upcast (Item.Data)) then
-         Reallocate (Item, Item.Length, Item.Length); -- shrinking
-      end if;
-   end Unique;
-
    function Create (Data : not null Data_Access; Length : Natural)
       return Unbounded_String;
    function Create (Data : not null Data_Access; Length : Natural)
@@ -188,20 +187,6 @@ package body Ada.Strings.Generic_Unbounded is
    begin
       return (Finalization.Controlled with Data => Data, Length => Length);
    end Create;
-
-   procedure Assign (
-      Target : in out Unbounded_String;
-      Source : Unbounded_String);
-   procedure Assign (
-      Target : in out Unbounded_String;
-      Source : Unbounded_String) is
-   begin
-      System.Reference_Counting.Assign (
-         Upcast (Target.Data'Unchecked_Access),
-         Upcast (Source.Data'Unrestricted_Access),
-         Free => Free_Data'Access);
-      Target.Length := Source.Length;
-   end Assign;
 
    --  implementation
 
@@ -250,19 +235,19 @@ package body Ada.Strings.Generic_Unbounded is
       Source.Length := Length;
    end Set_Length;
 
-   function Capacity (Source : Unbounded_String'Class) return Natural is
+   function Capacity (Source : Unbounded_String) return Natural is
       pragma Suppress (Access_Check);
    begin
       return Source.Data.Capacity;
    end Capacity;
 
    procedure Reserve_Capacity (
-      Item : in out Unbounded_String;
+      Source : in out Unbounded_String;
       Capacity : Natural)
    is
-      New_Capacity : constant Natural := Integer'Max (Capacity, Item.Length);
+      New_Capacity : constant Natural := Integer'Max (Capacity, Source.Length);
    begin
-      Reallocate (Item, Item.Length, New_Capacity);
+      Reallocate (Source, Source.Length, New_Capacity);
    end Reserve_Capacity;
 
    function To_Unbounded_String (Source : String_Type)
@@ -322,7 +307,7 @@ package body Ada.Strings.Generic_Unbounded is
          declare
             Old_Length : constant Natural := Source.Length;
          begin
-            if Old_Length = 0 then
+            if Old_Length = 0 and then Capacity (Source) < New_Item_Length then
                Assign (Source, New_Item);
             else
                declare
@@ -572,6 +557,30 @@ package body Ada.Strings.Generic_Unbounded is
       return not (Left < Right);
    end ">=";
 
+   procedure Assign (
+      Target : in out Unbounded_String;
+      Source : Unbounded_String) is
+   begin
+      System.Reference_Counting.Assign (
+         Upcast (Target.Data'Unchecked_Access),
+         Upcast (Source.Data'Unrestricted_Access),
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+   end Assign;
+
+   procedure Move (
+      Target : in out Unbounded_String;
+      Source : in out Unbounded_String) is
+   begin
+      System.Reference_Counting.Move (
+         Upcast (Target.Data'Unchecked_Access),
+         Upcast (Source.Data'Unrestricted_Access),
+         Sentinel => Upcast (Empty_Data'Unrestricted_Access),
+         Free => Free_Data'Access);
+      Target.Length := Source.Length;
+      Source.Length := 0;
+   end Move;
+
    function Constant_Reference (
       Source : aliased Unbounded_String)
       return Slicing.Constant_Reference_Type
@@ -597,6 +606,27 @@ package body Ada.Strings.Generic_Unbounded is
          Source.Length);
    end Reference;
 
+   procedure Unique (Source : in out Unbounded_String'Class) is
+   begin
+      if System.Reference_Counting.Shared (Upcast (Source.Data)) then
+         Reallocate (
+            Unbounded_String (Source),
+            Source.Length,
+            Source.Length); -- shrinking
+      end if;
+   end Unique;
+
+   procedure Unique_And_Set_Length (
+      Source : in out Unbounded_String'Class;
+      Length : Natural) is
+   begin
+      if System.Reference_Counting.Shared (Upcast (Source.Data)) then
+         Reallocate (Unbounded_String (Source), Length, Length); -- shrinking
+      else
+         Set_Length (Unbounded_String (Source), Length);
+      end if;
+   end Unique_And_Set_Length;
+
    overriding procedure Adjust (Object : in out Unbounded_String) is
    begin
       System.Reference_Counting.Adjust (Upcast (Object.Data'Unchecked_Access));
@@ -610,875 +640,6 @@ package body Ada.Strings.Generic_Unbounded is
       Object.Data := Empty_Data'Unrestricted_Access;
       Object.Length := 0;
    end Finalize;
-
-   package body Generic_Functions is
-
-      function Index (
-         Source : Unbounded_String;
-         Pattern : String_Type;
-         From : Positive;
-         Going : Direction := Forward)
-         return Natural
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Fixed_Functions.Index (
-            Source.Data.Items (1 .. Source.Length),
-            Pattern,
-            From,
-            Going);
-      end Index;
-
-      function Index (
-         Source : Unbounded_String;
-         Pattern : String_Type;
-         Going : Direction := Forward)
-         return Natural
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Fixed_Functions.Index (
-            Source.Data.Items (1 .. Source.Length),
-            Pattern,
-            Going);
-      end Index;
-
-      function Index_Non_Blank (
-         Source : Unbounded_String;
-         From : Positive;
-         Going : Direction := Forward)
-         return Natural
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Fixed_Functions.Index_Non_Blank (
-            Source.Data.Items (1 .. Source.Length),
-            From,
-            Going);
-      end Index_Non_Blank;
-
-      function Index_Non_Blank (
-         Source : Unbounded_String;
-         Going : Direction := Forward)
-         return Natural
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Fixed_Functions.Index_Non_Blank (
-            Source.Data.Items (1 .. Source.Length),
-            Going);
-      end Index_Non_Blank;
-
-      function Count (
-         Source : Unbounded_String;
-         Pattern : String_Type)
-         return Natural
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Fixed_Functions.Count (
-            Source.Data.Items (1 .. Source.Length),
-            Pattern);
-      end Count;
-
-      function Replace_Slice (
-         Source : Unbounded_String;
-         Low : Positive;
-         High : Natural;
-         By : String_Type)
-         return Unbounded_String
-      is
-         pragma Check (Pre,
-            Check =>
-               (Low <= Source.Length + 1 and then High <= Source.Length)
-               or else raise Index_Error);
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            if By'Length > 0 or else Low <= High then
-               if By'Length = 0 and then High = Source.Length then
-                  Assign (Result, Source); -- shared
-                  Set_Length (Result, Low - 1);
-               elsif Low > Source.Length then
-                  Assign (Result, Source); -- shared
-                  Append (Result, By);
-               else
-                  Set_Length (
-                     Result,
-                     Source.Length
-                        + By'Length
-                        - Integer'Max (High - Low + 1, 0));
-                  declare
-                     Dummy_Last : Natural;
-                  begin
-                     Fixed_Functions.Replace_Slice (
-                        Source.Data.Items (1 .. Source.Length),
-                        Low,
-                        High,
-                        By,
-                        Target => Result.Data.Items.all,
-                        Target_Last => Dummy_Last);
-                  end;
-               end if;
-            else
-               Assign (Result, Source); -- shared
-            end if;
-         end return;
-      end Replace_Slice;
-
-      procedure Replace_Slice (
-         Source : in out Unbounded_String;
-         Low : Positive;
-         High : Natural;
-         By : String_Type)
-      is
-         pragma Check (Pre,
-            Check =>
-               (Low <= Source.Length + 1 and then High <= Source.Length)
-               or else raise Index_Error); -- CXA4032
-         pragma Suppress (Access_Check);
-      begin
-         if By'Length > 0 or else Low <= High then
-            if By'Length = 0 and then High = Source.Length then
-               Set_Length (Source, Low - 1);
-            elsif Low > Source.Length then
-               Append (Source, By);
-            else
-               declare
-                  Old_Length : constant Natural := Source.Length;
-                  New_Length : Natural;
-               begin
-                  Set_Length (
-                     Source,
-                     Old_Length
-                        + Integer'Max (
-                           By'Length - Integer'Max (High - Low + 1, 0),
-                           0));
-                  Unique (Source); -- for overwriting
-                  New_Length := Old_Length;
-                  Fixed_Functions.Replace_Slice (
-                     Source.Data.Items.all, -- (1 .. Source.Length)
-                     New_Length,
-                     Low,
-                     High,
-                     By);
-                  Set_Length (Source, New_Length);
-               end;
-            end if;
-         end if;
-      end Replace_Slice;
-
-      function Insert (
-         Source : Unbounded_String;
-         Before : Positive;
-         New_Item : String_Type)
-         return Unbounded_String
-      is
-         pragma Check (Pre,
-            Check => Before <= Source.Length + 1 or else raise Index_Error);
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            if New_Item'Length > 0 then
-               if Before > Source.Length then
-                  Assign (Result, Source); -- shared
-                  Append (Result, New_Item);
-               else
-                  Set_Length (Result, Source.Length + New_Item'Length);
-                  declare
-                     Dummy_Last : Natural;
-                  begin
-                     Fixed_Functions.Insert (
-                        Source.Data.Items (1 .. Source.Length),
-                        Before,
-                        New_Item,
-                        Target => Result.Data.Items.all,
-                        Target_Last => Dummy_Last);
-                  end;
-               end if;
-            else
-               Assign (Result, Source); -- shared
-            end if;
-         end return;
-      end Insert;
-
-      procedure Insert (
-         Source : in out Unbounded_String;
-         Before : Positive;
-         New_Item : String_Type)
-      is
-         pragma Check (Pre,
-            Check =>
-               Before <= Source.Length + 1
-               or else raise Index_Error); -- CXA4032
-         pragma Suppress (Access_Check);
-      begin
-         if New_Item'Length > 0 then
-            if Before > Source.Length then
-               Append (Source, New_Item);
-            else
-               declare
-                  Old_Length : constant Natural := Source.Length;
-                  New_Length : Natural;
-               begin
-                  Set_Length (Source, Old_Length + New_Item'Length);
-                  Unique (Source); -- for overwriting
-                  New_Length := Old_Length;
-                  Fixed_Functions.Insert (
-                     Source.Data.Items.all, -- (1 .. Source.Length)
-                     New_Length,
-                     Before,
-                     New_Item);
-                  Set_Length (Source, New_Length);
-               end;
-            end if;
-         end if;
-      end Insert;
-
-      function Overwrite (
-         Source : Unbounded_String;
-         Position : Positive;
-         New_Item : String_Type)
-         return Unbounded_String is
-      begin
-         return Replace_Slice (
-            Source,
-            Position, -- checking Index_Error
-            Integer'Min (Position + New_Item'Length - 1, Source.Length),
-            New_Item);
-      end Overwrite;
-
-      procedure Overwrite (
-         Source : in out Unbounded_String;
-         Position : Positive;
-         New_Item : String_Type) is
-      begin
-         Replace_Slice (
-            Source,
-            Position, -- checking Index_Error, CXA4032
-            Integer'Min (Position + New_Item'Length - 1, Source.Length),
-            New_Item);
-      end Overwrite;
-
-      function Delete (
-         Source : Unbounded_String;
-         From : Positive;
-         Through : Natural)
-         return Unbounded_String
-      is
-         pragma Check (Pre,
-            Check =>
-               (From <= Source.Length + 1 and then Through <= Source.Length)
-               or else raise Index_Error);
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            if From <= Through then
-               if Through >= Source.Length then
-                  Assign (Result, Source); -- shared
-                  Set_Length (Result, From - 1);
-               else
-                  Set_Length (Result, Source.Length - (Through - From + 1));
-                  declare
-                     Dummy_Last : Natural;
-                  begin
-                     Fixed_Functions.Delete (
-                        Source.Data.Items (1 .. Source.Length),
-                        From,
-                        Through,
-                        Target => Result.Data.Items.all,
-                        Target_Last => Dummy_Last);
-                  end;
-               end if;
-            else
-               Assign (Result, Source); -- shared
-            end if;
-         end return;
-      end Delete;
-
-      procedure Delete (
-         Source : in out Unbounded_String;
-         From : Positive;
-         Through : Natural)
-      is
-         pragma Check (Pre,
-            Check =>
-               (From <= Source.Length + 1 and then Through <= Source.Length)
-               or else raise Index_Error);
-         pragma Suppress (Access_Check);
-      begin
-         if From <= Through then
-            declare
-               Old_Length : constant Natural := Source.Length;
-               New_Length : Natural;
-            begin
-               if Through >= Old_Length then
-                  New_Length := From - 1;
-               else
-                  New_Length := Old_Length;
-                  Unique (Source); -- for overwriting
-                  Fixed_Functions.Delete (
-                     Source.Data.Items.all, -- (1 .. Old_Length)
-                     New_Length,
-                     From,
-                     Through);
-               end if;
-               Set_Length (Source, New_Length);
-            end;
-         end if;
-      end Delete;
-
-      function Trim (
-         Source : Unbounded_String;
-         Side : Trim_End;
-         Blank : Character_Type := Fixed_Functions.Space)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-         First : Positive;
-         Last : Natural;
-      begin
-         Fixed_Functions.Trim (
-            Source.Data.Items (1 .. Source.Length),
-            Side,
-            Blank,
-            First,
-            Last);
-         return Unbounded_Slice (Source, First, Last);
-      end Trim;
-
-      procedure Trim (
-         Source : in out Unbounded_String;
-         Side : Trim_End;
-         Blank : Character_Type := Fixed_Functions.Space)
-      is
-         pragma Suppress (Access_Check);
-         First : Positive;
-         Last : Natural;
-      begin
-         Fixed_Functions.Trim (
-            Source.Data.Items (1 .. Source.Length),
-            Side,
-            Blank,
-            First,
-            Last);
-         Unbounded_Slice (Source, Source, First, Last);
-      end Trim;
-
-      function Head (
-         Source : Unbounded_String;
-         Count : Natural;
-         Pad : Character_Type := Fixed_Functions.Space)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            if Count > Source.Length then
-               Set_Length (Result, Count);
-               declare
-                  Dummy_Last : Natural;
-               begin
-                  Fixed_Functions.Head (
-                     Source.Data.Items (1 .. Source.Length),
-                     Count,
-                     Pad,
-                     Target => Result.Data.Items.all,
-                     Target_Last => Dummy_Last);
-               end;
-            else
-               Assign (Result, Source); -- shared
-               Set_Length (Result, Count);
-            end if;
-         end return;
-      end Head;
-
-      procedure Head (
-         Source : in out Unbounded_String;
-         Count : Natural;
-         Pad : Character_Type := Fixed_Functions.Space)
-      is
-         pragma Suppress (Access_Check);
-      begin
-         if Count > Source.Length then
-            declare
-               New_Last : Natural := Source.Length;
-            begin
-               Set_Length (Source, Count);
-               Fixed_Functions.Head (
-                  Source.Data.Items.all, -- (1 .. Count)
-                  New_Last,
-                  Count,
-                  Pad);
-            end;
-         else
-            Set_Length (Source, Count);
-         end if;
-      end Head;
-
-      function Tail (
-         Source : Unbounded_String;
-         Count : Natural;
-         Pad : Character_Type := Fixed_Functions.Space)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            if Count /= Source.Length then
-               Set_Length (Result, Count);
-               declare
-                  Dummy_Last : Natural;
-               begin
-                  Fixed_Functions.Tail (
-                     Source.Data.Items (1 .. Source.Length),
-                     Count,
-                     Pad,
-                     Target => Result.Data.Items.all,
-                     Target_Last => Dummy_Last);
-               end;
-            else
-               Assign (Result, Source); -- shared
-            end if;
-         end return;
-      end Tail;
-
-      procedure Tail (
-         Source : in out Unbounded_String;
-         Count : Natural;
-         Pad : Character_Type := Fixed_Functions.Space)
-      is
-         pragma Suppress (Access_Check);
-      begin
-         if Count /= Source.Length then
-            declare
-               Old_Length : constant Natural := Source.Length;
-               Dummy_Last : Natural;
-            begin
-               Set_Length (Source, Integer'Max (Count, Old_Length));
-               Unique (Source); -- for overwriting
-               Fixed_Functions.Tail (
-                  Source.Data.Items (1 .. Old_Length),
-                  Count,
-                  Pad,
-                  Target => Source.Data.Items.all, -- copying
-                  Target_Last => Dummy_Last);
-               Set_Length (Source, Count);
-            end;
-         end if;
-      end Tail;
-
-      function "*" (Left : Natural; Right : Character_Type)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Result : Unbounded_String do
-            Set_Length (Result, Left);
-            for I in 1 .. Left loop
-               Result.Data.Items (I) := Right;
-            end loop;
-         end return;
-      end "*";
-
-      function "*" (Left : Natural; Right : String_Type)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-         Right_Length : constant Natural := Right'Length;
-      begin
-         return Result : Unbounded_String do
-            Set_Length (Result, Left * Right_Length);
-            declare
-               Last : Natural := 0;
-            begin
-               for I in 1 .. Left loop
-                  Result.Data.Items (Last + 1 .. Last + Right_Length) :=
-                     Right;
-                  Last := Last + Right_Length;
-               end loop;
-            end;
-         end return;
-      end "*";
-
-      function "*" (Left : Natural; Right : Unbounded_String)
-         return Unbounded_String
-      is
-         pragma Suppress (Access_Check);
-      begin
-         return Left * Right.Data.Items (1 .. Right.Length);
-      end "*";
-
-      package body Generic_Maps is
-
-         function Index (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction := Forward;
-            Mapping : Fixed_Maps.Character_Mapping)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               From,
-               Going,
-               Mapping);
-         end Index;
-
-         function Index (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Going : Direction := Forward;
-            Mapping : Fixed_Maps.Character_Mapping)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Going,
-               Mapping);
-         end Index;
-
-         function Index (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction := Forward;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               From,
-               Going,
-               Mapping);
-         end Index;
-
-         function Index (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Going : Direction := Forward;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Going,
-               Mapping);
-         end Index;
-
-         function Index_Element (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            From : Positive;
-            Going : Direction := Forward;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index_Element (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               From,
-               Going,
-               Mapping);
-         end Index_Element;
-
-         function Index_Element (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Going : Direction := Forward;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index_Element (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Going,
-               Mapping);
-         end Index_Element;
-
-         function Index (
-            Source : Unbounded_String;
-            Set : Fixed_Maps.Character_Set;
-            From : Positive;
-            Test : Membership := Inside;
-            Going : Direction := Forward)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Set,
-               From,
-               Test,
-               Going);
-         end Index;
-
-         function Index (
-            Source : Unbounded_String;
-            Set : Fixed_Maps.Character_Set;
-            Test : Membership := Inside;
-            Going : Direction := Forward)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Index (
-               Source.Data.Items (1 .. Source.Length),
-               Set,
-               Test,
-               Going);
-         end Index;
-
-         function Count (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Mapping : Fixed_Maps.Character_Mapping)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Count (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Mapping);
-         end Count;
-
-         function Count (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Count (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Mapping);
-         end Count;
-
-         function Count_Element (
-            Source : Unbounded_String;
-            Pattern : String_Type;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Count_Element (
-               Source.Data.Items (1 .. Source.Length),
-               Pattern,
-               Mapping);
-         end Count_Element;
-
-         function Count (
-            Source : Unbounded_String;
-            Set : Fixed_Maps.Character_Set)
-            return Natural
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Fixed_Maps.Count (
-               Source.Data.Items (1 .. Source.Length),
-               Set);
-         end Count;
-
-         procedure Find_Token (
-            Source : Unbounded_String;
-            Set : Fixed_Maps.Character_Set;
-            From : Positive;
-            Test : Membership;
-            First : out Positive;
-            Last : out Natural)
-         is
-            pragma Suppress (Access_Check);
-         begin
-            Fixed_Maps.Find_Token (
-               Source.Data.Items (1 .. Source.Length),
-               Set,
-               From,
-               Test,
-               First,
-               Last);
-         end Find_Token;
-
-         procedure Find_Token (
-            Source : Unbounded_String;
-            Set : Fixed_Maps.Character_Set;
-            Test : Membership;
-            First : out Positive;
-            Last : out Natural)
-         is
-            pragma Suppress (Access_Check);
-         begin
-            Fixed_Maps.Find_Token (
-               Source.Data.Items (1 .. Source.Length),
-               Set,
-               Test,
-               First,
-               Last);
-         end Find_Token;
-
-         function Translate (
-            Source : Unbounded_String;
-            Mapping : Fixed_Maps.Character_Mapping)
-            return Unbounded_String
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Result : Unbounded_String do
-               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
-               declare
-                  New_Length : Natural;
-               begin
-                  Fixed_Maps.Translate (
-                     Source.Data.Items (1 .. Source.Length),
-                     Mapping,
-                     Target => Result.Data.Items.all,
-                     Target_Last => New_Length);
-                  Set_Length (Result, New_Length);
-               end;
-            end return;
-         end Translate;
-
-         procedure Translate (
-            Source : in out Unbounded_String;
-            Mapping : Fixed_Maps.Character_Mapping)
-         is
-            pragma Suppress (Access_Check); -- finalizer
-         begin
-            --  Translate can not update destructively.
-            Assign (Source, Translate (Source, Mapping));
-         end Translate;
-
-         function Translate (
-            Source : Unbounded_String;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-            return Unbounded_String
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Result : Unbounded_String do
-               Set_Length (Result, Source.Length * Fixed_Maps.Expanding);
-               declare
-                  New_Length : Natural;
-               begin
-                  Fixed_Maps.Translate (
-                     Source.Data.Items (1 .. Source.Length),
-                     Mapping,
-                     Target => Result.Data.Items.all,
-                     Target_Last => New_Length);
-                  Set_Length (Result, New_Length);
-               end;
-            end return;
-         end Translate;
-
-         procedure Translate (
-            Source : in out Unbounded_String;
-            Mapping : not null access function (From : Wide_Wide_Character)
-               return Wide_Wide_Character)
-         is
-            pragma Suppress (Access_Check); -- finalizer
-         begin
-            --  Translate can not update destructively.
-            Assign (Source, Translate (Source, Mapping));
-         end Translate;
-
-         function Translate_Element (
-            Source : Unbounded_String;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-            return Unbounded_String
-         is
-            pragma Suppress (Access_Check);
-         begin
-            return Result : Unbounded_String do
-               Set_Length (Result, Source.Length);
-               Fixed_Maps.Translate_Element (
-                  Source.Data.Items (1 .. Source.Length),
-                  Mapping,
-                  Target => Result.Data.Items (1 .. Source.Length));
-            end return;
-         end Translate_Element;
-
-         procedure Translate_Element (
-            Source : in out Unbounded_String;
-            Mapping : not null access function (From : Character_Type)
-               return Character_Type)
-         is
-            pragma Suppress (Access_Check);
-         begin
-            Unique (Source);
-            Fixed_Maps.Translate_Element (
-               Source.Data.Items (1 .. Source.Length),
-               Mapping);
-         end Translate_Element;
-
-         function Trim (
-            Source : Unbounded_String;
-            Left : Fixed_Maps.Character_Set;
-            Right : Fixed_Maps.Character_Set)
-            return Unbounded_String
-         is
-            pragma Suppress (Access_Check);
-            First : Positive;
-            Last : Natural;
-         begin
-            Fixed_Maps.Trim (
-               Source.Data.Items (1 .. Source.Length),
-               Left,
-               Right,
-               First,
-               Last);
-            return Unbounded_Slice (Source, First, Last);
-         end Trim;
-
-         procedure Trim (
-            Source : in out Unbounded_String;
-            Left : Fixed_Maps.Character_Set;
-            Right : Fixed_Maps.Character_Set)
-         is
-            pragma Suppress (Access_Check);
-            First : Positive;
-            Last : Natural;
-         begin
-            Fixed_Maps.Trim (
-               Source.Data.Items (1 .. Source.Length),
-               Left,
-               Right,
-               First,
-               Last);
-            Unbounded_Slice (Source, Source, First, Last);
-         end Trim;
-
-      end Generic_Maps;
-
-   end Generic_Functions;
 
    package body Generic_Constant is
 

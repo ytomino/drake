@@ -5,7 +5,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
 
-   package Conv is
+   package BA_Conv is
       new Address_To_Named_Access_Conversions (Block, Block_Access);
 
    procedure Dump (Allocator : aliased in out Allocator_Type) is
@@ -59,7 +59,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
             --  used
             Put (Buffer, Last, " 0x");
             Formatting.Address.Image (
-               Conv.To_Pointer (I).Used,
+               BA_Conv.To_Pointer (I).Used,
                Buffer (
                   Last + 1 ..
                   Last + Formatting.Address.Address_String'Length),
@@ -68,7 +68,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
             --  limit
             Put (Buffer, Last, " 0x");
             Formatting.Address.Image (
-               Conv.To_Pointer (I).Limit,
+               BA_Conv.To_Pointer (I).Limit,
                Buffer (
                   Last + 1 ..
                   Last + Formatting.Address.Address_String'Length),
@@ -78,9 +78,9 @@ package body System.Unbounded_Stack_Allocators.Debug is
             Put (Buffer, Last, " (");
             declare
                Space : constant Storage_Elements.Storage_Count :=
-                  Conv.To_Pointer (I).Limit - (I + Header_Size);
+                  BA_Conv.To_Pointer (I).Limit - (I + Header_Size);
                Used : constant Storage_Elements.Storage_Count :=
-                  Conv.To_Pointer (I).Used - (I + Header_Size);
+                  BA_Conv.To_Pointer (I).Used - (I + Header_Size);
                Percentage : constant Storage_Elements.Storage_Count :=
                   (Used * 100 + Space - 1) / Space;
             begin
@@ -95,7 +95,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
             Put (Buffer, Last, "%)");
             Termination.Error_Put_Line (Buffer (1 .. Last));
             --  next
-            I := Conv.To_Pointer (I).Previous;
+            I := BA_Conv.To_Pointer (I).Previous;
             Block_Number := Block_Number + 1;
          end loop;
       end;

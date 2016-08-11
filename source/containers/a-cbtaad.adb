@@ -7,6 +7,56 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
 
    function Downcast is new Unchecked_Conversion (Node_Access, AA_Node_Access);
 
+   function Height (Container : Node_Access) return Natural;
+   function Height (Container : Node_Access) return Natural is
+      procedure Nonnull_First (
+         Item : in out Node_Access;
+         Height : in out Natural);
+      procedure Nonnull_First (
+         Item : in out Node_Access;
+         Height : in out Natural) is
+      begin
+         while Item.Left /= null loop
+            Item := Item.Left;
+            Height := Height + 1;
+         end loop;
+      end Nonnull_First;
+      procedure Next (Item : in out Node_Access; Height : in out Natural);
+      procedure Next (Item : in out Node_Access; Height : in out Natural) is
+      begin
+         if Item.Right /= null then
+            Item := Item.Right;
+            Height := Height + 1;
+            Nonnull_First (Item, Height);
+         else
+            loop
+               declare
+                  P : constant Node_Access := Item;
+               begin
+                  Item := Item.Parent;
+                  Height := Height - 1;
+                  exit when Item = null or else Item.Right /= P;
+               end;
+            end loop;
+         end if;
+      end Next;
+      Result : Integer := 0;
+   begin
+      if Container /= null then
+         declare
+            I : Node_Access := Container;
+            H : Natural := 1;
+         begin
+            Nonnull_First (I, H);
+            while I /= null loop
+               Result := Integer'Max (Result, H);
+               Next (I, H);
+            end loop;
+         end;
+      end if;
+      return Result;
+   end Height;
+
    --  implementation
 
    function Root (Node : not null Node_Access) return not null Node_Access is
@@ -24,17 +74,6 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       Message : String := "")
       return Boolean
    is
-      function Probe (Current : Node_Access) return Integer;
-      function Probe (Current : Node_Access) return Integer is
-      begin
-         if Current = null then
-            return 0;
-         else
-            return Integer'Max (
-               Probe (Current.Left),
-               Probe (Current.Right)) + 1;
-         end if;
-      end Probe;
       subtype Buffer_Type is String (1 .. 256);
       procedure Put (
          Buffer : in out Buffer_Type;
@@ -52,67 +91,8 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       end Put;
       Buffer : Buffer_Type;
       Last : Natural;
-      Deeper : constant Integer := Probe (Container);
-      Indent_S : String (1 .. 2 * Deeper) := (others => ' ');
+      Indent_S : String (1 .. 2 * Height (Container)) := (others => ' ');
       Mark : constant array (Boolean) of Character := "-*";
-      procedure Process (Current : Node_Access; Indent : Integer);
-      procedure Process (Current : Node_Access; Indent : Integer) is
-         B : Character;
-         C : Character;
-      begin
-         if Current.Left /= null then
-            Process (Current.Left, Indent + 2);
-         else
-            Indent_S (Indent) := '|';
-         end if;
-         if Indent > 2 then
-            if Indent_S (Indent - 2) = ' ' then
-               C := '|';
-            else
-               C := ' ';
-            end if;
-            Indent_S (Indent - 2) := '+';
-         end if;
-         Indent_S (Indent - 1) := Mark (Current = Marker);
-         B := Indent_S (Indent);
-         if Current.Left = null and then Current.Right = null then
-            Indent_S (Indent) := '-';
-         else
-            Indent_S (Indent) := '+';
-         end if;
-         Last := 0;
-         Put (Buffer, Last, Indent_S);
-         Put (Buffer, Last, " 0x");
-         System.Formatting.Address.Image (
-            Current.all'Address,
-            Buffer (
-               Last + 1 ..
-               Last + System.Formatting.Address.Address_String'Length),
-            Set => System.Formatting.Lower_Case);
-         Last := Last + System.Formatting.Address.Address_String'Length;
-         Put (Buffer, Last, " (level = ");
-         declare
-            Error : Boolean;
-         begin
-            System.Formatting.Image (
-               System.Formatting.Unsigned'Mod (Downcast (Current).Level),
-               Buffer (Last + 1 .. Buffer'Last),
-               Last,
-               Error => Error);
-         end;
-         Put (Buffer, Last, ")");
-         System.Termination.Error_Put_Line (Buffer (1 .. Last));
-         Indent_S (Indent) := B;
-         Indent_S (Indent - 1) := ' ';
-         if Indent > 2 then
-            Indent_S (Indent - 2) := C;
-         end if;
-         if Current.Right /= null then
-            Process (Current.Right, Indent + 2);
-         else
-            Indent_S (Indent) := ' ';
-         end if;
-      end Process;
    begin
       Last := 0;
       Put (Buffer, Last, "Tree:");
@@ -121,9 +101,76 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
          Put (Buffer, Last, Message);
       end if;
       System.Termination.Error_Put_Line (Buffer (1 .. Last));
-      if Container /= null then
-         Process (Container, 2);
-      end if;
+      declare
+         Position : Node_Access := First (Container);
+      begin
+         while Position /= null loop
+            declare
+               Indent : Natural := 2;
+               B : Character;
+               C : Character;
+            begin
+               declare
+                  P : Node_Access := Position.Parent;
+               begin
+                  while P /= null loop
+                     Indent := Indent + 2;
+                     P := P.Parent;
+                  end loop;
+               end;
+               if Position.Left = null then
+                  Indent_S (Indent) := '|';
+               end if;
+               if Indent > 2 then
+                  if Indent_S (Indent - 2) = ' ' then
+                     C := '|';
+                  else
+                     C := ' ';
+                  end if;
+                  Indent_S (Indent - 2) := '+';
+               end if;
+               Indent_S (Indent - 1) := Mark (Position = Marker);
+               B := Indent_S (Indent);
+               if Position.Left = null and then Position.Right = null then
+                  Indent_S (Indent) := '-';
+               else
+                  Indent_S (Indent) := '+';
+               end if;
+               Last := 0;
+               Put (Buffer, Last, Indent_S);
+               Put (Buffer, Last, " 0x");
+               System.Formatting.Address.Image (
+                  Position.all'Address,
+                  Buffer (
+                     Last + 1 ..
+                     Last + System.Formatting.Address.Address_String'Length),
+                  Set => System.Formatting.Lower_Case);
+               Last := Last + System.Formatting.Address.Address_String'Length;
+               Put (Buffer, Last, " (level = ");
+               declare
+                  Error : Boolean;
+               begin
+                  System.Formatting.Image (
+                     System.Formatting.Unsigned'Mod (
+                        Downcast (Position).Level),
+                     Buffer (Last + 1 .. Buffer'Last),
+                     Last,
+                     Error => Error);
+               end;
+               Put (Buffer, Last, ")");
+               System.Termination.Error_Put_Line (Buffer (1 .. Last));
+               Indent_S (Indent) := B;
+               Indent_S (Indent - 1) := ' ';
+               if Indent > 2 then
+                  Indent_S (Indent - 2) := C;
+               end if;
+               if Position.Right = null then
+                  Indent_S (Indent) := ' ';
+               end if;
+            end;
+            Position := Next (Position);
+         end loop;
+      end;
       return True;
    end Dump;
 
@@ -133,10 +180,10 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
       Level_Check : Boolean := True)
       return Boolean
    is
+      Position : Node_Access := First (Container);
       Count : Count_Type := 0;
-      function Process (Position : not null Node_Access) return Boolean;
-      function Process (Position : not null Node_Access) return Boolean is
-      begin
+   begin
+      while Position /= null loop
          Count := Count + 1;
          if Level_Check then
             if Downcast (Position).Level > 0 then
@@ -175,29 +222,25 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
             if Position.Left.Parent /= Position then
                return False;
             end if;
-            if not Process (Position.Left) then
-               return False;
-            end if;
          end if;
          if Position.Right /= null then
             if Position.Right.Parent /= Position then
                return False;
             end if;
-            if not Process (Position.Right) then
+         end if;
+         if Position.Parent = null then
+            if Container /= Position then
+               return False;
+            end if;
+         else
+            if Position.Parent.Left /= Position
+               and then Position.Parent.Right /= Position
+            then
                return False;
             end if;
          end if;
-         return True;
-      end Process;
-   begin
-      if Container /= null then
-         if Container.Parent /= null then
-            return False;
-         end if;
-         if not Process (Container) then
-            return False;
-         end if;
-      end if;
+         Position := Next (Position);
+      end loop;
       return Count = Length;
    end Valid;
 

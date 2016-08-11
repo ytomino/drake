@@ -133,7 +133,7 @@ package body Ada.Hierarchical_File_Names is
    procedure Include_Trailing_Path_Delimiter (
       S : in out String;
       Last : in out Natural;
-      Path_Delimiter : Character := Default_Path_Delimiter) is
+      Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter) is
    begin
       if not Is_Path_Delimiter (S (Last)) then
          Last := Last + 1;

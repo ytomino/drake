@@ -18,14 +18,14 @@ package body System.Unbounded_Stack_Allocators is
    begin
       return Storage_Elements.Storage_Offset (
          Storage_Elements.Integer_Address'Mod (Required)
-         + Storage_Elements.Integer_Address'Mod (-Required) mod Alignment);
+            + Storage_Elements.Integer_Address'Mod (-Required) mod Alignment);
    end Ceiling_Page_Size;
 
-   package Conv is
+   package BA_Conv is
       new Address_To_Named_Access_Conversions (Block, Block_Access);
 
    function Cast (X : Address) return Block_Access
-      renames Conv.To_Pointer;
+      renames BA_Conv.To_Pointer;
 
    --  implementation
 
@@ -73,9 +73,10 @@ package body System.Unbounded_Stack_Allocators is
             end;
          end if;
          --  when top block has enough space
-         Aligned_Top_Used := Address (
-            (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
-            and not Mask);
+         Aligned_Top_Used :=
+            Address (
+               (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
+               and not Mask);
          New_Top_Used := Aligned_Top_Used + Size_In_Storage_Elements;
          if New_Top_Used <= Cast (Top).Limit then
             Storage_Address := Aligned_Top_Used;
@@ -84,17 +85,19 @@ package body System.Unbounded_Stack_Allocators is
          end if;
          --  try expanding top block
          if Expanding /= 0 then
-            Aligned_Header_Size := Storage_Elements.Storage_Offset (
-               (Storage_Elements.Integer_Address (Header_Size) + Mask)
-               and not Mask);
+            Aligned_Header_Size :=
+               Storage_Elements.Storage_Offset (
+                  (Storage_Elements.Integer_Address (Header_Size) + Mask)
+                  and not Mask);
             declare
                Additional_Block_Size : constant
                   Storage_Elements.Storage_Count :=
                      Ceiling_Page_Size (
                         Size_In_Storage_Elements + Aligned_Header_Size);
-               Additional_Block : constant Address := System_Allocators.Map (
-                  Cast (Top).Limit,
-                  Additional_Block_Size);
+               Additional_Block : constant Address :=
+                  System_Allocators.Map (
+                     Cast (Top).Limit,
+                     Additional_Block_Size);
             begin
                if Additional_Block = Cast (Top).Limit then
                   Cast (Top).Limit := Cast (Top).Limit + Additional_Block_Size;
@@ -147,14 +150,16 @@ package body System.Unbounded_Stack_Allocators is
          Default_Block_Size : constant := 10 * 1024;
       begin
          if New_Block = Null_Address then
-            Aligned_Header_Size := Storage_Elements.Storage_Offset (
-               (Storage_Elements.Integer_Address (Header_Size) + Mask)
-               and not Mask);
+            Aligned_Header_Size :=
+               Storage_Elements.Storage_Offset (
+                  (Storage_Elements.Integer_Address (Header_Size) + Mask)
+                  and not Mask);
             New_Block_Size := Size_In_Storage_Elements + Aligned_Header_Size;
             if Top = Null_Address then
-               New_Block_Size := Storage_Elements.Storage_Offset'Max (
-                  Default_Block_Size,
-                  New_Block_Size);
+               New_Block_Size :=
+                  Storage_Elements.Storage_Offset'Max (
+                     Default_Block_Size,
+                     New_Block_Size);
             end if;
             New_Block_Size := Ceiling_Page_Size (New_Block_Size);
             New_Block := System_Allocators.Map (Null_Address, New_Block_Size);

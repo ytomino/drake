@@ -36,6 +36,5 @@ package System.Native_Time is
    pragma Suppress (Access_Check, Delay_For_Hook); -- not null
 
    procedure Delay_For (D : Duration);
-   pragma Inline (Delay_For);
 
 end System.Native_Time;

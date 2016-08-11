@@ -93,7 +93,6 @@ private
       Pool_Ptr : Any_Storage_Pool_Ptr);
 
    pragma Inline (Base_Pool);
-   pragma Inline (Set_Base_Pool);
 
    --  required by compiler (s-finmas.ads)
    function Add_Offset_To_Address (

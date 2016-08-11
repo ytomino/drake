@@ -82,7 +82,6 @@ package body System.Packed_Arrays is
 
       function Get (Arr : Address; N : Natural) return Element_Type;
       pragma Machine_Attribute (Get, "pure");
-      pragma Inline (Get);
 
       function Get (Arr : Address; N : Natural) return Element_Type is
          Units : Record_8_Units;
@@ -103,7 +102,6 @@ package body System.Packed_Arrays is
       end Get;
 
       procedure Set (Arr : Address; N : Natural; E : Element_Type);
-      pragma Inline (Set);
 
       procedure Set (Arr : Address; N : Natural; E : Element_Type) is
          Units : Record_8_Units;
@@ -134,7 +132,6 @@ package body System.Packed_Arrays is
 
       function Get_Reversed (Arr : Address; N : Natural) return Element_Type;
       pragma Machine_Attribute (Get_Reversed, "pure");
-      pragma Inline (Get_Reversed);
 
       function Get_Reversed (Arr : Address; N : Natural) return Element_Type is
          Units : Reversed_Record_8_Units;
@@ -155,7 +152,6 @@ package body System.Packed_Arrays is
       end Get_Reversed;
 
       procedure Set_Reversed (Arr : Address; N : Natural; E : Element_Type);
-      pragma Inline (Set_Reversed);
 
       procedure Set_Reversed (Arr : Address; N : Natural; E : Element_Type) is
          Units : Reversed_Record_8_Units;

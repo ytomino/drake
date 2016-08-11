@@ -4,9 +4,9 @@ with C.basetsd;
 with C.winternl;
 package body System.Native_Tasks is
    use type C.char_array;
-   use type C.void_ptr; -- C.void_ptr
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
+   use type C.winnt.HANDLE; -- C.void_ptr
 
    type struct_THREAD_BASIC_INFORMATION is record
       ExitStatus : C.winternl.NTSTATUS;

@@ -15,6 +15,7 @@ private package Ada.Command_Line.Argument_Parsing is
    No_Element : constant Cursor;
 
    function Has_Element (Position : Cursor) return Boolean;
+   pragma Inline (Has_Element);
 
    type Argument_Iterator is limited private; -- new Forward_Iterator with
 
@@ -22,6 +23,7 @@ private package Ada.Command_Line.Argument_Parsing is
       return Argument_Iterator; -- Forward_Iterator'Class
 
    function State (Iterator : Argument_Iterator) return State_Type;
+   pragma Inline (State);
 
    type Option_Character is (
       ' ', -- without value

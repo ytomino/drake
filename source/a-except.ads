@@ -32,11 +32,11 @@ package Ada.Exceptions is
 
    --  extended
    --  Same as Reraise_Occurrence without checking Null_Occurrence.
-   procedure Unchecked_Reraise_Occurrence (X : Exception_Occurrence)
+   procedure Reraise_Nonnull_Occurrence (X : Exception_Occurrence)
       with Import,
          Convention => Ada,
          External_Name => "ada__exceptions__reraise_occurrence_always";
-   pragma No_Return (Unchecked_Reraise_Occurrence);
+   pragma No_Return (Reraise_Nonnull_Occurrence);
 
    function Exception_Identity (X : Exception_Occurrence)
       return Exception_Id;
@@ -49,6 +49,8 @@ package Ada.Exceptions is
       return Wide_Wide_String;
       --  Same as Wide_Wide_Exception_Name (Exception_Identity (X)).
    function Exception_Information (X : Exception_Occurrence) return String;
+
+   pragma Inline (Exception_Identity);
 
    procedure Save_Occurrence (
       Target : out Exception_Occurrence;
@@ -119,7 +121,7 @@ private
    --  required by compiler (a-except-2005.ads)
    --  for reraising (exp_ch11.adb)
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence)
-      renames Unchecked_Reraise_Occurrence;
+      renames Reraise_Nonnull_Occurrence;
 
    --  required by compiler (a-except-2005.ads)
    --  for reraising from when all others (exp_ch11.adb)

@@ -13,10 +13,10 @@ package body System.Native_Directories.Searching is
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
-   package WIN32_FIND_DATA_ptr_Conv is
+   package LPWIN32_FIND_DATA_Conv is
       new Address_To_Named_Access_Conversions (
          C.winbase.WIN32_FIND_DATA,
-         C.winbase.struct_WIN32_FIND_DATAW_ptr);
+         C.winbase.LPWIN32_FIND_DATA);
 
    function Match_Filter (
       Filter : Filter_Type;
@@ -46,7 +46,7 @@ package body System.Native_Directories.Searching is
       return not null Directory_Entry_Access
    is
       Result : constant Directory_Entry_Access :=
-         WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+         LPWIN32_FIND_DATA_Conv.To_Pointer (
             Standard_Allocators.Allocate (
                C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
    begin
@@ -56,7 +56,7 @@ package body System.Native_Directories.Searching is
 
    procedure Free (X : in out Directory_Entry_Access) is
    begin
-      Standard_Allocators.Free (WIN32_FIND_DATA_ptr_Conv.To_Address (X));
+      Standard_Allocators.Free (LPWIN32_FIND_DATA_Conv.To_Address (X));
       X := null;
    end Free;
 
@@ -209,7 +209,7 @@ package body System.Native_Directories.Searching is
          end case;
       end loop;
       --  allocation
-      Directory_Entry := WIN32_FIND_DATA_ptr_Conv.To_Pointer (
+      Directory_Entry := LPWIN32_FIND_DATA_Conv.To_Pointer (
          Standard_Allocators.Allocate (
             C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
       --  filling components

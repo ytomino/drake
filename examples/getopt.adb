@@ -4,6 +4,7 @@ with Ada.Strings.Unbounded;
 -- for compiling test
 with Ada.Command_Line.Parsing;
 procedure getopt is
+	use type Ada.Containers.Count_Type;
 	use type Ada.Strings.Unbounded.Unbounded_String;
 	package Lists is new Ada.Containers.Indefinite_Doubly_Linked_Lists (String);
 	type Option_Type is record

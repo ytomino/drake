@@ -37,4 +37,12 @@ package Ada.Containers.Binary_Trees.Arne_Andersson is
          Target : out Node_Access;
          Source : not null Node_Access));
 
+   --  set operations
+
+   procedure Merge is
+      new Binary_Trees.Merge (Insert => Insert, Remove => Remove);
+
+   procedure Copying_Merge is
+      new Binary_Trees.Copying_Merge (Insert => Insert);
+
 end Ada.Containers.Binary_Trees.Arne_Andersson;

@@ -1,6 +1,5 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
-with System.Address_To_Constant_Access_Conversions;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
@@ -17,18 +16,16 @@ package body System.Native_Directories.Volumes is
    use type C.winnt.HANDLE; -- C.void_ptr
    use type C.winnt.WCHAR;
 
-   package Conv is
-      new Address_To_Named_Access_Conversions (
-         C.winnt.WCHAR,
-         C.winnt.LPWSTR);
+   package LPWSTR_Conv is
+      new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
 
    procedure GetVolumeInformation (
       FS : aliased in out Non_Controlled_File_System;
-      FileSystemNameBuffer : access C.winnt.WCHAR;
+      FileSystemNameBuffer : C.winnt.LPWSTR;
       FileSystemNameSize : C.windef.DWORD);
    procedure GetVolumeInformation (
       FS : aliased in out Non_Controlled_File_System;
-      FileSystemNameBuffer : access C.winnt.WCHAR;
+      FileSystemNameBuffer : C.winnt.LPWSTR;
       FileSystemNameSize : C.windef.DWORD) is
    begin
       if FileSystemNameBuffer /= null or else not FS.Valid then
@@ -49,14 +46,9 @@ package body System.Native_Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
-               type WCHAR_const_ptr is access constant C.winnt.WCHAR;
-               package WCHAR_const_ptr_Conv is
-                  new Address_To_Constant_Access_Conversions (
-                     C.winnt.WCHAR,
-                     WCHAR_const_ptr);
                FileSystem_A : C.winnt.WCHAR_array (C.size_t);
                for FileSystem_A'Address use
-                  WCHAR_const_ptr_Conv.To_Address (FileSystemNameBuffer);
+                  LPWSTR_Conv.To_Address (FileSystemNameBuffer);
             begin
                FS.Is_NTFS := FileSystem_A (0) = Wide_Character'Pos ('N')
                   and then FileSystem_A (1) = Wide_Character'Pos ('T')
@@ -107,7 +99,7 @@ package body System.Native_Directories.Volumes is
       begin
          FS.Root_Path_Length := Root_Path_Length;
          Dest_A (0 .. Root_Path_Length) := Root_Path (0 .. Root_Path_Length);
-         FS.Root_Path := Conv.To_Pointer (Dest);
+         FS.Root_Path := LPWSTR_Conv.To_Pointer (Dest);
       end;
       FS.Valid := False;
       FS.Is_NTFS_Valid := False;
@@ -152,7 +144,7 @@ package body System.Native_Directories.Volumes is
    begin
       GetVolumeInformation (
          FS,
-         FileSystem (0)'Access,
+         FileSystem (0)'Unchecked_Access,
          FileSystem'Length);
       return Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
    end Format_Name;
@@ -215,7 +207,7 @@ package body System.Native_Directories.Volumes is
          begin
             GetVolumeInformation (
                FS,
-               FileSystem (0)'Access,
+               FileSystem (0)'Unchecked_Access,
                FileSystem'Length);
          end;
          return (FS.FileSystemFlags and C.winbase.FS_CASE_SENSITIVE) /= 0
@@ -246,7 +238,8 @@ package body System.Native_Directories.Volumes is
 
       overriding procedure Finalize (Object : in out File_System) is
       begin
-         Standard_Allocators.Free (Conv.To_Address (Object.Data.Root_Path));
+         Standard_Allocators.Free (
+            LPWSTR_Conv.To_Address (Object.Data.Root_Path));
       end Finalize;
 
    end Controlled;

@@ -12,6 +12,8 @@ package System.Native_Real_Time is
 
    pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Duration);
+   pragma Inline (To_Native_Time);
+   pragma Inline (To_Duration);
 
    function Clock return Native_Time
       renames C.mach.mach_time.mach_absolute_time;

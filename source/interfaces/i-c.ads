@@ -75,11 +75,9 @@ package Interfaces.C is
    for char_array'Component_Size use CHAR_BIT;
 
    function Is_Nul_Terminated (Item : char_array) return Boolean;
-   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : char_array) return size_t;
-   pragma Inline (Length); -- renamed
 
    --  extended
    function To_char_array (
@@ -187,11 +185,9 @@ package Interfaces.C is
    pragma Pack (wchar_array);
 
    function Is_Nul_Terminated (Item : wchar_array) return Boolean;
-   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : wchar_array) return size_t;
-   pragma Inline (Length); -- renamed
 
    --  extended
    function To_wchar_array (
@@ -262,7 +258,7 @@ package Interfaces.C is
       renames To_Wide_String;
 
    --  extended
-   --  Wide Wide Character and Wide Wide String
+   --  Wide Wide Character and Wide Wide String:
    function To_wchar_t (
       Item : Wide_Wide_Character;
       Substitute : wchar_t := Character'Pos ('?')) -- Windows only
@@ -328,11 +324,9 @@ package Interfaces.C is
    pragma Pack (char16_array);
 
    function Is_Nul_Terminated (Item : char16_array) return Boolean;
-   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : char16_array) return size_t;
-   pragma Inline (Length); -- renamed
 
    --  modified
    function To_C (
@@ -384,11 +378,9 @@ package Interfaces.C is
    pragma Pack (char32_array);
 
    function Is_Nul_Terminated (Item : char32_array) return Boolean;
-   pragma Inline (Is_Nul_Terminated); -- renamed
 
    --  extended
    function Length (Item : char32_array) return size_t;
-   pragma Inline (Length); -- renamed
 
    --  modified
    function To_C (

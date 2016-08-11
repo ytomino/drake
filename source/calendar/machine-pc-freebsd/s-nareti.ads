@@ -33,6 +33,5 @@ package System.Native_Real_Time is
    pragma Suppress (Access_Check, Delay_Until_Hook); -- not null
 
    procedure Delay_Until (T : Native_Time);
-   pragma Inline (Delay_Until);
 
 end System.Native_Real_Time;

@@ -21,12 +21,12 @@ package body System.Tasking.Protected_Objects.Operations is
       return Entries.Downcast (The_Node).E = Protected_Entry_Index (Params);
    end Filter;
 
-   package Task_Record_Conv is
+   package Task_Id_Conv is
       new Address_To_Named_Access_Conversions (
          Tasks.Task_Record,
          Tasks.Task_Id);
 
-   package Queue_Node_Conv is
+   package QNA_Conv is
       new Address_To_Named_Access_Conversions (
          Synchronous_Objects.Queue_Node,
          Synchronous_Objects.Queue_Node_Access);
@@ -40,7 +40,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Params : Address)
       return Boolean is
    begin
-      return The_Node = Queue_Node_Conv.To_Pointer (Params);
+      return The_Node = QNA_Conv.To_Pointer (Params);
    end Uncall_Filter;
 
    procedure Uncall (
@@ -57,7 +57,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Synchronous_Objects.Take (
          Object.Calling,
          Taken,
-         Queue_Node_Conv.To_Address (Item),
+         QNA_Conv.To_Address (Item),
          Uncall_Filter'Access);
       Already_Taken := Taken = null;
       pragma Assert (Taken = null or else Taken = Item);
@@ -223,8 +223,7 @@ package body System.Tasking.Protected_Objects.Operations is
                   Super => <>,
                   E => E,
                   Uninterpreted_Data => Uninterpreted_Data,
-                  Caller =>
-                     Task_Record_Conv.To_Address (Tasks.Current_Task_Id),
+                  Caller => Task_Id_Conv.To_Address (Tasks.Current_Task_Id),
                   Action => False,
                   Requeued => False,
                   Waiting => <>, -- default initializer
@@ -266,7 +265,7 @@ package body System.Tasking.Protected_Objects.Operations is
                if Ada.Exceptions.Exception_Identity (The_Node.X) /=
                   Ada.Exceptions.Null_Id
                then
-                  Ada.Exceptions.Unchecked_Reraise_Occurrence (The_Node.X);
+                  Ada.Exceptions.Reraise_Nonnull_Occurrence (The_Node.X);
                end if;
             end;
          when Conditional_Call =>

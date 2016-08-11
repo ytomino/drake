@@ -70,9 +70,7 @@ package Ada.Containers.Limited_Ordered_Sets is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Set; Position : Cursor)
       return Constant_Reference_Type;
 
 --  diff (Assign)
@@ -241,9 +239,7 @@ package Ada.Containers.Limited_Ordered_Sets is
          Position : Cursor)
          return Reference_Type;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
+      function Constant_Reference (Container : aliased Set; Key : Key_Type)
          return Constant_Reference_Type;
 
       function Reference_Preserving_Key (

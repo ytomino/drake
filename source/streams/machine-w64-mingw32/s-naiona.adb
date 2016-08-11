@@ -23,10 +23,10 @@ package body System.Native_IO.Names is
          Name_Character,
          Name_Pointer);
 
-   package OBJECT_NAME_INFORMATION_ptr_Conv is
+   package POBJECT_NAME_INFORMATION_Conv is
       new Address_To_Named_Access_Conversions (
          C.winternl.struct_OBJECT_NAME_INFORMATION,
-         C.winternl.struct_OBJECT_NAME_INFORMATION_ptr);
+         C.winternl.POBJECT_NAME_INFORMATION);
 
    function "+" (Left : Name_Pointer; Right : C.ptrdiff_t)
       return Name_Pointer
@@ -129,10 +129,11 @@ package body System.Native_IO.Names is
          ReturnLength'Access) /= 0 -- STATUS_SUCCESS
       then
          declare
-            New_Info : constant C.winnt.PVOID := C.winnt.PVOID (
-               System_Allocators.Reallocate (
-                  Address (Info),
-                  Storage_Elements.Storage_Offset (ReturnLength)));
+            New_Info : constant C.winnt.PVOID :=
+               C.winnt.PVOID (
+                  System_Allocators.Reallocate (
+                     Address (Info),
+                     Storage_Elements.Storage_Offset (ReturnLength)));
          begin
             if Address (New_Info) = Null_Address then
                --  Failed, keep Has_Full_Name and Name.
@@ -157,8 +158,8 @@ package body System.Native_IO.Names is
             return;
          end if;
       end if;
-      Unicode_Name := OBJECT_NAME_INFORMATION_ptr_Conv.To_Pointer (
-         Address (Info)).Name'Access;
+      Unicode_Name :=
+         POBJECT_NAME_INFORMATION_Conv.To_Pointer (Address (Info)).Name'Access;
       --  To DOS name.
       if C.winbase.GetLogicalDriveStrings (Drives'Length, Drives (0)'Access) >=
          Drives'Length
@@ -203,7 +204,7 @@ package body System.Native_IO.Names is
                            then
                               --  Skip ";X:\" (Is it a bug of VirtualBox?)
                               Long_Name (
-                                 Long_Name_Length ..  Long_Name'Last - 4) :=
+                                 Long_Name_Length .. Long_Name'Last - 4) :=
                                  Long_Name (
                                     Long_Name_Length + 4 .. Long_Name'Last);
                            end if;
@@ -239,10 +240,11 @@ package body System.Native_IO.Names is
          end if;
       end;
       --  Copy a name.
-      New_Name := Name_Pointer_Conv.To_Pointer (
-         System_Allocators.Allocate (
-            (Storage_Elements.Storage_Offset (Name_Length) + 1)
-               * (Name_Character'Size / Standard'Storage_Unit)));
+      New_Name :=
+         Name_Pointer_Conv.To_Pointer (
+            System_Allocators.Allocate (
+               (Storage_Elements.Storage_Offset (Name_Length) + 1)
+                  * (Name_Character'Size / Standard'Storage_Unit)));
       if New_Name = null then
          --  Failed, keep Has_Full_Name and Name.
          if Raise_On_Error then

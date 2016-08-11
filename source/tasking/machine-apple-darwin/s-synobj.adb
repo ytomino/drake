@@ -289,8 +289,7 @@ package body System.Synchronous_Objects is
    begin
       if Object.Waiting
          and then (
-            Object.Filter = null
-            or else Object.Filter (Item, Object.Params))
+            Object.Filter = null or else Object.Filter (Item, Object.Params))
       then
          Set (Object.Pipe); -- append 1 byte
       end if;

@@ -8,6 +8,9 @@ package body System.Finalization_Masters is
 
    procedure Free is new Ada.Unchecked_Deallocation (FM_List, FM_List_Access);
 
+   package FMN_Ptr_Conv is
+      new Address_To_Named_Access_Conversions (FM_Node, FM_Node_Ptr);
+
    procedure Initialize_List (
       List : not null FM_List_Access);
 
@@ -30,11 +33,9 @@ package body System.Finalization_Masters is
    begin
       while List.Objects.Next /= List.Objects'Unchecked_Access loop
          declare
-            package Conv is
-               new Address_To_Named_Access_Conversions (FM_Node, FM_Node_Ptr);
             Curr_Ptr : constant FM_Node_Ptr := List.Objects.Next;
             Obj_Addr : constant Address :=
-               Conv.To_Address (Curr_Ptr) + Header_Size;
+               FMN_Ptr_Conv.To_Address (Curr_Ptr) + Header_Size;
          begin
             Detach_Unprotected (Curr_Ptr);
             begin
@@ -82,6 +83,7 @@ package body System.Finalization_Masters is
             New_List.Finalize_Address := Fin_Addr_Ptr;
             New_List.Next := Master.List.Next;
             Master.List.Next := New_List;
+            List := New_List;
          end;
       end if;
    end Get_List_Unprotected;
@@ -188,7 +190,7 @@ package body System.Finalization_Masters is
                end loop;
             end;
             if Raised then
-               Ada.Exceptions.Unchecked_Reraise_Occurrence (X);
+               Ada.Exceptions.Reraise_Nonnull_Occurrence (X);
             end if;
          end;
       end if;

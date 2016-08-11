@@ -56,7 +56,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end RGB_To_Color;
 
    procedure Set (
-      Handle : Native_IO.Handle_Type;
+      Handle : Handle_Type;
       Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
@@ -117,7 +117,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end Set;
 
    procedure Reset (
-      Handle : Native_IO.Handle_Type) is
+      Handle : Handle_Type) is
    begin
       if Initial_Attributes_Assigned then
          Set_Terminal_Attributes (Handle, Initial_Attributes);

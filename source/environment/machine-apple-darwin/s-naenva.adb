@@ -53,17 +53,20 @@ package body System.Native_Environment_Variables is
    begin
       P := strchr (Item, C.char'Pos ('='));
       if P /= null then
-         Name_Length := C.size_t (
-            char_const_ptr_Conv.To_Address (P)
-            - char_const_ptr_Conv.To_Address (Item));
-         Value := char_const_ptr_Conv.To_Pointer (
-            char_const_ptr_Conv.To_Address (P)
-            + Storage_Elements.Storage_Offset'(1));
+         Name_Length :=
+            C.size_t (
+               char_const_ptr_Conv.To_Address (P)
+                  - char_const_ptr_Conv.To_Address (Item));
+         Value :=
+            char_const_ptr_Conv.To_Pointer (
+               char_const_ptr_Conv.To_Address (P)
+                  + Storage_Elements.Storage_Offset'(1));
       else
          Name_Length := strlen (Item);
-         Value := char_const_ptr_Conv.To_Pointer (
-            char_const_ptr_Conv.To_Address (C.char_const_ptr (Item))
-            + Storage_Elements.Storage_Offset (Name_Length));
+         Value :=
+            char_const_ptr_Conv.To_Pointer (
+               char_const_ptr_Conv.To_Address (C.char_const_ptr (Item))
+                  + Storage_Elements.Storage_Offset (Name_Length));
       end if;
    end Do_Separate;
 
@@ -126,16 +129,18 @@ package body System.Native_Environment_Variables is
       I : C.char_ptr_ptr := Block;
    begin
       while I.all /= null loop
-         I := char_ptr_ptr_Conv.To_Pointer (
-            char_ptr_ptr_Conv.To_Address (I)
-            + Storage_Elements.Storage_Offset'(
-               C.char_ptr'Size / Standard'Storage_Unit));
+         I :=
+            char_ptr_ptr_Conv.To_Pointer (
+               char_ptr_ptr_Conv.To_Address (I)
+                  + Storage_Elements.Storage_Offset'(
+                     C.char_ptr'Size / Standard'Storage_Unit));
       end loop;
       while I /= Block loop
-         I := char_ptr_ptr_Conv.To_Pointer (
-            char_ptr_ptr_Conv.To_Address (I)
-            - Storage_Elements.Storage_Offset'(
-               C.char_ptr'Size / Standard'Storage_Unit));
+         I :=
+            char_ptr_ptr_Conv.To_Pointer (
+               char_ptr_ptr_Conv.To_Address (I)
+                  - Storage_Elements.Storage_Offset'(
+                     C.char_ptr'Size / Standard'Storage_Unit));
          declare
             Item : constant C.char_const_ptr := C.char_const_ptr (I.all);
             Name_Length : C.size_t;
@@ -200,8 +205,8 @@ package body System.Native_Environment_Variables is
    begin
       return Cursor (
          Address (Position)
-         + Storage_Elements.Storage_Offset'(
-            C.char_ptr'Size / Standard'Storage_Unit));
+            + Storage_Elements.Storage_Offset'(
+               C.char_ptr'Size / Standard'Storage_Unit));
    end Next;
 
 end System.Native_Environment_Variables;

@@ -20,6 +20,18 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
+   function Compare_Keys (Left, Right : Key_Type) return Integer;
+   function Compare_Keys (Left, Right : Key_Type) return Integer is
+   begin
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
+   end Compare_Keys;
+
    type Context_Type is limited record
       Left : not null access Key_Type;
    end record;
@@ -36,21 +48,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    is
       Context : Context_Type;
       for Context'Address use Params;
-      Left : Key_Type
-         renames Context.Left.all;
-      Right : Key_Type
-         renames Downcast (Position).Key.all;
    begin
-      --  [gcc-4.9] outputs wrong code for combination of
-      --    constrained short String used as Key_Type (ex. String (1 .. 4))
-      --    and instantiation of Ada.Containers.Composites.Compare here
-      if Left < Right then
-         return -1;
-      elsif Right < Left then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Keys (Context.Left.all, Downcast (Position).Key.all);
    end Compare_Key;
 
    procedure Allocate_Element (
@@ -191,7 +190,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
+      return Compare_Keys (Left, Right) = 0;
    end Equivalent_Keys;
 
    function Empty_Map return Map is
@@ -216,43 +215,42 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
             and then Downcast (Left).Element.all =
                Downcast (Right).Element.all;
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Left.Super.Data = Right.Super.Data then
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Length (Left) = Length (Right) then
-         Unique (Left'Unrestricted_Access.all, False);
-         Unique (Right'Unrestricted_Access.all, False);
+      else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
             Equivalent'Access);
-      else
-         return False;
       end if;
    end "=";
 
    function Length (Container : Map) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Root = null;
+      return Data = null or else Data.Root = null;
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Key (Position : Cursor) return Key_Type is
@@ -296,9 +294,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Map; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -306,9 +302,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
+   function Reference (Container : aliased in out Map; Position : Cursor)
       return Reference_Type is
    begin
       Unique (Container, True);
@@ -316,17 +310,13 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Reference;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Key : Key_Type)
+   function Constant_Reference (Container : aliased Map; Key : Key_Type)
       return Constant_Reference_Type is
    begin
       return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
+   function Reference (Container : aliased in out Map; Key : Key_Type)
       return Reference_Type is
    begin
       return Reference (Container, Find (Container, Key));
@@ -392,20 +382,25 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, Key, New_Item);
---  diff
---  diff
---  diff
-         Base.Insert (
-            Downcast (Container.Super.Data).Root,
-            Downcast (Container.Super.Data).Length,
-            Upcast (Before),
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Base.Insert (
+               Data.Root,
+               Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
       else
          Position := Before;
       end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
 --
 --
 --
@@ -482,10 +477,11 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
-      Base.Remove (
-         Downcast (Container.Super.Data).Root,
-         Downcast (Container.Super.Data).Length,
-         Position_2);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Base.Remove (Data.Root, Data.Length, Position_2);
+      end;
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -765,7 +761,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       is
          Length : Count_Type'Base;
       begin
-         Count_Type'Read (Stream, Length);
+         Count_Type'Base'Read (Stream, Length);
          Clear (Item);
          for I in 1 .. Length loop
             declare
@@ -785,33 +781,19 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Map)
       is
-         function To_Pointer (Value : System.Address)
-            return access Streams.Root_Stream_Type'Class
-            with Import, Convention => Intrinsic;
-         function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address
-            with Import, Convention => Intrinsic;
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address);
-         procedure Process (
-            Position : not null Binary_Trees.Node_Access;
-            Params : System.Address) is
-         begin
-            Key_Type'Output (
-               To_Pointer (Params),
-               Downcast (Position).Key.all);
-            Element_Type'Output (
-               To_Pointer (Params),
-               Downcast (Position).Element.all);
-         end Process;
+         Length : constant Count_Type := Indefinite_Ordered_Maps.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         if Item.Length > 0 then
-            Binary_Trees.Iterate (
-               Downcast (Item.Super.Data).Root,
-               To_Address (Stream),
-               Process => Process'Access);
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := First (Item);
+            begin
+               while Position /= null loop
+                  Key_Type'Output (Stream, Position.Key.all);
+                  Element_Type'Output (Stream, Position.Element.all);
+                  Next (Position);
+               end loop;
+            end;
          end if;
       end Write;
 

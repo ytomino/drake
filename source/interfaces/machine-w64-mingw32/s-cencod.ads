@@ -37,11 +37,13 @@ package System.C_Encoding is
       Item : Wide_Character;
       Substitute : C.wchar_t) -- unreferenced
       return C.wchar_t;
+   pragma Inline (To_wchar_t);
 
    function To_Wide_Character (
       Item : C.wchar_t;
       Substitute : Wide_Character) -- unreferenced
       return Wide_Character;
+   pragma Inline (To_Wide_Character);
 
    procedure To_Non_Nul_Terminated (
       Item : Wide_String;

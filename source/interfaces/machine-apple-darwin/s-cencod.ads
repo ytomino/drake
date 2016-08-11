@@ -12,11 +12,13 @@ package System.C_Encoding is
       Item : Character;
       Substitute : C.char) -- unreferenced
       return C.char;
+   pragma Inline (To_char);
 
    function To_Character (
       Item : C.char;
       Substitute : Character) -- unreferenced
       return Character;
+   pragma Inline (To_Character);
 
    procedure To_Non_Nul_Terminated (
       Item : String;
@@ -39,11 +41,13 @@ package System.C_Encoding is
       Item : Wide_Character;
       Substitute : C.wchar_t)
       return C.wchar_t;
+   pragma Inline (To_wchar_t);
 
    function To_Wide_Character (
       Item : C.wchar_t;
       Substitute : Wide_Character)
       return Wide_Character;
+   pragma Inline (To_Wide_Character);
 
    procedure To_Non_Nul_Terminated (
       Item : Wide_String;

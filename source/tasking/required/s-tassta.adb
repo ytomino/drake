@@ -5,7 +5,7 @@ with System.Synchronous_Control;
 with System.Termination;
 package body System.Tasking.Stages is
 
-   package Task_Record_Conv is
+   package Task_Id_Conv is
       new Address_To_Named_Access_Conversions (
          Tasks.Task_Record,
          Tasks.Task_Id);
@@ -38,7 +38,7 @@ package body System.Tasking.Stages is
       Addr : Address;
       Size : Storage_Elements.Storage_Count;
    begin
-      Tasks.Get_Stack (Task_Record_Conv.To_Pointer (T), Addr, Size);
+      Tasks.Get_Stack (Task_Id_Conv.To_Pointer (T), Addr, Size);
       return Size;
    end Storage_Size;
 
@@ -83,7 +83,7 @@ package body System.Tasking.Stages is
          Elaborated => Elaborated,
          Master => Master_Of_Parent,
          Entry_Last_Index => Num_Entries);
-      Created_Task := Task_Record_Conv.To_Address (New_Task_Id);
+      Created_Task := Task_Id_Conv.To_Address (New_Task_Id);
    end Create_Task;
 
    procedure Complete_Activation is
@@ -119,7 +119,7 @@ package body System.Tasking.Stages is
    end Activate_Tasks;
 
    procedure Free_Task (T : Task_Id) is
-      Id : Tasks.Task_Id := Task_Record_Conv.To_Pointer (T);
+      Id : Tasks.Task_Id := Task_Id_Conv.To_Pointer (T);
    begin
       case Tasks.Preferred_Free_Mode (Id) is
          when Tasks.Wait =>
@@ -150,13 +150,13 @@ package body System.Tasking.Stages is
    procedure Abort_Tasks (Tasks : Task_List) is
    begin
       for I in Tasks'Range loop
-         System.Tasks.Send_Abort (Task_Record_Conv.To_Pointer (Tasks (I)));
+         System.Tasks.Send_Abort (Task_Id_Conv.To_Pointer (Tasks (I)));
       end loop;
    end Abort_Tasks;
 
    function Terminated (T : Task_Id) return Boolean is
    begin
-      return Tasks.Terminated (Task_Record_Conv.To_Pointer (T));
+      return Tasks.Terminated (Task_Id_Conv.To_Pointer (T));
    end Terminated;
 
 begin

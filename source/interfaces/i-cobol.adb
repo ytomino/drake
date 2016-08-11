@@ -113,7 +113,7 @@ package body Interfaces.COBOL is
    begin
       for I in Item'Range loop
          declare
-            E : constant COBOL_Character := Item (I);
+            E : COBOL_Character renames Item (I);
             X : Long_Long_Integer;
          begin
             case E is

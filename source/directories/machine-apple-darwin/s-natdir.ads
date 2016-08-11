@@ -69,6 +69,7 @@ package System.Native_Directories is
 
    function Modification_Time (Information : Directory_Entry_Information_Type)
       return Native_Calendar.Native_Time;
+   pragma Inline (Modification_Time);
 
    procedure Set_Modification_Time (
       Name : String;

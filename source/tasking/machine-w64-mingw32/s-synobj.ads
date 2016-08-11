@@ -77,7 +77,9 @@ package System.Synchronous_Objects is
       Params : Address;
       Filter : Queue_Filter);
 
-   --  event for Ada.Synchronous_Task_Control
+   pragma Inline (Canceled);
+
+   --  event
 
    type Event is limited private;
 

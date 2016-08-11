@@ -2,16 +2,19 @@ with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
 package body Ada.Task_Identification is
 
+   package Task_Id_Conv is
+      new System.Address_To_Named_Access_Conversions (
+         System.Tasks.Task_Record,
+         Task_Id);
+
+   --  implementation
+
    function Image (T : Task_Id) return String is
    begin
       if T = null then
          return "";
       else
          declare
-            package Conv is
-               new System.Address_To_Named_Access_Conversions (
-                  System.Tasks.Task_Record,
-                  Task_Id);
             N : constant not null access constant String := Name (T);
             N_Length : constant Natural := N'Length;
             Result : String (
@@ -26,7 +29,7 @@ package body Ada.Task_Identification is
                Result (Last) := ':';
             end if;
             System.Formatting.Address.Image (
-               Conv.To_Address (T),
+               Task_Id_Conv.To_Address (T),
                Result (
                   Last + 1 ..
                   Last + System.Formatting.Address.Address_String'Length),

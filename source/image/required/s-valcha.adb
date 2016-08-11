@@ -69,11 +69,9 @@ package body System.Val_Char is
    begin
       for I in Img_Char.Image_00_1F'Range loop
          declare
-            Item : Img_Char.String_3
-               renames Img_Char.Image_00_1F (I);
-            Item_Length : constant Natural := Img_Char.Length (Item);
+            E : Img_Char.String_3 renames Img_Char.Image_00_1F (I);
          begin
-            if S = Item (1 .. Item_Length) then
+            if S = E (1 .. Img_Char.Length (E)) then
                Value := I;
                Error := False;
                return;

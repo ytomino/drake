@@ -5,8 +5,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
 
    subtype Stream_Element_Offset is Streams.Stream_Element_Offset;
 
-   package Native
-      renames System.Native_Environment_Encoding;
+   package Native renames System.Native_Environment_Encoding;
 
    procedure Adjust_Buffer (
       Buffer : in out Buffer_Type;

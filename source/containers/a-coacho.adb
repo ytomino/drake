@@ -3,18 +3,18 @@ with Ada.Unchecked_Deallocation;
 package body Ada.Containers.Access_Holders is
    use type Weak_Access_Holders.Data_Access;
 
-   subtype Not_Null_Data_Access is not null Data_Access;
+   subtype Nonnull_Data_Access is not null Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (
-         Not_Null_Data_Access,
+         Nonnull_Data_Access,
          System.Reference_Counting.Container);
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Data_Access);
+         Nonnull_Data_Access);
 
-   type Data_Access_Access is access all Not_Null_Data_Access;
+   type Data_Access_Access is access all Nonnull_Data_Access;
    type Container_Access is access all System.Reference_Counting.Container;
 
    function Upcast is
@@ -135,7 +135,8 @@ package body Ada.Containers.Access_Holders is
 
       function To_Weak_Holder (Source : Holder) return Weak_Holder is
       begin
-         return Result : Weak_Holder := (Finalization.Controlled with
+         return Result : Weak_Holder := (
+            Finalization.Controlled with
             Super => (
                Data => Source.Data.Super'Unchecked_Access,
                Previous => <>,
@@ -171,18 +172,14 @@ package body Ada.Containers.Access_Holders is
          Initialize (Container);
       end Clear;
 
-      procedure Assign (
-         Target : in out Weak_Holder;
-         Source : Holder) is
+      procedure Assign (Target : in out Weak_Holder; Source : Holder) is
       begin
          Clear (Target);
          Target.Super.Data := Source.Data.Super'Unchecked_Access;
          Adjust (Target);
       end Assign;
 
-      procedure Assign (
-         Target : in out Holder;
-         Source : Weak_Holder) is
+      procedure Assign (Target : in out Holder; Source : Weak_Holder) is
       begin
          Clear (Target);
          Target.Data := Downcast (Source.Super.Data);

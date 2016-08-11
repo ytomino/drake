@@ -50,6 +50,9 @@ package body Ada.Containers.Generic_Array_Types is
 --
 --
 --
+--
+--
+--
 
    procedure Assign (Target : in out Array_Type; Source : Array_Type) is
    begin

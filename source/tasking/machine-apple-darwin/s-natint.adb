@@ -12,10 +12,10 @@ package body System.Native_Interrupts is
 
    procedure Report (
       Interrupt : Interrupt_Id;
-      Current : Ada.Exceptions.Exception_Occurrence);
+      X : Ada.Exceptions.Exception_Occurrence);
    procedure Report (
       Interrupt : Interrupt_Id;
-      Current : Ada.Exceptions.Exception_Occurrence)
+      X : Ada.Exceptions.Exception_Occurrence)
    is
       function Cast is
          new Ada.Unchecked_Conversion (
@@ -32,7 +32,7 @@ package body System.Native_Interrupts is
          Name (Name_Prefix'Length + 1 .. Name'Last),
          Name_Last,
          Error => Error);
-      Unwind.Occurrences.Report (Cast (Current), Name (1 .. Name_Last));
+      Unwind.Occurrences.Report (Cast (X), Name (1 .. Name_Last));
    end Report;
 
    type Signal_Rec is record

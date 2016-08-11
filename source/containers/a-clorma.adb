@@ -20,6 +20,18 @@ package body Ada.Containers.Limited_Ordered_Maps is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
+   function Compare_Keys (Left, Right : Key_Type) return Integer;
+   function Compare_Keys (Left, Right : Key_Type) return Integer is
+   begin
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
+   end Compare_Keys;
+
    type Context_Type is limited record
       Left : not null access Key_Type;
    end record;
@@ -36,21 +48,8 @@ package body Ada.Containers.Limited_Ordered_Maps is
    is
       Context : Context_Type;
       for Context'Address use Params;
-      Left : Key_Type
-         renames Context.Left.all;
-      Right : Key_Type
-         renames Downcast (Position).Key.all;
    begin
-      --  [gcc-4.9] outputs wrong code for combination of
-      --    constrained short String used as Key_Type (ex. String (1 .. 4))
-      --    and instantiation of Ada.Containers.Composites.Compare here
-      if Left < Right then
-         return -1;
-      elsif Right < Left then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Keys (Context.Left.all, Downcast (Position).Key.all);
    end Compare_Key;
 
 --  diff (Allocate_Element)
@@ -191,7 +190,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
+      return Compare_Keys (Left, Right) = 0;
    end Equivalent_Keys;
 
    function Empty_Map return Map is
@@ -234,25 +233,24 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
    function Length (Container : Map) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+--  diff
    begin
       return Container.Root = null;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
    begin
       Free_Data (Container);
---  diff
---  diff
    end Clear;
 
    function Key (Position : Cursor) return Key_Reference_Type is
@@ -296,9 +294,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
          Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Map; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -306,9 +302,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
+   function Reference (Container : aliased in out Map; Position : Cursor)
       return Reference_Type
    is
       pragma Unreferenced (Container);
@@ -316,17 +310,13 @@ package body Ada.Containers.Limited_Ordered_Maps is
       return (Element => Position.Element.all'Access);
    end Reference;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Key : Key_Type)
+   function Constant_Reference (Container : aliased Map; Key : Key_Type)
       return Constant_Reference_Type is
    begin
       return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
+   function Reference (Container : aliased in out Map; Key : Key_Type)
       return Reference_Type is
    begin
       return Reference (Container, Find (Container, Key));
@@ -400,12 +390,17 @@ package body Ada.Containers.Limited_Ordered_Maps is
             Container.Length,
             Upcast (Before),
             Upcast (Position));
+--  diff
       else
          Position := Before;
       end if;
    end Insert;
 
 --  diff (Insert)
+--
+--
+--
+--
 --
 --
 --
@@ -482,10 +477,11 @@ package body Ada.Containers.Limited_Ordered_Maps is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
 --  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Base.Remove (Container.Root, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;

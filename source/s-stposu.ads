@@ -22,6 +22,7 @@ package System.Storage_Pools.Subpools is
    function Pool_Of_Subpool (
       Subpool : not null Subpool_Handle)
       return access Root_Storage_Pool_With_Subpools'Class;
+   pragma Inline (Pool_Of_Subpool);
 
    --  Note: RM defined Pool_*o*f_Subpool,
    --    but GNAT runtime defined Pool_*O*f_Subpool.

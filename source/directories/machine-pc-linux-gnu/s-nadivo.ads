@@ -10,6 +10,7 @@ package System.Native_Directories.Volumes is
    subtype Non_Controlled_File_System is C.sys.statfs.struct_statfs;
 
    function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+   pragma Inline (Is_Assigned);
 
    procedure Get (
       Name : String;
@@ -17,6 +18,9 @@ package System.Native_Directories.Volumes is
 
    function Size (FS : Non_Controlled_File_System) return File_Size;
    function Free_Space (FS : Non_Controlled_File_System) return File_Size;
+
+   pragma Inline (Size);
+   pragma Inline (Free_Space);
 
    function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
    function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
@@ -47,5 +51,6 @@ package System.Native_Directories.Volumes is
 
    function Reference (Item : File_System)
       return not null access Non_Controlled_File_System;
+   pragma Inline (Reference);
 
 end System.Native_Directories.Volumes;

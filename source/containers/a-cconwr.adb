@@ -1,5 +1,4 @@
 pragma Check_Policy (Trace => Ignore);
-with Ada.Unchecked_Conversion;
 with System.Shared_Locking;
 package body Ada.Containers.Copy_On_Write is
 
@@ -290,12 +289,10 @@ package body Ada.Containers.Copy_On_Write is
    procedure In_Place_Set_Length (
       Target_Data : Data_Access;
       Target_Length : Count_Type;
+      Target_Max_Length : aliased in out Count_Type;
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
-      Failure : out Boolean)
-   is
-      function Downcast is
-         new Unchecked_Conversion (Data_Access, Data_Ex_Access);
+      Failure : out Boolean) is
    begin
       if New_Length > Target_Length then
          --  inscreasing
@@ -306,10 +303,10 @@ package body Ada.Containers.Copy_On_Write is
             --  try to use reserved area
             pragma Assert (Target_Data /= null); -- Target_Capacity > 0
             System.Shared_Locking.Enter; -- emulate CAS
-            if Downcast (Target_Data).Max_Length = Target_Length
+            if Target_Max_Length = Target_Length
                or else Target_Data.Follower.Next_Follower = null -- not shared
             then
-               Downcast (Target_Data).Max_Length := New_Length;
+               Target_Max_Length := New_Length;
                Failure := False; -- success
             else
                Failure := True; -- should be copied
@@ -319,7 +316,7 @@ package body Ada.Containers.Copy_On_Write is
       else
          --  decreasing
          if not Shared (Target_Data) then
-            Downcast (Target_Data).Max_Length := New_Length;
+            Target_Max_Length := New_Length;
          end if;
          Failure := False; -- success
       end if;

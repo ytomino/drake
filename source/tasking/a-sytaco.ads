@@ -15,6 +15,8 @@ package Ada.Synchronous_Task_Control is
       S : in out Suspension_Object;
       Multi : Boolean := False); -- additional
 
+   pragma Inline (Current_State);
+
 private
 
    type Suspension_Object is

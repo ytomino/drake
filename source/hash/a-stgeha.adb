@@ -2,7 +2,6 @@ with Ada.Containers.Murmur_Hash_3;
 function Ada.Strings.Generic_Hash (Key : String_Type)
    return Containers.Hash_Type
 is
-   use type Containers.Hash_Type;
    State : Containers.Murmur_Hash_3.State :=
       Containers.Murmur_Hash_3.Initialize (0);
    Count : Containers.Count_Type := 0;

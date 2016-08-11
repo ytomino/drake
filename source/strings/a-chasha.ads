@@ -19,12 +19,19 @@ package Ada.Characters.ASCII.Handling is
    function Is_Alphanumeric (Item : Character) return Boolean;
    function Is_Special (Item : Character) return Boolean;
 
+   pragma Inline (Is_Graphic);
+   pragma Inline (Is_Lower);
+   pragma Inline (Is_Upper);
+   pragma Inline (Is_Digit);
+
    function To_Lower (Item : Character) return Character;
    function To_Upper (Item : Character) return Character;
    function To_Basic (Item : Character) return Character;
    --  extended
    function To_Case_Folding (Item : Character) return Character
       renames To_Lower;
+
+   pragma Inline (To_Basic);
 
    function To_Lower (Item : String) return String;
    function To_Upper (Item : String) return String;

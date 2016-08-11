@@ -5,11 +5,12 @@ package body System.Storage_Map is
    pragma Suppress (All_Checks);
    use type C.signed_int;
 
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
+   --  implementation
+
    function Load_Address return Address is
-      package Conv is
-         new Address_To_Named_Access_Conversions (
-            C.char,
-            C.char_ptr);
       type Link_map_ptr is access C.sys.link_elf.Link_map
          with Convention => C;
       for Link_map_ptr'Storage_Size use 0;
@@ -22,7 +23,7 @@ package body System.Storage_Map is
       then
          return Null_Address; -- ???
       end if;
-      return Conv.To_Address (Map.l_addr);
+      return char_ptr_Conv.To_Address (Map.l_addr);
    end Load_Address;
 
 end System.Storage_Map;

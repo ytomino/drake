@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with System.Zero_Terminated_Strings;
 with C.mach_o.dyld;
 with C.stdint;
@@ -13,19 +12,20 @@ package body System.Program is
       R : C.signed_int;
    begin
       --  getting the length at first
-      R := C.mach_o.dyld.NSGetExecutablePath (
-         Small_Buffer (0)'Access,
-         Buffer_Length'Access);
-      pragma Check (Validate, R < 0);
-      pragma Check (Validate, Buffer_Length > 0);
+      R :=
+         C.mach_o.dyld.NSGetExecutablePath (
+            Small_Buffer (0)'Access,
+            Buffer_Length'Access);
+      pragma Assert (R < 0 and then Buffer_Length > 0);
       --  Buffer_Length is updated
       declare
          Buffer : aliased C.char_array (0 .. C.size_t (Buffer_Length - 1));
       begin
-         R := C.mach_o.dyld.NSGetExecutablePath (
-            Buffer (0)'Access,
-            Buffer_Length'Access);
-         pragma Check (Validate, R = 0);
+         R :=
+            C.mach_o.dyld.NSGetExecutablePath (
+               Buffer (0)'Access,
+               Buffer_Length'Access);
+         pragma Assert (R = 0);
          return Zero_Terminated_Strings.Value (
             Buffer (0)'Access,
             C.size_t (Buffer_Length - 1));

@@ -136,17 +136,17 @@ package body System.Native_Processes is
       Index : C.ptrdiff_t;
       New_Item : String)
    is
-      E : constant C.char_ptr_ptr := Command + Index;
+      P : constant C.char_ptr_ptr := Command + Index;
    begin
       --  clear for that any exception is raised
-      E.all := null;
+      P.all := null;
       --  set terminator
       C.char_ptr_ptr'(Command + (Index + 1)).all := null;
       --  allocate and copy
-      E.all := char_ptr_Conv.To_Pointer (
+      P.all := char_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (
             New_Item'Length * Zero_Terminated_Strings.Expanding + 1));
-      Zero_Terminated_Strings.To_C (New_Item, E.all);
+      Zero_Terminated_Strings.To_C (New_Item, P.all);
    end Insert;
 
    --  implementation
@@ -240,10 +240,9 @@ package body System.Native_Processes is
       First : Positive;
       Last : Natural)
    is
+      pragma Assert (Last >= First);
       Old_Count : constant C.size_t := Entry_Count (Command);
-      New_Count : constant C.size_t :=
-         Old_Count + C.size_t (Integer'Max (Last - First + 1, 0));
-      P : C.char_ptr_ptr;
+      New_Count : constant C.size_t := Old_Count + C.size_t (Last - First + 1);
    begin
       Reallocate (Command, New_Count);
       --  clear for that any exception is raised, and set terminator
@@ -251,25 +250,28 @@ package body System.Native_Processes is
          C.char_ptr_ptr'(Command + C.ptrdiff_t (I)).all := null;
       end loop;
       --  allocate and copy
-      P := char_ptr_ptr_Conv.To_Pointer (Startup.argv) + C.ptrdiff_t (First);
-      for I in Old_Count .. New_Count - 1 loop
+      for I in 0 .. Last - First loop
          declare
-            E : constant C.char_ptr_ptr := Command + C.ptrdiff_t (I);
-            Length : constant C.size_t := strlen (P.all);
+            P : constant C.char_ptr_ptr :=
+               Command + C.ptrdiff_t (Old_Count) + C.ptrdiff_t (I);
+            Q : constant C.char_ptr_ptr :=
+               char_ptr_ptr_Conv.To_Pointer (Startup.argv)
+               + C.ptrdiff_t (First)
+               + C.ptrdiff_t (I);
+            Length : constant C.size_t := strlen (Q.all);
          begin
-            E.all := char_ptr_Conv.To_Pointer (
+            P.all := char_ptr_Conv.To_Pointer (
                Standard_Allocators.Allocate (
                   Storage_Elements.Storage_Offset (Length) + 1));
             declare
                D : C.char_array (0 .. Length);
-               for D'Address use char_ptr_Conv.To_Address (E.all);
+               for D'Address use char_ptr_Conv.To_Address (P.all);
                S : C.char_array (0 .. Length);
-               for S'Address use char_ptr_Conv.To_Address (P.all);
+               for S'Address use char_ptr_Conv.To_Address (Q.all);
             begin
                D := S;
             end;
          end;
-         P := P + 1;
       end loop;
    end Append;
 
@@ -286,21 +288,25 @@ package body System.Native_Processes is
          Command_Line (Last) := ' ';
       end if;
       for I in Argument'Range loop
-         if Argument (I) = ' ' then
-            if Last + 1 >= Command_Line'Last then
-               raise Constraint_Error;
+         declare
+            E : Character renames Argument (I);
+         begin
+            if E = ' ' then
+               if Last + 1 >= Command_Line'Last then
+                  raise Constraint_Error;
+               end if;
+               Last := Last + 1;
+               Command_Line (Last) := '\';
+               Last := Last + 1;
+               Command_Line (Last) := ' ';
+            else
+               if Last >= Command_Line'Last then
+                  raise Constraint_Error;
+               end if;
+               Last := Last + 1;
+               Command_Line (Last) := E;
             end if;
-            Last := Last + 1;
-            Command_Line (Last) := '\';
-            Last := Last + 1;
-            Command_Line (Last) := ' ';
-         else
-            if Last >= Command_Line'Last then
-               raise Constraint_Error;
-            end if;
-            Last := Last + 1;
-            Command_Line (Last) := Argument (I);
-         end if;
+         end;
       end loop;
    end Append_Argument;
 

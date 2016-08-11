@@ -113,12 +113,16 @@ package body Ada.Containers.Indefinite_Holders is
    end Empty_Holder;
 
    overriding function "=" (Left, Right : Holder) return Boolean is
+      Left_Is_Empty : constant Boolean := Is_Empty (Left);
+      Right_Is_Empty : constant Boolean := Is_Empty (Right);
    begin
-      if Left.Super.Data = Right.Super.Data then
+      if Left_Is_Empty /= Right_Is_Empty then
+         return False;
+      elsif Left_Is_Empty or else Left.Super.Data = Right.Super.Data then
          return True;
-      elsif Is_Empty (Left) or else Is_Empty (Right) then
-         return Is_Empty (Left) and then Is_Empty (Right);
       else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Downcast (Left.Super.Data).Element.all =
             Downcast (Right.Super.Data).Element.all;
       end if;
@@ -132,19 +136,18 @@ package body Ada.Containers.Indefinite_Holders is
    end To_Holder;
 
    function Is_Empty (Container : Holder) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Element = null;
+      return Data = null or else Data.Element = null;
    end Is_Empty;
 
    procedure Clear (Container : in out Holder) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
-   function Element (Container : Holder'Class) return Element_Type is
+   function Element (Container : Holder'Class)
+      return Element_Type is
    begin
       return Constant_Reference (Holder (Container)).Element.all;
    end Element;
@@ -172,16 +175,14 @@ package body Ada.Containers.Indefinite_Holders is
       Process (Reference (Holder (Container)).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Holder)
+   function Constant_Reference (Container : aliased Holder)
       return Constant_Reference_Type is
    begin
       Unique (Container'Unrestricted_Access.all, False);
       return (Element => Downcast (Container.Super.Data).Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Holder)
+   function Reference (Container : aliased in out Holder)
       return Reference_Type is
    begin
       Unique (Container, True);
@@ -239,6 +240,7 @@ package body Ada.Containers.Indefinite_Holders is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Holder) is
       begin
+         Unique (Item'Unrestricted_Access.all, False); -- private
          Element_Type'Output (
             Stream,
             Downcast (Item.Super.Data).Element.all);

@@ -89,23 +89,23 @@ package body System.Exponentiations is
                   begin
                      if Integer_Type'Size > Integer'Size then
                         declare
-                           F : aliased Long_Long_Integer;
+                           Factor_Squared : aliased Long_Long_Integer;
                         begin
                            Overflow := mul_overflow (
                               Long_Long_Integer (Factor),
                               Long_Long_Integer (Factor),
-                              F'Access);
-                           Factor := Integer_Type (F);
+                              Factor_Squared'Access);
+                           Factor := Integer_Type (Factor_Squared);
                         end;
                      else
                         declare
-                           F : aliased Integer;
+                           Factor_Squared : aliased Integer;
                         begin
                            Overflow := mul_overflow (
                               Integer (Factor),
                               Integer (Factor),
-                              F'Access);
-                           Factor := Integer_Type (F);
+                              Factor_Squared'Access);
+                           Factor := Integer_Type (Factor_Squared);
                         end;
                      end if;
                      if Overflow then

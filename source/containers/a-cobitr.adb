@@ -1,35 +1,74 @@
 package body Ada.Containers.Binary_Trees is
 
+   function Nonnull_First (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_First (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      while I.Left /= null loop
+         I := I.Left;
+      end loop;
+      return I;
+   end Nonnull_First;
+
+   function Nonnull_Last (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_Last (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      while I.Right /= null loop
+         I := I.Right;
+      end loop;
+      return I;
+   end Nonnull_Last;
+
+   function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
+      return not null Node_Access;
+   function Nonnull_Leaf_To_Root_First (Container : not null Node_Access)
+      return not null Node_Access
+   is
+      I : not null Node_Access := Container;
+   begin
+      loop
+         if I.Left /= null then
+            I := I.Left;
+         elsif I.Right /= null then
+            I := I.Right;
+         else -- I.Left = null and then I.Right = null
+            exit;
+         end if;
+      end loop;
+      return I;
+   end Nonnull_Leaf_To_Root_First;
+
+   --  implementation
+
    function First (Container : Node_Access) return Node_Access is
    begin
       if Container = null then
          return null;
       else
-         declare
-            It : not null Node_Access := Container;
-         begin
-            while It.Left /= null loop
-               It := It.Left;
-            end loop;
-            return It;
-         end;
+         return Nonnull_First (Container);
       end if;
    end First;
 
    function Next (Item : not null Node_Access) return Node_Access is
-      It : not null Node_Access := Item;
    begin
-      if It.Right /= null then
-         It := It.Right;
-         while It.Left /= null loop
-            It := It.Left;
-         end loop;
-         return It;
+      if Item.Right /= null then
+         return Nonnull_First (Item.Right);
       else
-         while It.Parent /= null and then It.Parent.Right = It loop
-            It := It.Parent;
-         end loop;
-         return It.Parent;
+         declare
+            I : not null Node_Access := Item;
+         begin
+            while I.Parent /= null and then I.Parent.Right = I loop
+               I := I.Parent;
+            end loop;
+            return I.Parent;
+         end;
       end if;
    end Next;
 
@@ -38,43 +77,36 @@ package body Ada.Containers.Binary_Trees is
       if Container = null then
          return null;
       else
-         declare
-            It : not null Node_Access := Container;
-         begin
-            while It.Right /= null loop
-               It := It.Right;
-            end loop;
-            return It;
-         end;
+         return Nonnull_Last (Container);
       end if;
    end Last;
 
    function Previous (Item : not null Node_Access) return Node_Access is
-      It : not null Node_Access := Item;
    begin
-      if It.Left /= null then
-         It := It.Left;
-         while It.Right /= null loop
-            It := It.Right;
-         end loop;
-         return It;
+      if Item.Left /= null then
+         return Nonnull_Last (Item.Left);
       else
-         while It.Parent /= null and then It.Parent.Left = It loop
-            It := It.Parent;
-         end loop;
-         return It.Parent;
+         declare
+            I : not null Node_Access := Item;
+         begin
+            while I.Parent /= null and then I.Parent.Left = I loop
+               I := I.Parent;
+            end loop;
+            return I.Parent;
+         end;
       end if;
    end Previous;
 
    procedure Iterate (
       Container : Node_Access;
-      Process : not null access procedure (Position : not null Node_Access)) is
+      Process : not null access procedure (Position : not null Node_Access))
+   is
+      I : Node_Access := First (Container);
    begin
-      if Container /= null then
-         Iterate (Container.Left, Process);
-         Process (Container);
-         Iterate (Container.Right, Process);
-      end if;
+      while I /= null loop
+         Process (I);
+         I := Next (I);
+      end loop;
    end Iterate;
 
    procedure Iterate (
@@ -82,25 +114,78 @@ package body Ada.Containers.Binary_Trees is
       Params : System.Address;
       Process : not null access procedure (
          Position : not null Node_Access;
-         Params : System.Address)) is
+         Params : System.Address))
+   is
+      I : Node_Access := First (Container);
    begin
-      if Container /= null then
-         Iterate (Container.Left, Params, Process);
-         Process (Container, Params);
-         Iterate (Container.Right, Params, Process);
-      end if;
+      while I /= null loop
+         Process (I, Params);
+         I := Next (I);
+      end loop;
    end Iterate;
 
    procedure Reverse_Iterate (
       Container : Node_Access;
-      Process : not null access procedure (Position : not null Node_Access)) is
+      Process : not null access procedure (Position : not null Node_Access))
+   is
+      I : Node_Access := Last (Container);
    begin
-      if Container /= null then
-         Reverse_Iterate (Container.Right, Process);
-         Process (Container);
-         Reverse_Iterate (Container.Left, Process);
-      end if;
+      while I /= null loop
+         Process (I);
+         I := Previous (I);
+      end loop;
    end Reverse_Iterate;
+
+   function Leaf_To_Root_First (Container : Node_Access) return Node_Access is
+   begin
+      if Container = null then
+         return null;
+      else
+         return Nonnull_Leaf_To_Root_First (Container);
+      end if;
+   end Leaf_To_Root_First;
+
+   function Leaf_To_Root_Next (Item : not null Node_Access)
+      return Node_Access is
+   begin
+      if Item.Parent = null then
+         return null;
+      elsif Item.Parent.Right /= null and then Item.Parent.Right /= Item then
+         return Nonnull_Leaf_To_Root_First (Item.Parent.Right);
+      else
+         return Item.Parent;
+      end if;
+   end Leaf_To_Root_Next;
+
+   procedure Root_To_Leaf_Next (
+      Previous_Source_Item : not null Node_Access;
+      Source_Parent_Item : out Node_Access;
+      Previous_Target_Item : not null Node_Access;
+      Target_Parent_Item : out Node_Access;
+      Index : out Index_Type) is
+   begin
+      Source_Parent_Item := Previous_Source_Item;
+      Target_Parent_Item := Previous_Target_Item;
+      if Previous_Source_Item.Left /= null then
+         Index := Left;
+      elsif Previous_Source_Item.Right /= null then
+         Index := Right;
+      else
+         loop
+            declare
+               P : constant Node_Access := Source_Parent_Item;
+            begin
+               Source_Parent_Item := Source_Parent_Item.Parent;
+               Target_Parent_Item := Target_Parent_Item.Parent;
+               exit when Source_Parent_Item = null
+                  or else (
+                     Source_Parent_Item.Right /= null
+                     and then Source_Parent_Item.Right /= P);
+            end;
+         end loop;
+         Index := Right;
+      end if;
+   end Root_To_Leaf_Next;
 
    function Find (
       Container : Node_Access;
@@ -221,37 +306,33 @@ package body Ada.Containers.Binary_Trees is
    procedure Free (
       Container : in out Node_Access;
       Length : in out Count_Type;
-      Free : not null access procedure (Object : in out Node_Access)) is
+      Free : not null access procedure (Object : in out Node_Access))
+   is
+      I : Node_Access := Leaf_To_Root_First (Container);
    begin
-      if Container /= null then
-         Binary_Trees.Free (Container.Left, Length, Free);
-         Binary_Trees.Free (Container.Right, Length, Free);
-         Free (Container);
-         Length := Length - 1;
-      end if;
+      while I /= null loop
+         declare
+            Next : constant Node_Access := Leaf_To_Root_Next (I);
+         begin
+            Free (I);
+            Length := Length - 1;
+            I := Next;
+         end;
+      end loop;
+      Container := null;
+      pragma Assert (Length = 0);
    end Free;
 
    procedure Merge (
       Target : in out Node_Access;
       Length : in out Count_Type;
       Source : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : access procedure (
          Target : out Node_Access;
          Source : not null Node_Access);
-      Insert : access procedure (
-         Container : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : access procedure (
-         Container : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access);
       Free : access procedure (Object : in out Node_Access))
    is
       New_Node : Node_Access;
@@ -265,20 +346,20 @@ package body Ada.Containers.Binary_Trees is
          begin
             if Comparison < 0 then
                N := Next (I);
-               if not In_Only_Left then
+               if not Filter (In_Only_Left) then
                   Remove (Target, Length, I);
                   Free (I);
                end if;
                I := N;
             elsif Comparison > 0 then
-               if In_Only_Right then
+               if Filter (In_Only_Right) then
                   Copy (New_Node, J);
                   Insert (Target, Length, I, New_Node);
                end if;
                J := Next (J);
             else
                N := Next (I);
-               if not In_Both then
+               if not Filter (In_Both) then
                   Remove (Target, Length, I);
                   Free (I);
                end if;
@@ -287,7 +368,7 @@ package body Ada.Containers.Binary_Trees is
             end if;
          end;
       end loop;
-      if not In_Only_Left then
+      if not Filter (In_Only_Left) then
          while I /= null loop
             N := Next (I);
             Remove (Target, Length, I);
@@ -295,7 +376,7 @@ package body Ada.Containers.Binary_Trees is
             I := N;
          end loop;
       end if;
-      if In_Only_Right then
+      if Filter (In_Only_Right) then
          while J /= null loop
             Copy (New_Node, J);
             Insert (Target, Length, null, New_Node);
@@ -304,24 +385,16 @@ package body Ada.Containers.Binary_Trees is
       end if;
    end Merge;
 
-   procedure Merge (
+   procedure Copying_Merge (
       Target : out Node_Access;
       Length : out Count_Type;
-      Left : Node_Access;
-      Right : Node_Access;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Left, Right : Node_Access;
+      Filter : Filter_Type;
       Compare : not null access function (Left, Right : not null Node_Access)
          return Integer;
       Copy : not null access procedure (
          Target : out Node_Access;
-         Source : not null Node_Access);
-      Insert : not null access procedure (
-         Container : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access))
+         Source : not null Node_Access))
    is
       New_Node : Node_Access;
       I : Node_Access := First (Left);
@@ -333,19 +406,19 @@ package body Ada.Containers.Binary_Trees is
             Comparison : constant Integer := Compare (I, J);
          begin
             if Comparison < 0 then
-               if In_Only_Left then
+               if Filter (In_Only_Left) then
                   Copy (New_Node, I);
                   Insert (Target, Length, null, New_Node);
                end if;
                I := Next (I);
             elsif Comparison > 0 then
-               if In_Only_Right then
+               if Filter (In_Only_Right) then
                   Copy (New_Node, J);
                   Insert (Target, Length, null, New_Node);
                end if;
                J := Next (J);
             else
-               if In_Both then
+               if Filter (In_Both) then
                   Copy (New_Node, I);
                   Insert (Target, Length, null, New_Node);
                end if;
@@ -354,20 +427,20 @@ package body Ada.Containers.Binary_Trees is
             end if;
          end;
       end loop;
-      if In_Only_Left then
+      if Filter (In_Only_Left) then
          while I /= null loop
             Copy (New_Node, I);
             Insert (Target, Length, null, New_Node);
             I := Next (I);
          end loop;
       end if;
-      if In_Only_Right then
+      if Filter (In_Only_Right) then
          while J /= null loop
             Copy (New_Node, J);
             Insert (Target, Length, null, New_Node);
             J := Next (J);
          end loop;
       end if;
-   end Merge;
+   end Copying_Merge;
 
 end Ada.Containers.Binary_Trees;

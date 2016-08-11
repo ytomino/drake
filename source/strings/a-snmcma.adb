@@ -18,10 +18,10 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    begin
       for J in Table'Range loop
          declare
-            Item : UCD.Map_16x1_Item_Type renames Table (J);
+            F : UCD.Map_16x1_Item_Type renames Table (J);
          begin
-            Mapping.From (I) := Character_Type'Val (Item.Code);
-            Mapping.To (I) := Character_Type'Val (Item.Mapping);
+            Mapping.From (I) := Character_Type'Val (F.Code);
+            Mapping.To (I) := Character_Type'Val (F.Mapping);
          end;
          I := I + 1;
       end loop;
@@ -40,14 +40,14 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    begin
       for J in Table'Range loop
          declare
-            Item : UCD.Simple_Case_Mapping.Compressed_Item_Type
+            F : UCD.Simple_Case_Mapping.Compressed_Item_Type
                renames Table (J);
             From : Character_Type := Character_Type'Val (
-               UCD.Difference_Base (Item.Start) + Offset);
+               UCD.Difference_Base (F.Start) + Offset);
             To : Character_Type := Character_Type'Val (
-               Character_Type'Pos (From) + Item.Diff);
+               Character_Type'Pos (From) + F.Diff);
          begin
-            for K in 1 .. Item.Length loop
+            for K in 1 .. F.Length loop
                Mapping.From (I) := From;
                Mapping.To (I) := To;
                From := Character_Type'Succ (From);
@@ -69,10 +69,10 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    begin
       for J in Table'Range loop
          declare
-            Item : UCD.Map_16x1_Item_Type renames Table (J);
+            F : UCD.Map_16x1_Item_Type renames Table (J);
          begin
-            Mapping.From (I) := Character_Type'Val (Item.Mapping);
-            Mapping.To (I) := Character_Type'Val (Item.Code);
+            Mapping.From (I) := Character_Type'Val (F.Mapping);
+            Mapping.To (I) := Character_Type'Val (F.Code);
          end;
          I := I + 1;
       end loop;
@@ -91,14 +91,13 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
    begin
       for J in Table'Range loop
          declare
-            Item : UCD.Simple_Case_Mapping.Compressed_Item_Type
-               renames Table (J);
+            F : UCD.Simple_Case_Mapping.Compressed_Item_Type renames Table (J);
             To : Character_Type := Character_Type'Val (
-               UCD.Difference_Base (Item.Start) + Offset);
+               UCD.Difference_Base (F.Start) + Offset);
             From : Character_Type := Character_Type'Val (
-               Character_Type'Pos (To) + Item.Diff);
+               Character_Type'Pos (To) + F.Diff);
          begin
-            for K in 1 .. Item.Length loop
+            for K in 1 .. F.Length loop
                Mapping.From (I) := From;
                Mapping.To (I) := To;
                From := Character_Type'Succ (From);
@@ -151,7 +150,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Check (Validate, I = Mapping.From'Last + 1);
+         pragma Assert (I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
       pragma Check (Validate, Debug.Valid (Mapping.all));
@@ -205,7 +204,7 @@ package body Ada.Strings.Naked_Maps.Case_Mapping is
             I,
             UCD.Simple_Case_Mapping.SL_Table_1XXXX_Compressed,
             Offset => 16#10000#);
-         pragma Check (Validate, I = Mapping.From'Last + 1);
+         pragma Assert (I = Mapping.From'Last + 1);
       end;
       Sort (Mapping.From, Mapping.To);
       pragma Check (Validate, Debug.Valid (Mapping.all));

@@ -14,8 +14,9 @@ package body System.Native_Real_Time is
    begin
       return (
          Unchecked_Tag => 255, -- any value in others
-         QuadPart => C.winnt.LONGLONG (
-            System.Native_Time.Nanosecond_Number'Integer_Value (T)));
+         QuadPart =>
+            C.winnt.LONGLONG (
+               System.Native_Time.Nanosecond_Number'Integer_Value (T)));
    end To_Native_Time;
 
    function To_Duration (T : Native_Time) return Duration is

@@ -1,4 +1,5 @@
 with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Storage_Elements;
 package body Interfaces.C.Generic_Strings is
    use type Pointers.Constant_Pointer;
@@ -17,7 +18,9 @@ package body Interfaces.C.Generic_Strings is
 
    end libc;
 
-   package const_Conv is
+   package chars_ptr_Conv is
+      new System.Address_To_Named_Access_Conversions (Element, chars_ptr);
+   package const_chars_ptr_Conv is
       new System.Address_To_Constant_Access_Conversions (
          Element,
          const_chars_ptr);
@@ -74,21 +77,21 @@ package body Interfaces.C.Generic_Strings is
                end;
             end if;
          end if;
-         return Item (Item'First)'Unchecked_Access;
+         return chars_ptr_Conv.To_Pointer (Item.all'Address);
       end if;
    end To_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr is
    begin
-      return Item (Item'First)'Unchecked_Access;
+      return const_chars_ptr_Conv.To_Pointer (Item.all'Address);
    end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
       return not null chars_ptr is
    begin
       return New_Chars_Ptr (
-         Chars (Chars'First)'Access,
+         const_chars_ptr_Conv.To_Pointer (Chars'Address),
          Chars'Length); -- CXB3009, accept non-nul terminated
    end New_Char_Array;
 
@@ -101,7 +104,9 @@ package body Interfaces.C.Generic_Strings is
       C : constant Element_Array :=
          To_C (Str, Append_Nul => False, Substitute => Substitute);
    begin
-      return New_Chars_Ptr (C (C'First)'Access, C'Length);
+      return New_Chars_Ptr (
+         const_chars_ptr_Conv.To_Pointer (C'Address),
+         C'Length);
    end New_String;
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
@@ -183,11 +188,10 @@ package body Interfaces.C.Generic_Strings is
          --  copy
          for I in Items'Range loop
             declare
-               Item : const_chars_ptr_With_Length
-                  renames Items (I);
+               E : const_chars_ptr_With_Length renames Items (I);
             begin
-               Pointers.Copy_Array (Item.ptr, P, ptrdiff_t (Item.Length));
-               P := P + ptrdiff_t (Item.Length);
+               Pointers.Copy_Array (E.ptr, P, ptrdiff_t (E.Length));
+               P := P + ptrdiff_t (E.Length);
             end;
          end loop;
          P.all := Element'Val (0);
@@ -240,7 +244,7 @@ package body Interfaces.C.Generic_Strings is
          else
             declare
                Source : Element_Array (0 .. Actual_Length - 1);
-               for Source'Address use const_Conv.To_Address (Item);
+               for Source'Address use const_chars_ptr_Conv.To_Address (Item);
             begin
                return Source (0 .. Length - 1) & Element'Val (0);
             end;
@@ -262,7 +266,7 @@ package body Interfaces.C.Generic_Strings is
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item); -- checking
       Source : Element_Array (size_t);
-      for Source'Address use const_Conv.To_Address (Item);
+      for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -293,7 +297,7 @@ package body Interfaces.C.Generic_Strings is
       pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item, Limit => Length);
       Source : Element_Array (size_t);
-      for Source'Address use const_Conv.To_Address (Item);
+      for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -400,7 +404,7 @@ package body Interfaces.C.Generic_Strings is
       else
          declare
             Source : Element_Array (0 .. Limit - 1);
-            for Source'Address use const_Conv.To_Address (Item);
+            for Source'Address use const_chars_ptr_Conv.To_Address (Item);
          begin
             Result := 0;
             while Result < Limit
@@ -432,7 +436,7 @@ package body Interfaces.C.Generic_Strings is
          Target : constant not null chars_ptr := Item;
       begin
          Pointers.Copy_Array (
-            Source => Chars (Chars'First)'Unchecked_Access,
+            Source => chars_ptr_Conv.To_Pointer (Chars'Address),
             Target => Target + ptrdiff_t (Offset),
             Length => ptrdiff_t (Chars_Length));
       end;

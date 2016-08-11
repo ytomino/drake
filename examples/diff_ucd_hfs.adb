@@ -106,10 +106,10 @@ begin
 		Put ("decomposing maps:");
 		New_Line;
 		Put ("  size of UCD:");
-		Put (UCD_Decomposing_Map.Length);
+		Put (Integer (UCD_Decomposing_Map.Length));
 		New_Line;
 		Put ("  size of VFS:");
-		Put (VFS_Decomposing_Map.Length);
+		Put (Integer (VFS_Decomposing_Map.Length));
 		New_Line;
 		while Decomposing_Maps.Has_Element (I) and then Decomposing_Maps.Has_Element (J) loop
 			if Decomposing_Maps.Key (I) < Decomposing_Maps.Key (J) then
@@ -194,10 +194,10 @@ begin
 		Put ("combining classes:");
 		New_Line;
 		Put ("  size of UCD:");
-		Put (UCD_Combining_Class_Map.Length);
+		Put (Integer (UCD_Combining_Class_Map.Length));
 		New_Line;
 		Put ("  size of VFS:");
-		Put (VFS_Combining_Class_Map.Length);
+		Put (Integer (VFS_Combining_Class_Map.Length));
 		New_Line;
 		while Combining_Class_Maps.Has_Element (I) and then Combining_Class_Maps.Has_Element (J) loop
 			if Combining_Class_Maps.Key (I) < Combining_Class_Maps.Key (J) then

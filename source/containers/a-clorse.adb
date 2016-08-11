@@ -20,6 +20,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Node, Cursor);
 
+   function Compare_Elements (Left, Right : Element_Type) return Integer;
+   function Compare_Elements (Left, Right : Element_Type) return Integer is
+   begin
+      if Left < Right then
+         return -1;
+      elsif Right < Left then
+         return 1;
+      else
+         return 0;
+      end if;
+   end Compare_Elements;
+
    type Context_Type is limited record
       Left : not null access Element_Type;
    end record;
@@ -36,41 +48,20 @@ package body Ada.Containers.Limited_Ordered_Sets is
    is
       Context : Context_Type;
       for Context'Address use Params;
-      Left : Element_Type
-         renames Context.Left.all;
-      Right : Element_Type
-         renames Downcast (Position).Element.all;
    begin
-      --  [gcc-4.9] outputs wrong code for combination of
-      --    constrained short String used as Key_Type (ex. String (1 .. 4))
-      --    and instantiation of Ada.Containers.Composites.Compare here
-      if Left < Right then
-         return -1;
-      elsif Right < Left then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Elements (
+         Context.Left.all,
+         Downcast (Position).Element.all);
    end Compare_Element;
 
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
       return Integer;
    function Compare_Node (Left, Right : not null Binary_Trees.Node_Access)
-      return Integer
-   is
-      Left_E : Element_Type
-         renames Downcast (Left).Element.all;
-      Right_E : Element_Type
-         renames Downcast (Right).Element.all;
+      return Integer is
    begin
-      --  [gcc-4.9] same as above
-      if Left_E < Right_E then
-         return -1;
-      elsif Right_E < Left_E then
-         return 1;
-      else
-         return 0;
-      end if;
+      return Compare_Elements (
+         Downcast (Left).Element.all,
+         Downcast (Right).Element.all);
    end Compare_Node;
 
 --  diff (Allocate_Element)
@@ -191,11 +182,41 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Binary_Trees.Node_Access)
+         return Boolean)
+      return Boolean;
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Binary_Trees.Node_Access)
+         return Boolean)
+      return Boolean
+   is
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
+   begin
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 then
+         return True;
+      else
+--  diff
+--  diff
+         return Binary_Trees.Equivalent (
+            Left.Root,
+            Right.Root,
+            Equivalent => Equivalent);
+      end if;
+   end Equivalent_Sets;
+
    --  implementation
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
    begin
-      return not (Left < Right) and then not (Right < Left);
+      return Compare_Elements (Left, Right) = 0;
    end Equivalent_Elements;
 
    function Empty_Set return Set is
@@ -219,19 +240,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
---
---
---
---
---
---
---
---
---
---
---
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
       function Equivalent (Left, Right : not null Binary_Trees.Node_Access)
@@ -244,20 +252,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
             Downcast (Right).Element.all);
       end Equivalent;
    begin
-      return Left.Length = Right.Length
-         and then Binary_Trees.Equivalent (
-            Left.Root,
-            Right.Root,
-            Equivalent => Equivalent'Access);
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
---  diff
+      return Equivalent_Sets (Left, Right, Equivalent => Equivalent'Access);
    end Equivalent_Sets;
 
 --  diff (To_Set)
@@ -277,25 +272,24 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
    function Length (Container : Set) return Count_Type is
+--  diff
    begin
+--  diff
+--  diff
+--  diff
       return Container.Length;
---  diff
---  diff
---  diff
 --  diff
    end Length;
 
    function Is_Empty (Container : Set) return Boolean is
+--  diff
    begin
       return Container.Root = null;
---  diff
    end Is_Empty;
 
    procedure Clear (Container : in out Set) is
    begin
       Free_Data (Container);
---  diff
---  diff
    end Clear;
 
 --  diff (Element)
@@ -320,9 +314,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Process (Position.Element.all);
    end Query_Element;
 
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Set; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -378,11 +370,15 @@ package body Ada.Containers.Limited_Ordered_Sets is
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
          Holder.Clear;
+--  diff
+--  diff
+--  diff
          Base.Insert (
             Container.Root,
             Container.Length,
             Upcast (Before),
             Upcast (Position));
+--  diff
       else
          Position := Before;
       end if;
@@ -434,10 +430,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Position_2 : Binary_Trees.Node_Access := Upcast (Position);
    begin
 --  diff
-      Base.Remove (
-         Container.Root,
-         Container.Length,
-         Position_2);
+--  diff
+--  diff
+--  diff
+      Base.Remove (Container.Root, Container.Length, Position_2);
+--  diff
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -476,8 +473,11 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
 
 --  diff (Union)
+--
+--
 --
 --
 --
@@ -508,18 +508,19 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
-      Binary_Trees.Merge (
+--  diff
+--  diff
+--  diff
+--  diff
+      Base.Merge (
          Target.Root,
          Target.Length,
          Source.Root,
-         In_Only_Left => False,
-         In_Only_Right => False,
-         In_Both => True,
+         (Binary_Trees.In_Both => True, others => False),
          Compare => Compare_Node'Access,
          Copy => null,
-         Insert => null,
-         Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
 --  diff
    end Intersection;
@@ -545,23 +546,25 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
 --  diff
 --  diff
-      Binary_Trees.Merge (
+--  diff
+--  diff
+--  diff
+      Base.Merge (
          Target.Root,
          Target.Length,
          Source.Root,
-         In_Only_Left => True,
-         In_Only_Right => False,
-         In_Both => False,
+         (Binary_Trees.In_Only_Left => True, others => False),
          Compare => Compare_Node'Access,
          Copy => null,
-         Insert => null,
-         Remove => Base.Remove'Access,
          Free => Free_Node'Access);
+--  diff
 --  diff
    end Difference;
 
@@ -586,31 +589,36 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
 --
 --
 --
@@ -639,6 +647,10 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
 --  diff
+--  diff
+--  diff
+--  diff
+--  diff
       return Binary_Trees.Overlap (
          Left.Root,
          Right.Root,
@@ -648,6 +660,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -1046,9 +1060,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          return (Element => Position.Element.all'Access);
       end Reference_Preserving_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
+      function Constant_Reference (Container : aliased Set; Key : Key_Type)
          return Constant_Reference_Type is
       begin
          return Constant_Reference (Container, Find (Container, Key));

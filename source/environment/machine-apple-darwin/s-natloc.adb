@@ -6,6 +6,9 @@ package body System.Native_Locales is
    use type C.char_ptr;
    use type C.size_t;
 
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
    --  should it use CFLocaleGetValue in OSX ???
 
    LANG : constant C.char_array := "LANG" & C.char'Val (0);
@@ -13,14 +16,12 @@ package body System.Native_Locales is
    --  implementation
 
    function Language return ISO_639_Alpha_2 is
-      package Conv is
-         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
          declare
             Value : C.char_array (C.size_t);
-            for Value'Address use Conv.To_Address (P);
+            for Value'Address use char_ptr_Conv.To_Address (P);
             Len : C.size_t := 0;
          begin
             while Value (Len) in 'a' .. 'z' loop
@@ -40,14 +41,12 @@ package body System.Native_Locales is
    end Language;
 
    function Country return ISO_3166_1_Alpha_2 is
-      package Conv is
-         new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
       P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
    begin
       if P /= null then
          declare
             Value : C.char_array (C.size_t);
-            for Value'Address use Conv.To_Address (P);
+            for Value'Address use char_ptr_Conv.To_Address (P);
             I : C.size_t := 0;
          begin
             while Value (I) /= C.char'Val (0)

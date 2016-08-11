@@ -64,4 +64,17 @@ package Ada.Containers.Linked_Lists.Doubly is
       Source_Length : in out Count_Type;
       Count : Count_Type);
 
+   procedure Copy is new Linked_Lists.Copy (Insert => Insert);
+
+   procedure Reverse_Elements is
+      new Linked_Lists.Reverse_Elements (Insert => Insert, Remove => Remove);
+
+   --  sorting
+
+   procedure Merge is
+      new Linked_Lists.Merge (Insert => Insert, Remove => Remove);
+
+   procedure Merge_Sort is
+      new Linked_Lists.Merge_Sort (Split => Split, Merge => Merge);
+
 end Ada.Containers.Linked_Lists.Doubly;

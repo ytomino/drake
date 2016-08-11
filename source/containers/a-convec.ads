@@ -141,19 +141,13 @@ package Ada.Containers.Vectors is
 --    Index : Index_Type)
 --    return Constant_Reference_Type;
 
---  function Reference (
---    Container : aliased in out Vector;
---    Index : Index_Type)
+--  function Reference (Container : aliased in out Vector; Index : Index_Type)
 --    return Reference_Type;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Vector; Position : Cursor)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out Vector;
-      Position : Cursor)
+   function Reference (Container : aliased in out Vector; Position : Cursor)
       return Reference_Type;
 
    procedure Assign (Target : in out Vector; Source : Vector);
@@ -208,18 +202,14 @@ package Ada.Containers.Vectors is
 --    Position : out Cursor;
 --    Count : Count_Type := 1);
 
-   procedure Prepend (
-      Container : in out Vector;
-      New_Item : Vector);
+   procedure Prepend (Container : in out Vector; New_Item : Vector);
 
    procedure Prepend (
       Container : in out Vector;
       New_Item : Element_Type;
       Count : Count_Type := 1);
 
-   procedure Append (
-      Container : in out Vector;
-      New_Item : Vector);
+   procedure Append (Container : in out Vector; New_Item : Vector);
 
    procedure Append (
       Container : in out Vector;
@@ -372,11 +362,9 @@ package Ada.Containers.Vectors is
    package Slicing is
       new References.Generic_Slicing (Index_Type, Element_Type, Element_Array);
 
-   function Constant_Reference (
-      Container : aliased Vector)
+   function Constant_Reference (Container : aliased Vector)
       return Slicing.Constant_Reference_Type;
-   function Reference (
-      Container : aliased in out Vector)
+   function Reference (Container : aliased in out Vector)
       return Slicing.Reference_Type;
 
    --  to here
@@ -439,13 +427,14 @@ private
 --  diff (Element_Array)
 
    type Data (Capacity_Last : Extended_Index) is limited record
-      Super : aliased Copy_On_Write.Data_Ex;
+      Super : aliased Copy_On_Write.Data;
+      Max_Length : aliased Count_Type;
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;
 
    --  place Super at first
    for Data use record
-      Super at 0 range 0 .. Copy_On_Write.Data_Ex_Size - 1;
+      Super at 0 range 0 .. Copy_On_Write.Data_Size - 1;
    end record;
 
    type Data_Access is access all Data;

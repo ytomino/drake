@@ -11,18 +11,18 @@ package body Ada.Strings.Maps is
 
    --  sets
 
-   subtype Not_Null_Set_Data_Access is not null Set_Data_Access;
+   subtype Nonnull_Set_Data_Access is not null Set_Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (
-         Not_Null_Set_Data_Access,
+         Nonnull_Set_Data_Access,
          System.Reference_Counting.Container);
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Set_Data_Access);
+         Nonnull_Set_Data_Access);
 
-   type Set_Data_Access_Access is access all Not_Null_Set_Data_Access;
+   type Set_Data_Access_Access is access all Nonnull_Set_Data_Access;
    type Container_Access is access all System.Reference_Counting.Container;
 
    function Upcast is
@@ -138,13 +138,17 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
-         end if;
+         declare
+            E : Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (
+                  Items,
+                  Last,
+                  Naked_Maps.To_Wide_Wide_Character (E.Low),
+                  Naked_Maps.To_Wide_Wide_Character (E.High));
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -159,13 +163,17 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).Low),
-               Naked_Maps.To_Wide_Wide_Character (Ranges (I).High));
-         end if;
+         declare
+            E : Wide_Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (
+                  Items,
+                  Last,
+                  Naked_Maps.To_Wide_Wide_Character (E.Low),
+                  Naked_Maps.To_Wide_Wide_Character (E.High));
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -180,13 +188,13 @@ package body Ada.Strings.Maps is
       Data : Set_Data_Access;
    begin
       for I in Ranges'Range loop
-         if Ranges (I).Low <= Ranges (I).High then
-            Naked_Maps.Add (
-               Items,
-               Last,
-               Ranges (I).Low,
-               Ranges (I).High);
-         end if;
+         declare
+            E : Wide_Wide_Character_Range renames Ranges (I);
+         begin
+            if E.Low <= E.High then
+               Naked_Maps.Add (Items, Last, E.Low, E.High);
+            end if;
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -589,11 +597,11 @@ package body Ada.Strings.Maps is
    begin
       --  it should be more optimized...
       for I in Sequence'Range loop
-         Naked_Maps.Add (
-            Items,
-            Last,
-            Sequence (I),
-            Sequence (I));
+         declare
+            E : Wide_Wide_Character renames Sequence (I);
+         begin
+            Naked_Maps.Add (Items, Last, E, E);
+         end;
       end loop;
       Data := Copy_Set_Data (Items (Items'First .. Last));
       pragma Check (Validate, Naked_Maps.Debug.Valid (Data.all));
@@ -647,7 +655,6 @@ package body Ada.Strings.Maps is
          Controlled_Sets.Reference (Set);
       pragma Check (Validate, Naked_Maps.Debug.Valid (Set_Data.all));
       Length : Natural := 0;
-      Position : Positive;
    begin
       for I in Set_Data.Items'Range loop
          Length := Length
@@ -657,13 +664,16 @@ package body Ada.Strings.Maps is
                + 1);
       end loop;
       return Result : Wide_Wide_String (1 .. Length) do
-         Position := 1;
-         for I in Set_Data.Items'Range loop
-            for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
-               Result (Position) := J;
-               Position := Position + 1;
+         declare
+            Last : Natural := 0;
+         begin
+            for I in Set_Data.Items'Range loop
+               for J in Set_Data.Items (I).Low .. Set_Data.Items (I).High loop
+                  Last := Last + 1;
+                  Result (Last) := J;
+               end loop;
             end loop;
-         end loop;
+         end;
       end return;
    end Overloaded_To_Sequence;
 
@@ -702,9 +712,9 @@ package body Ada.Strings.Maps is
          is
             Length : Integer;
          begin
+            Integer'Read (Stream, Length);
             Finalize (Item);
             Item.Data := Empty_Set_Data'Unrestricted_Access;
-            Integer'Read (Stream, Length);
             if Length > 0 then
                Item.Data := new Set_Data'(
                   Length => Length,
@@ -731,14 +741,14 @@ package body Ada.Strings.Maps is
 
    --  maps
 
-   subtype Not_Null_Map_Data_Access is not null Map_Data_Access;
+   subtype Nonnull_Map_Data_Access is not null Map_Data_Access;
 
    function Downcast is
       new Unchecked_Conversion (
          System.Reference_Counting.Container,
-         Not_Null_Map_Data_Access);
+         Nonnull_Map_Data_Access);
 
-   type Map_Data_Access_Access is access all Not_Null_Map_Data_Access;
+   type Map_Data_Access_Access is access all Nonnull_Map_Data_Access;
 
    function Upcast is
       new Unchecked_Conversion (Map_Data_Access_Access, Container_Access);
@@ -976,9 +986,9 @@ package body Ada.Strings.Maps is
          is
             Length : Integer;
          begin
+            Integer'Read (Stream, Length);
             Finalize (Item);
             Item.Data := Empty_Map_Data'Unrestricted_Access;
-            Integer'Read (Stream, Length);
             if Length > 0 then
                Item.Data := new Map_Data'(
                   Length => Length,

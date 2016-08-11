@@ -141,19 +141,13 @@ package Ada.Containers.Limited_Vectors is
 --    Index : Index_Type)
 --    return Constant_Reference_Type;
 
---  function Reference (
---    Container : aliased in out Vector;
---    Index : Index_Type)
+--  function Reference (Container : aliased in out Vector; Index : Index_Type)
 --    return Reference_Type;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Vector; Position : Cursor)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out Vector;
-      Position : Cursor)
+   function Reference (Container : aliased in out Vector; Position : Cursor)
       return Reference_Type;
 
 --  diff (Assign)
@@ -209,8 +203,6 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Prepend)
---
---
 
 --  diff (Prepend)
 --
@@ -218,8 +210,6 @@ package Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Append)
---
---
 
 --  diff (Append)
 --
@@ -378,8 +368,6 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
@@ -439,6 +427,7 @@ private
    type Element_Array is array (Index_Type range <>) of Element_Access;
 
    type Data (Capacity_Last : Extended_Index) is limited record
+--  diff
 --  diff
       Items : aliased Element_Array (Index_Type'First .. Capacity_Last);
    end record;

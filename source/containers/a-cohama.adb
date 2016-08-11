@@ -238,30 +238,37 @@ package body Ada.Containers.Hashed_Maps is
             and then Downcast (Left).Element =
                Downcast (Right).Element;
       end Equivalent;
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
+      if Left_Length /= Right_Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
-         return Hash_Tables.Equivalent (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Left.Super.Data).Length,
-            Downcast (Right.Super.Data).Table,
-            Downcast (Right.Super.Data).Length,
-            Equivalent => Equivalent'Access);
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
+         declare
+            Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+            Right_Data : constant Data_Access := Downcast (Right.Super.Data);
+         begin
+            return Hash_Tables.Equivalent (
+               Left_Data.Table,
+               Left_Data.Length,
+               Right_Data.Table,
+               Right_Data.Length,
+               Equivalent => Equivalent'Access);
+         end;
       end if;
    end "=";
 
    function Capacity (Container : Map) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Hash_Tables.Capacity (
-            Downcast (Container.Super.Data).Table);
+         return Hash_Tables.Capacity (Data.Table);
       end if;
    end Capacity;
 
@@ -276,25 +283,24 @@ package body Ada.Containers.Hashed_Maps is
    end Reserve_Capacity;
 
    function Length (Container : Map) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : Map) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Length = 0;
+      return Data = null or else Data.Length = 0;
    end Is_Empty;
 
    procedure Clear (Container : in out Map) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Key (Position : Cursor) return Key_Type is
@@ -338,9 +344,7 @@ package body Ada.Containers.Hashed_Maps is
          Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Map; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -348,9 +352,7 @@ package body Ada.Containers.Hashed_Maps is
       return (Element => Position.Element'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
+   function Reference (Container : aliased in out Map; Position : Cursor)
       return Reference_Type is
    begin
       Unique (Container, True);
@@ -358,17 +360,13 @@ package body Ada.Containers.Hashed_Maps is
       return (Element => Position.Element'Access);
    end Reference;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Key : Key_Type)
+   function Constant_Reference (Container : aliased Map; Key : Key_Type)
       return Constant_Reference_Type is
    begin
       return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
+   function Reference (Container : aliased in out Map; Key : Key_Type)
       return Reference_Type is
    begin
       return Reference (Container, Find (Container, Key));
@@ -434,14 +432,15 @@ package body Ada.Containers.Hashed_Maps is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, Key, New_Item);
---  diff
---  diff
---  diff
-         Hash_Tables.Insert (
-            Downcast (Container.Super.Data).Table,
-            Downcast (Container.Super.Data).Length,
-            New_Hash,
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Hash_Tables.Insert (
+               Data.Table,
+               Data.Length,
+               New_Hash,
+               Upcast (Position));
+         end;
       end if;
    end Insert;
 
@@ -458,11 +457,15 @@ package body Ada.Containers.Hashed_Maps is
       if Inserted then
          Unique (Container, True);
          Position := new Node'(Super => <>, Key => Key, Element => <>);
-         Hash_Tables.Insert (
-            Downcast (Container.Super.Data).Table,
-            Downcast (Container.Super.Data).Length,
-            New_Hash,
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Hash_Tables.Insert (
+               Data.Table,
+               Data.Length,
+               New_Hash,
+               Upcast (Position));
+         end;
       end if;
    end Insert;
 
@@ -520,10 +523,11 @@ package body Ada.Containers.Hashed_Maps is
       Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
-      Hash_Tables.Remove (
-         Downcast (Container.Super.Data).Table,
-         Downcast (Container.Super.Data).Length,
-         Position_2);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Hash_Tables.Remove (Data.Table, Data.Length, Position_2);
+      end;
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -630,7 +634,7 @@ package body Ada.Containers.Hashed_Maps is
       is
          Length : Count_Type'Base;
       begin
-         Count_Type'Read (Stream, Length);
+         Count_Type'Base'Read (Stream, Length);
          Clear (Item);
          for I in 1 .. Length loop
             declare
@@ -650,15 +654,20 @@ package body Ada.Containers.Hashed_Maps is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Map)
       is
-         Position : Cursor;
+         Length : constant Count_Type := Hashed_Maps.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         Position := First (Item);
-         while Position /= null loop
-            Key_Type'Write (Stream, Position.Key);
-            Element_Type'Write (Stream, Position.Element);
-            Next (Position);
-         end loop;
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := First (Item);
+            begin
+               while Position /= null loop
+                  Key_Type'Write (Stream, Position.Key);
+                  Element_Type'Write (Stream, Position.Element);
+                  Next (Position);
+               end loop;
+            end;
+         end if;
       end Write;
 
    end Streaming;

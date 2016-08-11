@@ -67,4 +67,41 @@ package body Ada.Containers.Linked_Lists.Singly is
       Length := Length - 1;
    end Remove;
 
+   procedure Split (
+      Target_First : out Node_Access;
+      Target_Last : out Node_Access;
+      Length : out Count_Type;
+      Source_First : in out Node_Access;
+      Source_Last : in out Node_Access;
+      Source_Length : in out Count_Type;
+      Count : Count_Type) is
+   begin
+      if Count = 0 then
+         Target_First := null;
+         Target_Last := null;
+         Length := 0;
+      elsif Count = Source_Length then
+         Target_First := Source_First;
+         Target_Last := Source_Last;
+         Length := Source_Length;
+         Source_First := null;
+         Source_Last := null;
+         Source_Length := 0;
+      else
+         declare
+            Before : Node_Access := Source_Last;
+         begin
+            for I in 1 .. Source_Length - Count - 1 loop
+               Before := Before.Previous;
+            end loop;
+            Target_First := Source_First;
+            Target_Last := Before.Previous;
+            Source_First := Before;
+            Source_First.Previous := null;
+            Length := Count;
+            Source_Length := Source_Length - Count;
+         end;
+      end if;
+   end Split;
+
 end Ada.Containers.Linked_Lists.Singly;

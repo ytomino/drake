@@ -27,6 +27,16 @@ package body System.Native_Directories.File_Names is
 
    Flag : aliased Once.Flag := 0;
 
+   package unsigned_short_ptr_Conv is
+      new Address_To_Named_Access_Conversions (
+         C.unsigned_short,
+         C.unsigned_short_ptr);
+
+   package compressed_block_const_ptr_Conv is
+      new Address_To_Constant_Access_Conversions (
+         C.hfs_casetables.compressed_block,
+         C.hfs_casetables.compressed_block_const_ptr);
+
    --  equivalent to UncompressStructure (hfs_compare.c)
    function UncompressStructure (
       bp : not null C.hfs_casetables.compressed_block_const_ptr;
@@ -39,14 +49,6 @@ package body System.Native_Directories.File_Names is
       size : C.signed_int)
       return C.unsigned_short_ptr
    is
-      package unsigned_short_ptr_Conv is
-         new Address_To_Named_Access_Conversions (
-            C.unsigned_short,
-            C.unsigned_short_ptr);
-      package compressed_block_const_ptr_Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.hfs_casetables.compressed_block,
-            C.hfs_casetables.compressed_block_const_ptr);
       m_bp : not null C.hfs_casetables.compressed_block_const_ptr := bp;
       l_out : constant C.unsigned_short_ptr :=
          unsigned_short_ptr_Conv.To_Pointer (

@@ -187,6 +187,43 @@ package body Ada.Containers.Hashed_Sets is
       end if;
    end Unique;
 
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean;
+   function Equivalent_Sets (
+      Left, Right : Set;
+      Equivalent : not null access function (
+         Left, Right : not null Hash_Tables.Node_Access)
+         return Boolean)
+      return Boolean
+   is
+      Left_Length : constant Count_Type := Length (Left);
+      Right_Length : constant Count_Type := Length (Right);
+   begin
+      if Left_Length /= Right_Length then
+         return False;
+      elsif Left_Length = 0 or else Left.Super.Data = Right.Super.Data then
+         return True;
+      else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
+         declare
+            Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+            Right_Data : constant Data_Access := Downcast (Right.Super.Data);
+         begin
+            return Hash_Tables.Equivalent (
+               Left_Data.Table,
+               Left_Data.Length,
+               Right_Data.Table,
+               Right_Data.Length,
+               Equivalent => Equivalent);
+         end;
+      end if;
+   end Equivalent_Sets;
+
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
       return Cursor;
    function Find (Container : Set; Hash : Hash_Type; Item : Element_Type)
@@ -229,38 +266,13 @@ package body Ada.Containers.Hashed_Sets is
          return Downcast (Left).Element = Downcast (Right).Element;
       end Equivalent;
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
-         return False;
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         return Hash_Tables.Equivalent (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Left.Super.Data).Length,
-            Downcast (Right.Super.Data).Table,
-            Downcast (Right.Super.Data).Length,
-            Equivalent => Equivalent'Access);
-      end if;
+      return Equivalent_Sets (Left, Right, Equivalent => Equivalent'Access);
    end "=";
 
    function Equivalent_Sets (Left, Right : Set) return Boolean is
    begin
-      if Is_Empty (Left) then
-         return Is_Empty (Right);
-      elsif Is_Empty (Right) then
-         return False;
-      elsif Left.Super.Data = Right.Super.Data then
-         return True;
-      else
-         return Hash_Tables.Equivalent (
-            Downcast (Left.Super.Data).Table,
-            Downcast (Left.Super.Data).Length,
-            Downcast (Right.Super.Data).Table,
-            Downcast (Right.Super.Data).Length,
-            Equivalent => Equivalent_Node'Access);
-      end if;
+      return Equivalent_Sets (Left, Right,
+         Equivalent => Equivalent_Node'Access);
    end Equivalent_Sets;
 
    function To_Set (New_Item : Element_Type) return Set is
@@ -281,12 +293,12 @@ package body Ada.Containers.Hashed_Sets is
    end Generic_Array_To_Set;
 
    function Capacity (Container : Set) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Hash_Tables.Capacity (
-            Downcast (Container.Super.Data).Table);
+         return Hash_Tables.Capacity (Data.Table);
       end if;
    end Capacity;
 
@@ -301,25 +313,24 @@ package body Ada.Containers.Hashed_Sets is
    end Reserve_Capacity;
 
    function Length (Container : Set) return Count_Type is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      if Container.Super.Data = null then
+      if Data = null then
          return 0;
       else
-         return Downcast (Container.Super.Data).Length;
+         return Data.Length;
       end if;
    end Length;
 
    function Is_Empty (Container : Set) return Boolean is
+      Data : constant Data_Access := Downcast (Container.Super.Data);
    begin
-      return Container.Super.Data = null
-         or else Downcast (Container.Super.Data).Length = 0;
+      return Data = null or else Data.Length = 0;
    end Is_Empty;
 
    procedure Clear (Container : in out Set) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Element (Position : Cursor) return Element_Type is
@@ -344,9 +355,7 @@ package body Ada.Containers.Hashed_Sets is
       Process (Position.Element);
    end Query_Element;
 
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Set; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -402,11 +411,15 @@ package body Ada.Containers.Hashed_Sets is
       if Inserted then
          Unique (Container, True);
          Allocate_Node (Position, New_Item);
-         Hash_Tables.Insert (
-            Downcast (Container.Super.Data).Table,
-            Downcast (Container.Super.Data).Length,
-            New_Hash,
-            Upcast (Position));
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Hash_Tables.Insert (
+               Data.Table,
+               Data.Length,
+               New_Hash,
+               Upcast (Position));
+         end;
       end if;
    end Insert;
 
@@ -456,10 +469,11 @@ package body Ada.Containers.Hashed_Sets is
       Position_2 : Hash_Tables.Node_Access := Upcast (Position);
    begin
       Unique (Container, True);
-      Hash_Tables.Remove (
-         Downcast (Container.Super.Data).Table,
-         Downcast (Container.Super.Data).Length,
-         Position_2);
+      declare
+         Data : constant Data_Access := Downcast (Container.Super.Data);
+      begin
+         Hash_Tables.Remove (Data.Table, Data.Length, Position_2);
+      end;
       Free_Node (Position_2);
       Position := null;
    end Delete;
@@ -471,17 +485,22 @@ package body Ada.Containers.Hashed_Sets is
             Assign (Target, Source);
          else
             Unique (Target, True);
-            Hash_Tables.Merge (
-               Downcast (Target.Super.Data).Table,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Table,
-               Downcast (Source.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => True,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+               Source_Data : constant Data_Access :=
+                  Downcast (Source.Super.Data);
+            begin
+               Hash_Tables.Merge (
+                  Target_Data.Table,
+                  Target_Data.Length,
+                  Source_Data.Table,
+                  Source_Data.Length,
+                  (others => True),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Union;
@@ -495,18 +514,24 @@ package body Ada.Containers.Hashed_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => True,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+               Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+               Right_Data : constant Data_Access :=
+                  Downcast (Right.Super.Data);
+            begin
+               Hash_Tables.Copying_Merge (
+                  Result_Data.Table,
+                  Result_Data.Length,
+                  Left_Data.Table,
+                  Left_Data.Length,
+                  Right_Data.Table,
+                  Right_Data.Length,
+                  (others => True),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access);
+            end;
          end if;
       end return;
    end Union;
@@ -518,17 +543,22 @@ package body Ada.Containers.Hashed_Sets is
             Clear (Target);
          else
             Unique (Target, True);
-            Hash_Tables.Merge (
-               Downcast (Target.Super.Data).Table,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Table,
-               Downcast (Source.Super.Data).Length,
-               In_Only_Left => False,
-               In_Only_Right => False,
-               In_Both => True,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+               Source_Data : constant Data_Access :=
+                  Downcast (Source.Super.Data);
+            begin
+               Hash_Tables.Merge (
+                  Target_Data.Table,
+                  Target_Data.Length,
+                  Source_Data.Table,
+                  Source_Data.Length,
+                  (Hash_Tables.In_Both => True, others => False),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Intersection;
@@ -540,18 +570,24 @@ package body Ada.Containers.Hashed_Sets is
             null; -- Empty_Set
          else
             Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => False,
-               In_Only_Right => False,
-               In_Both => True,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+               Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+               Right_Data : constant Data_Access :=
+                  Downcast (Right.Super.Data);
+            begin
+               Hash_Tables.Copying_Merge (
+                  Result_Data.Table,
+                  Result_Data.Length,
+                  Left_Data.Table,
+                  Left_Data.Length,
+                  Right_Data.Table,
+                  Right_Data.Length,
+                  (Hash_Tables.In_Both => True, others => False),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access);
+            end;
          end if;
       end return;
    end Intersection;
@@ -560,17 +596,20 @@ package body Ada.Containers.Hashed_Sets is
    begin
       if not Is_Empty (Target) and then not Is_Empty (Source) then
          Unique (Target, True);
-         Hash_Tables.Merge (
-            Downcast (Target.Super.Data).Table,
-            Downcast (Target.Super.Data).Length,
-            Downcast (Source.Super.Data).Table,
-            Downcast (Source.Super.Data).Length,
-            In_Only_Left => True,
-            In_Only_Right => False,
-            In_Both => False,
-            Equivalent => Equivalent_Node'Access,
-            Copy => Copy_Node'Access,
-            Free => Free_Node'Access);
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+            Source_Data : constant Data_Access := Downcast (Source.Super.Data);
+         begin
+            Hash_Tables.Merge (
+               Target_Data.Table,
+               Target_Data.Length,
+               Source_Data.Table,
+               Source_Data.Length,
+               (Hash_Tables.In_Only_Left => True, others => False),
+               Equivalent => Equivalent_Node'Access,
+               Copy => Copy_Node'Access,
+               Free => Free_Node'Access);
+         end;
       end if;
    end Difference;
 
@@ -581,18 +620,24 @@ package body Ada.Containers.Hashed_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => False,
-               In_Both => False,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+               Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+               Right_Data : constant Data_Access :=
+                  Downcast (Right.Super.Data);
+            begin
+               Hash_Tables.Copying_Merge (
+                  Result_Data.Table,
+                  Result_Data.Length,
+                  Left_Data.Table,
+                  Left_Data.Length,
+                  Right_Data.Table,
+                  Right_Data.Length,
+                  (Hash_Tables.In_Only_Left => True, others => False),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access);
+            end;
          end if;
       end return;
    end Difference;
@@ -604,17 +649,22 @@ package body Ada.Containers.Hashed_Sets is
             Assign (Target, Source);
          else
             Unique (Target, True);
-            Hash_Tables.Merge (
-               Downcast (Target.Super.Data).Table,
-               Downcast (Target.Super.Data).Length,
-               Downcast (Source.Super.Data).Table,
-               Downcast (Source.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => False,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access,
-               Free => Free_Node'Access);
+            declare
+               Target_Data : constant Data_Access :=
+                  Downcast (Target.Super.Data);
+               Source_Data : constant Data_Access :=
+                  Downcast (Source.Super.Data);
+            begin
+               Hash_Tables.Merge (
+                  Target_Data.Table,
+                  Target_Data.Length,
+                  Source_Data.Table,
+                  Source_Data.Length,
+                  (Hash_Tables.In_Both => False, others => True),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access,
+                  Free => Free_Node'Access);
+            end;
          end if;
       end if;
    end Symmetric_Difference;
@@ -628,18 +678,24 @@ package body Ada.Containers.Hashed_Sets is
             Assign (Result, Left);
          else
             Unique (Result, True);
-            Hash_Tables.Merge (
-               Downcast (Result.Super.Data).Table,
-               Downcast (Result.Super.Data).Length,
-               Downcast (Left.Super.Data).Table,
-               Downcast (Left.Super.Data).Length,
-               Downcast (Right.Super.Data).Table,
-               Downcast (Right.Super.Data).Length,
-               In_Only_Left => True,
-               In_Only_Right => True,
-               In_Both => False,
-               Equivalent => Equivalent_Node'Access,
-               Copy => Copy_Node'Access);
+            declare
+               Result_Data : constant Data_Access :=
+                  Downcast (Result.Super.Data);
+               Left_Data : constant Data_Access := Downcast (Left.Super.Data);
+               Right_Data : constant Data_Access :=
+                  Downcast (Right.Super.Data);
+            begin
+               Hash_Tables.Copying_Merge (
+                  Result_Data.Table,
+                  Result_Data.Length,
+                  Left_Data.Table,
+                  Left_Data.Length,
+                  Right_Data.Table,
+                  Right_Data.Length,
+                  (Hash_Tables.In_Both => False, others => True),
+                  Equivalent => Equivalent_Node'Access,
+                  Copy => Copy_Node'Access);
+            end;
          end if;
       end return;
    end Symmetric_Difference;
@@ -648,7 +704,11 @@ package body Ada.Containers.Hashed_Sets is
    begin
       if Is_Empty (Left) or else Is_Empty (Right) then
          return False;
+      elsif Left.Super.Data = Right.Super.Data then
+         return True;
       else
+         Unique (Left'Unrestricted_Access.all, False); -- private
+         Unique (Right'Unrestricted_Access.all, False); -- private
          return Hash_Tables.Overlap (
             Downcast (Left.Super.Data).Table,
             Downcast (Right.Super.Data).Table,
@@ -658,11 +718,13 @@ package body Ada.Containers.Hashed_Sets is
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean is
    begin
-      if Is_Empty (Subset) then
+      if Is_Empty (Subset) or else Subset.Super.Data = Of_Set.Super.Data then
          return True;
       elsif Is_Empty (Of_Set) then
          return False;
       else
+         Unique (Subset'Unrestricted_Access.all, False); -- private
+         Unique (Of_Set'Unrestricted_Access.all, False); -- private
          return Hash_Tables.Is_Subset (
             Downcast (Subset.Super.Data).Table,
             Downcast (Of_Set.Super.Data).Table,
@@ -854,9 +916,7 @@ package body Ada.Containers.Hashed_Sets is
          return (Element => Position.Element'Access);
       end Reference_Preserving_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
+      function Constant_Reference (Container : aliased Set; Key : Key_Type)
          return Constant_Reference_Type is
       begin
          return Constant_Reference (Container, Find (Container, Key));
@@ -880,7 +940,7 @@ package body Ada.Containers.Hashed_Sets is
       is
          Length : Count_Type'Base;
       begin
-         Count_Type'Read (Stream, Length);
+         Count_Type'Base'Read (Stream, Length);
          Clear (Item);
          for I in 1 .. Length loop
             declare
@@ -896,14 +956,19 @@ package body Ada.Containers.Hashed_Sets is
          Stream : not null access Streams.Root_Stream_Type'Class;
          Item : Set)
       is
-         Position : Cursor;
+         Length : constant Count_Type := Hashed_Sets.Length (Item);
       begin
-         Count_Type'Write (Stream, Item.Length);
-         Position := First (Item);
-         while Position /= null loop
-            Element_Type'Write (Stream, Position.Element);
-            Next (Position);
-         end loop;
+         Count_Type'Write (Stream, Length);
+         if Length > 0 then
+            declare
+               Position : Cursor := Position := First (Item);
+            begin
+               while Position /= null loop
+                  Element_Type'Write (Stream, Position.Element);
+                  Next (Position);
+               end loop;
+            end;
+         end if;
       end Write;
 
    end Streaming;

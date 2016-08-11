@@ -7,6 +7,7 @@ package Ada.Text_IO.Terminal is
    function Is_Terminal (
       File : File_Type) -- Open_File_Type
       return Boolean;
+   pragma Inline (Is_Terminal);
 
    --  size of screen buffer and view port
 

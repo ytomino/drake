@@ -99,10 +99,7 @@ package body System.Formatting.Fixed is
                Long_Long_Float (Base),
                Q,
                R);
-            Image (
-               Digit (R),
-               Item (I),
-               Set => Set);
+            Image (Digit (R), Item (I), Set => Set);
             Item_Fore := Q;
          end;
       end loop;

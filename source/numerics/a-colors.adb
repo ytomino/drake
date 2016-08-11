@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 package body Ada.Colors is
 
    function modff (value : Float; iptr : access Float) return Float
@@ -16,7 +15,7 @@ package body Ada.Colors is
    is
       Result : Hue'Base;
    begin
-      pragma Check (Validate, Diff > 0.0);
+      pragma Assert (Diff > 0.0);
       if Color.Blue = Max then
          Result := 4.0 * Diff + (Color.Red - Color.Green);
       elsif Color.Green = Max then
@@ -70,8 +69,8 @@ package body Ada.Colors is
          Green := N1;
          Blue := N2;
       end if;
-      pragma Check (Validate, Color.Saturation > 0.0
-         or else (Red = Green and then Green = Blue));
+      pragma Assert (
+         Color.Saturation > 0.0 or else (Red = Green and then Green = Blue));
       return (Red => Red, Green => Green, Blue => Blue);
    end To_RGB;
 

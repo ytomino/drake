@@ -13,7 +13,6 @@ package System.Shared_Locking is
    pragma Suppress (Access_Check, Enter_Hook); -- not null
 
    procedure Enter;
-   pragma Inline (Enter);
 
    type Leave_Handler is access procedure;
    pragma Suppress (Access_Check, Leave_Handler);
@@ -22,6 +21,5 @@ package System.Shared_Locking is
    pragma Suppress (Access_Check, Leave_Hook); -- not null
 
    procedure Leave;
-   pragma Inline (Leave);
 
 end System.Shared_Locking;

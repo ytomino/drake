@@ -37,10 +37,12 @@ package body Ada.Containers.Forward_Iterators is
          Release (Object.Last);
       else
          declare
-            New_Node : constant Node_Access := new Node'(
-               Reference_Count => 1,
-               Next => null,
-               Item => new Element_Type'(Element (Object.Last_Input_Cursor)));
+            New_Node : constant Node_Access :=
+               new Node'(
+                  Reference_Count => 1,
+                  Next => null,
+                  Item =>
+                     new Element_Type'(Element (Object.Last_Input_Cursor)));
          begin
             if Object.Last /= null then
                pragma Check (Validate, Object.Last.Next = null);
@@ -68,7 +70,8 @@ package body Ada.Containers.Forward_Iterators is
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Result : Iterator := (Finalization.Limited_Controlled with
+      return Result : Iterator := (
+         Finalization.Limited_Controlled with
          Last_Input_Cursor => Input_Iterator_Interfaces.First (Input_Iterator),
          Last => null,
          State => First)

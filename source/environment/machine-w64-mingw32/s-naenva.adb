@@ -16,6 +16,8 @@ package body System.Native_Environment_Variables is
    use type C.winnt.LPWCH;
    use type C.winnt.WCHAR;
 
+   package LPWCH_Conv is
+      new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWCH);
    package LPCWCH_Conv is
       new Address_To_Constant_Access_Conversions (
          C.winnt.WCHAR,
@@ -31,7 +33,8 @@ package body System.Native_Environment_Variables is
       Found : out Boolean) is
    begin
       Length := C.winbase.GetEnvironmentVariable (Name, null, 0);
-      Found := Length > 0
+      Found :=
+         Length > 0
          or else C.winbase.GetLastError /= C.winerror.ERROR_ENVVAR_NOT_FOUND;
    end Get_1;
 
@@ -47,10 +50,11 @@ package body System.Native_Environment_Variables is
       Result : C.winnt.WCHAR_array (0 .. C.size_t (Length));
       Result_Length : C.windef.DWORD;
    begin
-      Result_Length := C.winbase.GetEnvironmentVariable (
-         Name,
-         Result (0)'Access,
-         Result'Length);
+      Result_Length :=
+         C.winbase.GetEnvironmentVariable (
+            Name,
+            Result (0)'Access,
+            Result'Length);
       return Zero_Terminated_WStrings.Value (
          Result (0)'Access,
          C.size_t (Result_Length));
@@ -66,29 +70,32 @@ package body System.Native_Environment_Variables is
       Value : out C.winnt.LPCWCH)
    is
       --  skip first '=', it means special variable
-      Next : constant C.winnt.LPCWCH := LPCWCH_Conv.To_Pointer (
-         LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
-         + Storage_Elements.Storage_Offset'(
-            C.winnt.WCHAR'Size / Standard'Storage_Unit));
+      Next : constant C.winnt.LPCWCH :=
+         LPCWCH_Conv.To_Pointer (
+            LPCWCH_Conv.To_Address (Item)
+               + Storage_Elements.Storage_Offset'(
+                  C.winnt.WCHAR'Size / Standard'Storage_Unit));
       P : C.wchar_t_ptr;
    begin
       P := C.string.wcschr (Next, C.wchar_t'Val (Character'Pos ('=')));
       if P /= null then
-         Name_Length := C.size_t (
-            (LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
-               - LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item)))
-            / Storage_Elements.Storage_Offset'(
-               C.winnt.WCHAR'Size / Standard'Storage_Unit));
-         Value := LPCWCH_Conv.To_Pointer (
-            LPCWCH_Conv.To_Address (C.winnt.LPCWCH (P))
-            + Storage_Elements.Storage_Offset'(
-               C.winnt.WCHAR'Size / Standard'Storage_Unit));
+         Name_Length :=
+            C.size_t (
+               (LPWCH_Conv.To_Address (P) - LPCWCH_Conv.To_Address (Item))
+                  / Storage_Elements.Storage_Offset'(
+                     C.winnt.WCHAR'Size / Standard'Storage_Unit));
+         Value :=
+            LPCWCH_Conv.To_Pointer (
+               LPWCH_Conv.To_Address (P)
+                  + Storage_Elements.Storage_Offset'(
+                     C.winnt.WCHAR'Size / Standard'Storage_Unit));
       else
          Name_Length := C.string.wcslen (Item);
-         Value := LPCWCH_Conv.To_Pointer (
-            LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Item))
-            + Storage_Elements.Storage_Offset (Name_Length)
-               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+         Value :=
+            LPCWCH_Conv.To_Pointer (
+               LPCWCH_Conv.To_Address (Item)
+                  + Storage_Elements.Storage_Offset (Name_Length)
+                     * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       end if;
    end Do_Separate;
 
@@ -250,15 +257,11 @@ package body System.Native_Environment_Variables is
       if Result = null then
          raise Constraint_Error;
       else
-         return LPCWCH_Conv.To_Address (C.winnt.LPCWCH (Result));
+         return LPWCH_Conv.To_Address (Result);
       end if;
    end Get_Block;
 
    procedure Release_Block (Block : Address) is
-      package LPWCH_Conv is
-         new Address_To_Named_Access_Conversions (
-            C.winnt.WCHAR,
-            C.winnt.LPWCH);
       Success : C.windef.WINBOOL;
    begin
       Success :=
@@ -281,8 +284,8 @@ package body System.Native_Environment_Variables is
    begin
       return Cursor (
          Address (Position)
-         + (Storage_Elements.Storage_Offset (Item_Length) + 1)
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+            + (Storage_Elements.Storage_Offset (Item_Length) + 1)
+               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
    end Next;
 
 end System.Native_Environment_Variables;

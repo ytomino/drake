@@ -14,9 +14,10 @@ package body System.Native_Calendar is
    function To_Native_Time (T : Duration) return Native_Time is
       U : constant C.winnt.ULARGE_INTEGER := (
          Unchecked_Tag => 255, -- any value in others
-         QuadPart => C.winnt.ULONGLONG (
-            System.Native_Time.Nanosecond_Number'Integer_Value (T) / 100
-            + Diff));
+         QuadPart =>
+            C.winnt.ULONGLONG (
+               System.Native_Time.Nanosecond_Number'Integer_Value (T) / 100
+                  + Diff));
    begin
       return (
          dwLowDateTime => U.LowPart,
@@ -59,14 +60,14 @@ package body System.Native_Calendar is
       SystemTime : aliased C.winbase.SYSTEMTIME;
    begin
       Local_Date := Date + Duration (Time_Zone * 60);
-      Sub_Second := Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
-         mod 1_000_000_000);
+      Sub_Second :=
+         Duration'Fixed_Value (
+            System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
+               mod 1_000_000_000);
       Local_Date := Local_Date - Sub_Second;
       FileTime := To_Native_Time (Local_Date);
-      Error := C.winbase.FileTimeToSystemTime (
-            FileTime'Access,
-            SystemTime'Access) =
+      Error :=
+         C.winbase.FileTimeToSystemTime (FileTime'Access, SystemTime'Access) =
          C.windef.FALSE;
       if not Error then
          Year := Year_Number (SystemTime.wYear);
@@ -103,9 +104,8 @@ package body System.Native_Calendar is
          wMilliseconds => 0);
       FileTime : aliased C.windef.FILETIME;
    begin
-      Error := C.winbase.SystemTimeToFileTime (
-            SystemTime'Access,
-            FileTime'Access) =
+      Error :=
+         C.winbase.SystemTimeToFileTime (SystemTime'Access, FileTime'Access) =
          C.windef.FALSE;
       if not Error then
          Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Seconds;

@@ -12,26 +12,25 @@ package body Ada.Containers.Hash_Tables is
       New_Container : out Table_Access;
       Capacity : Count_Type) is
    begin
-      New_Container := new Table'(
-         Last_Index => Hash_Type (Capacity) - 1,
-         First => null,
-         Entries => (others => (First => null, Previous => null)));
+      New_Container :=
+         new Table'(
+            Last_Index => Hash_Type (Capacity) - 1,
+            First => null,
+            Entries => (others => (First => null, Previous => null)));
    end Allocate;
 
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Node_Access;
    function Find_Node (
       Container : Table_Access;
       Node : not null Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Node_Access is
    begin
@@ -176,8 +175,7 @@ package body Ada.Containers.Hash_Tables is
       Right : Table_Access;
       Right_Length : Count_Type;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -188,8 +186,7 @@ package body Ada.Containers.Hash_Tables is
    function Overlap (
       Left, Right : Table_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -213,8 +210,7 @@ package body Ada.Containers.Hash_Tables is
    function Is_Subset (
       Subset, Of_Set : Table_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean is
    begin
@@ -381,12 +377,9 @@ package body Ada.Containers.Hash_Tables is
       Length : in out Count_Type;
       Source : Table_Access;
       Source_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Copy : access procedure (
          Target : out Node_Access;
@@ -394,12 +387,12 @@ package body Ada.Containers.Hash_Tables is
       Free : access procedure (Object : in out Node_Access)) is
    begin
       if Length = 0 then
-         if In_Only_Right and then Source_Length > 0 then
+         if Filter (In_Only_Right) and then Source_Length > 0 then
             Hash_Tables.Free (Target);
             Hash_Tables.Copy (Target, Length, Source, Source_Length, Copy);
          end if;
       elsif Source_Length = 0 then
-         if not In_Only_Left then -- Length > 0
+         if not Filter (In_Only_Left) then -- Length > 0
             Hash_Tables.Free (Target, Length, Free);
          end if;
       else
@@ -408,7 +401,7 @@ package body Ada.Containers.Hash_Tables is
             New_Node : Node_Access;
             From_Right : Node_Access := null;
          begin
-            if In_Only_Right then
+            if Filter (In_Only_Right) then
                I := Source.First;
                while I /= null loop
                   if Find_Node (Target, I, Equivalent) = null then
@@ -424,12 +417,12 @@ package body Ada.Containers.Hash_Tables is
             while I /= null loop
                Next := I.Next;
                if Find_Node (Source, I, Equivalent) /= null then
-                  if not In_Both then
+                  if not Filter (In_Both) then
                      Remove (Target, Length, I);
                      Free (I);
                   end if;
                else
-                  if not In_Only_Left then
+                  if not Filter (In_Only_Left) then
                      Remove (Target, Length, I);
                      Free (I);
                   end if;
@@ -445,26 +438,23 @@ package body Ada.Containers.Hash_Tables is
       end if;
    end Merge;
 
-   procedure Merge (
+   procedure Copying_Merge (
       Target : out Table_Access;
       Length : out Count_Type;
       Left : Table_Access;
       Left_Length : Count_Type;
       Right : Table_Access;
       Right_Length : Count_Type;
-      In_Only_Left : Boolean;
-      In_Only_Right : Boolean;
-      In_Both : Boolean;
+      Filter : Filter_Type;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean;
       Copy : not null access procedure (
          Target : out Node_Access;
          Source : not null Node_Access)) is
    begin
       if Left_Length = 0 then
-         if In_Only_Right and then Right_Length > 0 then
+         if Filter (In_Only_Right) and then Right_Length > 0 then
             Hash_Tables.Copy (Target, Length, Right, Right_Length,
                Copy => Copy);
          else
@@ -472,7 +462,7 @@ package body Ada.Containers.Hash_Tables is
             Length := 0;
          end if;
       elsif Right_Length = 0 then
-         if In_Only_Left then -- Left_Length > 0
+         if Filter (In_Only_Left) then -- Left_Length > 0
             Hash_Tables.Copy (Target, Length, Left, Left_Length, Copy => Copy);
          else
             Target := null;
@@ -488,19 +478,19 @@ package body Ada.Containers.Hash_Tables is
             I := Left.First;
             while I /= null loop
                if Find_Node (Right, I, Equivalent) /= null then
-                  if In_Both then
+                  if Filter (In_Both) then
                      Copy (New_Node, I);
                      Insert (Target, Length, I.Hash, New_Node);
                   end if;
                else
-                  if In_Only_Left then
+                  if Filter (In_Only_Left) then
                      Copy (New_Node, I);
                      Insert (Target, Length, I.Hash, New_Node);
                   end if;
                end if;
                I := I.Next;
             end loop;
-            if In_Only_Right then
+            if Filter (In_Only_Right) then
                I := Right.First;
                while I /= null loop
                   if Find_Node (Left, I, Equivalent) = null then
@@ -512,6 +502,6 @@ package body Ada.Containers.Hash_Tables is
             end if;
          end;
       end if;
-   end Merge;
+   end Copying_Merge;
 
 end Ada.Containers.Hash_Tables;

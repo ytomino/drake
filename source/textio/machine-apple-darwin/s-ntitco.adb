@@ -12,6 +12,9 @@ package body System.Native_Text_IO.Terminal_Colors is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
 
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+
    TERM_Variable : constant C.char_array (0 .. 4) := "TERM" & C.char'Val (0);
 
    xterm_256color : constant String (1 .. 14) := "xterm-256color";
@@ -27,10 +30,6 @@ package body System.Native_Text_IO.Terminal_Colors is
          and then strlen (TERM) = xterm_256color'Length
       then
          declare
-            package char_ptr_Conv is
-               new Address_To_Named_Access_Conversions (
-                  C.char,
-                  C.char_ptr);
             TERM_A : String (1 .. xterm_256color'Length);
             for TERM_A'Address use char_ptr_Conv.To_Address (TERM);
          begin
@@ -143,7 +142,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end RGB_To_Color;
 
    procedure Set (
-      Handle : Native_IO.Handle_Type;
+      Handle : Handle_Type;
       Reset : Boolean;
       Bold_Changing : Boolean;
       Bold : Boolean;
@@ -275,7 +274,7 @@ package body System.Native_Text_IO.Terminal_Colors is
    end Set;
 
    procedure Reset (
-      Handle : Native_IO.Handle_Type)
+      Handle : Handle_Type)
    is
       Seq : constant String (1 .. 4) :=
          (Character'Val (16#1b#), '[', '0', 'm');

@@ -62,7 +62,6 @@ package Ada.Calendar.Formatting is
 
    function Sub_Second (Date : Time) return Second_Duration;
    pragma Pure_Function (Sub_Second);
-   pragma Inline (Sub_Second);
 
    --  extended
    --  This function returns seconds in a day
@@ -70,7 +69,6 @@ package Ada.Calendar.Formatting is
    function Seconds (Date : Time; Time_Zone : Time_Zones.Time_Offset := 0)
       return Day_Duration;
    pragma Pure_Function (Seconds);
-   pragma Inline (Seconds);
 
    function Seconds_Of (
       Hour : Hour_Number;

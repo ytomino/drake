@@ -1,4 +1,3 @@
-pragma Check_Policy (Validate => Ignore);
 with System.Once;
 package body Ada.Strings.Canonical_Composites is
 
@@ -28,12 +27,16 @@ package body Ada.Strings.Canonical_Composites is
          Table : UCD.Map_16x1_Type) is
       begin
          for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            Map (I).To (1) := Wide_Wide_Character'Val (Table (J).Mapping);
-            for K in 2 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
+            declare
+               F : UCD.Map_16x1_Item_Type renames Table (J);
+            begin
+               Map (I).From := Wide_Wide_Character'Val (F.Code);
+               Map (I).To (1) := Wide_Wide_Character'Val (F.Mapping);
+               for K in 2 .. Expanding loop
+                  Map (I).To (K) := Wide_Wide_Character'Val (0);
+               end loop;
+               I := I + 1;
+            end;
          end loop;
       end Fill;
       procedure Fill (
@@ -46,15 +49,18 @@ package body Ada.Strings.Canonical_Composites is
          Table : UCD.Map_16x2_Type) is
       begin
          for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            for K in 1 .. 2 loop
-               Map (I).To (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
+            declare
+               F : UCD.Map_16x2_Item_Type renames Table (J);
+            begin
+               Map (I).From := Wide_Wide_Character'Val (F.Code);
+               for K in 1 .. 2 loop
+                  Map (I).To (K) := Wide_Wide_Character'Val (F.Mapping (K));
+               end loop;
+               for K in 3 .. Expanding loop
+                  Map (I).To (K) := Wide_Wide_Character'Val (0);
+               end loop;
+               I := I + 1;
+            end;
          end loop;
       end Fill;
       procedure Fill (
@@ -67,15 +73,18 @@ package body Ada.Strings.Canonical_Composites is
          Table : UCD.Map_32x2_Type) is
       begin
          for J in Table'Range loop
-            Map (I).From := Wide_Wide_Character'Val (Table (J).Code);
-            for K in 1 .. 2 loop
-               Map (I).To (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            for K in 3 .. Expanding loop
-               Map (I).To (K) := Wide_Wide_Character'Val (0);
-            end loop;
-            I := I + 1;
+            declare
+               F : UCD.Map_32x2_Item_Type renames Table (J);
+            begin
+               Map (I).From := Wide_Wide_Character'Val (F.Code);
+               for K in 1 .. 2 loop
+                  Map (I).To (K) := Wide_Wide_Character'Val (F.Mapping (K));
+               end loop;
+               for K in 3 .. Expanding loop
+                  Map (I).To (K) := Wide_Wide_Character'Val (0);
+               end loop;
+               I := I + 1;
+            end;
          end loop;
       end Fill;
    begin
@@ -93,7 +102,7 @@ package body Ada.Strings.Canonical_Composites is
          Fill (Map, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
          --  16#1D15E#
          Fill (Map, I, UCD.Normalization.NFD_E_Table_XXXXXXXX);
-         pragma Check (Validate, I = Map'Last + 1);
+         pragma Assert (I = Map'Last + 1);
       end;
       --  sort
       for I in Map'First + 1 .. Map'Last loop
@@ -143,7 +152,7 @@ package body Ada.Strings.Canonical_Composites is
                               To (J .. J + R_Length - 1) :=
                                  D_Map (D).To (1 .. R_Length);
                               To_Last := To_Last + R_Length - 1;
-                              pragma Check (Validate, To_Last <= Expanding);
+                              pragma Assert (To_Last <= Expanding);
                               J := J + R_Length - 1;
                            end;
                         else
@@ -177,7 +186,7 @@ package body Ada.Strings.Canonical_Composites is
             return I;
          end if;
       end loop;
-      pragma Check (Validate, Standard.False);
+      pragma Assert (Boolean'(raise Program_Error));
       unreachable;
    end Decomposed_Length;
 
@@ -233,12 +242,15 @@ package body Ada.Strings.Canonical_Composites is
          Table : UCD.Map_16x2_Type) is
       begin
          for J in Table'Range loop
-            for K in 1 .. 2 loop
-               Map (I).From (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
-            I := I + 1;
+            declare
+               F : UCD.Map_16x2_Item_Type renames Table (J);
+            begin
+               for K in 1 .. 2 loop
+                  Map (I).From (K) := Wide_Wide_Character'Val (F.Mapping (K));
+               end loop;
+               Map (I).To := Wide_Wide_Character'Val (F.Code);
+               I := I + 1;
+            end;
          end loop;
       end Fill;
       procedure Fill (
@@ -251,12 +263,15 @@ package body Ada.Strings.Canonical_Composites is
          Table : UCD.Map_32x2_Type) is
       begin
          for J in Table'Range loop
-            for K in 1 .. 2 loop
-               Map (I).From (K) :=
-                  Wide_Wide_Character'Val (Table (J).Mapping (K));
-            end loop;
-            Map (I).To := Wide_Wide_Character'Val (Table (J).Code);
-            I := I + 1;
+            declare
+               F : UCD.Map_32x2_Item_Type renames Table (J);
+            begin
+               for K in 1 .. 2 loop
+                  Map (I).From (K) := Wide_Wide_Character'Val (F.Mapping (K));
+               end loop;
+               Map (I).To := Wide_Wide_Character'Val (F.Code);
+               I := I + 1;
+            end;
          end loop;
       end Fill;
    begin
@@ -271,7 +286,7 @@ package body Ada.Strings.Canonical_Composites is
          Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXX);
          --  (16#11099#, 16#110BA#) ..
          Fill (C_Map.all, I, UCD.Normalization.NFD_D_Table_XXXXXXXX);
-         pragma Check (Validate, I = C_Map'Last + 1);
+         pragma Assert (I = C_Map'Last + 1);
       end;
       --  sort
       for I in C_Map'First + 1 .. C_Map'Last loop

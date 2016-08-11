@@ -44,6 +44,8 @@ package body Ada.Text_IO.Text_Streams is
       File : File_Type)
       return Stream_Access
    is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
       NC_File : Naked_Text_IO.Non_Controlled_File_Type
          renames Controlled.Reference (File).all;
    begin

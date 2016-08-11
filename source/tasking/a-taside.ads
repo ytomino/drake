@@ -16,6 +16,7 @@ package Ada.Task_Identification is
    function Environment_Task return Task_Id;
    procedure Abort_Task (T : Task_Id);
 
+   pragma Pure_Function (Environment_Task);
    pragma Inline (Current_Task); -- renamed
    pragma Inline (Environment_Task); -- renamed
    pragma Inline (Abort_Task); -- renamed

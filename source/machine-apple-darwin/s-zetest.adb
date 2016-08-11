@@ -14,9 +14,7 @@ package body System.Zero_Terminated_Strings is
 
    --  implementation
 
-   function Value (
-      First : not null access constant C.char)
-      return String is
+   function Value (First : not null access constant C.char) return String is
    begin
       return Value (First, strlen (First));
    end Value;
@@ -26,20 +24,17 @@ package body System.Zero_Terminated_Strings is
       Length : C.size_t)
       return String
    is
+      type char_const_ptr is access constant C.char; -- local type
+      for char_const_ptr'Storage_Size use 0;
       package Conv is
-         new Address_To_Constant_Access_Conversions (
-            C.char,
-            C.char_const_ptr);
+         new Address_To_Constant_Access_Conversions (C.char, char_const_ptr);
       Source : String (1 .. Natural (Length));
-      for Source'Address use Conv.To_Address (First);
+      for Source'Address use Conv.To_Address (char_const_ptr (First));
    begin
       return Source;
    end Value;
 
-   procedure To_C (
-      Source : String;
-      Result : not null access C.char)
-   is
+   procedure To_C (Source : String; Result : not null access C.char) is
       Dummy : C.size_t;
    begin
       To_C (Source, Result, Dummy);
@@ -51,18 +46,15 @@ package body System.Zero_Terminated_Strings is
       Result_Length : out C.size_t)
    is
       --  Source and Result should not be overlapped
+      type char_ptr is access all C.char; -- local type
+      for char_ptr'Storage_Size use 0;
       package Conv is
-         new Address_To_Named_Access_Conversions (
-            C.char,
-            C.char_ptr);
+         new Address_To_Named_Access_Conversions (C.char, char_ptr);
       Result_A : C.char_array (C.size_t);
-      for Result_A'Address use Conv.To_Address (Result);
+      for Result_A'Address use Conv.To_Address (char_ptr (Result));
    begin
       Result_Length := Source'Length;
-      memcpy (
-         Result_A'Address,
-         Source'Address,
-         Result_Length);
+      memcpy (Result_A'Address, Source'Address, Result_Length);
       Result_A (Result_Length) := C.char'Val (0);
    end To_C;
 

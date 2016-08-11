@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 package Ada.IO_Modes is
    --  This package provides the root type of File_Mode,
-   --    and the types for the parameters Form of Stream_IO
+   --    and the types for the parameters Form of Stream_IO.
    pragma Pure;
 
    type File_Mode is (In_File, Out_File, Append_File);

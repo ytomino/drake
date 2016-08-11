@@ -32,27 +32,11 @@ private package Ada.Containers.Linked_Lists is
    function Equivalent (
       Left_Last, Right_Last : Node_Access;
       Equivalent : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean;
 
    --  management
-
-   procedure Copy (
-      Target_First : out Node_Access;
-      Target_Last : out Node_Access;
-      Length : out Count_Type;
-      Source_Last : Node_Access;
-      Copy : not null access procedure (
-         Target : out Node_Access;
-         Source : not null Node_Access);
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access));
 
    procedure Free (
       First : in out Node_Access;
@@ -60,69 +44,62 @@ private package Ada.Containers.Linked_Lists is
       Length : in out Count_Type;
       Free : not null access procedure (Object : in out Node_Access));
 
+   generic
+      with procedure Insert (
+         First : in out Node_Access;
+         Last : in out Node_Access;
+         Length : in out Count_Type;
+         Before : Node_Access;
+         New_Item : not null Node_Access);
+   procedure Copy (
+      Target_First : out Node_Access;
+      Target_Last : out Node_Access;
+      Length : out Count_Type;
+      Source_Last : Node_Access;
+      Copy : not null access procedure (
+         Target : out Node_Access;
+         Source : not null Node_Access));
+
+   generic
+      with procedure Insert (
+         First : in out Node_Access;
+         Last : in out Node_Access;
+         Length : in out Count_Type;
+         Before : Node_Access;
+         New_Item : not null Node_Access);
+      with procedure Remove (
+         First : in out Node_Access;
+         Last : in out Node_Access;
+         Length : in out Count_Type;
+         Position : not null Node_Access;
+         Next : Node_Access);
    procedure Reverse_Elements (
       Target_First : in out Node_Access;
       Target_Last : in out Node_Access;
-      Length : in out Count_Type;
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access));
+      Length : in out Count_Type);
 
    --  sorting
 
-   function Is_Sorted (Last : Node_Access;
+   function Is_Sorted (
+      Last : Node_Access;
       LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
+         Left, Right : not null Node_Access)
          return Boolean)
       return Boolean;
 
-   procedure Merge_Sort (
-      Target_First : in out Node_Access;
-      Target_Last : in out Node_Access;
-      Length : in out Count_Type;
-      LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
-         return Boolean;
-      Splice : not null access procedure (
-         Target_First : in out Node_Access;
-         Target_Last : in out Node_Access;
-         Length : in out Count_Type;
-         Before : Node_Access;
-         Source_First : in out Node_Access;
-         Source_Last : in out Node_Access;
-         Source_Length : in out Count_Type);
-      Split : not null access procedure (
-         Target_First : out Node_Access;
-         Target_Last : out Node_Access;
-         Length : out Count_Type;
-         Source_First : in out Node_Access;
-         Source_Last : in out Node_Access;
-         Source_Length : in out Count_Type;
-         Count : Count_Type);
-      Insert : not null access procedure (
+   generic
+      with procedure Insert (
          First : in out Node_Access;
          Last : in out Node_Access;
          Length : in out Count_Type;
          Before : Node_Access;
          New_Item : not null Node_Access);
-      Remove : not null access procedure (
+      with procedure Remove (
          First : in out Node_Access;
          Last : in out Node_Access;
          Length : in out Count_Type;
          Position : not null Node_Access;
-         Next : Node_Access));
-
+         Next : Node_Access);
    procedure Merge (
       Target_First : in out Node_Access;
       Target_Last : in out Node_Access;
@@ -131,20 +108,34 @@ private package Ada.Containers.Linked_Lists is
       Source_Last : in out Node_Access;
       Source_Length : in out Count_Type;
       LT : not null access function (
-         Left : not null Node_Access;
-         Right : not null Node_Access)
-         return Boolean;
-      Insert : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
+         Left, Right : not null Node_Access)
+         return Boolean);
+
+   generic
+      with procedure Split (
+         Target_First : out Node_Access;
+         Target_Last : out Node_Access;
+         Length : out Count_Type;
+         Source_First : in out Node_Access;
+         Source_Last : in out Node_Access;
+         Source_Length : in out Count_Type;
+         Count : Count_Type);
+      with procedure Merge (
+         Target_First : in out Node_Access;
+         Target_Last : in out Node_Access;
          Length : in out Count_Type;
-         Before : Node_Access;
-         New_Item : not null Node_Access);
-      Remove : not null access procedure (
-         First : in out Node_Access;
-         Last : in out Node_Access;
-         Length : in out Count_Type;
-         Position : not null Node_Access;
-         Next : Node_Access));
+         Source_First : in out Node_Access;
+         Source_Last : in out Node_Access;
+         Source_Length : in out Count_Type;
+         LT : not null access function (
+            Left, Right : not null Node_Access)
+            return Boolean);
+   procedure Merge_Sort (
+      Target_First : in out Node_Access;
+      Target_Last : in out Node_Access;
+      Length : in out Count_Type;
+      LT : not null access function (
+         Left, Right : not null Node_Access)
+         return Boolean);
 
 end Ada.Containers.Linked_Lists;

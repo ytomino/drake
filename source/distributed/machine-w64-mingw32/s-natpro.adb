@@ -158,21 +158,21 @@ package body System.Native_Processes is
       First : Positive;
       Last : Natural)
    is
+      pragma Assert (Last >= First);
       Old_Length : C.size_t;
       Additional_Length : C.size_t := 0;
-      B : constant C.winnt.LPWSTR_ptr :=
-         LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv) + C.ptrdiff_t (First);
    begin
       --  get length
-      declare
-         P : C.winnt.LPWSTR_ptr := B;
-      begin
-         for I in First .. Last loop
+      for I in First .. Last loop
+         declare
+            P : constant C.winnt.LPWSTR_ptr :=
+               LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv)
+               + C.ptrdiff_t (I);
+         begin
             Additional_Length := Additional_Length
                + C.string.wcslen (P.all) + 3; -- space and a pair of '"'
-            P := P + 1;
-         end loop;
-      end;
+         end;
+      end loop;
       if Command = null then
          Old_Length := 0;
       else
@@ -182,11 +182,15 @@ package body System.Native_Processes is
       --  copy
       declare
          Index : C.size_t := Old_Length;
-         P : C.winnt.LPWSTR_ptr := B;
       begin
          for I in First .. Last loop
-            C_Append (Command, Index, P.all);
-            P := P + 1;
+            declare
+               P : constant C.winnt.LPWSTR_ptr :=
+                  LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv)
+                  + C.ptrdiff_t (I);
+            begin
+               C_Append (Command, Index, P.all);
+            end;
          end loop;
       end;
    end Append;
