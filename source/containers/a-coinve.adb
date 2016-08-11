@@ -66,11 +66,12 @@ package body Ada.Containers.Indefinite_Vectors is
       Max_Length : Count_Type;
       Capacity : Count_Type)
    is
-      New_Data : constant Data_Access := new Data'(
-         Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
-         Super => <>,
-         Max_Length => Max_Length,
-         Items => <>);
+      New_Data : constant Data_Access :=
+         new Data'(
+            Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
+            Super => <>,
+            Max_Length => Max_Length,
+            Items => <>);
    begin
       Target := Upcast (New_Data);
    end Allocate_Data;
@@ -154,6 +155,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Move => Move_Data'Access,
          Copy => Copy_Data'Access,
          Free => Free_Data'Access);
+--  diff
    end Reallocate;
 
    procedure Unique (Container : in out Vector; To_Update : Boolean);
@@ -328,9 +330,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Clear (Container : in out Vector) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
       Container.Length := 0;
    end Clear;
 
@@ -403,9 +403,7 @@ package body Ada.Containers.Indefinite_Vectors is
             Position).Element.all); -- checking Constraint_Error
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Vector; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Check (Pre,
@@ -421,9 +419,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end;
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Vector;
-      Position : Cursor)
+   function Reference (Container : aliased in out Vector; Position : Cursor)
       return Reference_Type
    is
       pragma Check (Pre,
@@ -558,9 +554,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end loop;
    end Insert;
 
-   procedure Prepend (
-      Container : in out Vector;
-      New_Item : Vector) is
+   procedure Prepend (Container : in out Vector; New_Item : Vector) is
    begin
       Insert (Container, Index_Type'First, New_Item);
    end Prepend;
@@ -573,10 +567,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Insert (Container, Index_Type'First, New_Item, Count);
    end Prepend;
 
-   procedure Append (
-      Container : in out Vector;
-      New_Item : Vector)
-   is
+   procedure Append (Container : in out Vector; New_Item : Vector) is
       New_Item_Length : constant Count_Type := New_Item.Length;
    begin
       if New_Item_Length > 0 then
@@ -977,10 +968,8 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
---
 
 --  diff (Reference)
---
 --
 --
 --

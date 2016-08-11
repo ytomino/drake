@@ -7,8 +7,7 @@ package System.Zero_Terminated_WStrings is
    --  but LPWSTR in Windows
 
    --  convert to UTF-8 from a first address of zero-terminated wide string
-   function Value (
-      First : not null access constant C.winnt.WCHAR)
+   function Value (First : not null access constant C.winnt.WCHAR)
       return String;
    function Value (
       First : not null access constant C.winnt.WCHAR;
@@ -16,9 +15,7 @@ package System.Zero_Terminated_WStrings is
       return String;
 
    --  convert to zero-terminated wide string from UTF-8
-   procedure To_C (
-      Source : String;
-      Result : not null access C.winnt.WCHAR);
+   procedure To_C (Source : String; Result : not null access C.winnt.WCHAR);
    procedure To_C (
       Source : String;
       Result : not null access C.winnt.WCHAR;

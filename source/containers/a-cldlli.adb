@@ -195,7 +195,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
 
    function Length (Container : List) return Count_Type is
 --  diff
@@ -216,8 +215,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
    procedure Clear (Container : in out List) is
    begin
       Free_Data (Container);
---  diff
---  diff
    end Clear;
 
 --  diff (Element)
@@ -250,9 +247,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased List;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased List; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -260,9 +255,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out List;
-      Position : Cursor)
+   function Reference (Container : aliased in out List; Position : Cursor)
       return Reference_Type
    is
       pragma Unreferenced (Container);

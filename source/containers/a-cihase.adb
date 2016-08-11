@@ -330,9 +330,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    procedure Clear (Container : in out Set) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Element (Position : Cursor) return Element_Type is
@@ -357,9 +355,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       Process (Position.Element.all);
    end Query_Element;
 
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Set; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -920,9 +916,7 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          return (Element => Position.Element.all'Access);
       end Reference_Preserving_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
+      function Constant_Reference (Container : aliased Set; Key : Key_Type)
          return Constant_Reference_Type is
       begin
          return Constant_Reference (Container, Find (Container, Key));

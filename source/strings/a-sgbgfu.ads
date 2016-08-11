@@ -41,9 +41,7 @@ package Ada.Strings.Generic_Bounded.Generic_Functions is
          Going : Direction := Forward)
          return Natural;
 
-      function Count (
-         Source : Bounded.Bounded_String;
-         Pattern : String_Type)
+      function Count (Source : Bounded.Bounded_String; Pattern : String_Type)
          return Natural;
 
       --  String transformation subprograms

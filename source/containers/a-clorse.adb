@@ -290,8 +290,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Clear (Container : in out Set) is
    begin
       Free_Data (Container);
---  diff
---  diff
    end Clear;
 
 --  diff (Element)
@@ -316,9 +314,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       Process (Position.Element.all);
    end Query_Element;
 
-   function Constant_Reference (
-      Container : aliased Set;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Set; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -1064,9 +1060,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          return (Element => Position.Element.all'Access);
       end Reference_Preserving_Key;
 
-      function Constant_Reference (
-         Container : aliased Set;
-         Key : Key_Type)
+      function Constant_Reference (Container : aliased Set; Key : Key_Type)
          return Constant_Reference_Type is
       begin
          return Constant_Reference (Container, Find (Container, Key));

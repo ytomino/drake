@@ -177,8 +177,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       function Equivalent (Left, Right : not null Linked_Lists.Node_Access)
          return Boolean is
       begin
-         return Downcast (Left).Element.all =
-            Downcast (Right).Element.all;
+         return Downcast (Left).Element.all = Downcast (Right).Element.all;
       end Equivalent;
       Left_Length : constant Count_Type := Length (Left);
       Right_Length : constant Count_Type := Length (Right);
@@ -215,9 +214,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    procedure Clear (Container : in out List) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Element (Position : Cursor) return Element_Type is
@@ -250,9 +247,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Process (Reference (List (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased List;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased List; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -260,9 +255,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       return (Element => Position.Element.all'Access);
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out List;
-      Position : Cursor)
+   function Reference (Container : aliased in out List; Position : Cursor)
       return Reference_Type is
    begin
 --  diff

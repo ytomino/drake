@@ -4,17 +4,13 @@ with C;
 package System.Zero_Terminated_Strings is
    pragma Preelaborate;
 
-   function Value (
-      First : not null access constant C.char)
-      return String;
+   function Value (First : not null access constant C.char) return String;
    function Value (
       First : not null access constant C.char;
       Length : C.size_t)
       return String;
 
-   procedure To_C (
-      Source : String;
-      Result : not null access C.char);
+   procedure To_C (Source : String; Result : not null access C.char);
    procedure To_C (
       Source : String;
       Result : not null access C.char;

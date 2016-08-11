@@ -15,10 +15,11 @@ package body Ada.Containers.Ordered_Sets.Debug is
       else
          Container := Downcast (Source.Super.Data).Root;
       end if;
-      Dummy := Base.Debug.Dump (
-         Container => Container,
-         Marker => null,
-         Message => Message);
+      Dummy :=
+         Base.Debug.Dump (
+            Container => Container,
+            Marker => null,
+            Message => Message);
    end Dump;
 
    function Valid (Source : Set) return Boolean is

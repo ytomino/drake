@@ -68,12 +68,16 @@ package body Ada.Strings.Generic_Unbounded is
       if String_Type'Component_Size
          rem Standard'Storage_Unit = 0
       then -- optimized for packed
-         Data.Capacity := Integer (
-            Usable_Size
-            / (String_Type'Component_Size / Standard'Storage_Unit));
+         Data.Capacity :=
+            Integer (
+               Usable_Size
+                  / (String_Type'Component_Size / Standard'Storage_Unit));
       else -- unpacked
-         Data.Capacity := Integer (
-            Usable_Size * Standard'Storage_Unit / String_Type'Component_Size);
+         Data.Capacity :=
+            Integer (
+               Usable_Size
+                  * Standard'Storage_Unit
+                  / String_Type'Component_Size);
       end if;
       Data.Items := Fixed_String_Access_Conv.To_Pointer (M + Header_Size);
    end Adjust_Allocated;
@@ -164,8 +168,9 @@ package body Ada.Strings.Generic_Unbounded is
          Target => Upcast (Source.Data'Unchecked_Access),
          Target_Length =>
             System.Reference_Counting.Length_Type (Source.Length),
-         Target_Capacity => System.Reference_Counting.Length_Type (
-            Generic_Unbounded.Capacity (Source)),
+         Target_Capacity =>
+            System.Reference_Counting.Length_Type (
+               Generic_Unbounded.Capacity (Source)),
          New_Length => System.Reference_Counting.Length_Type (Length),
          New_Capacity => System.Reference_Counting.Length_Type (Capacity),
          Sentinel => Upcast (Empty_Data'Unrestricted_Access),

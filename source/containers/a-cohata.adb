@@ -12,10 +12,11 @@ package body Ada.Containers.Hash_Tables is
       New_Container : out Table_Access;
       Capacity : Count_Type) is
    begin
-      New_Container := new Table'(
-         Last_Index => Hash_Type (Capacity) - 1,
-         First => null,
-         Entries => (others => (First => null, Previous => null)));
+      New_Container :=
+         new Table'(
+            Last_Index => Hash_Type (Capacity) - 1,
+            First => null,
+            Entries => (others => (First => null, Previous => null)));
    end Allocate;
 
    function Find_Node (

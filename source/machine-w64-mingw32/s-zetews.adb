@@ -28,22 +28,20 @@ package body System.Zero_Terminated_WStrings is
       Result : String (1 .. Natural (Length) * 2);
       Result_Length : C.signed_int;
    begin
-      Result_Length := C.winnls.WideCharToMultiByte (
-         C.winnls.CP_UTF8,
-         0,
-         First,
-         C.signed_int (Length),
-         LPSTR_Conv.To_Pointer (Result'Address),
-         Result'Length,
-         null,
-         null);
+      Result_Length :=
+         C.winnls.WideCharToMultiByte (
+            C.winnls.CP_UTF8,
+            0,
+            First,
+            C.signed_int (Length),
+            LPSTR_Conv.To_Pointer (Result'Address),
+            Result'Length,
+            null,
+            null);
       return Result (1 .. Natural (Result_Length));
    end Value;
 
-   procedure To_C (
-      Source : String;
-      Result : not null access C.winnt.WCHAR)
-   is
+   procedure To_C (Source : String; Result : not null access C.winnt.WCHAR) is
       Dummy : C.size_t;
    begin
       To_C (Source, Result, Dummy);
@@ -58,17 +56,19 @@ package body System.Zero_Terminated_WStrings is
       Raw_Result_Length : C.signed_int;
       Result_End : C.winnt.LPWSTR;
    begin
-      Raw_Result_Length := C.winnls.MultiByteToWideChar (
-         C.winnls.CP_UTF8,
-         0,
-         LPSTR_Conv.To_Pointer (Source'Address),
-         C.signed_int (Source_Length),
-         Result,
-         C.signed_int (Source_Length)); -- assuming Result has enough size
-      Result_End := LPWSTR_Conv.To_Pointer (
-         LPWSTR_Conv.To_Address (C.winnt.LPWSTR (Result))
-         + Storage_Elements.Storage_Offset (Raw_Result_Length)
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+      Raw_Result_Length :=
+         C.winnls.MultiByteToWideChar (
+            C.winnls.CP_UTF8,
+            0,
+            LPSTR_Conv.To_Pointer (Source'Address),
+            C.signed_int (Source_Length),
+            Result,
+            C.signed_int (Source_Length)); -- assuming Result has enough size
+      Result_End :=
+         LPWSTR_Conv.To_Pointer (
+            LPWSTR_Conv.To_Address (C.winnt.LPWSTR (Result))
+               + Storage_Elements.Storage_Offset (Raw_Result_Length)
+                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
       Result_End.all := C.winnt.WCHAR'Val (0);
       Result_Length := C.size_t (Raw_Result_Length);
    end To_C;

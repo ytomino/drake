@@ -68,14 +68,10 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased List;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased List; Position : Cursor)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out List;
-      Position : Cursor)
+   function Reference (Container : aliased in out List; Position : Cursor)
       return Reference_Type;
 
 --  diff (Assign)

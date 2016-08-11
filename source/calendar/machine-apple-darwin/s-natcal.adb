@@ -54,8 +54,9 @@ package body System.Native_Calendar is
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
    begin
-      Sub_Second := Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
+      Sub_Second :=
+         Duration'Fixed_Value (
+            System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
       timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       --  does gmtime_r return no error ?

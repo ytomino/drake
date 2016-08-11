@@ -80,7 +80,8 @@ private package Ada.Containers.Linked_Lists is
 
    --  sorting
 
-   function Is_Sorted (Last : Node_Access;
+   function Is_Sorted (
+      Last : Node_Access;
       LT : not null access function (
          Left, Right : not null Node_Access)
          return Boolean)

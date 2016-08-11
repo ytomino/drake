@@ -113,10 +113,8 @@ package body System.Native_IO.Sockets is
       I : C.netdb.struct_addrinfo_ptr := Peer;
    begin
       while I /= null loop
-         Handle := C.sys.socket.socket (
-            I.ai_family,
-            I.ai_socktype,
-            I.ai_protocol);
+         Handle :=
+            C.sys.socket.socket (I.ai_family, I.ai_socktype, I.ai_protocol);
          if Handle >= 0 then
             if C.sys.socket.connect (Handle, I.ai_addr, I.ai_addrlen) = 0 then
                --  connected

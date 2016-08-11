@@ -23,20 +23,19 @@ package body System.Program is
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
       Buffer_Length : C.windef.DWORD := 1024;
-      Buffer : aliased C.winnt.LPWSTR := Conv.To_Pointer (
-         Standard_Allocators.Allocate (
-            Storage_Elements.Storage_Offset (Buffer_Length)
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
+      Buffer : aliased C.winnt.LPWSTR :=
+         Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               Storage_Elements.Storage_Offset (Buffer_Length)
+                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
    begin
       Holder.Assign (Buffer);
       loop
          declare
             Result_Length : C.windef.DWORD;
          begin
-            Result_Length := C.winbase.GetModuleFileName (
-               null,
-               Buffer,
-               Buffer_Length);
+            Result_Length :=
+               C.winbase.GetModuleFileName (null, Buffer, Buffer_Length);
             if Result_Length < Buffer_Length then
                return Zero_Terminated_WStrings.Value (
                   Buffer,
@@ -44,11 +43,12 @@ package body System.Program is
             end if;
          end;
          Buffer_Length := Buffer_Length * 2;
-         Buffer := Conv.To_Pointer (
-            Standard_Allocators.Reallocate (
-               Conv.To_Address (Buffer),
-               Storage_Elements.Storage_Offset (Buffer_Length)
-                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
+         Buffer :=
+            Conv.To_Pointer (
+               Standard_Allocators.Reallocate (
+                  Conv.To_Address (Buffer),
+                  Storage_Elements.Storage_Offset (Buffer_Length)
+                     * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       end loop;
    end Full_Name;
 

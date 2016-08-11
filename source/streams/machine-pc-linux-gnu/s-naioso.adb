@@ -117,10 +117,8 @@ package body System.Native_IO.Sockets is
       I : C.netdb.struct_addrinfo_ptr := Peer;
    begin
       while I /= null loop
-         Handle := C.sys.socket.socket (
-            I.ai_family,
-            I.ai_socktype,
-            I.ai_protocol);
+         Handle :=
+            C.sys.socket.socket (I.ai_family, I.ai_socktype, I.ai_protocol);
          if Handle >= 0 then
             if C.sys.socket.connect (
                Handle,
@@ -155,8 +153,9 @@ package body System.Native_IO.Sockets is
 
    procedure Listen (Server : aliased out Listener; Port : Port_Number) is
       Hints : aliased constant C.netdb.struct_addrinfo := (
-         ai_flags => C.signed_int (
-            C.unsigned_int'(C.netdb.AI_PASSIVE or C.netdb.AI_NUMERICSERV)),
+         ai_flags =>
+            C.signed_int (
+               C.unsigned_int'(C.netdb.AI_PASSIVE or C.netdb.AI_NUMERICSERV)),
          ai_family => C.sys.socket.AF_UNSPEC,
          ai_socktype =>
             C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
@@ -206,10 +205,11 @@ package body System.Native_IO.Sockets is
          Socket_Address_Argument : C.sys.socket.CONST_SOCKADDR_ARG;
       begin
          Holder.Assign (Data);
-         Server := C.sys.socket.socket (
-            Data.ai_family,
-            Data.ai_socktype,
-            Data.ai_protocol);
+         Server :=
+            C.sys.socket.socket (
+               Data.ai_family,
+               Data.ai_socktype,
+               Data.ai_protocol);
          --  set FD_CLOEXEC
          Set_Close_On_Exec (Server);
          --  set SO_REUSEADDR
@@ -256,10 +256,11 @@ package body System.Native_IO.Sockets is
             Synchronous_Control.Unlock_Abort;
             Socket_Address_Argument.sockaddr :=
                Remote_Address'Unrestricted_Access;
-            R := C.sys.socket.C_accept (
-               Server,
-               Socket_Address_Argument,
-               Len'Access);
+            R :=
+               C.sys.socket.C_accept (
+                  Server,
+                  Socket_Address_Argument,
+                  Len'Access);
             errno := C.errno.errno;
             Synchronous_Control.Lock_Abort;
             if R < 0 then

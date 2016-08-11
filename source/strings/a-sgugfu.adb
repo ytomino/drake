@@ -56,9 +56,7 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
          Going);
    end Index_Non_Blank;
 
-   function Count (
-      Source : Unbounded_String;
-      Pattern : String_Type)
+   function Count (Source : Unbounded_String; Pattern : String_Type)
       return Natural
    is
       pragma Suppress (Access_Check);
@@ -92,9 +90,7 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
             else
                Set_Length (
                   Result,
-                  Source.Length
-                     + By'Length
-                     - Integer'Max (High - Low + 1, 0));
+                  Source.Length + By'Length - Integer'Max (High - Low + 1, 0));
                declare
                   Dummy_Last : Natural;
                begin
@@ -686,9 +682,7 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
       is
          pragma Suppress (Access_Check);
       begin
-         return Fixed_Maps.Count (
-            Source.Data.Items (1 .. Source.Length),
-            Set);
+         return Fixed_Maps.Count (Source.Data.Items (1 .. Source.Length), Set);
       end Count;
 
       procedure Find_Token (

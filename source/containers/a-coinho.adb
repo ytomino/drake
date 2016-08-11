@@ -143,9 +143,7 @@ package body Ada.Containers.Indefinite_Holders is
 
    procedure Clear (Container : in out Holder) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Element (Container : Holder'Class)

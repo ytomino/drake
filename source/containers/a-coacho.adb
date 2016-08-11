@@ -135,7 +135,8 @@ package body Ada.Containers.Access_Holders is
 
       function To_Weak_Holder (Source : Holder) return Weak_Holder is
       begin
-         return Result : Weak_Holder := (Finalization.Controlled with
+         return Result : Weak_Holder := (
+            Finalization.Controlled with
             Super => (
                Data => Source.Data.Super'Unchecked_Access,
                Previous => <>,
@@ -171,18 +172,14 @@ package body Ada.Containers.Access_Holders is
          Initialize (Container);
       end Clear;
 
-      procedure Assign (
-         Target : in out Weak_Holder;
-         Source : Holder) is
+      procedure Assign (Target : in out Weak_Holder; Source : Holder) is
       begin
          Clear (Target);
          Target.Super.Data := Source.Data.Super'Unchecked_Access;
          Adjust (Target);
       end Assign;
 
-      procedure Assign (
-         Target : in out Holder;
-         Source : Weak_Holder) is
+      procedure Assign (Target : in out Holder; Source : Weak_Holder) is
       begin
          Clear (Target);
          Target.Data := Downcast (Source.Super.Data);

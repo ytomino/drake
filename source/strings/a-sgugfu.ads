@@ -36,9 +36,7 @@ package Ada.Strings.Generic_Unbounded.Generic_Functions is
       Going : Direction := Forward)
       return Natural;
 
-   function Count (
-      Source : Unbounded_String;
-      Pattern : String_Type)
+   function Count (Source : Unbounded_String; Pattern : String_Type)
       return Natural;
 
    --  String transformation subprograms

@@ -89,9 +89,7 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
             Going);
       end Index_Non_Blank;
 
-      function Count (
-         Source : Bounded.Bounded_String;
-         Pattern : String_Type)
+      function Count (Source : Bounded.Bounded_String; Pattern : String_Type)
          return Natural is
       begin
          return Fixed_Functions.Count (
@@ -159,9 +157,8 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
             Check =>
                (Low <= Source.Length + 1 and then High <= Source.Length)
                or else raise Index_Error); -- CXA4019
-         New_Length : constant Natural := Source.Length
-            + By'Length
-            - Integer'Max (High - Low + 1, 0);
+         New_Length : constant Natural :=
+            Source.Length + By'Length - Integer'Max (High - Low + 1, 0);
       begin
          if New_Length > Bounded.Max then
             declare
@@ -322,11 +319,7 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
                (From <= Source.Length + 1 and then Through <= Source.Length)
                or else raise Index_Error);
       begin
-         Fixed_Functions.Delete (
-            Source.Element,
-            Source.Length,
-            From,
-            Through);
+         Fixed_Functions.Delete (Source.Element, Source.Length, From, Through);
       end Delete;
 
       function Trim (
@@ -383,10 +376,7 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
                      Pad,
                      Target => S,
                      Target_Last => S_Last);
-                  Bounded.Set_Bounded_String (
-                     Result,
-                     S (1 .. S_Last),
-                     Drop);
+                  Bounded.Set_Bounded_String (Result, S (1 .. S_Last), Drop);
                end;
             else
                Fixed_Functions.Head (
@@ -419,11 +409,7 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
                Bounded.Set_Bounded_String (Source, S (1 .. S_Last), Drop);
             end;
          else
-            Fixed_Functions.Head (
-               Source.Element,
-               Source.Length,
-               Count,
-               Pad);
+            Fixed_Functions.Head (Source.Element, Source.Length, Count, Pad);
          end if;
       end Head;
 
@@ -623,9 +609,7 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
             Set : Fixed_Maps.Character_Set)
             return Natural is
          begin
-            return Fixed_Maps.Count (
-               Source.Element (1 .. Source.Length),
-               Set);
+            return Fixed_Maps.Count (Source.Element (1 .. Source.Length), Set);
          end Count;
 
          procedure Find_Token (

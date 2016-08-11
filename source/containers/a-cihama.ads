@@ -85,24 +85,16 @@ package Ada.Containers.Indefinite_Hashed_Maps is
       Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Map; Position : Cursor)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
+   function Reference (Container : aliased in out Map; Position : Cursor)
       return Reference_Type;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Key : Key_Type)
+   function Constant_Reference (Container : aliased Map; Key : Key_Type)
       return Constant_Reference_Type;
 
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
+   function Reference (Container : aliased in out Map; Key : Key_Type)
       return Reference_Type;
 
    procedure Assign (Target : in out Map; Source : Map);

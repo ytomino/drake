@@ -74,6 +74,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Move_Data)
 --
@@ -142,10 +143,11 @@ package body Ada.Containers.Limited_Vectors is
             if Capacity = 0 then
                Container.Data := null;
             else
-               Container.Data := new Data'(
-                  Capacity_Last =>
-                     Index_Type'First - 1 + Index_Type'Base (Capacity),
-                  Items => <>);
+               Container.Data :=
+                  new Data'(
+                     Capacity_Last =>
+                       Index_Type'First - 1 + Index_Type'Base (Capacity),
+                       Items => <>);
                for I in Index_Type'First .. Last (Container) loop
                   Container.Data.Items (I) := Old_Data.Items (I);
                   Old_Data.Items (I) := null;
@@ -329,8 +331,6 @@ package body Ada.Containers.Limited_Vectors is
    procedure Clear (Container : in out Vector) is
    begin
       Release (Container.Data);
---  diff
---  diff
       Container.Length := 0;
    end Clear;
 
@@ -403,9 +403,7 @@ package body Ada.Containers.Limited_Vectors is
             Position).Element.all); -- checking Constraint_Error
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Vector;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Vector; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Check (Pre,
@@ -421,9 +419,7 @@ package body Ada.Containers.Limited_Vectors is
       end;
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Vector;
-      Position : Cursor)
+   function Reference (Container : aliased in out Vector; Position : Cursor)
       return Reference_Type
    is
       pragma Check (Pre,
@@ -562,8 +558,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
 
 --  diff (Prepend)
 --
@@ -574,9 +568,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 
 --  diff (Append)
---
---
---
 --
 --
 --
@@ -977,10 +968,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
 
 --  diff (Reference)
---
 --
 --
 --

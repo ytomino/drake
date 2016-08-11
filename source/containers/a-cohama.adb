@@ -300,9 +300,7 @@ package body Ada.Containers.Hashed_Maps is
 
    procedure Clear (Container : in out Map) is
    begin
-      Copy_On_Write.Clear (
-         Container.Super'Access,
-         Free => Free_Data'Access);
+      Copy_On_Write.Clear (Container.Super'Access, Free => Free_Data'Access);
    end Clear;
 
    function Key (Position : Cursor) return Key_Type is
@@ -346,9 +344,7 @@ package body Ada.Containers.Hashed_Maps is
          Reference (Map (Container), Position).Element.all);
    end Update_Element;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Position : Cursor)
+   function Constant_Reference (Container : aliased Map; Position : Cursor)
       return Constant_Reference_Type
    is
       pragma Unreferenced (Container);
@@ -356,9 +352,7 @@ package body Ada.Containers.Hashed_Maps is
       return (Element => Position.all.Element'Access); -- [gcc-6] .all
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Position : Cursor)
+   function Reference (Container : aliased in out Map; Position : Cursor)
       return Reference_Type is
    begin
       Unique (Container, True);
@@ -366,17 +360,13 @@ package body Ada.Containers.Hashed_Maps is
       return (Element => Position.all.Element'Access); -- [gcc-6] .all
    end Reference;
 
-   function Constant_Reference (
-      Container : aliased Map;
-      Key : Key_Type)
+   function Constant_Reference (Container : aliased Map; Key : Key_Type)
       return Constant_Reference_Type is
    begin
       return Constant_Reference (Container, Find (Container, Key));
    end Constant_Reference;
 
-   function Reference (
-      Container : aliased in out Map;
-      Key : Key_Type)
+   function Reference (Container : aliased in out Map; Key : Key_Type)
       return Reference_Type is
    begin
       return Reference (Container, Find (Container, Key));

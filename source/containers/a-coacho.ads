@@ -29,9 +29,7 @@ package Ada.Containers.Access_Holders is
 
    function Element (Container : Holder'Class) return Name;
 
-   procedure Replace_Element (
-      Target : in out Holder;
-      Source : Name);
+   procedure Replace_Element (Target : in out Holder; Source : Name);
 
 --  procedure Query_Element (
 --    Container : Holder;
@@ -75,12 +73,8 @@ package Ada.Containers.Access_Holders is
 
       procedure Clear (Container : in out Weak_Holder);
 
-      procedure Assign (
-         Target : in out Weak_Holder;
-         Source : Holder);
-      procedure Assign (
-         Target : in out Holder;
-         Source : Weak_Holder);
+      procedure Assign (Target : in out Weak_Holder; Source : Holder);
+      procedure Assign (Target : in out Holder; Source : Weak_Holder);
 
    private
 
