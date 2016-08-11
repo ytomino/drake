@@ -77,14 +77,14 @@ package body Interfaces.C.Generic_Strings is
                end;
             end if;
          end if;
-         return chars_ptr_Conv.To_Pointer (Item'Address);
+         return chars_ptr_Conv.To_Pointer (Item.all'Address);
       end if;
    end To_Chars_Ptr;
 
    function To_Const_Chars_Ptr (Item : not null access constant Element_Array)
       return not null const_chars_ptr is
    begin
-      return const_Conv.To_Pointer (Item'Address);
+      return const_Conv.To_Pointer (Item.all'Address);
    end To_Const_Chars_Ptr;
 
    function New_Char_Array (Chars : Element_Array)
