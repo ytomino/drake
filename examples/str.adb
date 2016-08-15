@@ -164,11 +164,6 @@ begin
 		pragma Assert (V.Constant_Reference.Element.all'Address /= A);
 		Ada.Strings.Unbounded.Unbounded_Slice (U, U, 3, 6); -- both Source and Target
 		pragma Assert (U = "NSTA");
-		Ada.Strings.Unbounded.Append (U, U); -- both Source and Target
-		pragma Assert (U = "NSTANSTA");
-		Ada.Strings.Unbounded_Strings.Reserve_Capacity (U, 0);
-		Ada.Strings.Unbounded.Append (U, U);
-		pragma Assert (U = "NSTANSTANSTANSTA");
 		U := CP.Value;
 		Ada.Strings.Unbounded.Replace_Element (U, 1, 'c'); -- unique
 		pragma Assert (U = "cONSTANT");
