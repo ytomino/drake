@@ -80,7 +80,7 @@ package body Ada.Containers.Array_Sorting is
    begin
       if First < Last then
          declare
-            Middle : constant Integer := (First + Last) / 2;
+            Middle : constant Integer := First + (Last - First) / 2;
          begin
             In_Place_Merge_Sort (First, Middle, Params, LT, Swap);
             In_Place_Merge_Sort (Middle + 1, Last, Params, LT, Swap);
@@ -109,11 +109,11 @@ package body Ada.Containers.Array_Sorting is
             end if;
          else
             if Middle - First >= Last - Middle then
-               First_Cut := (First + Middle + 1) / 2;
+               First_Cut := First + (Middle + 1 - First) / 2;
                L := Middle + 1;
                H := Last;
                loop
-                  M := (L + H + 1) / 2;
+                  M := L + (H + 1 - L) / 2;
                   if LT (M, First_Cut, Params) then
                      L := M;
                      exit when L >= H;
@@ -124,11 +124,11 @@ package body Ada.Containers.Array_Sorting is
                end loop;
                Second_Cut := H;
             else
-               Second_Cut := (Middle + 1 + Last) / 2;
+               Second_Cut := Middle + 1 + (Last - (Middle + 1)) / 2;
                L := First;
                H := Middle;
                loop
-                  M := (L + H) / 2;
+                  M := L + (H - L) / 2;
                   if LT (Second_Cut, M, Params) then
                      H := M;
                      exit when L >= H;
@@ -209,10 +209,12 @@ package body Ada.Containers.Array_Sorting is
          begin
             loop
                declare
-                  Q : Integer := P + Left_Length;
+                  Q : Integer;
                begin
-                  if Q > Last then
-                     Q := Q - Length;
+                  if P > Last - Left_Length then
+                     Q := P - (Length - Left_Length);
+                  else
+                     Q := P + Left_Length;
                   end if;
                   exit when Q = First;
                   for I in 0 .. Cycles - 1 loop
