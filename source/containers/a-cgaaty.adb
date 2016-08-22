@@ -355,7 +355,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
          if Container /= null then
             Array_Sorting.Reverse_Rotate (
                Index_Type'Pos (Container'First),
-               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Before),
                Index_Type'Pos (Container'Last),
                Context'Address,
                Swap => Swap'Access);
@@ -377,7 +377,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
          if Container /= null then
             Array_Sorting.Juggling_Rotate (
                Index_Type'Pos (Container'First),
-               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Before),
                Index_Type'Pos (Container'Last),
                Context'Address,
                Swap => Swap'Access);
@@ -465,16 +465,16 @@ package body Ada.Containers.Generic_Array_Access_Types is
             Move (Target, Source);
          else
             declare
-               Old_Last : constant Index_Type'Base := Target'Last;
+               Before : constant Index_Type'Base := Target'Last + 1;
             begin
-               Append (Target, Source);
+               Insert (Target, Before, Source);
                Free (Source);
                declare
                   Context : Context_Type := (Container => Target);
                begin
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Target'First),
-                     Index_Type'Pos (Old_Last),
+                     Index_Type'Pos (Before),
                      Index_Type'Pos (Target'Last),
                      Context'Address,
                      LT => LT'Access,

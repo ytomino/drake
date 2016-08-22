@@ -1095,7 +1095,7 @@ package body Ada.Containers.Indefinite_Vectors is
                   Set_Length (Source, 0);
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
-                     Integer (Index_Type'First) - 1 + Integer (Old_Length),
+                     Integer (Index_Type'First) + Integer (Old_Length),
                      Index_Type'Pos (Last (Target)),
                      DA_Conv.To_Address (Downcast (Target.Super.Data)),
                      LT => LT'Access,

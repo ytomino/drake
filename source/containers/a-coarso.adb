@@ -80,17 +80,17 @@ package body Ada.Containers.Array_Sorting is
    begin
       if First < Last then
          declare
-            Middle : constant Integer := First + (Last - First) / 2;
+            Before : constant Integer := First + (Last - First) / 2 + 1;
          begin
-            In_Place_Merge_Sort (First, Middle, Params, LT, Swap);
-            In_Place_Merge_Sort (Middle + 1, Last, Params, LT, Swap);
-            In_Place_Merge (First, Middle, Last, Params, LT, Swap);
+            In_Place_Merge_Sort (First, Before - 1, Params, LT, Swap);
+            In_Place_Merge_Sort (Before, Last, Params, LT, Swap);
+            In_Place_Merge (First, Before, Last, Params, LT, Swap);
          end;
       end if;
    end In_Place_Merge_Sort;
 
    procedure In_Place_Merge (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       LT : not null access function (
          Left, Right : Integer;
@@ -100,17 +100,17 @@ package body Ada.Containers.Array_Sorting is
          I, J : Integer;
          Params : System.Address))
    is
-      First_Cut, Second_Cut, New_Middle, L, H, M : Integer;
+      First_Cut, Second_Cut, New_Before, L, H, M : Integer;
    begin
-      if First <= Middle and then Middle < Last then
+      if First < Before and then Before <= Last then
          if First + 1 = Last then
             if LT (Last, First, Params) then
                Swap (First, Last, Params);
             end if;
          else
-            if Middle - First >= Last - Middle then
-               First_Cut := First + (Middle + 1 - First) / 2;
-               L := Middle + 1;
+            if Before - First > Last - Before then -- >= Last - Before + 1
+               First_Cut := First + (Before - First) / 2;
+               L := Before;
                H := Last;
                loop
                   M := L + (H + 1 - L) / 2;
@@ -119,14 +119,14 @@ package body Ada.Containers.Array_Sorting is
                      exit when L >= H;
                   else
                      H := M - 1; -- not includes equiv.
-                     exit when H <= Middle;
+                     exit when H < Before;
                   end if;
                end loop;
                Second_Cut := H;
             else
-               Second_Cut := Middle + 1 + (Last - (Middle + 1)) / 2;
+               Second_Cut := Before + (Last - Before) / 2;
                L := First;
-               H := Middle;
+               H := Before - 1;
                loop
                   M := L + (H - L) / 2;
                   if LT (Second_Cut, M, Params) then
@@ -134,25 +134,25 @@ package body Ada.Containers.Array_Sorting is
                      exit when L >= H;
                   else
                      L := M + 1; -- not includes equiv.
-                     exit when L > Middle;
+                     exit when L >= Before;
                   end if;
                end loop;
                First_Cut := L;
             end if;
             --  swap with Reverse_Rotate or Juggling_Rotate
-            Juggling_Rotate (First_Cut, Middle, Second_Cut, Params, Swap);
+            Juggling_Rotate (First_Cut, Before, Second_Cut, Params, Swap);
             --  merge
-            New_Middle := First_Cut + (Second_Cut - (Middle + 1));
+            New_Before := First_Cut + (Second_Cut - Before) + 1;
             In_Place_Merge (
                First,
-               First_Cut - 1,
-               New_Middle,
+               First_Cut,
+               New_Before - 1,
                Params,
                LT => LT,
                Swap => Swap);
             In_Place_Merge (
-               New_Middle + 1,
-               Second_Cut,
+               New_Before,
+               Second_Cut + 1,
                Last,
                Params,
                LT => LT,
@@ -179,27 +179,27 @@ package body Ada.Containers.Array_Sorting is
    end In_Place_Reverse;
 
    procedure Reverse_Rotate (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       Swap : not null access procedure (
          I, J : Integer;
          Params : System.Address)) is
    begin
-      if First <= Middle and then Middle < Last then
-         In_Place_Reverse (First, Middle, Params, Swap);
-         In_Place_Reverse (Middle + 1, Last, Params, Swap);
+      if First < Before and then Before <= Last then
+         In_Place_Reverse (First, Before - 1, Params, Swap);
+         In_Place_Reverse (Before, Last, Params, Swap);
          In_Place_Reverse (First, Last, Params, Swap);
       end if;
    end Reverse_Rotate;
 
    procedure Juggling_Rotate (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       Swap : not null access procedure (
          I, J : Integer;
          Params : System.Address))
    is
-      Left_Length : constant Integer := Middle - First + 1;
+      Left_Length : constant Integer := Before - First;
       Length : constant Integer := Last - First + 1;
    begin
       if Left_Length > 0 and then Length > Left_Length then

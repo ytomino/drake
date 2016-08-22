@@ -35,9 +35,9 @@ private package Ada.Containers.Array_Sorting is
          I, J : Integer;
          Params : System.Address));
 
-   --  merge [First .. Middle] and [Middle + 1 .. Last]
+   --  merge [First .. Before - 1] and [Before .. Last]
    procedure In_Place_Merge (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       LT : not null access function (
          Left, Right : Integer;
@@ -57,17 +57,17 @@ private package Ada.Containers.Array_Sorting is
          I, J : Integer;
          Params : System.Address));
 
-   --  swap [First .. Middle] and [Middle + 1 .. Last] with double reversing
+   --  swap [First .. Before - 1] and [Before .. Last] with double reversing
    procedure Reverse_Rotate (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       Swap : not null access procedure (
          I, J : Integer;
          Params : System.Address));
 
-   --  swap [First .. Middle] and [Middle + 1 .. Last] with juggling
+   --  swap [First .. Before - 1] and [Before .. Last] with juggling
    procedure Juggling_Rotate (
-      First, Middle, Last : Integer;
+      First, Before, Last : Integer;
       Params : System.Address;
       Swap : not null access procedure (
          I, J : Integer;
