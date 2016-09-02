@@ -730,9 +730,10 @@ package body Ada.Strings.Maps is
             Item : Character_Set)
          is
             pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
+            Data : constant not null Set_Data_Access := Item.Data;
          begin
-            Integer'Write (Stream, Item.Data.Length);
-            Naked_Maps.Character_Ranges'Write (Stream, Item.Data.Items);
+            Integer'Write (Stream, Data.Length);
+            Naked_Maps.Character_Ranges'Write (Stream, Data.Items);
          end Write;
 
       end Streaming;
@@ -995,10 +996,14 @@ package body Ada.Strings.Maps is
                   Reference_Count => 1,
                   From => <>,
                   To => <>);
-               for I in 1 .. Length loop
-                  Wide_Wide_Character'Read (Stream, Item.Data.From (I));
-                  Wide_Wide_Character'Read (Stream, Item.Data.To (I));
-               end loop;
+               declare
+                  Data : constant not null Map_Data_Access := Item.Data;
+               begin
+                  for I in 1 .. Length loop
+                     Wide_Wide_Character'Read (Stream, Data.From (I));
+                     Wide_Wide_Character'Read (Stream, Data.To (I));
+                  end loop;
+               end;
                pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
             end if;
          end Read;
@@ -1008,11 +1013,12 @@ package body Ada.Strings.Maps is
             Item : Character_Mapping)
          is
             pragma Check (Validate, Naked_Maps.Debug.Valid (Item.Data.all));
+            Data : constant not null Map_Data_Access := Item.Data;
          begin
-            Integer'Write (Stream, Item.Data.Length);
-            for I in 1 .. Item.Data.Length loop
-               Wide_Wide_Character'Write (Stream, Item.Data.From (I));
-               Wide_Wide_Character'Write (Stream, Item.Data.To (I));
+            Integer'Write (Stream, Data.Length);
+            for I in 1 .. Data.Length loop
+               Wide_Wide_Character'Write (Stream, Data.From (I));
+               Wide_Wide_Character'Write (Stream, Data.To (I));
             end loop;
          end Write;
 

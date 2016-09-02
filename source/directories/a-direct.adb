@@ -107,13 +107,14 @@ package body Ada.Directories is
 
    function Current (Object : Search_Iterator) return Cursor;
    function Current (Object : Search_Iterator) return Cursor is
+      Search : constant not null Search_Access := Object.Search;
       NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
-         renames Controlled.Reference (Object.Search.Next_Directory_Entry).all;
+         renames Controlled.Reference (Search.Next_Directory_Entry).all;
    begin
       if NC_Next_Directory_Entry.Status = Empty then
          return 0; -- No_Element
       else
-         return Cursor (Object.Search.Count);
+         return Cursor (Search.Count);
       end if;
    end Current;
 
