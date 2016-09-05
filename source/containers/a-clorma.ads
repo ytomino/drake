@@ -100,7 +100,7 @@ package Ada.Containers.Limited_Ordered_Maps is
    procedure Move (Target : in out Map; Source : in out Map);
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       New_Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -113,7 +113,7 @@ package Ada.Containers.Limited_Ordered_Maps is
 --
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type);
 

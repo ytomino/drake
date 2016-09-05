@@ -85,13 +85,13 @@ package Ada.Containers.Limited_Hashed_Sets is
    procedure Move (Target : in out Set; Source : in out Set);
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Inserted : out Boolean);
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type);
 
 --  diff (Include)

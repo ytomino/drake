@@ -36,15 +36,15 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Allocate_Element)
---
---
---
---
---
---
---
---
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : not null access function return Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : not null access function return Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item.all);
+   end Allocate_Element;
 
    procedure Release (Data : in out Data_Access);
    procedure Release (Data : in out Data_Access) is
@@ -515,31 +515,31 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Insert)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out Vector'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor;
+   begin
+      Insert (
+         Container,
+         Before, -- checking Constraint_Error
+         New_Item,
+         Position,
+         Count);
+   end Insert;
 
    procedure Insert (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
       Insert_Space (
-         Container,
+         Vector (Container),
          Before, -- checking Constraint_Error
          Position,
          Count);
@@ -549,7 +549,7 @@ package body Ada.Containers.Limited_Vectors is
                renames Container.Data.Items (I);
          begin
             pragma Check (Validate, E = null);
-            E := new Element_Type'(New_Item.all);
+            Allocate_Element (E, New_Item);
          end;
       end loop;
    end Insert;
@@ -559,13 +559,13 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Prepend)
---
---
---
---
---
---
+   procedure Prepend (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, Index_Type'First, New_Item, Count);
+   end Prepend;
 
 --  diff (Append)
 --
@@ -602,26 +602,27 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Append)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Append (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Old_Length : constant Count_Type := Container.Length;
+   begin
+      Set_Length (Vector (Container), Old_Length + Count);
+      for I in
+         Index_Type'First + Index_Type'Base (Old_Length) ..
+         Last (Vector (Container))
+      loop
+         declare
+            E : Element_Access
+               renames Container.Data.Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            Allocate_Element (E, New_Item);
+         end;
+      end loop;
+   end Append;
 
    procedure Insert_Space (
       Container : in out Vector'Class;

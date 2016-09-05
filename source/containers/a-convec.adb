@@ -611,7 +611,8 @@ package body Ada.Containers.Vectors is
    begin
       Set_Length (Container, Old_Length + Count);
       for I in
-         Index_Type'First + Index_Type'Base (Old_Length) .. Last (Container)
+         Index_Type'First + Index_Type'Base (Old_Length) ..
+         Last (Container)
       loop
          declare
             E : Element_Type

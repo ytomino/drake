@@ -297,19 +297,19 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end if;
    end Move;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out List'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor;
+   begin
+      Insert (Container, Before, New_Item, Position, Count);
+   end Insert;
 
    procedure Insert (
-      Container : in out List;
+      Container : in out List'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -365,21 +365,21 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
---  diff (Prepend)
---
---
---
---
---
---
+   procedure Prepend (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, First (List (Container)), New_Item, Count);
+   end Prepend;
 
---  diff (Append)
---
---
---
---
---
---
+   procedure Append (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, null, New_Item, Count);
+   end Append;
 
    procedure Delete (
       Container : in out List;

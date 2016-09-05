@@ -394,7 +394,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Move;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Inserted : out Boolean)
@@ -406,7 +406,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    begin
       Holder.Assign (New_Element);
       New_Hash := Hash (New_Element.all);
-      Position := Find (Container, New_Hash, New_Element.all);
+      Position := Find (Set (Container), New_Hash, New_Element.all);
       Inserted := Position = null;
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
@@ -424,7 +424,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Insert;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type)
    is
       Position : Cursor;

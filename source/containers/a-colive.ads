@@ -178,14 +178,14 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Insert)
---
---
---
---
+   procedure Insert (
+      Container : in out Vector'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Insert (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -204,17 +204,17 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (Prepend)
 
---  diff (Prepend)
---
---
---
+   procedure Prepend (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
 --  diff (Append)
 
---  diff (Append)
---
---
---
+   procedure Append (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    --  modified
    procedure Insert_Space (

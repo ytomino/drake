@@ -403,7 +403,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    end Move;
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       New_Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -427,7 +427,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    begin
       Holder.Assign (New_Pair);
       New_Hash := Hash (New_Pair.Key.all);
-      Position := Find (Container, New_Hash, New_Pair.Key.all);
+      Position := Find (Map (Container), New_Hash, New_Pair.Key.all);
       Inserted := Position = null;
       if Inserted then
          New_Pair.Node := new Node;
@@ -470,7 +470,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
 --
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type)
    is

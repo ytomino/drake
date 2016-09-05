@@ -80,14 +80,14 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
    procedure Move (Target : in out List; Source : in out List);
 
---  diff (Insert)
---
---
---
---
+   procedure Insert (
+      Container : in out List'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Insert (
-      Container : in out List;
+      Container : in out List'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -99,15 +99,15 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
---  diff (Prepend)
---
---
---
+   procedure Prepend (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
---  diff (Append)
---
---
---
+   procedure Append (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Delete (
       Container : in out List;

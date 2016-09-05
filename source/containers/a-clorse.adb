@@ -355,7 +355,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Move;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Inserted : out Boolean)
@@ -363,7 +363,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Element_Access, Free);
       New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
-      Before : constant Cursor := Ceiling (Container, New_Element.all);
+      Before : constant Cursor := Ceiling (Set (Container), New_Element.all);
    begin
       Holder.Assign (New_Element);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
@@ -385,7 +385,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Insert;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type)
    is
       Position : Cursor;
