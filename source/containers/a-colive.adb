@@ -19,12 +19,24 @@ package body Ada.Containers.Limited_Vectors is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+--  diff (Assign_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
       Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Access := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
+--  diff
+--  diff
       Data.Items (Index_Type'Val (J)) := Temp;
    end Swap_Element;
 

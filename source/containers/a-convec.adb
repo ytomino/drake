@@ -19,13 +19,25 @@ package body Ada.Containers.Vectors is
 --  diff (Free)
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+   procedure Assign_Element (
+      Target : out Element_Type;
+      Source : Element_Type);
+   procedure Assign_Element (
+      Target : out Element_Type;
+      Source : Element_Type) is
+   begin
+      Target := Source;
+   end Assign_Element;
+
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
       Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Type := Data.Items (Index_Type'Val (I));
    begin
-      Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
-      Data.Items (Index_Type'Val (J)) := Temp;
+      Assign_Element (
+         Data.Items (Index_Type'Val (I)),
+         Data.Items (Index_Type'Val (J)));
+      Assign_Element (Data.Items (Index_Type'Val (J)), Temp);
    end Swap_Element;
 
 --  diff (Equivalent_Element)
@@ -377,7 +389,7 @@ package body Ada.Containers.Vectors is
             renames Downcast (Container.Super.Data).Items (Position);
       begin
 --  diff
-         E := New_Item;
+         Assign_Element (E, New_Item);
       end;
    end Replace_Element;
 
@@ -549,7 +561,7 @@ package body Ada.Containers.Vectors is
                renames Downcast (Container.Super.Data).Items (I);
          begin
 --  diff
-            E := New_Item;
+            Assign_Element (E, New_Item);
          end;
       end loop;
    end Insert;
@@ -619,7 +631,7 @@ package body Ada.Containers.Vectors is
                renames Downcast (Container.Super.Data).Items (I);
          begin
 --  diff
-            E := New_Item;
+            Assign_Element (E, New_Item);
          end;
       end loop;
    end Append;
