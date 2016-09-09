@@ -6,8 +6,6 @@ package body Ada.Containers.Vectors is
    pragma Check_Policy (Validate => Ignore);
    use type Copy_On_Write.Data_Access;
 
-   type Element_Array_Access is access all Element_Array;
-
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
@@ -973,6 +971,8 @@ package body Ada.Containers.Vectors is
    begin
       Unique (Container'Unrestricted_Access.all, False);
       declare
+         type Element_Array_Access is access constant Element_Array;
+         for Element_Array_Access'Storage_Size use 0;
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Constant_Slice (
@@ -987,6 +987,8 @@ package body Ada.Containers.Vectors is
    begin
       Unique (Container, True);
       declare
+         type Element_Array_Access is access all Element_Array;
+         for Element_Array_Access'Storage_Size use 0;
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Slice (

@@ -6,8 +6,6 @@ package body Ada.Containers.Indefinite_Vectors is
    pragma Check_Policy (Validate => Ignore);
    use type Copy_On_Write.Data_Access;
 
---  diff (Element_Array_Access)
-
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
 
@@ -981,8 +979,12 @@ package body Ada.Containers.Indefinite_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Reference)
+--
+--
 --
 --
 --
