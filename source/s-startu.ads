@@ -48,7 +48,7 @@ package System.Startup is
    Num_Specific_Dispatching : Integer := 0
       with Export,
          Convention => C, External_Name => "__gl_num_specific_dispatching";
-   Interrupt_States : access Character := null
+   Interrupt_States : Address := Null_Address
       with Export, Convention => C, External_Name => "__gl_interrupt_states";
    Num_Interrupt_States : Integer := 0
       with Export,
