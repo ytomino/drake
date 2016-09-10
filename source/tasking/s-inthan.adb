@@ -24,55 +24,19 @@ package body System.Interrupt_Handlers is
    function atomic_compare_exchange (
       ptr : not null access Node_Access;
       expected : not null access Node_Access;
-      desired : Node_Access)
+      desired : Node_Access;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
       return Boolean
-      with Convention => Intrinsic;
-   pragma Inline_Always (atomic_compare_exchange);
-
-   function atomic_compare_exchange (
-      ptr : not null access Node_Access;
-      expected : not null access Node_Access;
-      desired : Node_Access)
-      return Boolean is
-   begin
-      if Standard'Address_Size = 32 then
-         declare
-            function atomic_compare_exchange_4 (
-               ptr : not null access Node_Access;
-               expected : not null access Node_Access;
-               desired : Node_Access;
-               weak : Boolean := False;
-               success_memorder : Integer := Order;
-               failure_memorder : Integer := Order)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__atomic_compare_exchange_4";
-            pragma Warnings (Off, atomic_compare_exchange_4);
-            --  [gcc-4.8/4.9/5] excessive prototype checking
-         begin
-            return atomic_compare_exchange_4 (ptr, expected, desired);
-         end;
-      else
-         declare
-            function atomic_compare_exchange_8 (
-               ptr : not null access Node_Access;
-               expected : not null access Node_Access;
-               desired : Node_Access;
-               weak : Boolean := False;
-               success_memorder : Integer := Order;
-               failure_memorder : Integer := Order)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__atomic_compare_exchange_8";
-            pragma Warnings (Off, atomic_compare_exchange_8);
-            --  [gcc-4.8/4.9/5] excessive prototype checking
-         begin
-            return atomic_compare_exchange_8 (ptr, expected, desired);
-         end;
-      end if;
-   end atomic_compare_exchange;
+      with Import,
+         Convention => Intrinsic,
+         External_Name =>
+            (case Standard'Address_Size is
+               when 32 => "__atomic_compare_exchange_4",
+               when others => "__atomic_compare_exchange_8");
+   pragma Warnings (Off, atomic_compare_exchange);
+      --  [gcc-4.8/4.9/5] excessive prototype checking
 
    List : aliased Node_Access := null;
 
