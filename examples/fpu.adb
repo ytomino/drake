@@ -15,7 +15,7 @@ begin
 		Error : Boolean;
 	begin
 		System.Formatting.Image (
-			System.Formatting.Unsigned (CW),
+			System.Formatting.Word_Unsigned (CW),
 			S,
 			Last,
 			16,

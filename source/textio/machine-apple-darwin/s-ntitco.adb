@@ -207,8 +207,8 @@ package body System.Native_Text_IO.Terminal_Colors is
             Seq (Last) := ';';
          end if;
          declare
-            Color_Index : Formatting.Unsigned :=
-               Formatting.Unsigned (Foreground);
+            Color_Index : Formatting.Word_Unsigned :=
+               Formatting.Word_Unsigned (Foreground);
          begin
             if Foreground < 16#10# then
                --  system color
@@ -218,7 +218,7 @@ package body System.Native_Text_IO.Terminal_Colors is
                else
                   Last := Last + 1;
                   Seq (Last) := '9';
-                  Color_Index := Formatting.Unsigned (Foreground and 7);
+                  Color_Index := Formatting.Word_Unsigned (Foreground and 7);
                end if;
             else
                --  256 color
@@ -238,8 +238,8 @@ package body System.Native_Text_IO.Terminal_Colors is
             Seq (Last) := ';';
          end if;
          declare
-            Color_Index : Formatting.Unsigned :=
-               Formatting.Unsigned (Background);
+            Color_Index : Formatting.Word_Unsigned :=
+               Formatting.Word_Unsigned (Background);
          begin
             if Background < 16#10# then
                --  system color
@@ -251,7 +251,7 @@ package body System.Native_Text_IO.Terminal_Colors is
                   Seq (Last) := '1';
                   Last := Last + 1;
                   Seq (Last) := '0';
-                  Color_Index := Formatting.Unsigned (Background and 7);
+                  Color_Index := Formatting.Word_Unsigned (Background and 7);
                end if;
             else
                --  256 color

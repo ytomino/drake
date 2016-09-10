@@ -7,7 +7,7 @@ with C;
 package body Interfaces.COBOL is
    use Ada.Exception_Identification.From_Here;
    use type System.Bit_Order;
-   use type System.Formatting.Unsigned;
+   use type System.Formatting.Word_Unsigned;
    use type C.size_t;
 
    function add_overflow (
@@ -429,7 +429,7 @@ package body Interfaces.COBOL is
    begin
       return 2
          + Natural (
-            System.Formatting.Unsigned (
+            System.Formatting.Word_Unsigned (
                System.Formatting.Width (
                   System.Formatting.Longest_Unsigned (Item)))
             and not 1);
@@ -764,7 +764,7 @@ package body Interfaces.COBOL is
          pragma Unreferenced (Format);
       begin
          return 2
-            + Natural (System.Formatting.Unsigned'(Num'Digits) and not 1);
+            + Natural (System.Formatting.Word_Unsigned'(Num'Digits) and not 1);
       end Length;
 
       function To_Decimal (Item : Packed_Decimal; Format : Packed_Format)

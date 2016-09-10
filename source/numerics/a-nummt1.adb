@@ -165,10 +165,10 @@ package body Ada.Numerics.MT19937 is
          Last : Natural;
       begin
          pragma Compile_Time_Error (
-            System.Formatting.Unsigned'Size < Cardinal'Size,
-            "integer size < 32");
+            Standard'Word_Size < Cardinal'Size,
+            "word size < 32");
          System.Formatting.Image (
-            System.Formatting.Unsigned (Value),
+            System.Formatting.Word_Unsigned (Value),
             Result,
             Last,
             Base => 16,
@@ -202,7 +202,7 @@ package body Ada.Numerics.MT19937 is
          System.Formatting.Value (
             Item,
             Last,
-            System.Formatting.Unsigned (Value),
+            System.Formatting.Word_Unsigned (Value),
             Base => 16,
             Error => Error);
          if Error or else Last /= Item'Last then

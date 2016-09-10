@@ -3,7 +3,7 @@ with System.Img_Char;
 with System.Val_Enum;
 with System.Value_Errors;
 package body System.Val_Char is
-   use type Formatting.Unsigned;
+   use type Formatting.Word_Unsigned;
 
    function Value_Character (Str : String) return Character is
       First : Positive;
@@ -24,7 +24,7 @@ package body System.Val_Char is
             if L <= Last and then S (First .. L) = HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Unsigned;
+                  Result : Formatting.Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (

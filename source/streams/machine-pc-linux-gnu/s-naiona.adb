@@ -61,7 +61,7 @@ package body System.Native_IO.Names is
          Error : Boolean;
       begin
          System.Formatting.Image (
-            System.Formatting.Unsigned (Handle),
+            System.Formatting.Word_Unsigned (Handle),
             S (proc_self_fd'Length + 1 .. S'Last),
             Last,
             Error => Error);

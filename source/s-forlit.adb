@@ -4,13 +4,13 @@ package body System.Formatting.Literals is
    procedure Get (
       Item : String;
       Last : in out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Base : Number_Base;
       Error : out Boolean);
    procedure Get (
       Item : String;
       Last : in out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Base : Number_Base;
       Error : out Boolean) is
    begin
@@ -42,12 +42,12 @@ package body System.Formatting.Literals is
    procedure Get_Literal_Without_Sign (
       Item : String;
       Last : in out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Error : out Boolean);
    procedure Get_Literal_Without_Sign (
       Item : String;
       Last : in out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Error : out Boolean)
    is
       Base : Number_Base := 10;
@@ -62,7 +62,8 @@ package body System.Formatting.Literals is
             Mark := Item (Last + 1);
             Last := Last + 1;
             if Result in
-               Unsigned (Number_Base'First) .. Unsigned (Number_Base'Last)
+               Word_Unsigned (Number_Base'First) ..
+               Word_Unsigned (Number_Base'Last)
             then
                Base := Number_Base (Result);
                Get (Item, Last, Result, Base => Base, Error => Error);
@@ -85,7 +86,7 @@ package body System.Formatting.Literals is
             Positive_Only => True,
             Error => Error);
          if not Error and then Exponent /= 0 then
-            Result := Result * Unsigned (Base) ** Exponent;
+            Result := Result * Word_Unsigned (Base) ** Exponent;
          end if;
       end if;
    end Get_Literal_Without_Sign;
@@ -172,7 +173,9 @@ package body System.Formatting.Literals is
          if Last < Item'Last and then Item (Last + 1) = '-' then
             if not Positive_Only then
                Last := Last + 1;
-               Get (Item, Last, Unsigned (Result), Base => 10, Error => Error);
+               Get (Item, Last, Word_Unsigned (Result),
+                  Base => 10,
+                  Error => Error);
                --  ignore error
                Result := -Result;
             else
@@ -182,7 +185,9 @@ package body System.Formatting.Literals is
             if Last < Item'Last and then Item (Last + 1) = '+' then
                Last := Last + 1;
             end if;
-            Get (Item, Last, Unsigned (Result), Base => 10, Error => Error);
+            Get (Item, Last, Word_Unsigned (Result),
+               Base => 10,
+               Error => Error);
          end if;
       else
          Result := 0;
@@ -193,10 +198,10 @@ package body System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Integer;
+      Result : out Word_Integer;
       Error : out Boolean)
    is
-      Unsigned_Result : Unsigned;
+      Unsigned_Result : Word_Unsigned;
    begin
       Last := Item'First - 1;
       Skip_Spaces (Item, Last);
@@ -205,8 +210,8 @@ package body System.Formatting.Literals is
          Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
             Error => Error);
          if not Error then
-            if Unsigned_Result <= -Unsigned'Mod (Integer'First) then
-               Result := -Integer (Unsigned_Result);
+            if Unsigned_Result <= -Word_Unsigned'Mod (Word_Integer'First) then
+               Result := -Word_Integer (Unsigned_Result);
             else
                Error := True;
             end if;
@@ -218,8 +223,8 @@ package body System.Formatting.Literals is
          Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
             Error => Error);
          if not Error then
-            if Unsigned_Result <= Unsigned (Integer'Last) then
-               Result := Integer (Unsigned_Result);
+            if Unsigned_Result <= Word_Unsigned (Word_Integer'Last) then
+               Result := Word_Integer (Unsigned_Result);
             else
                Error := True;
             end if;
@@ -231,47 +236,55 @@ package body System.Formatting.Literals is
       Item : String;
       Last : out Natural;
       Result : out Long_Long_Integer;
-      Error : out Boolean)
-   is
-      Unsigned_Result : Longest_Unsigned;
+      Error : out Boolean) is
    begin
-      Last := Item'First - 1;
-      Skip_Spaces (Item, Last);
-      if Last < Item'Last and then Item (Last + 1) = '-' then
-         Last := Last + 1;
-         Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
-            Error => Error);
-         if not Error then
-            if Unsigned_Result <=
-               -Longest_Unsigned'Mod (Long_Long_Integer'First)
-            then
-               Result := -Long_Long_Integer (Unsigned_Result);
+      if Standard'Word_Size < Long_Long_Integer'Size then
+         --  optimized for 32bit
+         declare
+            Unsigned_Result : Longest_Unsigned;
+         begin
+            Last := Item'First - 1;
+            Skip_Spaces (Item, Last);
+            if Last < Item'Last and then Item (Last + 1) = '-' then
+               Last := Last + 1;
+               Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
+                  Error => Error);
+               if not Error then
+                  if Unsigned_Result <=
+                     -Longest_Unsigned'Mod (Long_Long_Integer'First)
+                  then
+                     Result := -Long_Long_Integer (Unsigned_Result);
+                  else
+                     Error := True;
+                  end if;
+               end if;
             else
-               Error := True;
+               if Last < Item'Last and then Item (Last + 1) = '+' then
+                  Last := Last + 1;
+               end if;
+               Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
+                  Error => Error);
+               if not Error then
+                  if Unsigned_Result <=
+                     Longest_Unsigned (Long_Long_Integer'Last)
+                  then
+                     Result := Long_Long_Integer (Unsigned_Result);
+                  else
+                     Error := True;
+                  end if;
+               end if;
             end if;
-         end if;
+         end;
       else
-         if Last < Item'Last and then Item (Last + 1) = '+' then
-            Last := Last + 1;
-         end if;
-         Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
-            Error => Error);
-         if not Error then
-            if Unsigned_Result <=
-               Longest_Unsigned (Long_Long_Integer'Last)
-            then
-               Result := Long_Long_Integer (Unsigned_Result);
-            else
-               Error := True;
-            end if;
-         end if;
+         --  optimized for 64bit
+         Get_Literal (Item, Last, Word_Integer (Result), Error);
       end if;
    end Get_Literal;
 
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Error : out Boolean) is
    begin
       Last := Item'First - 1;
@@ -288,12 +301,18 @@ package body System.Formatting.Literals is
       Result : out Longest_Unsigned;
       Error : out Boolean) is
    begin
-      Last := Item'First - 1;
-      Skip_Spaces (Item, Last);
-      if Last < Item'Last and then Item (Last + 1) = '+' then
-         Last := Last + 1;
+      if Standard'Word_Size < Long_Long_Integer'Size then
+         --  optimized for 32bit
+         Last := Item'First - 1;
+         Skip_Spaces (Item, Last);
+         if Last < Item'Last and then Item (Last + 1) = '+' then
+            Last := Last + 1;
+         end if;
+         Get_Literal_Without_Sign (Item, Last, Result, Error => Error);
+      else
+         --  optimized for 64bit
+         Get_Literal (Item, Last, Word_Unsigned (Result), Error);
       end if;
-      Get_Literal_Without_Sign (Item, Last, Result, Error => Error);
    end Get_Literal;
 
 end System.Formatting.Literals;

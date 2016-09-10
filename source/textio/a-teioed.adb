@@ -5,7 +5,7 @@ with System.Formatting.Decimal;
 with System.Formatting.Literals;
 package body Ada.Text_IO.Editing is
    use Exception_Identification.From_Here;
-   use type System.Formatting.Unsigned;
+   use type System.Formatting.Word_Unsigned;
 
    procedure To_Picture (
       Pic_String : String;
@@ -55,24 +55,27 @@ package body Ada.Text_IO.Editing is
                declare
                   Count_First : Positive;
                   Count_Last : Natural;
-                  Count_U : System.Formatting.Unsigned;
                   Count : Natural;
                begin
                   Formatting.Get_Tail (
                      Pic_String (I + 1 .. Pic_String'Last),
                      First => Count_First);
-                  System.Formatting.Literals.Get_Literal (
-                     Pic_String (Count_First .. Pic_String'Last),
-                     Count_Last,
-                     Count_U,
-                     Error => Error);
-                  if Error
-                     or else Count_U >
-                        System.Formatting.Unsigned (Natural'Last)
-                  then
-                     return; -- Picture_Error
-                  end if;
-                  Count := Natural (Count_U);
+                  declare
+                     Count_U : System.Formatting.Word_Unsigned;
+                  begin
+                     System.Formatting.Literals.Get_Literal (
+                        Pic_String (Count_First .. Pic_String'Last),
+                        Count_Last,
+                        Count_U,
+                        Error => Error);
+                     if Error
+                        or else Count_U >
+                           System.Formatting.Word_Unsigned (Natural'Last)
+                     then
+                        return; -- Picture_Error
+                     end if;
+                     Count := Natural (Count_U);
+                  end;
                   if Count = 0
                      or else I = Pic_String'First
                      or else I + Count - 1 > Pic_String'Last

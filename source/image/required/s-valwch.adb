@@ -5,7 +5,7 @@ with System.Val_Enum;
 with System.Value_Errors;
 with System.UTF_Conversions;
 package body System.Val_WChar is
-   use type Formatting.Unsigned;
+   use type Formatting.Word_Unsigned;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
 
@@ -57,7 +57,7 @@ package body System.Val_WChar is
             if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Unsigned;
+                  Result : Formatting.Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (
@@ -133,7 +133,7 @@ package body System.Val_WChar is
             if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Unsigned;
+                  Result : Formatting.Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (

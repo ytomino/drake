@@ -151,7 +151,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                   Error : Boolean;
                begin
                   System.Formatting.Image (
-                     System.Formatting.Unsigned'Mod (
+                     System.Formatting.Word_Unsigned (
                         Downcast (Position).Level),
                      Buffer (Last + 1 .. Buffer'Last),
                      Last,

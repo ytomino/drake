@@ -20,7 +20,7 @@ package body System.Img_Int is
          X := Unsigned_Types.Unsigned (V);
       end if;
       Formatting.Image (
-         Formatting.Unsigned (X),
+         Formatting.Word_Unsigned (X),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);

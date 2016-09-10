@@ -42,7 +42,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
             --  put block number
             Put (Buffer, Last, "#");
             Formatting.Image (
-               Formatting.Unsigned (Block_Number),
+               Formatting.Word_Unsigned (Block_Number),
                Buffer (Last + 1 .. Buffer'Last),
                Last,
                Width => 2,
@@ -85,7 +85,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
                   (Used * 100 + Space - 1) / Space;
             begin
                Formatting.Image (
-                  Formatting.Unsigned (Percentage),
+                  Formatting.Word_Unsigned (Percentage),
                   Buffer (Last + 1 .. Buffer'Last),
                   Last,
                   Width => 3,

@@ -138,7 +138,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Unsigned (Line),
+                  Formatting.Word_Unsigned (Line),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
@@ -153,7 +153,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Unsigned (Column),
+                  Formatting.Word_Unsigned (Column),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
