@@ -29,10 +29,8 @@ TARGET=$(HOST)
 GCCSUFFIX=
 ifeq ($(TARGET),$(HOST))
 GCCPREFIX=
-AR=ar
 else
 GCCPREFIX=$(TARGET)-
-AR=$(TARGET)-ar
 endif
 GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
@@ -291,9 +289,15 @@ CFLAGS_MATH=
 endif
 
 ifneq ($(WITHL),0)
-CFLAGS_LTO=-flto -fwhole-program
+CFLAGS_LTO=-flto
+ifneq ($(findstring darwin,$(TARGET)),)
+AR=$(GCCPREFIX)ar
+else
+AR=$(GCCPREFIX)gcc-ar
+endif
 else
 CFLAGS_LTO=
+AR=$(GCCPREFIX)ar
 endif
 
 ifneq ($(ADC),)
