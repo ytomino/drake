@@ -1,9 +1,11 @@
+with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 with System.System_Allocators.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
+   use Exception_Identification.From_Here;
    use type System.Storage_Elements.Storage_Offset;
 
    procedure Free is
@@ -296,6 +298,18 @@ package body Ada.Streams.Unbounded_Storage_IO is
       return NC_Object_Ref.Stream;
    end Stream;
 
+   procedure Write_To_Stream (
+      Stream : not null access Root_Stream_Type'Class;
+      Item : Buffer_Type)
+   is
+      NC_Item : Non_Controlled_Buffer_Type
+         renames Controlled.Reference (Item).all;
+      Stream_Item : Stream_Element_Array (1 .. NC_Item.Last);
+      for Stream_Item'Address use NC_Item.Data.Storage;
+   begin
+      Write (Stream.all, Stream_Item);
+   end Write_To_Stream;
+
    overriding procedure Read (
       Stream : in out Stream_Type;
       Item : out Stream_Element_Array;
@@ -371,6 +385,16 @@ package body Ada.Streams.Unbounded_Storage_IO is
 
    package body Controlled is
 
+      procedure Clear (Data : aliased in out Non_Controlled_Buffer_Type);
+      procedure Clear (Data : aliased in out Non_Controlled_Buffer_Type) is
+      begin
+         System.Reference_Counting.Clear (
+            Upcast (Data.Data'Unchecked_Access),
+            Free => Free_Data'Access);
+      end Clear;
+
+      --  implementation
+
       function Reference (Object : Unbounded_Storage_IO.Buffer_Type)
          return not null access Non_Controlled_Buffer_Type is
       begin
@@ -386,22 +410,45 @@ package body Ada.Streams.Unbounded_Storage_IO is
 
       overriding procedure Finalize (Object : in out Buffer_Type) is
       begin
-         System.Reference_Counting.Clear (
-            Upcast (Object.Data.Data'Unchecked_Access),
-            Free => Free_Data'Access);
+         Clear (Object.Data);
          Free (Object.Data.Stream);
       end Finalize;
 
       package body Streaming is
 
+         procedure Read (
+            Stream : not null access Root_Stream_Type'Class;
+            Item : out Buffer_Type)
+         is
+            Size : Stream_Element_Offset;
+         begin
+            Stream_Element_Offset'Read (Stream, Size);
+            --  clear
+            Clear (Item.Data); -- keep Item.Data.Stream
+            Item.Data.Data := Empty_Data'Unrestricted_Access;
+            Item.Data.Last := 0;
+            Item.Data.Index := 1;
+            if Size > 0 then
+               Set_Size (Unbounded_Storage_IO.Buffer_Type (Item), Size);
+               declare
+                  Stream_Item : Stream_Element_Array (1 .. Item.Data.Last);
+                  for Stream_Item'Address use Item.Data.Data.Storage;
+                  Last : Stream_Element_Offset;
+               begin
+                  Read (Stream.all, Stream_Item, Last);
+                  if Last < Stream_Item'Last then
+                     Raise_Exception (End_Error'Identity);
+                  end if;
+               end;
+            end if;
+         end Read;
+
          procedure Write (
             Stream : not null access Root_Stream_Type'Class;
-            Item : Buffer_Type)
-         is
-            Stream_Item : Stream_Element_Array (1 .. Item.Data.Last);
-            for Stream_Item'Address use Item.Data.Data.Storage;
+            Item : Buffer_Type) is
          begin
-            Write (Stream.all, Stream_Item);
+            Stream_Element_Offset'Write (Stream, Item.Data.Last);
+            Write_To_Stream (Stream, Unbounded_Storage_IO.Buffer_Type (Item));
          end Write;
 
       end Streaming;
