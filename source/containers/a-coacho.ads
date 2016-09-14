@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.Streams;
 private with Ada.Containers.Weak_Access_Holders;
 private with Ada.Finalization;
-private with Ada.Streams;
 private with System.Reference_Counting;
 generic
    type Name is private; -- it must have default value
@@ -86,6 +86,34 @@ package Ada.Containers.Access_Holders is
       overriding procedure Adjust (Object : in out Weak_Holder);
       overriding procedure Finalize (Object : in out Weak_Holder);
 
+      package Streaming is
+
+         procedure Missing_Read (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : out Weak_Holder)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+         procedure Missing_Write (
+            Stream : not null access Streams.Root_Stream_Type'Class;
+            Item : Weak_Holder)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+         function Missing_Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Weak_Holder
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+
+         pragma No_Return (Missing_Read);
+         pragma No_Return (Missing_Write);
+         pragma Machine_Attribute (Missing_Input, "noreturn");
+
+      end Streaming;
+
+      for Weak_Holder'Read use Streaming.Missing_Read;
+      for Weak_Holder'Write use Streaming.Missing_Write;
+      for Weak_Holder'Input use Streaming.Missing_Input;
+
    end Weak;
 
 private
@@ -126,10 +154,20 @@ private
          Item : Holder)
          with Import,
             Convention => Ada, External_Name => "__drake_program_error";
+      function Missing_Input (
+         Stream : not null access Streams.Root_Stream_Type'Class)
+         return Holder
+         with Import,
+            Convention => Ada, External_Name => "__drake_program_error";
+
+      pragma No_Return (Missing_Read);
+      pragma No_Return (Missing_Write);
+      pragma Machine_Attribute (Missing_Input, "noreturn");
 
    end Streaming;
 
    for Holder'Read use Streaming.Missing_Read;
    for Holder'Write use Streaming.Missing_Write;
+   for Holder'Input use Streaming.Missing_Input;
 
 end Ada.Containers.Access_Holders;

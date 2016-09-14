@@ -86,12 +86,15 @@ private
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";
 
+         pragma No_Return (Missing_Read);
+         pragma No_Return (Missing_Write);
+         pragma Machine_Attribute (Missing_Input, "noreturn");
+
       end Streaming;
 
       for Cursor'Read use Streaming.Missing_Read;
       for Cursor'Write use Streaming.Missing_Write;
       for Cursor'Input use Streaming.Missing_Input;
-      for Cursor'Output use Streaming.Missing_Write;
 
    end Controlled;
 

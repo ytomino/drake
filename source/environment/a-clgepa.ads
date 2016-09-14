@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 private with Ada.Command_Line.Argument_Parsing;
 private with Ada.Finalization;
+private with Ada.Streams;
 generic
    type Input_Cursor is private;
    with function Has_Element (Position : Input_Cursor) return Boolean is <>;
@@ -101,6 +102,34 @@ private
 
       overriding procedure Adjust (Object : in out Cursor);
       overriding procedure Finalize (Object : in out Cursor);
+
+      package Streaming is
+
+         procedure Missing_Read (
+            Stream : access Streams.Root_Stream_Type'Class;
+            Item : out Cursor)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+         procedure Missing_Write (
+            Stream : access Streams.Root_Stream_Type'Class;
+            Item : Cursor)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+         function Missing_Input (
+            Stream : access Streams.Root_Stream_Type'Class)
+            return Cursor
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+
+         pragma No_Return (Missing_Read);
+         pragma No_Return (Missing_Write);
+         pragma Machine_Attribute (Missing_Input, "noreturn");
+
+      end Streaming;
+
+      for Cursor'Read use Streaming.Missing_Read;
+      for Cursor'Write use Streaming.Missing_Write;
+      for Cursor'Input use Streaming.Missing_Input;
 
    end Controlled;
 
