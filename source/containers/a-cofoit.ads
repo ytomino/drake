@@ -75,22 +75,22 @@ private
             Item : out Cursor)
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";
-         function Missing_Input (
-            Stream : not null access Streams.Root_Stream_Type'Class)
-            return Cursor
-            with Import,
-               Convention => Ada, External_Name => "__drake_program_error";
          procedure Missing_Write (
             Stream : access Streams.Root_Stream_Type'Class;
             Item : Cursor)
+            with Import,
+               Convention => Ada, External_Name => "__drake_program_error";
+         function Missing_Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Cursor
             with Import,
                Convention => Ada, External_Name => "__drake_program_error";
 
       end Streaming;
 
       for Cursor'Read use Streaming.Missing_Read;
-      for Cursor'Input use Streaming.Missing_Input;
       for Cursor'Write use Streaming.Missing_Write;
+      for Cursor'Input use Streaming.Missing_Input;
       for Cursor'Output use Streaming.Missing_Write;
 
    end Controlled;
