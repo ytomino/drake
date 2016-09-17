@@ -343,9 +343,6 @@ private
 
    type String_Access is access String;
 
-   type Search_Access is access Search_Type;
-   for Search_Access'Storage_Size use 0;
-
    type Directory_Entry_Status is (Empty, Attached, Detached);
    pragma Discard_Names (Directory_Entry_Status);
 
@@ -358,7 +355,7 @@ private
       Status : Directory_Entry_Status := Empty;
    end record;
 
-   package Controlled is
+   package Controlled_Entries is
 
       type Directory_Entry_Type is limited private;
 
@@ -376,33 +373,63 @@ private
 
       overriding procedure Finalize (Object : in out Directory_Entry_Type);
 
-   end Controlled;
+   end Controlled_Entries;
 
-   type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
+   type Directory_Entry_Type is new Controlled_Entries.Directory_Entry_Type;
 
-   type Search_Type is limited new Finalization.Limited_Controlled with record
-      Search : aliased System.Native_Directories.Searching.Search_Type := (
-         Handle => System.Native_Directories.Searching.Null_Handle,
-         others => <>);
+   type Non_Controlled_Search_Type is record
+      Search : aliased System.Native_Directories.Searching.Search_Type;
       Path : String_Access;
-      Next_Directory_Entry : aliased Directory_Entry_Type;
-      Count : Natural;
    end record;
+   pragma Suppress_Initialization (Non_Controlled_Search_Type);
 
-   overriding procedure Finalize (Search : in out Search_Type);
+   package Controlled_Searches is
+
+      type Search_Type is limited private;
+
+      function Reference (Object : Directories.Search_Type)
+         return not null access Non_Controlled_Search_Type;
+      pragma Inline (Reference);
+
+      function Next_Directory_Entry (Object : Directories.Search_Type)
+         return not null access Directory_Entry_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type Search_Type is
+         limited new Finalization.Limited_Controlled with
+      record
+         Data : aliased Non_Controlled_Search_Type := (
+            Search => (
+               Handle => System.Native_Directories.Searching.Null_Handle,
+               others => <>),
+            others => <>);
+         Next_Directory_Entry : aliased Directory_Entry_Type;
+      end record;
+
+      overriding procedure Finalize (Search : in out Search_Type);
+
+   end Controlled_Searches;
+
+   type Search_Type is new Controlled_Searches.Search_Type;
 
    --  Directory Iteration
 
    type Directory_Listing is tagged limited record
       Search : aliased Search_Type;
+      Count : Natural;
    end record;
 
    type Cursor is new Natural;
 
+   type Directory_Listing_Access is access all Directory_Listing;
+   for Directory_Listing_Access'Storage_Size use 0;
+
    type Directory_Iterator is
       new Directory_Iterators.Forward_Iterator with
    record
-      Search : Search_Access;
+      Listing : Directory_Listing_Access;
    end record;
 
    overriding function First (Object : Directory_Iterator) return Cursor;
