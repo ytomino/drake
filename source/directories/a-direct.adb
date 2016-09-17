@@ -1,11 +1,9 @@
-with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
 with System.Native_Calendar;
 with System.Storage_Elements;
 package body Ada.Directories is
-   use Exception_Identification.From_Here;
    use type System.Native_Directories.File_Kind;
    use type System.Native_Directories.Searching.Handle_Type;
    use type System.Storage_Elements.Storage_Offset;
@@ -67,6 +65,21 @@ package body Ada.Directories is
       end if;
    end Finalize;
 
+   procedure Assign (
+      Target : out Non_Controlled_Directory_Entry_Type;
+      Source : Non_Controlled_Directory_Entry_Type);
+   procedure Assign (
+      Target : out Non_Controlled_Directory_Entry_Type;
+      Source : Non_Controlled_Directory_Entry_Type) is
+   begin
+      Target.Additional.Filled := False;
+      Target.Status := Detached;
+      Target.Path := new String'(Source.Path.all);
+      Target.Directory_Entry :=
+         System.Native_Directories.Searching.New_Directory_Entry (
+            Source.Directory_Entry);
+   end Assign;
+
    procedure End_Search (
       Search : in out Search_Type;
       Raise_On_Error : Boolean);
@@ -84,8 +97,6 @@ package body Ada.Directories is
    procedure Next (Search : in out Search_Type) is
       Has_Next : Boolean;
    begin
-      --  set the queried flag
-      Search.Next_Is_Queried := True;
       --  increment
       Search.Count := Search.Count + 1;
       --  search next
@@ -291,7 +302,6 @@ package body Ada.Directories is
             System.Native_Directories.Searching.Filter_Type);
       Has_Next : Boolean;
    begin
-      Search.Next_Is_Queried := True;
       Search.Path := new String'(Full_Name (Directory));
       Search.Count := 1;
       declare
@@ -340,15 +350,7 @@ package body Ada.Directories is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Search) or else raise Status_Error);
    begin
-      if not Search.Next_Is_Queried then
-         Next (Search'Unrestricted_Access.all);
-      end if;
-      declare
-         NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
-            renames Controlled.Reference (Search.Next_Directory_Entry).all;
-      begin
-         return NC_Next_Directory_Entry.Status /= Empty;
-      end;
+      return Is_Assigned (Search.Next_Directory_Entry);
    end More_Entries;
 
    procedure Get_Next_Entry (
@@ -356,27 +358,20 @@ package body Ada.Directories is
       Directory_Entry : out Directory_Entry_Type)
    is
       pragma Unmodified (Directory_Entry); -- modified via Reference
+      pragma Check (Pre,
+         Check =>
+            More_Entries (Search) -- checking the predicate
+            or else raise Use_Error); -- RM A.16(110/3)
+      NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled.Reference (Search.Next_Directory_Entry).all;
+      NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled.Reference (Directory_Entry).all;
    begin
-      if not More_Entries (Search) then -- checking the predicate
-         Raise_Exception (Use_Error'Identity); -- RM A.16(110/3)
-      else
-         --  current buffer
-         declare
-            NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
-               renames Controlled.Reference (Search.Next_Directory_Entry).all;
-            NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
-               renames Controlled.Reference (Directory_Entry).all;
-         begin
-            Finalize (NC_Directory_Entry);
-            NC_Directory_Entry.Path := Search.Path;
-            NC_Directory_Entry.Directory_Entry :=
-               NC_Next_Directory_Entry.Directory_Entry;
-            NC_Directory_Entry.Additional.Filled := False;
-            NC_Directory_Entry.Status := Attached;
-         end;
-         --  reset the queried flag
-         Search.Next_Is_Queried := False;
-      end if;
+      Finalize (NC_Directory_Entry);
+      --  copy to the detached entry
+      Assign (Target => NC_Directory_Entry, Source => NC_Next_Directory_Entry);
+      --  search next
+      Next (Search);
    end Get_Next_Entry;
 
    function Get_Next_Entry (
@@ -466,12 +461,7 @@ package body Ada.Directories is
             NC_Result : Non_Controlled_Directory_Entry_Type
                renames Controlled.Reference (Result).all;
          begin
-            NC_Result.Path := new String'(NC_Next_Directory_Entry.Path.all);
-            NC_Result.Additional.Filled := False;
-            NC_Result.Status := Detached;
-            NC_Result.Directory_Entry :=
-               System.Native_Directories.Searching.New_Directory_Entry (
-                  NC_Next_Directory_Entry.Directory_Entry);
+            Assign (Target => NC_Result, Source => NC_Next_Directory_Entry);
          end;
       end return;
    end Current_Entry;

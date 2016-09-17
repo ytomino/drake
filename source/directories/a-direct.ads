@@ -169,6 +169,7 @@ package Ada.Directories is
    function More_Entries (
       Search : Search_Type) -- Open_Search_Type
       return Boolean;
+   pragma Inline (More_Entries);
 
    procedure Get_Next_Entry (
       Search : in out Search_Type; -- Open_Search_Type
@@ -385,7 +386,6 @@ private
          others => <>);
       Path : String_Access;
       Next_Directory_Entry : aliased Directory_Entry_Type;
-      Next_Is_Queried : Boolean;
       Count : Natural;
    end record;
 
