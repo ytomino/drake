@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
 package Ada.Streams.Block_Transmission is
-   --  There are effective read/write/input/output operations for stream.
+   --  There are efficient read/write/input/output operations for stream.
    pragma Pure;
 
    generic

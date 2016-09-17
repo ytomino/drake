@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Streams.Block_Transmission.Wide_Strings is
-   --  There are effective streaming operations for Wide_String.
+   --  There are efficient streaming operations for Wide_String.
    pragma Pure;
 
    procedure Read is

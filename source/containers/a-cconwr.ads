@@ -86,7 +86,7 @@ private package Ada.Containers.Copy_On_Write is
          Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
-   --  Copy and Reserve_Capacity also make it unique.
+   --  Note: Copy and Reserve_Capacity also make a container unique.
 
    procedure In_Place_Set_Length (
       Target_Data : Data_Access;

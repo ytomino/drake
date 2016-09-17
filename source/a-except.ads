@@ -63,7 +63,7 @@ package Ada.Exceptions is
       return Exception_Occurrence_Access;
 
    --  extended
-   --  Effective alternatives of:
+   --  Efficient alternatives of:
    --    begin raise E; when X : E => Save_Occurrence (Target, X); end;
    procedure Save_Exception (
       Target : out Exception_Occurrence;
