@@ -352,8 +352,9 @@ private
          System.Native_Directories.Searching.Directory_Entry_Access;
       Additional : aliased
          System.Native_Directories.Searching.Directory_Entry_Additional_Type;
-      Status : Directory_Entry_Status := Empty;
+      Status : Directory_Entry_Status;
    end record;
+   pragma Suppress_Initialization (Non_Controlled_Directory_Entry_Type);
 
    package Controlled_Entries is
 
@@ -368,7 +369,9 @@ private
       type Directory_Entry_Type is
          limited new Finalization.Limited_Controlled with
       record
-         Data : aliased Non_Controlled_Directory_Entry_Type;
+         Data : aliased Non_Controlled_Directory_Entry_Type := (
+            Status => Empty,
+            others => <>);
       end record;
 
       overriding procedure Finalize (Object : in out Directory_Entry_Type);
