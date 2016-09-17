@@ -160,25 +160,23 @@ package body Ada.Directories is
    end Create_Path;
 
    procedure Delete_Tree (Directory : String) is
-      Search : Search_Type;
+      Search : aliased Search_Type;
    begin
       Start_Search (Search, Directory, "*", (others => True));
       while More_Entries (Search) loop
          declare
-            Directory_Entry : Directory_Entry_Type;
+            Directory_Entry : Directory_Entry_Type
+               renames Look_Next_Entry (Search).Element.all;
+            Name : constant String := Full_Name (Directory_Entry);
          begin
-            Get_Next_Entry (Search, Directory_Entry);
-            declare
-               Name : constant String := Full_Name (Directory_Entry);
-            begin
-               case Kind (Directory_Entry) is
-                  when Ordinary_File | Special_File =>
-                     Delete_File (Name);
-                  when Directories.Directory =>
-                     Delete_Tree (Name); -- recursive
-               end case;
-            end;
+            case Kind (Directory_Entry) is
+               when Ordinary_File | Special_File =>
+                  Delete_File (Name);
+               when Directories.Directory =>
+                  Delete_Tree (Name); -- recursive
+            end case;
          end;
+         Skip_Next_Entry (Search);
       end loop;
       End_Search (Search);
       Delete_Directory (Directory);
@@ -395,6 +393,30 @@ package body Ada.Directories is
       end return;
    end Get_Next_Entry;
 
+   function Look_Next_Entry (
+      Search : aliased Search_Type)
+      return Constant_Reference_Type
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Search) or else raise Status_Error);
+   begin
+      return (Element => Controlled_Searches.Next_Directory_Entry (Search));
+   end Look_Next_Entry;
+
+   procedure Skip_Next_Entry (
+      Search : in out Search_Type)
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (Search) or else raise Status_Error);
+      NC_Search : Non_Controlled_Search_Type
+         renames Controlled_Searches.Reference (Search).all;
+      NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled_Entries.Reference (
+            Controlled_Searches.Next_Directory_Entry (Search).all).all;
+   begin
+      Get_Next_Entry (NC_Search, NC_Next_Directory_Entry);
+   end Skip_Next_Entry;
+
    procedure Search (
       Directory : String;
       Pattern : String := "*";
@@ -402,15 +424,14 @@ package body Ada.Directories is
       Process : not null access procedure (
          Directory_Entry : Directory_Entry_Type))
    is
-      Srch : Search_Type;
-      Directory_Entry : Directory_Entry_Type;
+      Search : aliased Search_Type;
    begin
-      Start_Search (Srch, Directory, Pattern, Filter);
-      while More_Entries (Srch) loop
-         Get_Next_Entry (Srch, Directory_Entry);
-         Process (Directory_Entry);
+      Start_Search (Search, Directory, Pattern, Filter);
+      while More_Entries (Search) loop
+         Process (Look_Next_Entry (Search).Element.all);
+         Skip_Next_Entry (Search);
       end loop;
-      End_Search (Srch);
+      End_Search (Search);
    end Search;
 
    package body Controlled_Searches is
@@ -508,8 +529,7 @@ package body Ada.Directories is
             Integer (Position) = Container.Count
             or else raise Status_Error);
    begin
-      return (Element =>
-         Controlled_Searches.Next_Directory_Entry (Container.Search));
+      return Look_Next_Entry (Container.Search);
    end Constant_Reference;
 
    overriding function First (Object : Directory_Iterator) return Cursor is
@@ -530,16 +550,7 @@ package body Ada.Directories is
       --  increment
       Listing.Count := Listing.Count + 1;
       --  search next
-      declare
-         NC_Search : Non_Controlled_Search_Type
-            renames Controlled_Searches.Reference (Listing.Search).all;
-         NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
-            renames Controlled_Entries.Reference (
-               Controlled_Searches.Next_Directory_Entry (
-                  Listing.Search).all).all;
-      begin
-         Get_Next_Entry (NC_Search, NC_Next_Directory_Entry);
-      end;
+      Skip_Next_Entry (Listing.Search);
       return Current (Object);
    end Next;
 

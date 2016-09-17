@@ -180,6 +180,23 @@ package Ada.Directories is
       Search : aliased in out Search_Type) -- Open_Search_Type
       return Directory_Entry_Type;
 
+   --  extended from here
+   --  Efficient way to get the next entry without copying.
+
+   type Constant_Reference_Type (
+      Element : not null access constant Directory_Entry_Type) is null record
+      with Implicit_Dereference => Element;
+
+   function Look_Next_Entry (
+      Search : aliased Search_Type) -- Open_Search_Type
+      return Constant_Reference_Type;
+   pragma Inline (Look_Next_Entry);
+
+   procedure Skip_Next_Entry (
+      Search : in out Search_Type); -- Open_Search_Type
+
+   --  to here
+
    --  modified
    procedure Search (
       Directory : String;
@@ -235,11 +252,6 @@ package Ada.Directories is
       Position : Cursor)
       return Directory_Entry_Type;
 --    with Pre => Has_Entry (Position);
-
-   type Constant_Reference_Type (
-      Element : not null access constant Directory_Entry_Type) is null record
-      with Implicit_Dereference => Element;
-      --  additional
 
    function Constant_Reference (
       Container : aliased Directory_Listing; -- Open_Directory_Listing
