@@ -140,14 +140,7 @@ package Ada.Directories is
    type Filter_Type is array (File_Kind) of Boolean;
    pragma Pack (Filter_Type);
 
-   --  modified
-   --  Search_Type has its iterator. See below.
---  type Search_Type is limited private;
-   type Search_Type is tagged limited private
-      with
-         Constant_Indexing => Constant_Reference,
-         Default_Iterator => Iterate,
-         Iterator_Element => Directory_Entry_Type;
+   type Search_Type is limited private;
 
 --  subtype Open_Search_Type is Search_Type
 --    with
@@ -165,8 +158,6 @@ package Ada.Directories is
       Pattern : String := "*"; -- additional default
       Filter : Filter_Type := (others => True));
    --  extended
-   --  This function version Start_Search enables to write
-   --    "for E of Start_Search (...) loop".
    function Start_Search (
       Directory : String;
       Pattern : String := "*";
@@ -197,34 +188,63 @@ package Ada.Directories is
          Directory_Entry : Directory_Entry_Type));
 
    --  extended from here
-   --  There is an iterator for AI12-0009-1 (?)
+   --  AI12-0009-1, Directory Iteration
+
+   type Directory_Listing is tagged limited private
+      with
+--       Constant_Indexing => Current_Entry,
+         Constant_Indexing => Constant_Reference,
+         Default_Iterator => Iterate,
+         Iterator_Element => Directory_Entry_Type;
+   pragma Preelaborable_Initialization (Directory_Listing);
+
+--  subtype Open_Directory_Listing is Directory_Listing
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Directory_Listing),
+--       Predicate_Failure => raise Status_Error;
+
+   function Is_Open (Listing : Directory_Listing) return Boolean; -- additional
+   pragma Inline (Is_Open);
+
+   function Entries (
+      Directory : String;
+      Pattern : String := "*"; -- additional default
+      Filter : Filter_Type := (others => True))
+      return Directory_Listing;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
-   function Has_Element (Position : Cursor) return Boolean;
-   pragma Inline (Has_Element);
+   function Has_Entry (Position : Cursor) return Boolean;
+   pragma Inline (Has_Entry);
 
-   package Search_Iterator_Interfaces is
-      new Iterator_Interfaces (Cursor, Has_Element);
+   package Directory_Iterators is
+      new Iterator_Interfaces (Cursor, Has_Entry);
+
+   --  Note: To be consistent with the existing instances in Ada.Containers,
+   --    like Vector/List/Set/Map_Iterator_Interfaces, should it be renamed to
+   --    Directory_Listing_Iterator_Interfaces?
 
    function Iterate (
-      Container : Search_Type'Class) -- Open_Search_Type'Class
-      return Search_Iterator_Interfaces.Forward_Iterator'Class;
+      Listing : Directory_Listing'Class) -- Open_Directory_Listing'Class
+      return Directory_Iterators.Forward_Iterator'Class;
 
-   function Element (
-      Container : Search_Type'Class; -- Open_Search_Type'Class
+   function Current_Entry (
+      Entries : Directory_Listing'Class; -- Open_Directory_Listing'Class
       Position : Cursor)
       return Directory_Entry_Type;
+--    with Pre => Has_Entry (Position);
 
    type Constant_Reference_Type (
       Element : not null access constant Directory_Entry_Type) is null record
       with Implicit_Dereference => Element;
+      --  additional
 
    function Constant_Reference (
-      Container : aliased Search_Type; -- Open_Search_Type
+      Container : aliased Directory_Listing; -- Open_Directory_Listing
       Position : Cursor)
       return Constant_Reference_Type;
+      --  additional
    pragma Inline (Constant_Reference);
 
    --  to here
@@ -371,16 +391,22 @@ private
 
    overriding procedure Finalize (Search : in out Search_Type);
 
+   --  Directory Iteration
+
+   type Directory_Listing is tagged limited record
+      Search : aliased Search_Type;
+   end record;
+
    type Cursor is new Natural;
 
-   type Search_Iterator is
-      new Search_Iterator_Interfaces.Forward_Iterator with
+   type Directory_Iterator is
+      new Directory_Iterators.Forward_Iterator with
    record
       Search : Search_Access;
    end record;
 
-   overriding function First (Object : Search_Iterator) return Cursor;
-   overriding function Next (Object : Search_Iterator; Position : Cursor)
+   overriding function First (Object : Directory_Iterator) return Cursor;
+   overriding function Next (Object : Directory_Iterator; Position : Cursor)
       return Cursor;
 
 end Ada.Directories;

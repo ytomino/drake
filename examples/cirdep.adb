@@ -43,7 +43,7 @@ begin
 		Table : Unit_To_Unit_Sets_Maps.Map;
 	begin
 		-- reading
-		for E of Ada.Directories.Start_Search (
+		for E of Ada.Directories.Entries (
 			Ada.Directories.Compose (RTS_Dir.Constant_Reference, "adalib"),
 			"*.ali")
 		loop

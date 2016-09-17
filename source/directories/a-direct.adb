@@ -105,13 +105,15 @@ package body Ada.Directories is
       end;
    end Next;
 
-   function Current (Object : Search_Iterator) return Cursor;
-   function Current (Object : Search_Iterator) return Cursor is
+   function Current (Object : Directory_Iterator) return Cursor;
+   function Current (Object : Directory_Iterator) return Cursor is
       Search : constant not null Search_Access := Object.Search;
       NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled.Reference (Search.Next_Directory_Entry).all;
    begin
       if NC_Next_Directory_Entry.Status = Empty then
+         --  call End_Search at this time, for propagating the exceptions.
+         End_Search (Search.all, Raise_On_Error => True);
          return 0; -- No_Element
       else
          return Cursor (Search.Count);
@@ -413,27 +415,43 @@ package body Ada.Directories is
       end if;
    end Finalize;
 
-   --  iterator
+   --  directory iteration
 
-   function Has_Element (Position : Cursor) return Boolean is
+   function Is_Open (Listing : Directory_Listing) return Boolean is
+   begin
+      return Is_Open (Listing.Search);
+   end Is_Open;
+
+   function Entries (
+      Directory : String;
+      Pattern : String := "*";
+      Filter : Filter_Type := (others => True))
+      return Directory_Listing is
+   begin
+      return Result : Directory_Listing do
+         Start_Search (Result.Search, Directory, Pattern, Filter);
+      end return;
+   end Entries;
+
+   function Has_Entry (Position : Cursor) return Boolean is
    begin
       return Position > 0;
-   end Has_Element;
+   end Has_Entry;
 
    function Iterate (
-      Container : Search_Type'Class)
-      return Search_Iterator_Interfaces.Forward_Iterator'Class
+      Listing : Directory_Listing'Class)
+      return Directory_Iterators.Forward_Iterator'Class
    is
       pragma Check (Dynamic_Predicate,
          Check =>
-            Is_Open (Search_Type (Container))
+            Is_Open (Directory_Listing (Listing))
             or else raise Status_Error);
    begin
-      return Search_Iterator'(Search => Container'Unrestricted_Access);
+      return Directory_Iterator'(Search => Listing.Search'Unrestricted_Access);
    end Iterate;
 
-   function Element (
-      Container : Search_Type'Class;
+   function Current_Entry (
+      Entries : Directory_Listing'Class;
       Position : Cursor)
       return Directory_Entry_Type is
    begin
@@ -441,7 +459,7 @@ package body Ada.Directories is
          pragma Unmodified (Result); -- modified via Reference
          declare
             Source_Reference : constant Constant_Reference_Type :=
-               Constant_Reference (Search_Type (Container), Position);
+               Constant_Reference (Directory_Listing (Entries), Position);
             --  checking the predicate and Position in Constant_Reference
             NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
                renames Controlled.Reference (Source_Reference.Element.all).all;
@@ -456,10 +474,10 @@ package body Ada.Directories is
                   NC_Next_Directory_Entry.Directory_Entry);
          end;
       end return;
-   end Element;
+   end Current_Entry;
 
    function Constant_Reference (
-      Container : aliased Search_Type;
+      Container : aliased Directory_Listing;
       Position : Cursor)
       return Constant_Reference_Type
    is
@@ -467,19 +485,19 @@ package body Ada.Directories is
          Check => Is_Open (Container) or else raise Status_Error);
       pragma Check (Pre,
          Check =>
-            Integer (Position) = Container.Count
+            Integer (Position) = Container.Search.Count
             or else raise Status_Error);
    begin
-      return (Element => Container.Next_Directory_Entry'Access);
+      return (Element => Container.Search.Next_Directory_Entry'Access);
    end Constant_Reference;
 
-   overriding function First (Object : Search_Iterator) return Cursor is
+   overriding function First (Object : Directory_Iterator) return Cursor is
       pragma Check (Pre, Object.Search.Count = 1 or else raise Status_Error);
    begin
       return Current (Object);
    end First;
 
-   overriding function Next (Object : Search_Iterator; Position : Cursor)
+   overriding function Next (Object : Directory_Iterator; Position : Cursor)
       return Cursor
    is
       pragma Check (Pre,
