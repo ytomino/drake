@@ -254,6 +254,21 @@ package body Ada.Directories is
       return NC_Directory_Entry.Status /= Empty;
    end Is_Assigned;
 
+   package body Controlled is
+
+      function Reference (Object : Directories.Directory_Entry_Type)
+         return not null access Non_Controlled_Directory_Entry_Type is
+      begin
+         return Directory_Entry_Type (Object).Data'Unrestricted_Access;
+      end Reference;
+
+      overriding procedure Finalize (Object : in out Directory_Entry_Type) is
+      begin
+         Finalize (Object.Data);
+      end Finalize;
+
+   end Controlled;
+
    function Is_Open (Search : Search_Type) return Boolean is
    begin
       return Search.Search.Handle /=
@@ -371,46 +386,6 @@ package body Ada.Directories is
       end return;
    end Get_Next_Entry;
 
-   procedure Get_Entry (
-      Name : String;
-      Directory_Entry : out Directory_Entry_Type)
-   is
-      pragma Unmodified (Directory_Entry); -- modified via Reference
-      NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
-         renames Controlled.Reference (Directory_Entry).all;
-      Directory_First : Positive;
-      Directory_Last : Natural;
-      Simple_Name_First : Positive;
-      Simple_Name_Last : Natural;
-   begin
-      --  decompose the name
-      Hierarchical_File_Names.Containing_Directory (Name,
-         First => Directory_First, Last => Directory_Last);
-      Hierarchical_File_Names.Simple_Name (Name,
-         First => Simple_Name_First, Last => Simple_Name_Last);
-      --  make a detached entry
-      Finalize (NC_Directory_Entry);
-      NC_Directory_Entry.Path :=
-         new String'(Full_Name (Name (Directory_First .. Directory_Last)));
-      NC_Directory_Entry.Directory_Entry := null;
-      NC_Directory_Entry.Additional.Filled := False;
-      NC_Directory_Entry.Status := Detached;
-      System.Native_Directories.Searching.Get_Entry (
-         NC_Directory_Entry.Path.all,
-         Name (Simple_Name_First .. Simple_Name_Last),
-         NC_Directory_Entry.Directory_Entry,
-         NC_Directory_Entry.Additional);
-   end Get_Entry;
-
-   function Get_Entry (
-      Name : String)
-      return Directory_Entry_Type is
-   begin
-      return Result : Directory_Entry_Type do
-         Get_Entry (Name, Result);
-      end return;
-   end Get_Entry;
-
    procedure Search (
       Directory : String;
       Pattern : String := "*";
@@ -444,6 +419,18 @@ package body Ada.Directories is
    begin
       return Position > 0;
    end Has_Element;
+
+   function Iterate (
+      Container : Search_Type'Class)
+      return Search_Iterator_Interfaces.Forward_Iterator'Class
+   is
+      pragma Check (Dynamic_Predicate,
+         Check =>
+            Is_Open (Search_Type (Container))
+            or else raise Status_Error);
+   begin
+      return Search_Iterator'(Search => Container'Unrestricted_Access);
+   end Iterate;
 
    function Element (
       Container : Search_Type'Class;
@@ -486,18 +473,6 @@ package body Ada.Directories is
       return (Element => Container.Next_Directory_Entry'Access);
    end Constant_Reference;
 
-   function Iterate (
-      Container : Search_Type'Class)
-      return Search_Iterator_Interfaces.Forward_Iterator'Class
-   is
-      pragma Check (Dynamic_Predicate,
-         Check =>
-            Is_Open (Search_Type (Container))
-            or else raise Status_Error);
-   begin
-      return Search_Iterator'(Search => Container'Unrestricted_Access);
-   end Iterate;
-
    overriding function First (Object : Search_Iterator) return Cursor is
       pragma Check (Pre, Object.Search.Count = 1 or else raise Status_Error);
    begin
@@ -518,6 +493,46 @@ package body Ada.Directories is
    end Next;
 
    --  operations on directory entries
+
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type)
+   is
+      pragma Unmodified (Directory_Entry); -- modified via Reference
+      NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
+         renames Controlled.Reference (Directory_Entry).all;
+      Directory_First : Positive;
+      Directory_Last : Natural;
+      Simple_Name_First : Positive;
+      Simple_Name_Last : Natural;
+   begin
+      --  decompose the name
+      Hierarchical_File_Names.Containing_Directory (Name,
+         First => Directory_First, Last => Directory_Last);
+      Hierarchical_File_Names.Simple_Name (Name,
+         First => Simple_Name_First, Last => Simple_Name_Last);
+      --  make a detached entry
+      Finalize (NC_Directory_Entry);
+      NC_Directory_Entry.Path :=
+         new String'(Full_Name (Name (Directory_First .. Directory_Last)));
+      NC_Directory_Entry.Directory_Entry := null;
+      NC_Directory_Entry.Additional.Filled := False;
+      NC_Directory_Entry.Status := Detached;
+      System.Native_Directories.Searching.Get_Entry (
+         NC_Directory_Entry.Path.all,
+         Name (Simple_Name_First .. Simple_Name_Last),
+         NC_Directory_Entry.Directory_Entry,
+         NC_Directory_Entry.Additional);
+   end Get_Entry;
+
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type is
+   begin
+      return Result : Directory_Entry_Type do
+         Get_Entry (Name, Result);
+      end return;
+   end Get_Entry;
 
    function Simple_Name (
       Directory_Entry : Directory_Entry_Type)
@@ -597,20 +612,5 @@ package body Ada.Directories is
                NC_Directory_Entry.Directory_Entry,
                NC_Directory_Entry.Additional)));
    end Modification_Time;
-
-   package body Controlled is
-
-      function Reference (Object : Directories.Directory_Entry_Type)
-         return not null access Non_Controlled_Directory_Entry_Type is
-      begin
-         return Directory_Entry_Type (Object).Data'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out Directory_Entry_Type) is
-      begin
-         Finalize (Object.Data);
-      end Finalize;
-
-   end Controlled;
 
 end Ada.Directories;

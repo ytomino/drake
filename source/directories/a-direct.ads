@@ -188,15 +188,6 @@ package Ada.Directories is
       Search : aliased in out Search_Type) -- Open_Search_Type
       return Directory_Entry_Type;
 
-   --  extended
-   --  Get Directory_Entry_Type of one file to get plural information.
-   procedure Get_Entry (
-      Name : String;
-      Directory_Entry : out Directory_Entry_Type);
-   function Get_Entry (
-      Name : String)
-      return Directory_Entry_Type;
-
    --  modified
    procedure Search (
       Directory : String;
@@ -214,6 +205,13 @@ package Ada.Directories is
    function Has_Element (Position : Cursor) return Boolean;
    pragma Inline (Has_Element);
 
+   package Search_Iterator_Interfaces is
+      new Iterator_Interfaces (Cursor, Has_Element);
+
+   function Iterate (
+      Container : Search_Type'Class) -- Open_Search_Type'Class
+      return Search_Iterator_Interfaces.Forward_Iterator'Class;
+
    function Element (
       Container : Search_Type'Class; -- Open_Search_Type'Class
       Position : Cursor)
@@ -229,16 +227,18 @@ package Ada.Directories is
       return Constant_Reference_Type;
    pragma Inline (Constant_Reference);
 
-   package Search_Iterator_Interfaces is
-      new Iterator_Interfaces (Cursor, Has_Element);
-
-   function Iterate (
-      Container : Search_Type'Class) -- Open_Search_Type'Class
-      return Search_Iterator_Interfaces.Forward_Iterator'Class;
-
    --  to here
 
    --  Operations on Directory Entries:
+
+   --  extended
+   --  Get Directory_Entry_Type of one file to get plural information.
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type);
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type;
 
    function Simple_Name (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
