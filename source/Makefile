@@ -274,9 +274,9 @@ ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
 ifeq ($(OBJFMT),ELF)
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn -gnatp -ffunction-sections -fdata-sections
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp -ffunction-sections -fdata-sections
 else
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn -gnatp
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp
 endif
 endif
 
