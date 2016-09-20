@@ -38,7 +38,7 @@ package System.Interrupts is
       Num_Entries : Tasking.Protected_Objects.Protected_Entry_Index;
       Num_Attach_Handler : Natural) is
       limited new Tasking.Protected_Objects.Entries.Protection_Entries with
-      private;
+         private;
 
    procedure Register_Interrupt_Handler (Handler_Addr : Address)
       renames Interrupt_Handlers.Register_Interrupt_Handler;
@@ -49,7 +49,7 @@ package System.Interrupts is
 
    type Dynamic_Interrupt_Protection is
       limited new Tasking.Protected_Objects.Entries.Protection_Entries with
-      null record;
+         null record;
 
    --  unimplemented subprograms required by compiler
    --  Bind_Interrupt_To_Entry

@@ -152,10 +152,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
       X : Data_Access := Downcast (Data);
    begin
-      Hash_Tables.Free (
-         X.Table,
-         X.Length,
-         Free => Free_Node'Access);
+      Hash_Tables.Free (X.Table, X.Length, Free => Free_Node'Access);
       Free (X);
       Data := null;
    end Free_Data;

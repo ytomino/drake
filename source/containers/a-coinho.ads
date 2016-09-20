@@ -47,8 +47,7 @@ package Ada.Containers.Indefinite_Holders is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
    function Constant_Reference (Container : aliased Holder)
@@ -86,8 +85,7 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    package Streaming is
 

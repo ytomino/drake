@@ -152,10 +152,7 @@ package body Ada.Containers.Limited_Hashed_Maps is
    procedure Free_Data (Data : in out Map) is
 --  diff
    begin
-      Hash_Tables.Free (
-         Data.Table,
-         Data.Length,
-         Free => Free_Node'Access);
+      Hash_Tables.Free (Data.Table, Data.Length, Free => Free_Node'Access);
 --  diff
 --  diff
    end Free_Data;

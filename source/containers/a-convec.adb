@@ -521,7 +521,6 @@ package body Ada.Containers.Vectors is
             end;
          end if;
 --  diff
---  diff
       end if;
    end Insert;
 
@@ -707,12 +706,10 @@ package body Ada.Containers.Vectors is
                      Downcast (Container.Super.Data);
                   subtype R1 is
                      Extended_Index range
-                        Position ..
-                        After_Last - 1 - Index_Type'Base (Count);
+                        Position .. After_Last - 1 - Index_Type'Base (Count);
                   subtype R2 is
                      Extended_Index range
-                        Position + Index_Type'Base (Count) ..
-                        After_Last - 1;
+                        Position + Index_Type'Base (Count) .. After_Last - 1;
                begin
 --  diff
 --  diff
@@ -1130,8 +1127,8 @@ package body Ada.Containers.Vectors is
             Element_Array'Read (
                Stream,
                Downcast (Item.Super.Data).Items (
-                  Index_Type'First ..
-                  Last (Item)));
+                  Index_Type'First .. Last (Item)));
+--  diff
 --  diff
 --  diff
 --  diff
@@ -1151,8 +1148,8 @@ package body Ada.Containers.Vectors is
             Element_Array'Write (
                Stream,
                Downcast (Item.Super.Data).Items (
-                  Index_Type'First ..
-                  Last (Item)));
+                  Index_Type'First .. Last (Item)));
+--  diff
          end if;
       end Write;
 

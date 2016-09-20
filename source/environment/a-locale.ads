@@ -10,8 +10,8 @@ package Ada.Locales is
    --    almost all the operating systems use alpha-2.
 
    type ISO_639_Alpha_2 is new String (1 .. 2);
---     with Dynamic_Predicate => -- [gcc-4.8] rejects
---        (for all E of ISO_639_Alpha_2 => E in 'a' .. 'z');
+--    with Dynamic_Predicate => -- [gcc-4.8] rejects
+--       (for all E of ISO_639_Alpha_2 => E in 'a' .. 'z');
    type ISO_639_Alpha_3 is new String (1 .. 3);
 --    with Dynamic_Predicate => -- [gcc-4.8] rejects
 --       (for all E of ISO_639_Alpha_3 => E in 'a' .. 'z');

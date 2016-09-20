@@ -64,8 +64,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
    function Constant_Reference (Container : aliased List; Position : Cursor)
@@ -298,8 +297,7 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    type List_Iterator is
       new List_Iterator_Interfaces.Reversible_Iterator with

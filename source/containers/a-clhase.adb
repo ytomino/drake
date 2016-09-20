@@ -146,10 +146,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    procedure Free_Data (Data : in out Set) is
 --  diff
    begin
-      Hash_Tables.Free (
-         Data.Table,
-         Data.Length,
-         Free => Free_Node'Access);
+      Hash_Tables.Free (Data.Table, Data.Length, Free => Free_Node'Access);
 --  diff
 --  diff
    end Free_Data;
@@ -900,10 +897,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Process : not null access procedure (
             Element : in out Element_Type)) is
       begin
-         Process (
-            Reference_Preserving_Key (
-               Container,
-               Position).Element.all);
+         Process (Reference_Preserving_Key (Container, Position).Element.all);
       end Update_Element_Preserving_Key;
 
       function Reference_Preserving_Key (

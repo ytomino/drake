@@ -156,10 +156,7 @@ package body Ada.Containers.Ordered_Sets is
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
       X : Data_Access := Downcast (Data);
    begin
-      Binary_Trees.Free (
-         X.Root,
-         X.Length,
-         Free => Free_Node'Access);
+      Binary_Trees.Free (X.Root, X.Length, Free => Free_Node'Access);
       Free (X);
       Data := null;
    end Free_Data;
@@ -1044,10 +1041,7 @@ package body Ada.Containers.Ordered_Sets is
          Process : not null access procedure (
             Element : in out Element_Type)) is
       begin
-         Process (
-            Reference_Preserving_Key (
-               Container,
-               Position).Element.all);
+         Process (Reference_Preserving_Key (Container, Position).Element.all);
       end Update_Element_Preserving_Key;
 
       function Reference_Preserving_Key (

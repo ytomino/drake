@@ -507,8 +507,7 @@ package body Ada.Containers.Indefinite_Vectors is
             Before_L : constant Index_Type'Base := Position - Index_Type'First;
          begin
             for I in
-               Position ..
-               Position + Index_Type'Base (New_Item_Length) - 1
+               Position .. Position + Index_Type'Base (New_Item_Length) - 1
             loop
                declare
                   E : Element_Access
@@ -707,12 +706,10 @@ package body Ada.Containers.Indefinite_Vectors is
                      Downcast (Container.Super.Data);
                   subtype R1 is
                      Extended_Index range
-                        Position ..
-                        After_Last - 1 - Index_Type'Base (Count);
+                        Position .. After_Last - 1 - Index_Type'Base (Count);
                   subtype R2 is
                      Extended_Index range
-                        Position + Index_Type'Base (Count) ..
-                        After_Last - 1;
+                        Position + Index_Type'Base (Count) .. After_Last - 1;
                begin
                   for I in R1'First .. R2'First - 1 loop
                      Free (Data.Items (I));

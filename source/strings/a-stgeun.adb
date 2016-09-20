@@ -66,9 +66,8 @@ package body Ada.Strings.Generic_Unbounded is
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
          System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
-      if String_Type'Component_Size
-         rem Standard'Storage_Unit = 0
-      then -- optimized for packed
+      if String_Type'Component_Size rem Standard'Storage_Unit = 0 then
+         --  optimized for packed
          Data.Capacity :=
             Integer (
                Usable_Size

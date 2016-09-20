@@ -616,9 +616,7 @@ private
 
    private
 
-      type File_Type is
-         limited new Finalization.Limited_Controlled with
-      record
+      type File_Type is limited new Finalization.Limited_Controlled with record
          Text : aliased Naked_Text_IO.Non_Controlled_File_Type;
       end record;
 

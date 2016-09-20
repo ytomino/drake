@@ -523,7 +523,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
 
    procedure Insert (
       Container : in out Vector'Class;
@@ -707,12 +706,10 @@ package body Ada.Containers.Limited_Vectors is
                      Container.Data;
                   subtype R1 is
                      Extended_Index range
-                        Position ..
-                        After_Last - 1 - Index_Type'Base (Count);
+                        Position .. After_Last - 1 - Index_Type'Base (Count);
                   subtype R2 is
                      Extended_Index range
-                        Position + Index_Type'Base (Count) ..
-                        After_Last - 1;
+                        Position + Index_Type'Base (Count) .. After_Last - 1;
                begin
                   for I in R1'First .. R2'First - 1 loop
                      Free (Data.Items (I));

@@ -9,8 +9,7 @@ package Ada.References.Wide_Strings is
       with Implicit_Dereference => Element;
    pragma Suppress_Initialization (Constant_Reference_Type);
 
-   type Reference_Type (
-      Element : not null access Wide_String) is null record
+   type Reference_Type (Element : not null access Wide_String) is null record
       with Implicit_Dereference => Element;
    pragma Suppress_Initialization (Reference_Type);
 

@@ -160,10 +160,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
    procedure Free_Data (Data : in out Copy_On_Write.Data_Access) is
       X : Data_Access := Downcast (Data);
    begin
-      Binary_Trees.Free (
-         X.Root,
-         X.Length,
-         Free => Free_Node'Access);
+      Binary_Trees.Free (X.Root, X.Length, Free => Free_Node'Access);
       Free (X);
       Data := null;
    end Free_Data;

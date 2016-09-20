@@ -47,9 +47,8 @@ begin
          New_Pool_Address : System.Address;
          New_Object_Address : System.Address;
       begin
-         if Array_Type'Component_Size
-            rem Standard'Storage_Unit = 0
-         then -- optimized for packed
+         if Array_Type'Component_Size rem Standard'Storage_Unit = 0 then
+            --  optimized for packed
             New_Object_Size :=
                Storage_Offset (New_Length)
                * (Array_Type'Component_Size / Standard'Storage_Unit);

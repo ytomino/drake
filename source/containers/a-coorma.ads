@@ -77,8 +77,7 @@ package Ada.Containers.Ordered_Maps is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
    function Constant_Reference (Container : aliased Map; Position : Cursor)
@@ -261,8 +260,7 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;
