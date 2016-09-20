@@ -579,36 +579,29 @@ package body Ada.Containers.Vectors is
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
       New_Item_Length : constant Count_Type := New_Item.Length;
+      Old_Length : constant Count_Type := Container.Length;
    begin
-      if New_Item_Length > 0 then
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-         begin
-            if Old_Length = 0
-               and then Capacity (Container) < New_Item_Length
-            then
-               Assign (Container, New_Item);
-            else
-               Set_Length (Container, Old_Length + New_Item.Length);
-               declare
-                  subtype R1 is
-                     Extended_Index range
-                        Index_Type'First + Index_Type'Base (Old_Length) ..
-                        Last (Container);
-                  subtype R2 is
-                     Extended_Index range
-                        Index_Type'First ..
-                        Index_Type'First
-                           - 1
-                           + Index_Type'Base (New_Item_Length);
-                  --  Do not use New_Item.Length or Last (New_Item) in here
-                  --    for Append (X, X).
-               begin
-                  Downcast (Container.Super.Data).Items (R1) :=
-                     Downcast (New_Item.Super.Data).Items (R2);
-               end;
-            end if;
-         end;
+      if Old_Length = 0 and then Capacity (Container) < New_Item_Length then
+         Assign (Container, New_Item);
+      else
+         Set_Length (Container, Old_Length + New_Item_Length);
+         if New_Item_Length > 0 then
+            declare
+               subtype R1 is
+                  Extended_Index range
+                     Index_Type'First + Index_Type'Base (Old_Length) ..
+                     Last (Container);
+               subtype R2 is
+                  Extended_Index range
+                     Index_Type'First ..
+                     Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
+               --  Do not use New_Item.Length or Last (New_Item) in here
+               --    for Append (X, X).
+            begin
+               Downcast (Container.Super.Data).Items (R1) :=
+                  Downcast (New_Item.Super.Data).Items (R2);
+            end;
+         end if;
       end if;
    end Append;
 

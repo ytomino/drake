@@ -579,36 +579,29 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
       New_Item_Length : constant Count_Type := New_Item.Length;
+      Old_Length : constant Count_Type := Container.Length;
    begin
-      if New_Item_Length > 0 then
-         declare
-            Old_Length : constant Count_Type := Container.Length;
-         begin
-            if Old_Length = 0
-               and then Capacity (Container) < New_Item_Length
-            then
-               Assign (Container, New_Item);
-            else
-               Set_Length (Container, Old_Length + New_Item.Length);
-               for I in
-                  Index_Type'First + Index_Type'Base (Old_Length) ..
-                  Last (Container)
-               loop
-                  declare
-                     E : Element_Access
-                        renames Downcast (Container.Super.Data).Items (I);
-                     S : Element_Access
-                        renames Downcast (New_Item.Super.Data).Items (
-                           I - Index_Type'Base (Old_Length));
-                  begin
-                     pragma Check (Validate, E = null);
-                     if S /= null then
-                        Allocate_Element (E, S.all);
-                     end if;
-                  end;
-               end loop;
-            end if;
-         end;
+      if Old_Length = 0 and then Capacity (Container) < New_Item_Length then
+         Assign (Container, New_Item);
+      else
+         Set_Length (Container, Old_Length + New_Item_Length);
+         for I in
+            Index_Type'First + Index_Type'Base (Old_Length) .. Last (Container)
+         loop
+            declare
+               E : Element_Access
+                  renames Downcast (Container.Super.Data).Items (I);
+               S : Element_Access
+                  renames Downcast (New_Item.Super.Data).Items (
+                     I - Index_Type'Base (Old_Length));
+            begin
+               pragma Check (Validate, E = null);
+               if S /= null then
+                  Allocate_Element (E, S.all);
+               end if;
+            end;
+         end loop;
+--  diff
       end if;
    end Append;
 

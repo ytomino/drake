@@ -604,13 +604,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
---
---
---
---
---
---
---
 
    procedure Append (
       Container : in out Vector'Class;
