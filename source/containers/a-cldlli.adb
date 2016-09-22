@@ -506,25 +506,27 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Source : in out List;
       Position : in out Cursor) is
    begin
+      if Before /= Position then -- RM A.18.3(114/3)
 --  diff
 --  diff
 --  diff
 --  diff
 --  diff
 --  diff
-      Base.Remove (
-         Source.First,
-         Source.Last,
-         Source.Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Target.First,
-         Target.Last,
-         Target.Length,
-         Upcast (Before),
-         Upcast (Position));
+         Base.Remove (
+            Source.First,
+            Source.Last,
+            Source.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Target.First,
+            Target.Last,
+            Target.Length,
+            Upcast (Before),
+            Upcast (Position));
 --  diff
+      end if;
    end Splice;
 
    procedure Splice (
@@ -532,23 +534,25 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Before : Cursor;
       Position : Cursor) is
    begin
+      if Before /= Position then -- RM A.18.3(116/3)
 --  diff
 --  diff
 --  diff
 --  diff
-      Base.Remove (
-         Container.First,
-         Container.Last,
-         Container.Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Container.First,
-         Container.Last,
-         Container.Length,
-         Upcast (Before),
-         Upcast (Position));
+         Base.Remove (
+            Container.First,
+            Container.Last,
+            Container.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Container.First,
+            Container.Last,
+            Container.Length,
+            Upcast (Before),
+            Upcast (Position));
 --  diff
+      end if;
    end Splice;
 
    function First (Container : List) return Cursor is

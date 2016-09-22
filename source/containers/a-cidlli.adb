@@ -506,25 +506,27 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Source : in out List;
       Position : in out Cursor) is
    begin
-      Unique (Target, True);
-      Unique (Source, True);
-      declare
-         Target_Data : constant Data_Access := Downcast (Target.Super.Data);
-         Source_Data : constant Data_Access := Downcast (Source.Super.Data);
-      begin
-         Base.Remove (
-            Source_Data.First,
-            Source_Data.Last,
-            Source_Data.Length,
-            Upcast (Position),
-            Position.Super.Next);
-         Base.Insert (
-            Target_Data.First,
-            Target_Data.Last,
-            Target_Data.Length,
-            Upcast (Before),
-            Upcast (Position));
-      end;
+      if Before /= Position then -- RM A.18.3(114/3)
+         Unique (Target, True);
+         Unique (Source, True);
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+            Source_Data : constant Data_Access := Downcast (Source.Super.Data);
+         begin
+            Base.Remove (
+               Source_Data.First,
+               Source_Data.Last,
+               Source_Data.Length,
+               Upcast (Position),
+               Position.Super.Next);
+            Base.Insert (
+               Target_Data.First,
+               Target_Data.Last,
+               Target_Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
+      end if;
    end Splice;
 
    procedure Splice (
@@ -532,23 +534,25 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Before : Cursor;
       Position : Cursor) is
    begin
-      Unique (Container, True);
-      declare
-         Data : constant Data_Access := Downcast (Container.Super.Data);
-      begin
-         Base.Remove (
-            Data.First,
-            Data.Last,
-            Data.Length,
-            Upcast (Position),
-            Position.Super.Next);
-         Base.Insert (
-            Data.First,
-            Data.Last,
-            Data.Length,
-            Upcast (Before),
-            Upcast (Position));
-      end;
+      if Before /= Position then -- RM A.18.3(116/3)
+         Unique (Container, True);
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Base.Remove (
+               Data.First,
+               Data.Last,
+               Data.Length,
+               Upcast (Position),
+               Position.Super.Next);
+            Base.Insert (
+               Data.First,
+               Data.Last,
+               Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
+      end if;
    end Splice;
 
    function First (Container : List) return Cursor is
