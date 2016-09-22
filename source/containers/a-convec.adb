@@ -5,6 +5,7 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Vectors is
    pragma Check_Policy (Validate => Ignore);
    use type Copy_On_Write.Data_Access;
+   use type System.Address;
 
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -481,7 +482,7 @@ package body Ada.Containers.Vectors is
       Insert (
          Container,
          Before, -- checking Constraint_Error
-         New_Item,
+         New_Item, -- checking Program_Error if same nonempty container
          Position);
    end Insert;
 
@@ -494,6 +495,12 @@ package body Ada.Containers.Vectors is
       pragma Check (Pre,
          Check =>
             Before <= Last (Container) + 1 or else raise Constraint_Error);
+      pragma Check (Pre,
+         Check =>
+            Container'Address /= New_Item'Address
+            or else Is_Empty (Container)
+            or else raise Program_Error);
+            --  same nonempty container (should this case be supported?)
       New_Item_Length : constant Count_Type := New_Item.Length;
    begin
       if Container.Length = 0
@@ -513,13 +520,13 @@ package body Ada.Containers.Vectors is
                   Extended_Index range
                      Index_Type'First ..
                      Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
-               --  Do not use New_Item.Length or Last (New_Item) in here
-               --    for Append (X, X).
             begin
                Downcast (Container.Super.Data).Items (R1) :=
                   Downcast (New_Item.Super.Data).Items (R2);
             end;
          end if;
+--  diff
+--  diff
 --  diff
       end if;
    end Insert;
@@ -565,7 +572,10 @@ package body Ada.Containers.Vectors is
 
    procedure Prepend (Container : in out Vector; New_Item : Vector) is
    begin
-      Insert (Container, Index_Type'First, New_Item);
+      Insert (
+         Container,
+         Index_Type'First,
+         New_Item); -- checking Program_Error if same nonempty container
    end Prepend;
 
    procedure Prepend (
@@ -1080,6 +1090,12 @@ package body Ada.Containers.Vectors is
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.2(237/3), same nonempty container
       begin
          if Source.Length > 0 then
             declare

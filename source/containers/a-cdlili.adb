@@ -5,6 +5,7 @@ with System;
 package body Ada.Containers.Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
    use type Copy_On_Write.Data_Access;
+   use type System.Address;
 
    function Upcast is
       new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
@@ -478,12 +479,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
    procedure Splice (
       Target : in out List;
       Before : Cursor;
-      Source : in out List)
-   is
-      type List_Access is access all List;
-      for List_Access'Storage_Size use 0;
+      Source : in out List) is
    begin
-      if List_Access'(Target'Access) /= List_Access'(Source'Access) then
+      if Target'Address /= Source'Address then
          Unique (Target, True);
          Unique (Source, True);
          declare
@@ -817,6 +815,12 @@ package body Ada.Containers.Doubly_Linked_Lists is
       end Sort;
 
       procedure Merge (Target : in out List; Source : in out List) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.3(151/3), same nonempty container
       begin
          if not Is_Empty (Source) then
             if Is_Empty (Target) then

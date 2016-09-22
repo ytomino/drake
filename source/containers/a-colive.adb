@@ -5,6 +5,7 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
    pragma Check_Policy (Validate => Ignore);
 --  diff
+   use type System.Address;
 
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -523,6 +524,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
 
    procedure Insert (
       Container : in out Vector'Class;
@@ -564,6 +571,9 @@ package body Ada.Containers.Limited_Vectors is
    end Insert;
 
 --  diff (Prepend)
+--
+--
+--
 --
 --
 --
@@ -1080,6 +1090,12 @@ package body Ada.Containers.Limited_Vectors is
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.2(237/3), same nonempty container
       begin
          if Source.Length > 0 then
             declare

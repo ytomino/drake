@@ -5,6 +5,7 @@ with System;
 package body Ada.Containers.Limited_Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
 --  diff
+   use type System.Address;
 
    function Upcast is
       new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
@@ -479,9 +480,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Target : in out List;
       Before : Cursor;
       Source : in out List) is
---  diff
---  diff
---  diff
    begin
       if Target.First /= Source.First then
 --  diff
@@ -817,6 +815,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end Sort;
 
       procedure Merge (Target : in out List; Source : in out List) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.3(151/3), same nonempty container
       begin
          if not Is_Empty (Source) then
             if Is_Empty (Target) then
