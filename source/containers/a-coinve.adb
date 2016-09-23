@@ -197,7 +197,7 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       if Left.Length /= Right.Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left.Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
          Unique (Left'Unrestricted_Access.all, False); -- private
@@ -510,24 +510,26 @@ package body Ada.Containers.Indefinite_Vectors is
          Assign (Container, New_Item);
       else
          Insert_Space (Container, Before, Position, New_Item_Length);
-         declare
-            Before_L : constant Index_Type'Base := Position - Index_Type'First;
-         begin
-            for I in
-               Position .. Position + Index_Type'Base (New_Item_Length) - 1
-            loop
-               declare
-                  E : Element_Access
-                     renames Downcast (Container.Super.Data).Items (I);
-                  S : Element_Access
-                     renames Downcast (New_Item.Super.Data).Items (
-                        I - Before_L);
-               begin
-                  pragma Check (Validate, E = null);
-                  Allocate_Element (E, S.all);
-               end;
-            end loop;
-         end;
+         if New_Item_Length > 0 then
+            Unique (New_Item'Unrestricted_Access.all, False); -- private
+            declare
+               D : constant Index_Type'Base := Position - Index_Type'First;
+            begin
+               for I in
+                  Position .. Position + Index_Type'Base (New_Item_Length) - 1
+               loop
+                  declare
+                     E : Element_Access
+                        renames Downcast (Container.Super.Data).Items (I);
+                     S : Element_Access
+                        renames Downcast (New_Item.Super.Data).Items (I - D);
+                  begin
+                     pragma Check (Validate, E = null);
+                     Allocate_Element (E, S.all);
+                  end;
+               end loop;
+            end;
+         end if;
       end if;
    end Insert;
 
@@ -592,25 +594,26 @@ package body Ada.Containers.Indefinite_Vectors is
    begin
       if Old_Length = 0 and then Capacity (Container) < New_Item_Length then
          Assign (Container, New_Item);
-      else
+      elsif New_Item_Length > 0 then
          Set_Length (Container, Old_Length + New_Item_Length);
-         for I in
-            Index_Type'First + Index_Type'Base (Old_Length) .. Last (Container)
-         loop
-            declare
-               E : Element_Access
-                  renames Downcast (Container.Super.Data).Items (I);
-               S : Element_Access
-                  renames Downcast (New_Item.Super.Data).Items (
-                     I - Index_Type'Base (Old_Length));
-            begin
-               pragma Check (Validate, E = null);
-               if S /= null then
-                  Allocate_Element (E, S.all);
-               end if;
-            end;
-         end loop;
---  diff
+         Unique (New_Item'Unrestricted_Access.all, False); -- private
+         declare
+            D : constant Index_Type'Base := Index_Type'Base (Old_Length);
+         begin
+            for I in Index_Type'First + D .. Last (Container) loop
+               declare
+                  E : Element_Access
+                     renames Downcast (Container.Super.Data).Items (I);
+                  S : Element_Access
+                     renames Downcast (New_Item.Super.Data).Items (I - D);
+               begin
+                  pragma Check (Validate, E = null);
+                  if S /= null then
+                     Allocate_Element (E, S.all);
+                  end if;
+               end;
+            end loop;
+         end;
       end if;
    end Append;
 

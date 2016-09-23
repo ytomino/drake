@@ -500,9 +500,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
 
 --  diff (Union)
+--
+--
 --
 --
 --
@@ -557,7 +558,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Free => Free_Node'Access);
 --  diff
 --  diff
---  diff
    end Intersection;
 
 --  diff (Intersection)
@@ -588,9 +588,18 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -638,35 +647,44 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --

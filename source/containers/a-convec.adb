@@ -197,7 +197,7 @@ package body Ada.Containers.Vectors is
    begin
       if Left.Length /= Right.Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left.Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
          Unique (Left'Unrestricted_Access.all, False); -- private
@@ -511,6 +511,7 @@ package body Ada.Containers.Vectors is
       else
          Insert_Space (Container, Before, Position, New_Item_Length);
          if New_Item_Length > 0 then
+            Unique (New_Item'Unrestricted_Access.all, False); -- private
             declare
                subtype R1 is
                   Extended_Index range
@@ -524,10 +525,11 @@ package body Ada.Containers.Vectors is
                Downcast (Container.Super.Data).Items (R1) :=
                   Downcast (New_Item.Super.Data).Items (R2);
             end;
+--  diff
+--  diff
+--  diff
+--  diff
          end if;
---  diff
---  diff
---  diff
       end if;
    end Insert;
 
@@ -592,25 +594,26 @@ package body Ada.Containers.Vectors is
    begin
       if Old_Length = 0 and then Capacity (Container) < New_Item_Length then
          Assign (Container, New_Item);
-      else
+      elsif New_Item_Length > 0 then
          Set_Length (Container, Old_Length + New_Item_Length);
-         if New_Item_Length > 0 then
-            declare
-               subtype R1 is
-                  Extended_Index range
-                     Index_Type'First + Index_Type'Base (Old_Length) ..
-                     Last (Container);
-               subtype R2 is
-                  Extended_Index range
-                     Index_Type'First ..
-                     Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
-               --  Do not use New_Item.Length or Last (New_Item) in here
-               --    for Append (X, X).
-            begin
-               Downcast (Container.Super.Data).Items (R1) :=
-                  Downcast (New_Item.Super.Data).Items (R2);
-            end;
-         end if;
+         Unique (New_Item'Unrestricted_Access.all, False); -- private
+         declare
+            subtype R1 is
+               Extended_Index range
+                  Index_Type'First + Index_Type'Base (Old_Length) ..
+                  Last (Container);
+            subtype R2 is
+               Extended_Index range
+                  Index_Type'First ..
+                  Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
+            --  Do not use New_Item.Length or Last (New_Item) in here
+            --    for Append (X, X).
+         begin
+            Downcast (Container.Super.Data).Items (R1) :=
+               Downcast (New_Item.Super.Data).Items (R2);
+         end;
+--  diff
+--  diff
       end if;
    end Append;
 

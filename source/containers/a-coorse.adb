@@ -450,37 +450,39 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Union (Target : in out Set; Source : Set) is
    begin
-      if not Is_Empty (Source) then
-         if Is_Empty (Target) then
-            Assign (Target, Source);
-         else
-            Unique (Target, True);
-            declare
-               Target_Data : constant Data_Access :=
-                  Downcast (Target.Super.Data);
-            begin
-               Base.Merge (
-                  Target_Data.Root,
-                  Target_Data.Length,
-                  Downcast (Source.Super.Data).Root,
-                  (others => True),
-                  Compare => Compare_Node'Access,
-                  Copy => Copy_Node'Access,
-                  Free => Free_Node'Access);
-            end;
-         end if;
+      if Is_Empty (Source) or else Target.Super.Data = Source.Super.Data then
+         null;
+      elsif Is_Empty (Target) then
+         Assign (Target, Source);
+      else
+         Unique (Target, True);
+         Unique (Source'Unrestricted_Access.all, False); -- private
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+         begin
+            Base.Merge (
+               Target_Data.Root,
+               Target_Data.Length,
+               Downcast (Source.Super.Data).Root,
+               (others => True),
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Free => Free_Node'Access);
+         end;
       end if;
    end Union;
 
    function Union (Left, Right : Set) return Set is
    begin
       return Result : Set do
-         if Is_Empty (Left) then
-            Assign (Result, Right);
-         elsif Is_Empty (Right) then
+         if Is_Empty (Right) or else Left.Super.Data = Right.Super.Data then
             Assign (Result, Left);
+         elsif Is_Empty (Left) then
+            Assign (Result, Right);
          else
             Unique (Result, True);
+            Unique (Left'Unrestricted_Access.all, False); -- private
+            Unique (Right'Unrestricted_Access.all, False); -- private
             declare
                Result_Data : constant Data_Access :=
                   Downcast (Result.Super.Data);
@@ -500,25 +502,25 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
-      if not Is_Empty (Target) then
-         if Is_Empty (Source) then
-            Clear (Target);
-         else
-            Unique (Target, True);
-            declare
-               Target_Data : constant Data_Access :=
-                  Downcast (Target.Super.Data);
-            begin
-               Base.Merge (
-                  Target_Data.Root,
-                  Target_Data.Length,
-                  Downcast (Source.Super.Data).Root,
-                  (Binary_Trees.In_Both => True, others => False),
-                  Compare => Compare_Node'Access,
-                  Copy => Copy_Node'Access,
-                  Free => Free_Node'Access);
-            end;
-         end if;
+      if Is_Empty (Target) or else Is_Empty (Source) then
+         Clear (Target);
+      elsif Target.Super.Data = Source.Super.Data then
+         null;
+      else
+         Unique (Target, True);
+         Unique (Source'Unrestricted_Access.all, False); -- private
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+         begin
+            Base.Merge (
+               Target_Data.Root,
+               Target_Data.Length,
+               Downcast (Source.Super.Data).Root,
+               (Binary_Trees.In_Both => True, others => False),
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Free => Free_Node'Access);
+         end;
       end if;
    end Intersection;
 
@@ -527,8 +529,12 @@ package body Ada.Containers.Ordered_Sets is
       return Result : Set do
          if Is_Empty (Left) or else Is_Empty (Right) then
             null; -- Empty_Set
+         elsif Left.Super.Data = Right.Super.Data then
+            Assign (Result, Left);
          else
             Unique (Result, True);
+            Unique (Left'Unrestricted_Access.all, False); -- private
+            Unique (Right'Unrestricted_Access.all, False); -- private
             declare
                Result_Data : constant Data_Access :=
                   Downcast (Result.Super.Data);
@@ -548,8 +554,13 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
-      if not Is_Empty (Target) and then not Is_Empty (Source) then
+      if Is_Empty (Target) or else Target.Super.Data = Source.Super.Data then
+         Clear (Target);
+      elsif Is_Empty (Source) then
+         null;
+      else
          Unique (Target, True);
+         Unique (Source'Unrestricted_Access.all, False); -- private
          declare
             Target_Data : constant Data_Access := Downcast (Target.Super.Data);
          begin
@@ -568,10 +579,14 @@ package body Ada.Containers.Ordered_Sets is
    function Difference (Left, Right : Set) return Set is
    begin
       return Result : Set do
-         if Is_Empty (Left) or else Is_Empty (Right) then
+         if Is_Empty (Left) or else Left.Super.Data = Right.Super.Data then
+            null; -- Empty_Set
+         elsif Is_Empty (Right) then
             Assign (Result, Left);
          else
             Unique (Result, True);
+            Unique (Left'Unrestricted_Access.all, False); -- private
+            Unique (Right'Unrestricted_Access.all, False); -- private
             declare
                Result_Data : constant Data_Access :=
                   Downcast (Result.Super.Data);
@@ -591,37 +606,43 @@ package body Ada.Containers.Ordered_Sets is
 
    procedure Symmetric_Difference (Target : in out Set; Source : Set) is
    begin
-      if not Is_Empty (Source) then
-         if Is_Empty (Target) then
-            Assign (Target, Source);
-         else
-            Unique (Target, True);
-            declare
-               Target_Data : constant Data_Access :=
-                  Downcast (Target.Super.Data);
-            begin
-               Base.Merge (
-                  Target_Data.Root,
-                  Target_Data.Length,
-                  Downcast (Source.Super.Data).Root,
-                  (Binary_Trees.In_Both => False, others => True),
-                  Compare => Compare_Node'Access,
-                  Copy => Copy_Node'Access,
-                  Free => Free_Node'Access);
-            end;
-         end if;
+      if Target.Super.Data = Source.Super.Data then
+         Clear (Target);
+      elsif Is_Empty (Source) then
+         null;
+      elsif Is_Empty (Target) then
+         Assign (Target, Source);
+      else
+         Unique (Target, True);
+         Unique (Source'Unrestricted_Access.all, False); -- private
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+         begin
+            Base.Merge (
+               Target_Data.Root,
+               Target_Data.Length,
+               Downcast (Source.Super.Data).Root,
+               (Binary_Trees.In_Both => False, others => True),
+               Compare => Compare_Node'Access,
+               Copy => Copy_Node'Access,
+               Free => Free_Node'Access);
+         end;
       end if;
    end Symmetric_Difference;
 
    function Symmetric_Difference (Left, Right : Set) return Set is
    begin
       return Result : Set do
-         if Is_Empty (Left) then
-            Assign (Result, Right);
+         if Left.Super.Data = Right.Super.Data then
+            null; -- Empty_Set
          elsif Is_Empty (Right) then
             Assign (Result, Left);
+         elsif Is_Empty (Left) then
+            Assign (Result, Right);
          else
             Unique (Result, True);
+            Unique (Left'Unrestricted_Access.all, False); -- private
+            Unique (Right'Unrestricted_Access.all, False); -- private
             declare
                Result_Data : constant Data_Access :=
                   Downcast (Result.Super.Data);

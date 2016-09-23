@@ -530,6 +530,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
    procedure Insert (
       Container : in out Vector'Class;
@@ -587,6 +589,7 @@ package body Ada.Containers.Limited_Vectors is
    end Prepend;
 
 --  diff (Append)
+--
 --
 --
 --

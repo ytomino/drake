@@ -497,9 +497,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
+--  diff
 --  diff
 --  diff
 --  diff
@@ -517,7 +520,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Compare => Compare_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
---  diff
 --  diff
 --  diff
    end Intersection;
@@ -545,9 +547,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -588,32 +599,42 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --
