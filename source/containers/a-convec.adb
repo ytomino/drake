@@ -144,6 +144,14 @@ package body Ada.Containers.Vectors is
       end;
    end Copy_Data;
 
+   function Max_Length (Data : not null Copy_On_Write.Data_Access)
+      return not null access Count_Type;
+   function Max_Length (Data : not null Copy_On_Write.Data_Access)
+      return not null access Count_Type is
+   begin
+      return Downcast (Data).Max_Length'Access;
+   end Max_Length;
+
    procedure Reallocate (
       Container : in out Vector;
       Length : Count_Type;
@@ -165,8 +173,8 @@ package body Ada.Containers.Vectors is
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
---  diff
+         Free => Free_Data'Access,
+         Max_Length => Max_Length'Access);
    end Reallocate;
 
    procedure Unique (Container : in out Vector; To_Update : Boolean);
@@ -309,16 +317,15 @@ package body Ada.Containers.Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
-      Data : constant Data_Access := Downcast (Container.Super.Data);
       Failure : Boolean;
    begin
       Copy_On_Write.In_Place_Set_Length (
-         Target_Data => Upcast (Data),
+         Target => Container.Super'Access,
          Target_Length => Container.Length,
-         Target_Max_Length => Data.Max_Length,
          Target_Capacity => Old_Capacity,
          New_Length => Length,
-         Failure => Failure);
+         Failure => Failure,
+         Max_Length => Max_Length'Access);
       if Failure then
          declare
             New_Capacity : Count_Type;

@@ -152,14 +152,15 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Free_Data;
 
    procedure Reallocate (Container : in out Set; Capacity : Count_Type);
+--  diff
+--  diff
+--  diff
    procedure Reallocate (Container : in out Set; Capacity : Count_Type) is
+--  diff
+--  diff
+--  diff
    begin
       Hash_Tables.Rebuild (Container.Table, Capacity);
---  diff
---  diff
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff

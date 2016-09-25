@@ -144,6 +144,14 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
+--  diff (Max_Length)
+--
+--
+--
+--
+--
+--
+
    procedure Reallocate (Container : in out Vector; Capacity : Count_Type);
    procedure Reallocate (Container : in out Vector; Capacity : Count_Type) is
    begin
@@ -309,7 +317,6 @@ package body Ada.Containers.Limited_Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
---  diff
 --  diff
    begin
 --  diff

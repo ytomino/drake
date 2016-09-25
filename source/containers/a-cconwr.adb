@@ -53,6 +53,8 @@ package body Ada.Containers.Copy_On_Write is
       pragma Check (Trace, Debug.Put ("leave"));
    end Unfollow;
 
+   Constant_Zero : aliased constant Count_Type := 0;
+
    --  implementation
 
    function Shared (Data : Data_Access) return Boolean is
@@ -87,8 +89,9 @@ package body Ada.Containers.Copy_On_Write is
       if Target.Data /= Source.Data then
          Clear (Target, Free);
          if Source.Data = null then
-            Target.Data := null;
+            pragma Assert (Target.Data = null);
             pragma Assert (Target.Next_Follower = null);
+            null;
          else
             System.Shared_Locking.Enter;
             Follow (Target, Source.Data);
@@ -218,7 +221,11 @@ package body Ada.Containers.Copy_On_Write is
       Free : not null access procedure (Object : in out Data_Access)) is
    begin
       Unique (Target, 0, 0, 0, 0, To_Update,
-         Allocate => Allocate, Move => Move, Copy => Copy, Free => Free);
+         Allocate => Allocate,
+         Move => Move,
+         Copy => Copy,
+         Free => Free,
+         Max_Length => Zero'Access);
    end Unique;
 
    procedure Unique (
@@ -244,31 +251,35 @@ package body Ada.Containers.Copy_On_Write is
          Length : Count_Type;
          New_Length : Count_Type;
          Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access)) is
+      Free : not null access procedure (Object : in out Data_Access);
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type) is
    begin
       if Target.Data /= null then
          if Target.Data.Follower = Target
             and then New_Capacity = Target_Capacity
          then
             if To_Update then
-               System.Shared_Locking.Enter;
-               if Target.Next_Follower /= null then
-                  --  detach next-followers
-                  declare
+               if Target.Next_Follower /= null then -- shared
+                  declare -- target(owner) can access its Max_Length
+                     Max_Length : constant Count_Type :=
+                        Unique.Max_Length (Target.Data).all;
                      New_Data : Data_Access;
+                     To_Free : Data_Access := null;
                   begin
-                     System.Shared_Locking.Leave; -- *B*
                      Copy (
                         New_Data,
                         Target.Data,
-                        Target_Length,
-                        New_Length,
-                        New_Capacity);
-                     System.Shared_Locking.Enter;
+                        Max_Length,
+                        Max_Length,
+                        Target_Capacity); -- not shrinking
                      --  target uses old data, other followers use new data
+                     System.Shared_Locking.Enter;
                      if Target.Next_Follower = null then
-                        Free (New_Data); -- unfollowed by other task at *B*
+                        --  all other containers unfollowed it by another task
+                        To_Free := New_Data;
                      else
+                        --  reattach next-followers to new copied data
                         New_Data.Follower := Target.Next_Follower;
                         declare
                            I : access Container := Target.Next_Follower;
@@ -280,20 +291,22 @@ package body Ada.Containers.Copy_On_Write is
                         end;
                      end if;
                      Target.Next_Follower := null;
+                     System.Shared_Locking.Leave;
+                     if To_Free /= null then
+                        Free (To_Free);
+                     end if;
                   end;
                end if;
-               System.Shared_Locking.Leave;
             end if;
          else
             --  reallocation
-            System.Shared_Locking.Enter;
             declare
                To_Copy : constant Boolean :=
                   Target.Data.Follower.Next_Follower /= null; -- shared
+                  --  should this reading be locked or not?
                New_Data : Data_Access;
                To_Free : Data_Access;
             begin
-               System.Shared_Locking.Leave; -- *A*
                if To_Copy then
                   Copy (
                      New_Data,
@@ -311,13 +324,14 @@ package body Ada.Containers.Copy_On_Write is
                end if;
                System.Shared_Locking.Enter;
                Unfollow (Target, To_Free);
+               Follow (Target, New_Data);
+               System.Shared_Locking.Leave;
                pragma Assert (To_Copy or else To_Free /= null);
                if To_Free /= null then
-                  Free (To_Free); -- unfollowed by other task at *A*, or move
+                  --  all containers unfollowed it by another task, or move
+                  Free (To_Free);
                end if;
-               Follow (Target, New_Data);
             end;
-            System.Shared_Locking.Leave;
          end if;
       else
          declare
@@ -330,12 +344,13 @@ package body Ada.Containers.Copy_On_Write is
    end Unique;
 
    procedure In_Place_Set_Length (
-      Target_Data : Data_Access;
+      Target : not null access Container;
       Target_Length : Count_Type;
-      Target_Max_Length : aliased in out Count_Type;
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
-      Failure : out Boolean) is
+      Failure : out Boolean;
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type) is
    begin
       if New_Length > Target_Length then
          --  inscreasing
@@ -344,25 +359,41 @@ package body Ada.Containers.Copy_On_Write is
             Failure := True; -- should be reallocated
          else
             --  try to use reserved area
-            pragma Assert (Target_Data /= null); -- Target_Capacity > 0
-            System.Shared_Locking.Enter; -- emulate CAS
-            if Target_Max_Length = Target_Length
-               or else Target_Data.Follower.Next_Follower = null -- not shared
-            then
-               Target_Max_Length := New_Length;
+            pragma Assert (Target.Data /= null); -- Target_Capacity > 0
+            if Target.Data.Follower.Next_Follower = null then -- not shared
+               Max_Length (Target.Data).all := New_Length;
                Failure := False; -- success
+            elsif Target.Data.Follower = Target then
+               declare -- the owner only can access its Max_Length
+                  Max_Length : constant not null access Count_Type :=
+                     In_Place_Set_Length.Max_Length (Target.Data);
+               begin
+                  if Max_Length.all = Target_Length then
+                     Max_Length.all := New_Length;
+                     Failure := False; -- success
+                  else
+                     Failure := True; -- should be copied
+                  end if;
+               end;
             else
                Failure := True; -- should be copied
             end if;
-            System.Shared_Locking.Leave;
          end if;
       else
          --  decreasing
-         if not Shared (Target_Data) then
-            Target_Max_Length := New_Length;
+         if not Shared (Target.Data) then
+            Max_Length (Target.Data).all := New_Length;
          end if;
          Failure := False; -- success
       end if;
    end In_Place_Set_Length;
+
+   function Zero (Data : not null Data_Access)
+      return not null access Count_Type
+   is
+      pragma Unreferenced (Data);
+   begin
+      return Constant_Zero'Unrestricted_Access;
+   end Zero;
 
 end Ada.Containers.Copy_On_Write;

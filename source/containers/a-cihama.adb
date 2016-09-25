@@ -176,7 +176,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
+         Free => Free_Data'Access,
+         Max_Length => Copy_On_Write.Zero'Access);
    end Reallocate;
 
    procedure Unique (Container : in out Map; To_Update : Boolean);

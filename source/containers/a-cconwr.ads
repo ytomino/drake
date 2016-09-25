@@ -119,16 +119,22 @@ private package Ada.Containers.Copy_On_Write is
          Length : Count_Type; -- copying length
          New_Length : Count_Type;
          Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access));
+      Free : not null access procedure (Object : in out Data_Access);
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type);
 
    --  Note: Copy and Reserve_Capacity also make a container unique.
 
    procedure In_Place_Set_Length (
-      Target_Data : Data_Access;
+      Target : not null access Container;
       Target_Length : Count_Type;
-      Target_Max_Length : aliased in out Count_Type; -- may be updated
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
-      Failure : out Boolean); -- reallocation is needed
+      Failure : out Boolean; -- reallocation is needed
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type);
+
+   function Zero (Data : not null Data_Access)
+      return not null access Count_Type;
 
 end Ada.Containers.Copy_On_Write;
