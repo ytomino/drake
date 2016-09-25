@@ -43,22 +43,57 @@ private package Ada.Containers.Copy_On_Write is
    procedure Copy (
       Target : not null access Container;
       Source : not null access constant Container;
-      Length : Count_Type;
-      New_Capacity : Count_Type;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
+         Capacity : Count_Type));
+
+   procedure Copy (
+      Target : not null access Container;
+      Source : not null access constant Container;
+      Length : Count_Type;
+      New_Capacity : Count_Type;
+      Allocate : not null access procedure (
+         Target : out not null Data_Access;
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Copy : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
          Capacity : Count_Type));
 
    procedure Move (
       Target : not null access Container;
       Source : not null access Container;
+      Free : not null access procedure (Object : in out Data_Access));
+
+   procedure Unique (
+      Target : not null access Container;
+      To_Update : Boolean;
+      Allocate : not null access procedure (
+         Target : out not null Data_Access;
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Move : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Copy : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
+         Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
    procedure Unique (
@@ -70,19 +105,19 @@ private package Ada.Containers.Copy_On_Write is
       To_Update : Boolean;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Move : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access));
 

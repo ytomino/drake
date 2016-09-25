@@ -178,10 +178,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
---
---
---
---
 
    --  implementation
 
@@ -328,8 +324,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
 --  diff (Copy)
---
---
 --
 --
 --

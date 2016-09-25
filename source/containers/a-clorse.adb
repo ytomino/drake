@@ -174,10 +174,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
---
---
 
    function Equivalent_Sets (
       Left, Right : Set;
@@ -328,8 +324,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 
 --  diff (Copy)
---
---
 --
 --
 --

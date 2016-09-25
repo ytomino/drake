@@ -104,14 +104,14 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
-      pragma Unreferenced (Max_Length);
+      pragma Unreferenced (New_Length);
       New_Data : constant Data_Access :=
          new Data'(Super => <>, Table => null, Length => 0);
    begin
@@ -123,17 +123,17 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
-      pragma Unreferenced (Max_Length);
+      pragma Unreferenced (New_Length);
       New_Data : constant Data_Access :=
          new Data'(Super => <>, Table => null, Length => 0);
    begin

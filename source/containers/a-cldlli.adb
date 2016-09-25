@@ -155,10 +155,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
---
---
 
    --  implementation
 
@@ -273,8 +269,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 
 --  diff (Copy)
---
---
 --
 --
 --

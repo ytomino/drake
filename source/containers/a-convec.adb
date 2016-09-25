@@ -70,18 +70,18 @@ package body Ada.Containers.Vectors is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
       New_Data : constant Data_Access :=
          new Data'(
             Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
             Super => <>,
-            Max_Length => Max_Length,
+            Max_Length => New_Length,
             Items => <>);
    begin
       Target := Upcast (New_Data);
@@ -118,16 +118,16 @@ package body Ada.Containers.Vectors is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type) is
    begin
-      Allocate_Data (Target, Max_Length, Capacity);
+      Allocate_Data (Target, New_Length, Capacity);
       declare
          subtype R is
             Extended_Index range
