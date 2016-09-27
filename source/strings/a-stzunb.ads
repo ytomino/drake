@@ -25,11 +25,11 @@ package Ada.Strings.Wide_Wide_Unbounded is
 
    --  Conversion, Concatenation, and Selection functions
 
-   function To_Unbounded_Widw_Wide_String (Source : Wide_Wide_String)
+   function To_Unbounded_Wide_Wide_String (Source : Wide_Wide_String)
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.To_Unbounded_String;
 
-   function To_Unbounded_Widw_Wide_String (Length : Natural)
+   function To_Unbounded_Wide_Wide_String (Length : Natural)
       return Unbounded_Wide_Wide_String
       renames Unbounded_Wide_Wide_Strings.To_Unbounded_String;
 
