@@ -1,10 +1,7 @@
 with Ada.Environment_Variables;
 with Ada.IO_Modes;
 with Ada.Streams.Unbounded_Storage_IO;
--- all Text_Streams
 with Ada.Text_IO.Text_Streams;
-with Ada.Wide_Text_IO.Text_Streams;
-with Ada.Wide_Wide_Text_IO.Text_Streams;
 procedure textstream is
 	use type Ada.Streams.Stream_Element_Offset;
 	use type Ada.Text_IO.Count;

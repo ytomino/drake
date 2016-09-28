@@ -1,10 +1,8 @@
 with Ada;
 with Interfaces.C.Char_Pointers;
 with Interfaces.C.Pointers;
--- all instances of Interfaces.C.Generic_Strings
 with Interfaces.C.Strings;
 with Interfaces.C.Wide_WStrings;
-with Interfaces.C.Wide_Wide_WStrings;
 procedure intf is
 begin
 	-- Import

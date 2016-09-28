@@ -1,7 +1,4 @@
--- all Editing
 with Ada.Text_IO.Editing;
-with Ada.Wide_Text_IO.Editing;
-with Ada.Wide_Wide_Text_IO.Editing;
 procedure textioed is
 	type T is delta 0.001 digits 12;
 	package O is new Ada.Text_IO.Editing.Decimal_Output (T);
@@ -36,7 +33,7 @@ begin
 		"10");
 	begin
 		declare -- overflow
-			S : constant String :=
+			Dummy : constant String :=
 				O.Image (1000.0, Ada.Text_IO.Editing.To_Picture ("--9"));
 		begin
 			null;

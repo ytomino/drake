@@ -14,9 +14,7 @@ with Ada.Formatting;
 with Ada.Integer_Text_IO;
 with Ada.Real_Time;
 with Ada.Text_IO;
--- all instances of Ada.Numerics.SFMT.Random
 with Ada.Numerics.SFMT_19937;
-with Ada.Numerics.SFMT_216091;
 procedure random_sfmt is
 	use Ada.Numerics.SFMT_19937;
 	-- use Ada.Numerics.SFMT.Params_216091;

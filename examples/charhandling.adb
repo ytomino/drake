@@ -1,8 +1,6 @@
 with Ada.Characters.ASCII.Handling;
 with Ada.Characters.Handling;
 with Ada.Strings.Maps.Constants;
-with Ada.Wide_Characters.Handling;
-with Ada.Wide_Wide_Characters.Handling;
 procedure charhandling is
 	package UH renames Ada.Characters.Handling;
 	package AH renames Ada.Characters.ASCII.Handling;

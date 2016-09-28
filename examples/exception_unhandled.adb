@@ -28,7 +28,9 @@ begin
 			procedure Handle_T2 (
 				Cause : Ada.Task_Termination.Cause_Of_Termination;
 				T : Ada.Task_Identification.Task_Id;
-				X : Ada.Exceptions.Exception_Occurrence) is
+				X : Ada.Exceptions.Exception_Occurrence)
+			is
+				pragma Unreferenced (T);
 			begin
 				case Cause is
 					when Ada.Task_Termination.Normal

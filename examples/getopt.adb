@@ -1,8 +1,8 @@
+-- Demonstration of the extended units: Ada.Command_Line.Generic_Parsing
+-- Please use Ada.Command_Line.Parsing for actual command line.
 with Ada.Command_Line.Generic_Parsing;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Strings.Unbounded;
--- for compiling test
-with Ada.Command_Line.Parsing;
 procedure getopt is
 	use type Ada.Containers.Count_Type;
 	use type Ada.Strings.Unbounded.Unbounded_String;
