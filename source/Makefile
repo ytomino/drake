@@ -85,14 +85,17 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
+ARGLIMIT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
+ARGLIMIT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
+ARGLIMIT=
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
@@ -101,10 +104,12 @@ EH=sjlj
 endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
+ARGLIMIT=500
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
+ARGLIMIT=
 endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
@@ -325,7 +330,12 @@ tree: $(TREE)
 
 $(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
+ifneq ($(ARGLIMIT),)
+	find $(LIBGNAT_BUILDDIR) -name "*.o" | xargs -L $(ARGLIMIT) $(AR) -qS $@
+	$(AR) -s $@
+else
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+endif
 
 $(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
