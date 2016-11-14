@@ -128,11 +128,9 @@ package Ada.Numerics.SFMT is
    --  This constant means the minimum size of array used for
    --    Fill_Random_32 procedure.
    Min_Array_Length_32 : constant Natural;
-   pragma Warnings (Off, Min_Array_Length_32);
    --  This constant means the minimum size of array used for
    --    Fill_Random_64 procedure.
    Min_Array_Length_64 : constant Natural;
-   pragma Warnings (Off, Min_Array_Length_64);
 
    subtype Uniformly_Distributed is Long_Long_Float range 0.0 .. 1.0;
 
