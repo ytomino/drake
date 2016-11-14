@@ -363,18 +363,8 @@ package body Ada.Directories.Information is
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       loop
          declare
-            function To_size (X : C.size_t) return C.size_t renames "+"; -- OSX
-            function To_size (X : C.size_t) return C.signed_int; -- FreeBSD
-            function To_size (X : C.size_t) return C.signed_int is
-            begin
-               return C.signed_int (X);
-            end To_size;
-            pragma Warnings (Off, To_size);
             Length : constant C.sys.types.ssize_t :=
-               C.unistd.readlink (
-                  C_Name (0)'Access,
-                  Buffer,
-                  To_size (Buffer_Length));
+               C.unistd.readlink (C_Name (0)'Access, Buffer, Buffer_Length);
          begin
             if Length < 0 then
                Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
