@@ -35,6 +35,7 @@ package body Ada.Streams.Naked_Stream_IO is
          if Item'Length > 0
             and then (
                Item (Item'First) = 'a' -- allow
+               or else Item (Item'First) = 'n' -- no, compatibility
                or else Item (Item'First) = 'y') -- yes, compatibility
          then
             Form.Shared := IO_Modes.Allow;
@@ -42,8 +43,6 @@ package body Ada.Streams.Naked_Stream_IO is
             Form.Shared := IO_Modes.Read_Only;
          elsif Item'Length > 0 and then Item (Item'First) = 'd' then -- deny
             Form.Shared := IO_Modes.Deny;
-         elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
-            Form.Shared := IO_Modes.By_Mode;
          end if;
       elsif Keyword = "wait" then
          if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
