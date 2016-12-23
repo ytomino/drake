@@ -119,8 +119,9 @@ package body System.Unwind.Searching is
                      + 8
                         * C.basetsd.ULONG64 (
                            PUINT16_Conv.To_Pointer (
-                              unsigned_char_const_ptr_Conv.To_Address (
-                                 unw + 2)).all);
+                                 unsigned_char_const_ptr_Conv.To_Address (
+                                    unw + 2))
+                              .all);
                   len := len - 1;
                   unw := unw + 2;
                when UWOP_SAVE_NONVOL | UWOP_SAVE_XMM128 =>
@@ -376,9 +377,8 @@ package body System.Unwind.Searching is
                                     choice = Cast (GCC_Exception.Occurrence.Id)
                                     or else (
                                        choice = Cast (Others_Value'Access)
-                                       and then
-                                          not GCC_Exception.Occurrence.Id.
-                                             Not_Handled_By_Others)
+                                       and then not GCC_Exception.Occurrence.Id
+                                          .Not_Handled_By_Others)
                                     or else
                                        choice = Cast (All_Others_Value'Access);
                               end if;
@@ -540,8 +540,10 @@ package body System.Unwind.Searching is
                         if RuntimeFunction = null then
                            --  In case of failure,
                            --    assume this is a leaf function.
-                           context.Rip := PDWORD64_Conv.To_Pointer (
-                              System'To_Address (context.Rsp)).all;
+                           context.Rip :=
+                              PDWORD64_Conv.To_Pointer (
+                                    System'To_Address (context.Rsp))
+                                 .all;
                            context.Rsp := context.Rsp + 8;
                         else
                            --  Unwind.

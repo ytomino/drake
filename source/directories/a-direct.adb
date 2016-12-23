@@ -508,7 +508,8 @@ package body Ada.Directories is
             --  checking the predicate and Position in Constant_Reference
             NC_Next_Directory_Entry : Non_Controlled_Directory_Entry_Type
                renames Controlled_Entries.Reference (
-                  Source_Reference.Element.all).all;
+                     Source_Reference.Element.all)
+                  .all;
             NC_Result : Non_Controlled_Directory_Entry_Type
                renames Controlled_Entries.Reference (Result).all;
          begin

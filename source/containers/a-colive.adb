@@ -378,6 +378,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Replace_Element)
 --
@@ -406,8 +407,9 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Process (
          Constant_Reference (
-            Vector (Container),
-            Index).Element.all); -- checking Constraint_Error
+               Vector (Container),
+               Index) -- checking Constraint_Error
+            .Element.all);
    end Query_Element;
 
    procedure Update_Element (
@@ -416,9 +418,8 @@ package body Ada.Containers.Limited_Vectors is
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
       Process (
-         Reference (
-            Vector (Container),
-            Position).Element.all); -- checking Constraint_Error
+         Reference (Vector (Container), Position) -- checking Constraint_Error
+            .Element.all);
    end Update_Element;
 
    function Constant_Reference (Container : aliased Vector; Position : Cursor)

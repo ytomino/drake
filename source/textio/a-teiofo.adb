@@ -426,8 +426,8 @@ package body Ada.Text_IO.Formatting is
                if not End_Of_Line then
                   declare
                      Length : Natural;
-                     Sequence_Status : System.UTF_Conversions.
-                        Sequence_Status_Type; -- ignore
+                     Sequence_Status :
+                        System.UTF_Conversions.Sequence_Status_Type; -- ignore
                   begin
                      System.UTF_Conversions.UTF_8_Sequence (
                         Item,
