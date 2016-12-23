@@ -38,8 +38,8 @@ package body Ada.Containers.Access_Holders is
 
    function Null_Holder return Holder is
    begin
-      return (Finalization.Controlled with
-         Data => Null_Data'Unrestricted_Access);
+      return (Finalization.Controlled
+         with Data => Null_Data'Unrestricted_Access);
    end Null_Holder;
 
    overriding function "=" (Left, Right : Holder) return Boolean is
@@ -135,12 +135,12 @@ package body Ada.Containers.Access_Holders is
 
       function To_Weak_Holder (Source : Holder) return Weak_Holder is
       begin
-         return Result : Weak_Holder := (
-            Finalization.Controlled with
-            Super => (
-               Data => Source.Data.Super'Unchecked_Access,
-               Previous => <>,
-               Next => <>))
+         return Result : Weak_Holder :=
+            (Finalization.Controlled
+               with Super => (
+                  Data => Source.Data.Super'Unchecked_Access,
+                  Previous => <>,
+                  Next => <>))
          do
             Adjust (Result);
          end return;

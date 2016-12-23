@@ -27,10 +27,8 @@ package body Ada.Text_IO.Iterators is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) = In_File or else raise Mode_Error);
    begin
-      return (Finalization.Limited_Controlled with
-         File => File'Unrestricted_Access,
-         Item => null,
-         Count => 0);
+      return (Finalization.Limited_Controlled
+         with File => File'Unrestricted_Access, Item => null, Count => 0);
    end Lines;
 
    function Has_Element (Position : Line_Cursor) return Boolean is

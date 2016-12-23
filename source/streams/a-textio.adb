@@ -1510,17 +1510,17 @@ package body Ada.Text_IO is
 
    package body Controlled is
 
-      Standard_Input_Object : aliased File_Type := (
-         Finalization.Limited_Controlled with
-         Text => Naked_Text_IO.Standard_Input);
+      Standard_Input_Object : aliased File_Type :=
+         (Finalization.Limited_Controlled
+            with Text => Naked_Text_IO.Standard_Input);
 
-      Standard_Output_Object : aliased File_Type := (
-         Finalization.Limited_Controlled with
-         Text => Naked_Text_IO.Standard_Output);
+      Standard_Output_Object : aliased File_Type :=
+         (Finalization.Limited_Controlled
+            with Text => Naked_Text_IO.Standard_Output);
 
-      Standard_Error_Object : aliased File_Type := (
-         Finalization.Limited_Controlled with
-         Text => Naked_Text_IO.Standard_Error);
+      Standard_Error_Object : aliased File_Type :=
+         (Finalization.Limited_Controlled
+            with Text => Naked_Text_IO.Standard_Error);
 
       Current_Input : aliased File_Access := Standard_Input_Object'Access;
       Current_Output : aliased File_Access := Standard_Output_Object'Access;

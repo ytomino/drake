@@ -32,10 +32,11 @@ package body Ada.Exceptions.Finally is
          Handler (To_Pointer (Params).all);
       end Finally;
 
-      Object : Finalizer := (
-         Finalization.Limited_Controlled with
-         Params => System.Null_Address,
-         Handler => Finally'Unrestricted_Access);
+      Object : Finalizer :=
+         (Finalization.Limited_Controlled
+            with
+               Params => System.Null_Address,
+               Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
 
       procedure Assign (Params : aliased in out Parameters) is
@@ -62,10 +63,11 @@ package body Ada.Exceptions.Finally is
       begin
          Handler (To_Pointer (Params).all);
       end Finally;
-      Object : Finalizer := (
-         Finalization.Limited_Controlled with
-         Params => Params'Address,
-         Handler => Finally'Unrestricted_Access);
+      Object : Finalizer :=
+         (Finalization.Limited_Controlled
+            with
+               Params => Params'Address,
+               Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
    begin
       Process.all (Params);
@@ -83,10 +85,11 @@ package body Ada.Exceptions.Finally is
       begin
          Handler (To_Pointer (Params).all);
       end Finally;
-      Object : Finalizer := (
-         Finalization.Limited_Controlled with
-         Params => Params'Address,
-         Handler => Finally'Unrestricted_Access);
+      Object : Finalizer :=
+         (Finalization.Limited_Controlled
+            with
+               Params => Params'Address,
+               Handler => Finally'Unrestricted_Access);
       pragma Unreferenced (Object);
    begin
       Process.all (Params);
