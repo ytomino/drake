@@ -122,9 +122,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2)) * 256
                               + Character'Pos (Data (Data'First + 3)));
-                        W_Data : constant Wide_String (
-                           1 ..
-                           System.UTF_Conversions.UTF_16_Max_Length) :=
+                        W_Data : constant
+                              Wide_String (
+                                 1 ..
+                                 System.UTF_Conversions.UTF_16_Max_Length) :=
                            (Leading, Trailing);
                         W_Last : Natural;
                      begin
@@ -209,9 +210,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2))
                               + Character'Pos (Data (Data'First + 3)) * 256);
-                        W_Data : constant Wide_String (
-                           1 ..
-                           System.UTF_Conversions.UTF_16_Max_Length) :=
+                        W_Data : constant
+                              Wide_String (
+                                 1 ..
+                                 System.UTF_Conversions.UTF_16_Max_Length) :=
                            (Leading, Trailing);
                         W_Last : Natural;
                      begin
@@ -352,29 +354,31 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end if;
    end From_UTF_32LE;
 
-   To_UTF : constant array (Encoding_Scheme) of
-      not null access procedure (
-         Code : System.UTF_Conversions.UCS_4;
-         Result : out UTF_String;
-         Last : out Natural;
-         Status : out System.UTF_Conversions.To_Status_Type) := (
-            UTF_8 => To_UTF_8'Access,
-            UTF_16BE => To_UTF_16BE'Access,
-            UTF_16LE => To_UTF_16LE'Access,
-            UTF_32BE => To_UTF_32BE'Access,
-            UTF_32LE => To_UTF_32LE'Access);
+   To_UTF : constant
+         array (Encoding_Scheme) of
+            not null access procedure (
+               Code : System.UTF_Conversions.UCS_4;
+               Result : out UTF_String;
+               Last : out Natural;
+               Status : out System.UTF_Conversions.To_Status_Type) := (
+      UTF_8 => To_UTF_8'Access,
+      UTF_16BE => To_UTF_16BE'Access,
+      UTF_16LE => To_UTF_16LE'Access,
+      UTF_32BE => To_UTF_32BE'Access,
+      UTF_32LE => To_UTF_32LE'Access);
 
-   From_UTF : constant array (Encoding_Scheme) of
-      not null access procedure (
-         Data : UTF_String;
-         Last : out Natural;
-         Result : out System.UTF_Conversions.UCS_4;
-         Status : out System.UTF_Conversions.From_Status_Type) := (
-            UTF_8 => From_UTF_8'Access,
-            UTF_16BE => From_UTF_16BE'Access,
-            UTF_16LE => From_UTF_16LE'Access,
-            UTF_32BE => From_UTF_32BE'Access,
-            UTF_32LE => From_UTF_32LE'Access);
+   From_UTF : constant
+         array (Encoding_Scheme) of
+            not null access procedure (
+               Data : UTF_String;
+               Last : out Natural;
+               Result : out System.UTF_Conversions.UCS_4;
+               Status : out System.UTF_Conversions.From_Status_Type) := (
+      UTF_8 => From_UTF_8'Access,
+      UTF_16BE => From_UTF_16BE'Access,
+      UTF_16LE => From_UTF_16LE'Access,
+      UTF_32BE => From_UTF_32BE'Access,
+      UTF_32LE => From_UTF_32LE'Access);
 
    --  conversions between various encoding schemes
 

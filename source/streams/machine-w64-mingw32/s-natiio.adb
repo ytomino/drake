@@ -188,11 +188,13 @@ package body System.Native_IO is
             ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
          else
             declare
-               Lock_Flags : constant array (
-                  Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                  Ada.IO_Modes.Deny) of C.windef.DWORD := (
-                     Ada.IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
-                     Ada.IO_Modes.Deny => 0);
+               Lock_Flags : constant
+                     array (
+                           Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
+                           Ada.IO_Modes.Deny) of
+                        C.windef.DWORD := (
+                  Ada.IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
+                  Ada.IO_Modes.Deny => 0);
             begin
                ShareMode := Lock_Flags (Shared);
             end;
@@ -227,11 +229,13 @@ package body System.Native_IO is
       end if;
       if Shared /= Ada.IO_Modes.Allow and then Form.Wait then
          declare
-            Flags : constant array (
-               Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-               Ada.IO_Modes.Deny) of C.windef.DWORD := (
-                  Ada.IO_Modes.Read_Only => 0,
-                  Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
+            Flags : constant
+                  array (
+                        Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
+                        Ada.IO_Modes.Deny) of
+                     C.windef.DWORD := (
+               Ada.IO_Modes.Read_Only => 0,
+               Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
             Overlapped : aliased C.winbase.OVERLAPPED :=
                (0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
          begin
