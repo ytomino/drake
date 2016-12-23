@@ -167,7 +167,7 @@ begin
 		use type V.u_int8_t;
 		Target : Combining_Class_Maps.Map renames VFS_Combining_Class_Map;
 	begin
-		for I in C.size_t'(0) .. 16#FFFF# loop
+		for I in C.size_t range 0 .. 16#FFFF# loop
 			declare
 				value : V.u_int8_t := V.CFUniCharCombiningPropertyBitmap (I / 2 ** 8);
 			begin

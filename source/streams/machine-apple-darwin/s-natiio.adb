@@ -203,8 +203,8 @@ package body System.Native_IO is
             declare
                Lock_Flags : constant
                      array (
-                           Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                           Ada.IO_Modes.Deny) of
+                           Ada.IO_Modes.File_Shared range
+                              Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
                         C.unsigned_int := (
                   Ada.IO_Modes.Read_Only => C.fcntl.O_SHLOCK,
                   Ada.IO_Modes.Deny => C.fcntl.O_EXLOCK);
@@ -250,8 +250,8 @@ package body System.Native_IO is
          Race_Is_Raising : constant Boolean := not Form.Wait;
          Operation_Table : constant
                array (
-                     Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                     Ada.IO_Modes.Deny) of
+                     Ada.IO_Modes.File_Shared range
+                        Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
                   C.unsigned_int := (
             Ada.IO_Modes.Read_Only => C.sys.file.LOCK_SH,
             Ada.IO_Modes.Deny => C.sys.file.LOCK_EX);

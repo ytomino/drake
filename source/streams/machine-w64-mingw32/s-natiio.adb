@@ -190,8 +190,8 @@ package body System.Native_IO is
             declare
                Lock_Flags : constant
                      array (
-                           Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                           Ada.IO_Modes.Deny) of
+                           Ada.IO_Modes.File_Shared range
+                              Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
                         C.windef.DWORD := (
                   Ada.IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
                   Ada.IO_Modes.Deny => 0);
@@ -231,8 +231,8 @@ package body System.Native_IO is
          declare
             Flags : constant
                   array (
-                        Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                        Ada.IO_Modes.Deny) of
+                        Ada.IO_Modes.File_Shared range
+                           Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
                      C.windef.DWORD := (
                Ada.IO_Modes.Read_Only => 0,
                Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
