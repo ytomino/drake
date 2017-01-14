@@ -686,13 +686,7 @@ package body Ada.Hierarchical_File_Names is
          First => First,
          Last => Last,
          Parent_Count => Parent_Count);
-      if Parent_Count = 0 then
-         if First <= Last then
-            return Directory (First .. Last);
-         else
-            return Current_Directory_Name;
-         end if;
-      else
+      if Parent_Count > 0 then
          if First <= Last then -- Parent_Directory ("/")
             --  raise Use_Error ?
             return Compose (
@@ -706,6 +700,10 @@ package body Ada.Hierarchical_File_Names is
                Parent_Count,
                Path_Delimiter => Path_Delimiter);
          end if;
+      elsif First > Last then
+         return Current_Directory_Name;
+      else
+         return Directory (First .. Last);
       end if;
    end Parent_Directory;
 
