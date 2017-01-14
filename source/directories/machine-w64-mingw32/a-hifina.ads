@@ -128,6 +128,15 @@ package Ada.Hierarchical_File_Names is
       return String;
 
    --  extended
+   --  There is a procedure version. It also propagates Use_Error.
+   procedure Relative_Name (
+      Name : String;
+      First : out Positive;
+      Last : out Natural;
+      From : String;
+      Parent_Count : out Natural);
+
+   --  extended
    --  This is a "folded" version of Containing_Directory if Directory /= "".
    --    Otherwise, it returns ".." as the parent directory name.
    --  For example: Parent_Directory ("A/B/.") = "A"
