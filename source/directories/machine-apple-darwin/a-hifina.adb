@@ -608,7 +608,7 @@ package body Ada.Hierarchical_File_Names is
             return Current_Directory_Name;
          end if;
       else
-         if First <= Last then -- Is_Full_Name (Directory)
+         if First <= Last then -- Parent_Directory ("/")
             --  raise Use_Error ?
             return Compose (
                Directory (First .. Last),

@@ -132,7 +132,7 @@ package Ada.Hierarchical_File_Names is
    --    Otherwise, it returns ".." as the parent directory name.
    --  For example: Parent_Directory ("A/B/.") = "A"
    --    Parent_Directory ("A/B/C/..") = "A"
-   --    Parent_Directory (Name) = Compose (Name, "..")
+   --    Parent_Directory (Name) = Normalized_Compose (Name, "..")
    function Parent_Directory (
       Directory : String;
       Path_Delimiter : Path_Delimiter_Type := Default_Path_Delimiter)

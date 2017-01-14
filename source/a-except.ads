@@ -114,7 +114,7 @@ private
       Tracebacks => (others => System.Null_Address));
 
    --  optionally required by compiler (a-except-2005.ads)
-   --  for raising, Raise_Exception may be called if not existing (exp_ch6.adb)
+   --  Raise_Exception may be called if it is removed. (exp_ch6.adb)
    procedure Raise_Exception_Always (E : Exception_Id; Message : String := "")
       renames Raise_Exception;
 
@@ -132,7 +132,7 @@ private
    pragma No_Return (Reraise_Occurrence_No_Defer);
 
    --  optionally required by compiler (a-except-2005.ads)
-   --  raise Program_Error if not existing (exp_ch7.adb)
+   --  Raising Program_Error may be inserted if it is removed. (exp_ch7.adb)
    procedure Raise_From_Controlled_Operation (X : Exception_Occurrence)
       with Import,
          Convention => Ada,

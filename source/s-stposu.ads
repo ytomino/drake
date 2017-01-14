@@ -90,7 +90,7 @@ private
       Object : in out Root_Storage_Pool_With_Subpools);
    overriding procedure Finalize (
       Object : in out Root_Storage_Pool_With_Subpools);
-      --  reraise some exception raised from its own objects
+      --  reraise some exception propagated from its own objects
 
    type Root_Storage_Pool_With_Subpools_Access is
       access all Root_Storage_Pool_With_Subpools'Class;

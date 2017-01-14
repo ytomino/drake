@@ -95,7 +95,7 @@ package Ada.Numerics.MT19937 is
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
 
-   --  Note: Use_Error may be raised from Initialize.
+   --  Note: Initialize propagates Use_Error if it failed.
 
 private
 

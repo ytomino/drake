@@ -6,7 +6,7 @@ package System.Exp_Mod is
    pragma Pure;
 
    --  required for "**" by compiler (s-expmod.ads)
-   --  modular type does not raise exceptions.
+   --  Modular types do not raise the exceptions.
    function Exp_Modular is
       new Exponentiations.Generic_Exp_Modular (
          Unsigned_Types.Unsigned,

@@ -6,7 +6,7 @@ package System.Exp_Uns is
    pragma Pure;
 
    --  required for "**" by compiler (s-expuns.ads)
-   --  modular type does not raise exceptions.
+   --  Modular types do not raise the exceptions.
    function Exp_Unsigned is
       new Exponentiations.Generic_Exp_Unsigned (
          Unsigned_Types.Unsigned,
