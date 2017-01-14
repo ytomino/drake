@@ -159,6 +159,9 @@ package body Ada.Hierarchical_File_Names is
       Last : Natural;
    begin
       Simple_Name (Name, First => First, Last => Last);
+      if First > Last then
+         Raise_Exception (Name_Error'Identity); -- CXAG002
+      end if;
       return Name (First .. Last);
    end Simple_Name;
 
@@ -350,7 +353,7 @@ package body Ada.Hierarchical_File_Names is
       Last : Natural;
    begin
       Relative_Name (Name, First => First, Last => Last);
-      if First > Last or else First = Name'First then
+      if First > Last then
          Raise_Exception (Name_Error'Identity); -- CXAG002
       end if;
       return Name (First .. Last);
