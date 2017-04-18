@@ -63,21 +63,26 @@ package body System.Native_Directories.Temporary is
    end Create_Temporary_File;
 
    function Create_Temporary_Directory (Directory : String) return String is
-      Name : constant String := Create_Temporary_File (Directory);
-      W_Name : aliased C.winnt.WCHAR_array (
-         0 ..
-         Name'Length * Zero_Terminated_WStrings.Expanding);
    begin
-      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      if C.winbase.DeleteFile (W_Name (0)'Access) = C.windef.FALSE then
-         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
-      end if;
-      if C.winbase.CreateDirectory (W_Name (0)'Access, null) =
-         C.windef.FALSE
-      then
-         Raise_Exception (Named_IO_Exception_Id (C.winbase.GetLastError));
-      end if;
-      return Name;
+      return Result : constant String := Create_Temporary_File (Directory) do
+         declare
+            W_Result : aliased
+               C.winnt.WCHAR_array (
+                  0 .. Result'Length * Zero_Terminated_WStrings.Expanding);
+         begin
+            Zero_Terminated_WStrings.To_C (Result, W_Result (0)'Access);
+            if C.winbase.DeleteFile (W_Result (0)'Access) = C.windef.FALSE then
+               Raise_Exception (
+                  Named_IO_Exception_Id (C.winbase.GetLastError));
+            end if;
+            if C.winbase.CreateDirectory (W_Result (0)'Access, null) =
+               C.windef.FALSE
+            then
+               Raise_Exception (
+                  Named_IO_Exception_Id (C.winbase.GetLastError));
+            end if;
+         end;
+      end return;
    end Create_Temporary_Directory;
 
 end System.Native_Directories.Temporary;
