@@ -16,13 +16,16 @@ package Ada.UCD.Case_Folding is
       Diff : Difference_8;
    end record;
    pragma Suppress_Initialization (Compressed_Item_Type);
-   pragma Pack (Compressed_Item_Type);
-   pragma Compile_Time_Error (Compressed_Item_Type'Size /= 32, "packed?");
+   for Compressed_Item_Type'Size use 32; -- 16 + 8 + 8
+   for Compressed_Item_Type use record
+      Start at 0 range 0 .. 15;
+      Length at 0 range 16 .. 23;
+      Diff at 0 range 24 .. 31;
+   end record;
 
    type Compressed_Type is array (Positive range <>) of Compressed_Item_Type;
    pragma Suppress_Initialization (Compressed_Type);
-   pragma Pack (Compressed_Type);
-   pragma Compile_Time_Error (Compressed_Type'Component_Size /= 32, "packed?");
+   for Compressed_Type'Component_Size use 32;
 
    subtype C_Table_XXXXx1_Type is Map_16x1_Type (1 .. 635);
    subtype C_Table_XXXXx1_Compressed_Type is Compressed_Type (1 .. 29);

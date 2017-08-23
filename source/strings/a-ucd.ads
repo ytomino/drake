@@ -40,26 +40,26 @@ private package Ada.UCD is
       High : UCS_2;
    end record;
    pragma Suppress_Initialization (Set_16_Item_Type);
-   pragma Pack (Set_16_Item_Type); -- 16 + 16
-   pragma Compile_Time_Error (Set_16_Item_Type'Size /= 32, "packed?");
+   for Set_16_Item_Type'Size use 32; -- 16 + 16
+   for Set_16_Item_Type use record
+      Low at 0 range 0 .. 15;
+      High at 0 range 16 .. 31;
+   end record;
 
    type Set_16_Type is array (Positive range <>) of Set_16_Item_Type;
    pragma Suppress_Initialization (Set_16_Type);
-   pragma Pack (Set_16_Type);
-   pragma Compile_Time_Error (Set_16_Type'Component_Size /= 32, "packed?");
+   for Set_16_Type'Component_Size use 32;
 
    type Set_32_Item_Type is record
       Low : UCS_4;
       High : UCS_4;
    end record;
    pragma Suppress_Initialization (Set_32_Item_Type);
-   pragma Pack (Set_32_Item_Type); -- 32 + 32
-   pragma Compile_Time_Error (Set_32_Item_Type'Size /= 64, "packed?");
+   for Set_32_Item_Type'Size use 64; -- 32 + 32
 
    type Set_32_Type is array (Positive range <>) of Set_32_Item_Type;
    pragma Suppress_Initialization (Set_32_Type);
-   pragma Pack (Set_32_Type);
-   pragma Compile_Time_Error (Set_32_Type'Component_Size /= 64, "packed?");
+   for Set_32_Type'Component_Size use 64;
 
    --  map
 
@@ -68,65 +68,68 @@ private package Ada.UCD is
       Mapping : UCS_2;
    end record;
    pragma Suppress_Initialization (Map_16x1_Item_Type);
-   pragma Pack (Map_16x1_Item_Type); -- 16 + 16
-   pragma Compile_Time_Error (Map_16x1_Item_Type'Size /= 32, "packed?");
+   for Map_16x1_Item_Type'Size use 32; -- 16 + 16
+   for Map_16x1_Item_Type use record
+      Code at 0 range 0 .. 15;
+      Mapping at 0 range 16 .. 31;
+   end record;
 
    type Map_16x1_Type is array (Positive range <>) of Map_16x1_Item_Type;
    pragma Suppress_Initialization (Map_16x1_Type);
-   pragma Pack (Map_16x1_Type);
-   pragma Compile_Time_Error (Map_16x1_Type'Component_Size /= 32, "packed?");
+   for Map_16x1_Type'Component_Size use 32;
 
    type Map_32x1_Item_Type is record
       Code : UCS_4;
       Mapping : UCS_4;
    end record;
    pragma Suppress_Initialization (Map_32x1_Item_Type);
-   pragma Pack (Map_32x1_Item_Type); -- 32 + 32
-   pragma Compile_Time_Error (Map_32x1_Item_Type'Size /= 64, "packed?");
+   for Map_32x1_Item_Type'Size use 64; -- 32 + 32
 
    type Map_32x1_Type is array (Positive range <>) of Map_32x1_Item_Type;
    pragma Suppress_Initialization (Map_32x1_Type);
-   pragma Pack (Map_32x1_Type);
-   pragma Compile_Time_Error (Map_32x1_Type'Component_Size /= 64, "packed?");
+   for Map_32x1_Type'Component_Size use 64;
 
    type Map_16x2_Item_Type is record
       Code : UCS_2;
       Mapping : UCS_2_Array (1 .. 2);
    end record;
    pragma Suppress_Initialization (Map_16x2_Item_Type);
-   pragma Pack (Map_16x2_Item_Type); -- 16 + 16 * 2
-   pragma Compile_Time_Error (Map_16x2_Item_Type'Size /= 48, "packed?");
+   for Map_16x2_Item_Type'Size use 48; -- 16 + 16 * 2
+   for Map_16x2_Item_Type use record
+      Code at 0 range 0 .. 15;
+      Mapping at 0 range 16 .. 47;
+   end record;
 
    type Map_16x2_Type is array (Positive range <>) of Map_16x2_Item_Type;
    pragma Suppress_Initialization (Map_16x2_Type);
-   pragma Pack (Map_16x2_Type);
-   pragma Compile_Time_Error (Map_16x2_Type'Component_Size /= 48, "packed?");
+--  for Map_16x2_Type'Component_Size use 48;
+      --  [gcc-6] can not initialize explicit 48bit array constants statically
 
    type Map_32x2_Item_Type is record
       Code : UCS_4;
       Mapping : UCS_4_Array (1 .. 2);
    end record;
    pragma Suppress_Initialization (Map_32x2_Item_Type);
-   pragma Pack (Map_32x2_Item_Type); -- 16 + 16 * 2
-   pragma Compile_Time_Error (Map_32x2_Item_Type'Size /= 96, "packed?");
+   for Map_32x2_Item_Type'Size use 96; -- 16 + 16 * 2
 
    type Map_32x2_Type is array (Positive range <>) of Map_32x2_Item_Type;
    pragma Suppress_Initialization (Map_32x2_Type);
-   pragma Pack (Map_32x2_Type);
-   pragma Compile_Time_Error (Map_32x2_Type'Component_Size /= 96, "packed?");
+   for Map_32x2_Type'Component_Size use 96;
 
    type Map_16x3_Item_Type is record
       Code : UCS_2;
       Mapping : UCS_2_Array (1 .. 3);
    end record;
    pragma Suppress_Initialization (Map_16x3_Item_Type);
-   pragma Pack (Map_16x3_Item_Type); -- 16 + 16 * 3
-   pragma Compile_Time_Error (Map_16x3_Item_Type'Size /= 64, "packed?");
+   for Map_16x3_Item_Type'Size use 64; -- 16 + 16 * 3
+   for Map_16x3_Item_Type use record
+      Code at 0 range 0 .. 15;
+      Mapping at 0 range 16 .. 63;
+   end record;
 
    type Map_16x3_Type is array (Positive range <>) of Map_16x3_Item_Type;
    pragma Suppress_Initialization (Map_16x3_Type);
-   pragma Pack (Map_16x3_Type);
-   pragma Compile_Time_Error (Map_16x3_Type'Component_Size /= 64, "packed?");
+   for Map_16x3_Type'Component_Size use 64;
 
    --  non-generated tables
 

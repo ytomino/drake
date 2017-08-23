@@ -11,13 +11,16 @@ package Ada.UCD.Combining_Class is
       Combining_Class : Combining_Class_Type;
    end record;
    pragma Suppress_Initialization (Table_16_Item_Type);
-   pragma Pack (Table_16_Item_Type);
-   pragma Compile_Time_Error (Table_16_Item_Type'Size /= 32, "packed?");
+   for Table_16_Item_Type'Size use 32; -- 16 + 8 + 8
+   for Table_16_Item_Type use record
+      Start at 0 range 0 .. 15;
+      Length at 0 range 16 .. 23;
+      Combining_Class at 0 range 24 .. 31;
+   end record;
 
    type Table_16_Type is array (Positive range <>) of Table_16_Item_Type;
    pragma Suppress_Initialization (Table_16_Type);
-   pragma Pack (Table_16_Type);
-   pragma Compile_Time_Error (Table_16_Type'Component_Size /= 32, "packed?");
+   for Table_16_Type'Component_Size use 32;
 
    subtype Table_XXXX_Type is Table_16_Type (1 .. 264);
 
