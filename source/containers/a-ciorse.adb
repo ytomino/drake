@@ -1114,7 +1114,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          Count_Type'Write (Stream, Length);
          if Length > 0 then
             declare
-               Position : Cursor := Position := First (Item);
+               Position : Cursor := First (Item);
             begin
                while Position /= null loop
                   Element_Type'Output (Stream, Position.Element.all);
