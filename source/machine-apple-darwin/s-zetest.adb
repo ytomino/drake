@@ -24,7 +24,8 @@ package body System.Zero_Terminated_Strings is
       Length : C.size_t)
       return String
    is
-      type char_const_ptr is access constant C.char; -- local type
+      type char_const_ptr is access constant C.char -- local type
+         with Convention => C;
       for char_const_ptr'Storage_Size use 0;
       package Conv is
          new Address_To_Constant_Access_Conversions (C.char, char_const_ptr);
@@ -46,7 +47,8 @@ package body System.Zero_Terminated_Strings is
       Result_Length : out C.size_t)
    is
       --  Source and Result should not be overlapped
-      type char_ptr is access all C.char; -- local type
+      type char_ptr is access all C.char -- local type
+         with Convention => C;
       for char_ptr'Storage_Size use 0;
       package Conv is
          new Address_To_Named_Access_Conversions (C.char, char_ptr);

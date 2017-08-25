@@ -50,7 +50,8 @@ package body System.Zero_Terminated_WStrings is
       Result : not null access C.winnt.WCHAR;
       Result_Length : out C.size_t)
    is
-      type LPWSTR is access all C.winnt.WCHAR; -- local type
+      type LPWSTR is access all C.winnt.WCHAR -- local type
+         with Convention => C;
       for LPWSTR'Storage_Size use 0;
       package LPWSTR_Conv is
          new Address_To_Named_Access_Conversions (C.winnt.WCHAR, LPWSTR);
