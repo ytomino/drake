@@ -656,7 +656,8 @@ package body Ada.Numerics.SFMT is
    function To_53_0_To_Less_Than_1 (v : Unsigned_64)
       return Uniformly_Distributed is
    begin
-      return Long_Long_Float (v) * (1.0 / 2.0 ** 64);
+      return Long_Long_Float (
+         Interfaces.Shift_Right (v, 11)) * (1.0 / 2.0 ** 53);
    end To_53_0_To_Less_Than_1;
 
    --  generates a random number on [0,1) with 53-bit resolution
