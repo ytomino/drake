@@ -24,7 +24,6 @@ package System.Native_Text_IO is
    end record;
    pragma Suppress_Initialization (Packed_Form);
    pragma Pack (Packed_Form);
-   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
 
    --  read / write
 
