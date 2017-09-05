@@ -944,7 +944,6 @@ package body Ada.Containers.Ordered_Sets is
          Right : Key_Type
             renames Key (Downcast (Position).Element);
       begin
-         --  [gcc-4.9] same as above
          if Left < Right then
             return -1;
          elsif Right < Left then
