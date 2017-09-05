@@ -73,6 +73,7 @@ package body System.Packed_Arrays is
       type Record_8_Units is record
          E0, E1, E2, E3, E4, E5, E6, E7 : Element_Type;
       end record;
+      for Record_8_Units'Alignment use 1;
       pragma Pack (Record_8_Units);
       pragma Suppress_Initialization (Record_8_Units);
 
