@@ -262,7 +262,7 @@ package body System.Native_Directories is
          and (
             C.winnt.FILE_ATTRIBUTE_DEVICE
             or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
-            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
+            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) /= 0
       then
          return Special_File;
       else
