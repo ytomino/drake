@@ -148,8 +148,8 @@ package body System.Native_Directories is
       Zero_Terminated_WStrings.To_C (Source_Name, W_Source_Name (0)'Access);
       Zero_Terminated_WStrings.To_C (Target_Name, W_Target_Name (0)'Access);
       if C.winbase.ReplaceFile (
-            W_Source_Name (0)'Access,
             W_Target_Name (0)'Access,
+            W_Source_Name (0)'Access,
             null,
             0,
             C.windef.LPVOID (Null_Address),
