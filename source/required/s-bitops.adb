@@ -20,11 +20,11 @@ package body System.Bit_Ops is
                Storage_Elements.Storage_Offset (Llen) / Standard'Storage_Unit;
             Remainder : constant Natural :=
                Natural (Unsigned (Llen) rem Standard'Storage_Unit);
-            type Fixed_Unit_Array is
+            type Unit_Array is
                array (1 .. Quotient) of Storage_Elements.Storage_Element;
-            L_Units : Fixed_Unit_Array;
+            L_Units : Unit_Array;
             for L_Units'Address use Left;
-            R_Units : Fixed_Unit_Array;
+            R_Units : Unit_Array;
             for R_Units'Address use Right;
          begin
             if L_Units /= R_Units then -- compiler will use memcmp

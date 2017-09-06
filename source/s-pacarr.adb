@@ -41,15 +41,15 @@ package body System.Packed_Arrays is
                type Min_Array_Type is array (1 .. Min_Length) of Element_Type;
                pragma Pack (Min_Array_Type);
                pragma Suppress_Initialization (Min_Array_Type);
-               L : Min_Array_Type;
-               for L'Address use Left;
-               R : Min_Array_Type;
-               for R'Address use Right;
+               Left_All : Min_Array_Type;
+               for Left_All'Address use Left;
+               Right_All : Min_Array_Type;
+               for Right_All'Address use Right;
             begin
                for I in 1 .. Min_Length loop
-                  if L (I) < R (I) then
+                  if Left_All (I) < Right_All (I) then
                      return -1;
-                  elsif L (I) > R (I) then
+                  elsif Left_All (I) > Right_All (I) then
                      return 1;
                   end if;
                end loop;

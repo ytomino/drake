@@ -23,7 +23,7 @@ package body System.Native_IO is
    pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");
 
-   function strlen (Item : not null access constant C.char) return C.size_t
+   function strlen (s : not null access constant C.char) return C.size_t
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
 

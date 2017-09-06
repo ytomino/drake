@@ -218,12 +218,12 @@ package body Interfaces.C.Pointers is
                Index range
                   Index'First ..
                   Index'Val (Index'Pos (Index'First) + Length - 1);
-            Source_A : Element_Array (R);
-            for Source_A'Address use To_Address (Source);
-            Target_A : Element_Array (R);
-            for Target_A'Address use To_Address (Target);
+            Source_Array : Element_Array (R);
+            for Source_Array'Address use To_Address (Source);
+            Target_Array : Element_Array (R);
+            for Target_Array'Address use To_Address (Target);
          begin
-            Target_A := Source_A;
+            Target_Array := Source_Array;
          end;
       end if;
    end Copy_Array;

@@ -712,12 +712,12 @@ package body Ada.Naked_Text_IO is
                Raw_New_Line (File);
             end if;
             declare
-               Buffer : Streams.Stream_Element_Array (
+               DBCS_Buffer_As_SEA : Streams.Stream_Element_Array (
                   1 ..
                   Streams.Stream_Element_Offset (DBCS_Last));
-               for Buffer'Address use DBCS_Buffer'Address;
+               for DBCS_Buffer_As_SEA'Address use DBCS_Buffer'Address;
             begin
-               Streams.Write (Stream (File).all, Buffer);
+               Streams.Write (Stream (File).all, DBCS_Buffer_As_SEA);
             end;
             File.Ahead_Col := DBCS_Last;
          end;

@@ -7,10 +7,10 @@ package System.Zero_Terminated_WStrings is
    --  but LPWSTR in Windows
 
    --  convert to UTF-8 from a first address of zero-terminated wide string
-   function Value (First : not null access constant C.winnt.WCHAR)
+   function Value (Item : not null access constant C.winnt.WCHAR)
       return String;
    function Value (
-      First : not null access constant C.winnt.WCHAR;
+      Item : not null access constant C.winnt.WCHAR;
       Length : C.size_t)
       return String;
 

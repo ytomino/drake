@@ -223,11 +223,11 @@ package body System.Unwind.Mapping is
          Runtime_Context.Get_Task_Local_Storage;
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
       TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
-      SEH_Rec : SEH_Record;
-      for SEH_Rec'Address use SEH;
+      SEH_All : SEH_Record;
+      for SEH_All'Address use SEH;
    begin
-      SEH_Rec.ExceptionList := TIB.ExceptionList;
-      SEH_Rec.Handler := Ada_SEH_Handler'Access;
+      SEH_All.ExceptionList := TIB.ExceptionList;
+      SEH_All.Handler := Ada_SEH_Handler'Access;
       --  register new handler
       TIB.ExceptionList :=
          EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH);

@@ -143,12 +143,14 @@ package body Ada.Streams.Unbounded_Storage_IO is
    is
       Data : constant not null Data_Access :=
          Allocate_Data (Max_Length, Capacity);
-      Source_Item : Stream_Element_Array (1 .. Stream_Element_Offset (Length));
-      for Source_Item'Address use Downcast (Source).Storage;
-      Target_Item : Stream_Element_Array (1 .. Stream_Element_Offset (Length));
-      for Target_Item'Address use Data.Storage;
+      Source_Storage_All : Stream_Element_Array (
+         1 .. Stream_Element_Offset (Length));
+      for Source_Storage_All'Address use Downcast (Source).Storage;
+      Target_Storage_All : Stream_Element_Array (
+         1 .. Stream_Element_Offset (Length));
+      for Target_Storage_All'Address use Data.Storage;
    begin
-      Target_Item := Source_Item;
+      Target_Storage_All := Source_Storage_All;
       Target := Upcast (Data);
    end Copy_Data;
 
@@ -304,10 +306,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
    is
       NC_Item : Non_Controlled_Buffer_Type
          renames Controlled.Reference (Item).all;
-      Stream_Item : Stream_Element_Array (1 .. NC_Item.Last);
-      for Stream_Item'Address use NC_Item.Data.Storage;
+      Stream_Storage_All : Stream_Element_Array (1 .. NC_Item.Last);
+      for Stream_Storage_All'Address use NC_Item.Data.Storage;
    begin
-      Write (Stream.all, Stream_Item);
+      Write (Stream.all, Stream_Storage_All);
    end Write_To_Stream;
 
    overriding procedure Read (
@@ -327,12 +329,13 @@ package body Ada.Streams.Unbounded_Storage_IO is
       end if;
       Last := Item'First + (Length - 1);
       declare
-         Stream_Item : Stream_Element_Array (1 .. Stream.Buffer.Last);
-         for Stream_Item'Address use Stream.Buffer.Data.Storage;
+         Stream_Storage_All : Stream_Element_Array (1 .. Stream.Buffer.Last);
+         for Stream_Storage_All'Address use Stream.Buffer.Data.Storage;
       begin
-         Item (Item'First .. Last) := Stream_Item (
-            Stream.Buffer.Index ..
-            Stream.Buffer.Index + Length - 1);
+         Item (Item'First .. Last) :=
+            Stream_Storage_All (
+               Stream.Buffer.Index ..
+               Stream.Buffer.Index + Length - 1);
       end;
       Stream.Buffer.Index := Stream.Buffer.Index + Length;
    end Read;
@@ -352,10 +355,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Unique (Stream.Buffer.all);
       end if;
       declare
-         Stream_Item : Stream_Element_Array (1 .. New_Last);
-         for Stream_Item'Address use Stream.Buffer.Data.Storage;
+         Stream_Storage_All : Stream_Element_Array (1 .. New_Last);
+         for Stream_Storage_All'Address use Stream.Buffer.Data.Storage;
       begin
-         Stream_Item (Stream.Buffer.Index .. Copy_Last) := Item;
+         Stream_Storage_All (Stream.Buffer.Index .. Copy_Last) := Item;
       end;
       Stream.Buffer.Index := New_Index;
       Stream.Buffer.Last := New_Last;
@@ -431,12 +434,13 @@ package body Ada.Streams.Unbounded_Storage_IO is
             if Size > 0 then
                Set_Size (Unbounded_Storage_IO.Buffer_Type (Item), Size);
                declare
-                  Stream_Item : Stream_Element_Array (1 .. Item.Data.Last);
-                  for Stream_Item'Address use Item.Data.Data.Storage;
+                  Stream_Storage_All : Stream_Element_Array (
+                     1 .. Item.Data.Last);
+                  for Stream_Storage_All'Address use Item.Data.Data.Storage;
                   Last : Stream_Element_Offset;
                begin
-                  Read (Stream.all, Stream_Item, Last);
-                  if Last < Stream_Item'Last then
+                  Read (Stream.all, Stream_Storage_All, Last);
+                  if Last < Stream_Storage_All'Last then
                      Raise_Exception (End_Error'Identity);
                   end if;
                end;

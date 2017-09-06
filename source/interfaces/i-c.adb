@@ -125,10 +125,10 @@ package body Interfaces.C is
                raise Constraint_Error;
             end if;
             declare
-               C_Item : Element_Array (0 .. Count - 1);
-               for C_Item'Address use Item'Address;
+               Item_As_C : Element_Array (0 .. Count - 1);
+               for Item_As_C'Address use Item'Address;
             begin
-               Target (Target'First .. Target'First + Count - 1) := C_Item;
+               Target (Target'First .. Target'First + Count - 1) := Item_As_C;
             end;
          end if;
       end To_Non_Nul_Terminated;
@@ -146,10 +146,10 @@ package body Interfaces.C is
             raise Constraint_Error;
          end if;
          declare
-            Ada_Item : String_Type (1 .. Count);
-            for Ada_Item'Address use Item'Address;
+            Item_As_Ada : String_Type (1 .. Count);
+            for Item_As_Ada'Address use Item'Address;
          begin
-            Target (Target'First .. Target'First + Count - 1) := Ada_Item;
+            Target (Target'First .. Target'First + Count - 1) := Item_As_Ada;
          end;
       end From_Non_Nul_Terminated;
 

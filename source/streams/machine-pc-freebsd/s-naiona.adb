@@ -6,7 +6,7 @@ package body System.Native_IO.Names is
    use type C.char_ptr;
    use type C.size_t;
 
-   function strlen (Item : not null access constant C.char) return C.size_t
+   function strlen (s : not null access constant C.char) return C.size_t
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
 

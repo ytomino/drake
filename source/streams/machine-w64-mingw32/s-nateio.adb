@@ -35,37 +35,37 @@ package body System.Native_Text_IO is
       Out_Last : out Integer;
       Leading : C.winnt.WCHAR)
    is
-      Ada_Buffer : Wide_String (1 .. 2);
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
-      W_Buffer_Length : Natural;
+      Wide_Buffer : Wide_String (1 .. 2);
+      Wide_Buffer_As_C : C.winnt.WCHAR_array (0 .. 1);
+      for Wide_Buffer_As_C'Address use Wide_Buffer'Address;
+      Wide_Buffer_Length : Natural;
       Read_Size : aliased C.windef.DWORD;
       UTF_16_Seq : Natural;
       Sequence_Status : UTF_Conversions.Sequence_Status_Type; -- ignore
    begin
-      W_Buffer (0) := Leading;
-      if W_Buffer (0) = C.winnt.WCHAR'Val (0) then
+      Wide_Buffer_As_C (0) := Leading;
+      if Wide_Buffer_As_C (0) = C.winnt.WCHAR'Val (0) then
          Out_Last := 0; -- no data
       else
-         W_Buffer_Length := 1;
+         Wide_Buffer_Length := 1;
          UTF_Conversions.UTF_16_Sequence (
-            Wide_Character'Val (C.winnt.WCHAR'Pos (W_Buffer (0))),
+            Wide_Character'Val (C.winnt.WCHAR'Pos (Wide_Buffer_As_C (0))),
             UTF_16_Seq,
             Sequence_Status);
          if UTF_16_Seq = 2
             and then C.wincon.ReadConsoleW (
                   hConsoleInput => Handle,
-                  lpBuffer => C.windef.LPVOID (W_Buffer (1)'Address),
+                  lpBuffer => C.windef.LPVOID (Wide_Buffer_As_C (1)'Address),
                   nNumberOfCharsToRead => 1,
                   lpNumberOfCharsRead => Read_Size'Access,
                   lpReserved => C.windef.LPVOID (Null_Address)) /=
                C.windef.FALSE
             and then Read_Size > 0
          then
-            W_Buffer_Length := W_Buffer_Length + Natural (Read_Size);
+            Wide_Buffer_Length := Wide_Buffer_Length + Natural (Read_Size);
          end if;
          UTF_Conversions.From_16_To_8.Convert (
-            Ada_Buffer (1 .. W_Buffer_Length),
+            Wide_Buffer (1 .. Wide_Buffer_Length),
             Buffer,
             Out_Last);
       end if;
@@ -142,10 +142,10 @@ package body System.Native_Text_IO is
       Out_Buffer : out Buffer_Type;
       Out_Last : out Natural)
    is
-      Ada_Buffer : Wide_String (1 .. 2);
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
-      W_Buffer_Length : C.signed_int;
+      Wide_Buffer : Wide_String (1 .. 2);
+      Wide_Buffer_As_C : C.winnt.WCHAR_array (0 .. 1);
+      for Wide_Buffer_As_C'Address use Wide_Buffer'Address;
+      Wide_Buffer_Length : C.signed_int;
       DBCS_Seq : Natural;
    begin
       DBCS_Seq := 1
@@ -154,15 +154,15 @@ package body System.Native_Text_IO is
                C.windef.BYTE'(Character'Pos (Buffer (1)))) /=
             C.windef.FALSE);
       if Last = DBCS_Seq then
-         W_Buffer_Length := C.winnls.MultiByteToWideChar (
+         Wide_Buffer_Length := C.winnls.MultiByteToWideChar (
             C.winnls.CP_ACP,
             0,
             LPSTR_Conv.To_Pointer (Buffer (1)'Address),
             C.signed_int (Last),
-            W_Buffer (0)'Access,
+            Wide_Buffer_As_C (0)'Access,
             2);
          UTF_Conversions.From_16_To_8.Convert (
-            Ada_Buffer (1 .. Natural (W_Buffer_Length)),
+            Wide_Buffer (1 .. Natural (Wide_Buffer_Length)),
             Out_Buffer,
             Out_Last);
       else
@@ -176,21 +176,21 @@ package body System.Native_Text_IO is
       Out_Buffer : aliased out DBCS_Buffer_Type;
       Out_Last : out Natural)
    is
-      Ada_Buffer : Wide_String (1 .. 2);
-      Ada_Buffer_Last : Natural;
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
-      for W_Buffer'Address use Ada_Buffer'Address;
+      Wide_Buffer : Wide_String (1 .. 2);
+      Wide_Buffer_Last : Natural;
+      Wide_Buffer_As_C : C.winnt.WCHAR_array (0 .. 1);
+      for Wide_Buffer_As_C'Address use Wide_Buffer'Address;
       Out_Length : C.signed_int;
    begin
       UTF_Conversions.From_8_To_16.Convert (
          Buffer (1 .. Last),
-         Ada_Buffer,
-         Ada_Buffer_Last);
+         Wide_Buffer,
+         Wide_Buffer_Last);
       Out_Length := C.winnls.WideCharToMultiByte (
          C.winnls.CP_ACP,
          0,
-         W_Buffer (0)'Access,
-         C.signed_int (Ada_Buffer_Last),
+         Wide_Buffer_As_C (0)'Access,
+         C.signed_int (Wide_Buffer_Last),
          LPSTR_Conv.To_Pointer (Out_Buffer (1)'Address),
          Out_Buffer'Length,
          null,
@@ -212,12 +212,12 @@ package body System.Native_Text_IO is
       pragma Unreferenced (Length);
       Buffer : Buffer_Type;
       for Buffer'Address use Item;
-      W_Buffer : C.winnt.WCHAR_array (0 .. 1);
+      Wide_Buffer : C.winnt.WCHAR_array (0 .. 1);
       Read_Size : aliased C.windef.DWORD;
    begin
       if C.wincon.ReadConsole (
             hConsoleInput => Handle,
-            lpBuffer => C.windef.LPVOID (W_Buffer (0)'Address),
+            lpBuffer => C.windef.LPVOID (Wide_Buffer (0)'Address),
             nNumberOfCharsToRead => 1,
             lpNumberOfCharsRead => Read_Size'Access,
             lpReserved => C.windef.LPVOID (Null_Address)) =
@@ -226,7 +226,7 @@ package body System.Native_Text_IO is
          Out_Length := -1; -- error
       elsif Read_Size = 0
          or else (
-            W_Buffer (0) = 16#1A# -- Control+Z
+            Wide_Buffer (0) = 16#1A# -- Control+Z
             and then Processed_Input_Is_Enabled (Handle))
       then
          Out_Length := 0; -- no data
@@ -235,7 +235,7 @@ package body System.Native_Text_IO is
             Handle,
             Buffer,
             Natural (Out_Length),
-            W_Buffer (0));
+            Wide_Buffer (0));
       end if;
    end Terminal_Get;
 
@@ -289,18 +289,18 @@ package body System.Native_Text_IO is
    is
       Buffer : Buffer_Type;
       for Buffer'Address use Item;
-      Ada_Buffer : Wide_String (1 .. 2);
-      Ada_Buffer_Last : Natural;
+      Wide_Buffer : Wide_String (1 .. 2);
+      Wide_Buffer_Last : Natural;
       Written : aliased C.windef.DWORD;
    begin
       UTF_Conversions.From_8_To_16.Convert (
          Buffer (1 .. Natural (Length)),
-         Ada_Buffer,
-         Ada_Buffer_Last);
+         Wide_Buffer,
+         Wide_Buffer_Last);
       if C.wincon.WriteConsoleW (
             hConsoleOutput => Handle,
-            lpBuffer => C.windef.LPCVOID (Ada_Buffer (1)'Address),
-            nNumberOfCharsToWrite => C.windef.DWORD (Ada_Buffer_Last),
+            lpBuffer => C.windef.LPCVOID (Wide_Buffer (1)'Address),
+            nNumberOfCharsToWrite => C.windef.DWORD (Wide_Buffer_Last),
             lpNumberOfCharsWritten => Written'Access,
             lpReserved => C.windef.LPVOID (Null_Address)) =
          C.windef.FALSE

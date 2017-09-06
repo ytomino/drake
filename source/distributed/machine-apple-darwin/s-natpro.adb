@@ -272,12 +272,12 @@ package body System.Native_Processes is
                Standard_Allocators.Allocate (
                   Storage_Elements.Storage_Offset (Length) + 1));
             declare
-               D : C.char_array (0 .. Length);
-               for D'Address use char_ptr_Conv.To_Address (P.all);
-               S : C.char_array (0 .. Length);
-               for S'Address use char_ptr_Conv.To_Address (Q.all);
+               P_All : C.char_array (0 .. Length);
+               for P_All'Address use char_ptr_Conv.To_Address (P.all);
+               Q_All : C.char_array (0 .. Length);
+               for Q_All'Address use char_ptr_Conv.To_Address (Q.all);
             begin
-               D := S;
+               P_All := Q_All;
             end;
          end;
       end loop;

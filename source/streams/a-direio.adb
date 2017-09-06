@@ -135,34 +135,34 @@ package body Ada.Direct_IO is
          --  indefinite (or unconstrained) types
          declare
             Buffer_Item : Element_Type;
-            Buffer : Streams.Stream_Element_Array (
+            Buffer_Item_As_SEA : Streams.Stream_Element_Array (
                1 ..
                Element_Type'Max_Size_In_Storage_Elements);
-            for Buffer'Address use Buffer_Item'Address;
+            for Buffer_Item_As_SEA'Address use Buffer_Item'Address;
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
                Streams.Stream_IO.File_Type (File), -- checking the predicate
-               Buffer,
+               Buffer_Item_As_SEA,
                Last);
-            if Last < Buffer'Last then
+            if Last < Buffer_Item_As_SEA'Last then
                Raise_Exception (End_Error'Identity);
             end if;
             Item := Buffer_Item;
          end;
       else
          declare
-            Buffer : Streams.Stream_Element_Array (
+            Item_As_SEA : Streams.Stream_Element_Array (
                1 ..
                Element_Type'Max_Size_In_Storage_Elements);
-            for Buffer'Address use Item'Address;
+            for Item_As_SEA'Address use Item'Address;
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
                Streams.Stream_IO.File_Type (File), -- checking the predicate
-               Buffer,
+               Item_As_SEA,
                Last);
-            if Last < Buffer'Last then
+            if Last < Item_As_SEA'Last then
                Raise_Exception (End_Error'Identity);
             end if;
          end;
@@ -187,14 +187,14 @@ package body Ada.Direct_IO is
       File : File_Type;
       Item : Element_Type)
    is
-      Buffer : Streams.Stream_Element_Array (
+      Item_As_SEA : Streams.Stream_Element_Array (
          1 ..
          Element_Type'Max_Size_In_Storage_Elements);
-      for Buffer'Address use Item'Address;
+      for Item_As_SEA'Address use Item'Address;
    begin
       Streams.Stream_IO.Write (
          Streams.Stream_IO.File_Type (File), -- checking the predicate
-         Buffer);
+         Item_As_SEA);
    end Write;
 
    procedure Set_Index (

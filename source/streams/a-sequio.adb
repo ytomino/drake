@@ -105,30 +105,30 @@ package body Ada.Sequential_IO is
                Stream (File), -- checking the predicate
                Read_Size);
             declare
-               Image : Streams.Stream_Element_Array (1 .. Read_Size);
-               for Image'Address use Item'Address;
+               Item_As_SEA : Streams.Stream_Element_Array (1 .. Read_Size);
+               for Item_As_SEA'Address use Item'Address;
                Last : Streams.Stream_Element_Offset;
             begin
                Streams.Stream_IO.Read (
                   Streams.Stream_IO.File_Type (File),
-                  Image,
+                  Item_As_SEA,
                   Last);
-               if Last < Image'Last then
+               if Last < Item_As_SEA'Last then
                   Raise_Exception (Data_Error'Identity);
                end if;
             end;
          end;
       else
          declare
-            Image : Streams.Stream_Element_Array (1 .. Size);
-            for Image'Address use Item'Address;
+            Item_As_SEA : Streams.Stream_Element_Array (1 .. Size);
+            for Item_As_SEA'Address use Item'Address;
             Last : Streams.Stream_Element_Offset;
          begin
             Streams.Stream_IO.Read (
                Streams.Stream_IO.File_Type (File), -- checking the predicate
-               Image,
+               Item_As_SEA,
                Last);
-            if Last < Image'Last then
+            if Last < Item_As_SEA'Last then
                Raise_Exception (End_Error'Identity);
             end if;
          end;
@@ -150,12 +150,12 @@ package body Ada.Sequential_IO is
             Size);
       end if;
       declare
-         Image : Streams.Stream_Element_Array (1 .. Size);
-         for Image'Address use Item'Address;
+         Item_As_SEA : Streams.Stream_Element_Array (1 .. Size);
+         for Item_As_SEA'Address use Item'Address;
       begin
          Streams.Stream_IO.Write (
             Streams.Stream_IO.File_Type (File), -- checking the predicate
-            Image);
+            Item_As_SEA);
       end;
    end Write;
 
