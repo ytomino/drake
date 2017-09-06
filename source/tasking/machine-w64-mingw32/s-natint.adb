@@ -29,7 +29,7 @@ package body System.Native_Interrupts is
    begin
       Name (1 .. Name_Prefix'Length) := Name_Prefix;
       Formatting.Image (
-         Formatting.Unsigned (Interrupt),
+         Formatting.Word_Unsigned (Interrupt),
          Name (Name_Prefix'Length + 1 .. Name'Last),
          Name_Last,
          Error => Error);

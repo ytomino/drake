@@ -43,22 +43,57 @@ private package Ada.Containers.Copy_On_Write is
    procedure Copy (
       Target : not null access Container;
       Source : not null access constant Container;
-      Length : Count_Type;
-      New_Capacity : Count_Type;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
+         Capacity : Count_Type));
+
+   procedure Copy (
+      Target : not null access Container;
+      Source : not null access constant Container;
+      Length : Count_Type;
+      New_Capacity : Count_Type;
+      Allocate : not null access procedure (
+         Target : out not null Data_Access;
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Copy : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
          Capacity : Count_Type));
 
    procedure Move (
       Target : not null access Container;
       Source : not null access Container;
+      Free : not null access procedure (Object : in out Data_Access));
+
+   procedure Unique (
+      Target : not null access Container;
+      To_Update : Boolean;
+      Allocate : not null access procedure (
+         Target : out not null Data_Access;
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Move : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
+         Capacity : Count_Type);
+      Copy : not null access procedure (
+         Target : out not null Data_Access;
+         Source : not null Data_Access;
+         Length : Count_Type; -- copying length
+         New_Length : Count_Type;
+         Capacity : Count_Type);
       Free : not null access procedure (Object : in out Data_Access));
 
    procedure Unique (
@@ -70,30 +105,36 @@ private package Ada.Containers.Copy_On_Write is
       To_Update : Boolean;
       Allocate : not null access procedure (
          Target : out not null Data_Access;
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Move : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
       Copy : not null access procedure (
          Target : out not null Data_Access;
          Source : not null Data_Access;
          Length : Count_Type; -- copying length
-         Max_Length : Count_Type; -- new length
+         New_Length : Count_Type;
          Capacity : Count_Type);
-      Free : not null access procedure (Object : in out Data_Access));
+      Free : not null access procedure (Object : in out Data_Access);
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type);
 
-   --  Copy and Reserve_Capacity also make it unique.
+   --  Note: Copy and Reserve_Capacity also make a container unique.
 
    procedure In_Place_Set_Length (
-      Target_Data : Data_Access;
+      Target : not null access Container;
       Target_Length : Count_Type;
-      Target_Max_Length : aliased in out Count_Type; -- may be updated
       Target_Capacity : Count_Type;
       New_Length : Count_Type;
-      Failure : out Boolean); -- reallocation is needed
+      Failure : out Boolean; -- reallocation is needed
+      Max_Length : not null access function (Data : not null Data_Access)
+         return not null access Count_Type);
+
+   function Zero (Data : not null Data_Access)
+      return not null access Count_Type;
 
 end Ada.Containers.Copy_On_Write;

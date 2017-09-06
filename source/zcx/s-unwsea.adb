@@ -132,8 +132,9 @@ package body System.Unwind.Searching is
                   p := C.unwind_pe.read_uleb128 (p, tmp'Access);
                   ttype_table := p + C.ptrdiff_t (tmp);
                else
-                  pragma Check (Trace, Ada.Debug.Put (
-                     "ttype_encoding = DW_EH_PE_omit"));
+                  pragma Check (Trace,
+                     Check =>
+                        Ada.Debug.Put ("ttype_encoding = DW_EH_PE_omit"));
                   ttype_table := null; -- be access violation ?
                end if;
                ttype_base := C.unwind_pe.base_of_encoded_value (
@@ -156,8 +157,9 @@ package body System.Unwind.Searching is
                end if;
                loop
                   if not (p < action_table) then
-                     pragma Check (Trace, Ada.Debug.Put (
-                        "leave, not (p < action_table)"));
+                     pragma Check (Trace,
+                        Check =>
+                           Ada.Debug.Put ("leave, not (p < action_table)"));
                      return C.unwind.URC_CONTINUE_UNWIND;
                   end if;
                   declare
@@ -181,15 +183,16 @@ package body System.Unwind.Searching is
                         cs_lp'Access);
                      p := C.unwind_pe.read_uleb128 (p, cs_action'Access);
                      if ip < base + cs_start then
-                        pragma Check (Trace, Ada.Debug.Put (
-                           "leave, ip < base + cs_start"));
+                        pragma Check (Trace,
+                           Check =>
+                              Ada.Debug.Put ("leave, ip < base + cs_start"));
                         return C.unwind.URC_CONTINUE_UNWIND;
                      elsif ip < base + cs_start + cs_len then
                         if cs_lp /= 0 then
                            landing_pad := lp_base + cs_lp;
                         else
-                           pragma Check (Trace, Ada.Debug.Put (
-                              "leave, cs_lp = 0"));
+                           pragma Check (Trace,
+                              Check => Ada.Debug.Put ("leave, cs_lp = 0"));
                            return C.unwind.URC_CONTINUE_UNWIND;
                         end if;
                         if cs_action /= 0 then
@@ -258,14 +261,13 @@ package body System.Unwind.Searching is
                                  choice = Cast (GCC_Exception.Occurrence.Id)
                                  or else (
                                     choice = Cast (Others_Value'Access)
-                                    and then
-                                       not GCC_Exception.Occurrence.Id.
-                                          Not_Handled_By_Others)
+                                    and then not GCC_Exception.Occurrence.Id
+                                       .Not_Handled_By_Others)
                                  or else
                                     choice = Cast (All_Others_Value'Access);
                            else
-                              pragma Check (Trace, Ada.Debug.Put (
-                                 "foreign exception"));
+                              pragma Check (Trace,
+                                 Check => Ada.Debug.Put ("foreign exception"));
                               is_handled :=
                                  choice = Cast (Others_Value'Access)
                                  or else
@@ -276,8 +278,8 @@ package body System.Unwind.Searching is
                            if is_handled then
                               ttype_filter := C.unwind.Unwind_Sword (
                                  ar_filter);
-                              pragma Check (Trace, Ada.Debug.Put (
-                                 "handler is found"));
+                              pragma Check (Trace,
+                                 Check => Ada.Debug.Put ("handler is found"));
                               exit;
                            end if;
                         end;
@@ -286,8 +288,8 @@ package body System.Unwind.Searching is
                         null;
                      end if;
                      if ar_disp = 0 then
-                        pragma Check (Trace, Ada.Debug.Put (
-                           "leave, ar_disp = 0"));
+                        pragma Check (Trace,
+                           Check => Ada.Debug.Put ("leave, ar_disp = 0"));
                         return C.unwind.URC_CONTINUE_UNWIND;
                      end if;
                      p := p + C.ptrdiff_t (ar_disp);
@@ -297,8 +299,9 @@ package body System.Unwind.Searching is
             --  ttype_filter is found (or 0) in here
             if (C.unsigned_int (Phases) and C.unwind.UA_SEARCH_PHASE) /= 0 then
                if ttype_filter = 0 then -- cleanup
-                  pragma Check (Trace, Ada.Debug.Put (
-                     "leave, UA_SEARCH_PHASE, cleanup"));
+                  pragma Check (Trace,
+                     Check =>
+                        Ada.Debug.Put ("leave, UA_SEARCH_PHASE, cleanup"));
                   return C.unwind.URC_CONTINUE_UNWIND;
                else
                   --  Setup_Current_Excep (GCC_Exception);
@@ -309,8 +312,10 @@ package body System.Unwind.Searching is
                      GCC_Exception.landing_pad := landing_pad;
                      GCC_Exception.ttype_filter := ttype_filter;
                   end if;
-                  pragma Check (Trace, Ada.Debug.Put (
-                     "leave, UA_SEARCH_PHASE, handler found"));
+                  pragma Check (Trace,
+                     Check =>
+                        Ada.Debug.Put (
+                           "leave, UA_SEARCH_PHASE, handler found"));
                   return C.unwind.URC_HANDLER_FOUND;
                end if;
             elsif Phases = C.unwind.UA_CLEANUP_PHASE then
@@ -326,14 +331,16 @@ package body System.Unwind.Searching is
                      if Stack_Pointer <
                         C.unwind.Unwind_Word (GCC_Exception.Stack_Guard)
                      then
-                        pragma Check (Trace, Ada.Debug.Put (
-                           "leave, skip cleanup"));
+                        pragma Check (Trace,
+                           Check => Ada.Debug.Put ("leave, skip cleanup"));
                         return C.unwind.URC_CONTINUE_UNWIND;
                      end if;
                   end;
                end if;
-               pragma Check (Trace, Ada.Debug.Put (
-                  "UA_CLEANUP_PHASE without UA_HANDLER_FRAME"));
+               pragma Check (Trace,
+                  Check =>
+                     Ada.Debug.Put (
+                        "UA_CLEANUP_PHASE without UA_HANDLER_FRAME"));
                null; -- ???
             else
                pragma Check (Trace, Ada.Debug.Put ("miscellany phase"));

@@ -24,7 +24,8 @@ package body System.Zero_Terminated_Strings is
       Length : C.size_t)
       return String
    is
-      type char_const_ptr is access constant C.char; -- local type
+      type char_const_ptr is access constant C.char -- local type
+         with Convention => C;
       for char_const_ptr'Storage_Size use 0;
       package Conv is
          new Address_To_Constant_Access_Conversions (C.char, char_const_ptr);
@@ -43,19 +44,22 @@ package body System.Zero_Terminated_Strings is
    procedure To_C (
       Source : String;
       Result : not null access C.char;
-      Result_Length : out C.size_t)
-   is
-      --  Source and Result should not be overlapped
-      type char_ptr is access all C.char; -- local type
-      for char_ptr'Storage_Size use 0;
-      package Conv is
-         new Address_To_Named_Access_Conversions (C.char, char_ptr);
-      Result_A : C.char_array (C.size_t);
-      for Result_A'Address use Conv.To_Address (char_ptr (Result));
+      Result_Length : out C.size_t) is
    begin
+      --  Source and Result should not be overlapped
       Result_Length := Source'Length;
-      memcpy (Result_A'Address, Source'Address, Result_Length);
-      Result_A (Result_Length) := C.char'Val (0);
+      declare
+         type char_ptr is access all C.char -- local type
+            with Convention => C;
+         for char_ptr'Storage_Size use 0;
+         package Conv is
+            new Address_To_Named_Access_Conversions (C.char, char_ptr);
+         Result_All : aliased C.char_array (0 .. Result_Length);
+         for Result_All'Address use Conv.To_Address (char_ptr (Result));
+      begin
+         memcpy (Result_All'Address, Source'Address, Result_Length);
+         Result_All (Result_Length) := C.char'Val (0);
+      end;
    end To_C;
 
 end System.Zero_Terminated_Strings;

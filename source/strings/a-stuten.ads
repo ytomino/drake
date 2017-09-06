@@ -84,12 +84,12 @@ private
          + Encoding_Scheme'Pos (UTF_32LE) *
             Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
-   BOM_Table : constant array (Encoding_Scheme) of
-      not null access constant UTF_String := (
-         UTF_8 => BOM_8'Access,
-         UTF_16BE => BOM_16BE'Access,
-         UTF_16LE => BOM_16LE'Access,
-         UTF_32BE => BOM_32BE'Access,
-         UTF_32LE => BOM_32LE'Access);
+   BOM_Table : constant
+         array (Encoding_Scheme) of not null access constant UTF_String := (
+      UTF_8 => BOM_8'Access,
+      UTF_16BE => BOM_16BE'Access,
+      UTF_16LE => BOM_16LE'Access,
+      UTF_32BE => BOM_32BE'Access,
+      UTF_32LE => BOM_32LE'Access);
 
 end Ada.Strings.UTF_Encoding;

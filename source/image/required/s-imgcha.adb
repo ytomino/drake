@@ -41,7 +41,7 @@ package body System.Img_Char is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Unsigned'(Character'Pos (V)),
+                  Formatting.Word_Unsigned'(Character'Pos (V)),
                   S (P + 1 .. S'Last),
                   P,
                   Base => 16,

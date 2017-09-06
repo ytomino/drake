@@ -333,55 +333,63 @@ package body Ada.Containers.Binary_Trees is
       Copy : access procedure (
          Target : out Node_Access;
          Source : not null Node_Access);
-      Free : access procedure (Object : in out Node_Access))
-   is
-      New_Node : Node_Access;
-      N : Node_Access;
-      I : Node_Access := First (Target);
-      J : Node_Access := First (Source);
+      Free : access procedure (Object : in out Node_Access)) is
    begin
-      while I /= null and then J /= null loop
+      if Target = Source then -- RM A.18.7(62/2, 66/2)
+         if not Filter (In_Both) then
+            Binary_Trees.Free (Target, Length, Free);
+         end if;
+      else
          declare
-            Comparison : constant Integer := Compare (I, J);
+            New_Node : Node_Access;
+            N : Node_Access;
+            I : Node_Access := First (Target);
+            J : Node_Access := First (Source);
          begin
-            if Comparison < 0 then
-               N := Next (I);
-               if not Filter (In_Only_Left) then
+            while I /= null and then J /= null loop
+               declare
+                  Comparison : constant Integer := Compare (I, J);
+               begin
+                  if Comparison < 0 then
+                     N := Next (I);
+                     if not Filter (In_Only_Left) then
+                        Remove (Target, Length, I);
+                        Free (I);
+                     end if;
+                     I := N;
+                  elsif Comparison > 0 then
+                     if Filter (In_Only_Right) then
+                        Copy (New_Node, J);
+                        Insert (Target, Length, I, New_Node);
+                     end if;
+                     J := Next (J);
+                  else
+                     N := Next (I);
+                     if not Filter (In_Both) then
+                        Remove (Target, Length, I);
+                        Free (I);
+                     end if;
+                     I := N;
+                     J := Next (J);
+                  end if;
+               end;
+            end loop;
+            if not Filter (In_Only_Left) then
+               while I /= null loop
+                  N := Next (I);
                   Remove (Target, Length, I);
                   Free (I);
-               end if;
-               I := N;
-            elsif Comparison > 0 then
-               if Filter (In_Only_Right) then
+                  I := N;
+               end loop;
+            end if;
+            if Filter (In_Only_Right) then
+               while J /= null loop
                   Copy (New_Node, J);
-                  Insert (Target, Length, I, New_Node);
-               end if;
-               J := Next (J);
-            else
-               N := Next (I);
-               if not Filter (In_Both) then
-                  Remove (Target, Length, I);
-                  Free (I);
-               end if;
-               I := N;
-               J := Next (J);
+                  Insert (Target, Length, null, New_Node);
+                  J := Next (J);
+               end loop;
             end if;
          end;
-      end loop;
-      if not Filter (In_Only_Left) then
-         while I /= null loop
-            N := Next (I);
-            Remove (Target, Length, I);
-            Free (I);
-            I := N;
-         end loop;
-      end if;
-      if Filter (In_Only_Right) then
-         while J /= null loop
-            Copy (New_Node, J);
-            Insert (Target, Length, null, New_Node);
-            J := Next (J);
-         end loop;
       end if;
    end Merge;
 

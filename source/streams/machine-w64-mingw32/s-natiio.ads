@@ -48,7 +48,6 @@ package System.Native_IO is
    end record;
    pragma Suppress_Initialization (Packed_Form);
    pragma Pack (Packed_Form);
-   pragma Compile_Time_Error (Packed_Form'Size /= 4, "not packed");
 
    procedure Open_Ordinary (
       Method : Open_Method;

@@ -70,7 +70,6 @@ package Ada.Streams.Naked_Stream_IO is
 
    function Stream (File : not null Non_Controlled_File_Type)
       return not null access Root_Stream_Type'Class;
-   pragma Inline (Stream);
 
    procedure Read (
       File : not null Non_Controlled_File_Type;

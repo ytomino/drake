@@ -185,9 +185,7 @@ private
 
    private
 
-      type File_Type is
-         limited new Finalization.Limited_Controlled with
-      record
+      type File_Type is limited new Finalization.Limited_Controlled with record
          Stream : aliased Naked_Stream_IO.Non_Controlled_File_Type;
       end record;
 

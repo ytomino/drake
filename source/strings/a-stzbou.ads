@@ -12,13 +12,13 @@ package Ada.Strings.Wide_Wide_Bounded is
       package Bounded_Wide_Wide_Strings is
          new Strings.Bounded_Wide_Wide_Strings.Generic_Bounded_Length (Max);
       package Functions is
-         new Strings.Bounded_Wide_Wide_Strings.Functions.
-            Generic_Bounded_Length (
-               Bounded_Wide_Wide_Strings);
+         new Strings.Bounded_Wide_Wide_Strings.Functions
+               .Generic_Bounded_Length (
+            Bounded_Wide_Wide_Strings);
       package Maps is
-         new Strings.Bounded_Wide_Wide_Strings.Functions.Maps.
-            Generic_Bounded_Length (
-               Bounded_Wide_Wide_Strings);
+         new Strings.Bounded_Wide_Wide_Strings.Functions.Maps
+               .Generic_Bounded_Length (
+            Bounded_Wide_Wide_Strings);
 
 --    Max_Length : constant Positive := Max;
       Max_Length : Positive

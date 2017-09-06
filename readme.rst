@@ -87,7 +87,7 @@ Limitations
 Many features are unimplemented and there are several intentional ACATS violations for usability.
 See `incompatibility features page`_.
 
-.. _`Predefined Language Environment`: http://www.adaic.org/resources/add_content/standards/12rm/html/RM-A.html
+.. _`Predefined Language Environment`: http://www.ada-auth.org/standards/rm12_w_tc1/html/RM-A.html
 .. _gcc: http://gcc.gnu.org/
 .. _headmaster: http://github.com/ytomino/headmaster
 .. _wiki: https://github.com/ytomino/drake/wiki

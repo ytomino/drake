@@ -255,7 +255,7 @@ package body System.Formatting.Float is
             --  opening '#'
             if Base_Form then
                Image (
-                  Unsigned (Base),
+                  Word_Unsigned (Base),
                   Item (Last + 1 .. Item'Last),
                   Last,
                   Error => Error);
@@ -309,7 +309,7 @@ package body System.Formatting.Float is
                end if;
             end if;
             Image (
-               Unsigned (abs Exponent),
+               Word_Unsigned (abs Exponent),
                Item (Last + 1 .. Item'Last),
                Last,
                Width => Exponent_Width,

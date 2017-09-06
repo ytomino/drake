@@ -125,10 +125,10 @@ package body System.Unwind.Mapping is
          declare
             Message : String (1 .. 256);
             Message_Last : Natural;
-            C_Wide_Buf : aliased C.winnt.LPWSTR;
-            R : C.windef.DWORD;
+            Wide_Message : aliased C.winnt.LPWSTR;
+            Wide_Message_Length : C.windef.DWORD;
          begin
-            R := C.winbase.FormatMessage (
+            Wide_Message_Length := C.winbase.FormatMessage (
                dwFlags =>
                   C.winbase.FORMAT_MESSAGE_FROM_HMODULE
                   or C.winbase.FORMAT_MESSAGE_ARGUMENT_ARRAY
@@ -136,16 +136,18 @@ package body System.Unwind.Mapping is
                lpSource => Cast (Storage_Map.NTDLL),
                dwMessageId => Code,
                dwLanguageId => C.winnt.LANG_USER_DEFAULT,
-               lpBuffer => Cast (C_Wide_Buf'Unchecked_Access),
+               lpBuffer => Cast (Wide_Message'Unchecked_Access),
                nSize => 0,
                Arguments =>
                   Cast (Exception_Record.ExceptionInformation (0)'Access));
             declare
-               Wide_Message : Wide_String (Positive);
-               for Wide_Message'Address use C_Wide_Buf.all'Address;
-               Wide_Message_Last : constant Natural := Natural (R);
+               Wide_Message_Last : constant Natural :=
+                  Integer (Wide_Message_Length);
+               Wide_Message_All : Wide_String (1 .. Wide_Message_Last);
+               for Wide_Message_All'Address use Wide_Message.all'Address;
             begin
-               if Wide_Message (Wide_Message_Last - 2 .. Wide_Message_Last) =
+               if Wide_Message_All (
+                        Wide_Message_Last - 2 .. Wide_Message_Last) =
                      """0x"
                   and then Code = C.winbase.EXCEPTION_ACCESS_VIOLATION
                then
@@ -184,8 +186,8 @@ package body System.Unwind.Mapping is
                      C.winnls.WideCharToMultiByte (
                         C.winnls.CP_UTF8,
                         0,
-                        LPWSTR_Conv.To_Pointer (Wide_Message'Address),
-                        C.signed_int (Wide_Message_Last),
+                        Wide_Message,
+                        C.signed_int (Wide_Message_Length),
                         LPSTR_Conv.To_Pointer (Message'Address),
                         Message'Length,
                         null,
@@ -196,7 +198,7 @@ package body System.Unwind.Mapping is
                Dummy : C.windef.HLOCAL;
             begin
                Dummy := C.winbase.LocalFree (
-                  C.windef.HLOCAL (LPWSTR_Conv.To_Address (C_Wide_Buf)));
+                  C.windef.HLOCAL (LPWSTR_Conv.To_Address (Wide_Message)));
             end;
             pragma Check (Trace, Ada.Debug.Put ("raising"));
             Raising.Raise_From_Signal_Handler (

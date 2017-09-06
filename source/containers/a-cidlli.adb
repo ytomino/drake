@@ -5,6 +5,7 @@ with System;
 package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
    use type Copy_On_Write.Data_Access;
+   use type System.Address;
 
    function Upcast is
       new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
@@ -85,14 +86,14 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
-      pragma Unreferenced (Max_Length);
+      pragma Unreferenced (New_Length);
       pragma Unreferenced (Capacity);
       New_Data : constant Data_Access :=
          new Data'(Super => <>, First => null, Last => null, Length => 0);
@@ -104,17 +105,17 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
       pragma Unreferenced (Length);
-      pragma Unreferenced (Max_Length);
+      pragma Unreferenced (New_Length);
       pragma Unreferenced (Capacity);
    begin
       Allocate_Data (Target, 0, 0);
@@ -147,10 +148,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       if Copy_On_Write.Shared (Container.Super.Data) then
          Copy_On_Write.Unique (
             Target => Container.Super'Access,
-            Target_Length => 0, -- Length is unused
-            Target_Capacity => 0, -- Capacity is unused
-            New_Length => 0,
-            New_Capacity => 0,
             To_Update => To_Update,
             Allocate => Allocate_Data'Access,
             Move => Copy_Data'Access,
@@ -277,8 +274,6 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Copy_On_Write.Copy (
             Result.Super'Access,
             Source.Super'Access,
-            0, -- Length is unused
-            0, -- Capacity is unused
             Allocate => Allocate_Data'Access,
             Copy => Copy_Data'Access);
       end return;
@@ -478,12 +473,9 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
    procedure Splice (
       Target : in out List;
       Before : Cursor;
-      Source : in out List)
-   is
-      type List_Access is access all List;
-      for List_Access'Storage_Size use 0;
+      Source : in out List) is
    begin
-      if List_Access'(Target'Access) /= List_Access'(Source'Access) then
+      if Target'Address /= Source'Address then
          Unique (Target, True);
          Unique (Source, True);
          declare
@@ -508,25 +500,27 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Source : in out List;
       Position : in out Cursor) is
    begin
-      Unique (Target, True);
-      Unique (Source, True);
-      declare
-         Target_Data : constant Data_Access := Downcast (Target.Super.Data);
-         Source_Data : constant Data_Access := Downcast (Source.Super.Data);
-      begin
-         Base.Remove (
-            Source_Data.First,
-            Source_Data.Last,
-            Source_Data.Length,
-            Upcast (Position),
-            Position.Super.Next);
-         Base.Insert (
-            Target_Data.First,
-            Target_Data.Last,
-            Target_Data.Length,
-            Upcast (Before),
-            Upcast (Position));
-      end;
+      if Before /= Position then -- RM A.18.3(114/3)
+         Unique (Target, True);
+         Unique (Source, True);
+         declare
+            Target_Data : constant Data_Access := Downcast (Target.Super.Data);
+            Source_Data : constant Data_Access := Downcast (Source.Super.Data);
+         begin
+            Base.Remove (
+               Source_Data.First,
+               Source_Data.Last,
+               Source_Data.Length,
+               Upcast (Position),
+               Position.Super.Next);
+            Base.Insert (
+               Target_Data.First,
+               Target_Data.Last,
+               Target_Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
+      end if;
    end Splice;
 
    procedure Splice (
@@ -534,23 +528,25 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Before : Cursor;
       Position : Cursor) is
    begin
-      Unique (Container, True);
-      declare
-         Data : constant Data_Access := Downcast (Container.Super.Data);
-      begin
-         Base.Remove (
-            Data.First,
-            Data.Last,
-            Data.Length,
-            Upcast (Position),
-            Position.Super.Next);
-         Base.Insert (
-            Data.First,
-            Data.Last,
-            Data.Length,
-            Upcast (Before),
-            Upcast (Position));
-      end;
+      if Before /= Position then -- RM A.18.3(116/3)
+         Unique (Container, True);
+         declare
+            Data : constant Data_Access := Downcast (Container.Super.Data);
+         begin
+            Base.Remove (
+               Data.First,
+               Data.Last,
+               Data.Length,
+               Upcast (Position),
+               Position.Super.Next);
+            Base.Insert (
+               Data.First,
+               Data.Last,
+               Data.Length,
+               Upcast (Before),
+               Upcast (Position));
+         end;
+      end if;
    end Splice;
 
    function First (Container : List) return Cursor is
@@ -817,6 +813,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end Sort;
 
       procedure Merge (Target : in out List; Source : in out List) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.3(151/3), same nonempty container
       begin
          if not Is_Empty (Source) then
             if Is_Empty (Target) then
@@ -875,7 +877,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
          Count_Type'Write (Stream, Length);
          if Length > 0 then
             declare
-               Position : Cursor := Position := First (Item);
+               Position : Cursor := First (Item);
             begin
                while Position /= null loop
                   Element_Type'Output (Stream, Position.Element.all);

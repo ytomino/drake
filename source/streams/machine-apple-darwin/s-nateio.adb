@@ -79,12 +79,12 @@ package body System.Native_Text_IO is
       Item : String;
       Prefix : String;
       Postfix : Character;
-      X1, X2 : out Formatting.Unsigned);
+      X1, X2 : out Formatting.Word_Unsigned);
    procedure Parse_Escape_Sequence (
       Item : String;
       Prefix : String;
       Postfix : Character;
-      X1, X2 : out Formatting.Unsigned)
+      X1, X2 : out Formatting.Word_Unsigned)
    is
       P : Natural;
       Error : Boolean;
@@ -161,14 +161,14 @@ package body System.Native_Text_IO is
       Seq (4) := ';';
       Last := 4;
       Formatting.Image (
-         Formatting.Unsigned (Page_Length),
+         Formatting.Word_Unsigned (Page_Length),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
       Last := Last + 1;
       Seq (Last) := ';';
       Formatting.Image (
-         Formatting.Unsigned (Line_Length),
+         Formatting.Word_Unsigned (Line_Length),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
@@ -229,8 +229,8 @@ package body System.Native_Text_IO is
          Buffer (1 .. Last),
          Character'Val (16#1b#) & "[",
          'R',
-         Formatting.Unsigned (Line),
-         Formatting.Unsigned (Col));
+         Formatting.Word_Unsigned (Line),
+         Formatting.Word_Unsigned (Col));
    end Terminal_Position;
 
    procedure Set_Terminal_Position (
@@ -245,14 +245,14 @@ package body System.Native_Text_IO is
       Seq (2) := '[';
       Last := 2;
       Formatting.Image (
-         Formatting.Unsigned (Line),
+         Formatting.Word_Unsigned (Line),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
       Last := Last + 1;
       Seq (Last) := ';';
       Formatting.Image (
-         Formatting.Unsigned (Col),
+         Formatting.Word_Unsigned (Col),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
@@ -273,7 +273,7 @@ package body System.Native_Text_IO is
       Seq (2) := '[';
       Last := 2;
       Formatting.Image (
-         Formatting.Unsigned (To),
+         Formatting.Word_Unsigned (To),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);

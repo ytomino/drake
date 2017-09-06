@@ -4,7 +4,7 @@ package Ada.Characters.Handling is
 --  pragma Pure;
    pragma Preelaborate; -- use mapping
 
-   --  Note: These functions for single Character raise Constraint_Error for
+   --  Note: These single Character functions propagates Constraint_Error for
    --    16#80# .. 16#FF#.
    --  If you want to handle full-unicode, use Wide_Wide_Character.
    --  If you want to handle ISO_646, use ASCII.Handling.

@@ -23,9 +23,9 @@ package Ada.Environment_Variables is
       Process : not null access procedure (Name, Value : String));
 
    --  extended from here
-   --  There is an iterator for AI12-0009-1 (?)
+   --  There is a simple iterator:
 
-   type Cursor is private;
+   type Cursor is private; -- moved from below
    pragma Preelaborable_Initialization (Cursor);
 
    function Has_Element (Position : Cursor) return Boolean;
@@ -41,6 +41,58 @@ package Ada.Environment_Variables is
       new Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class;
+
+   --  to here
+
+--  package Name_Value_Pairs is
+
+--    type Name_Value_Pair_Type is tagged limited private;
+
+      --  Operations on Name_Value_Pairs
+
+--    function Name (Name_Value_Pair : Name_Value_Pair_Type) return String;
+
+--    function Value (Name_Value_Pair : Name_Value_Pair_Type) return String;
+
+      --  Note: If it follows AI12-0009-1/06 strictly, these is no way to make
+      --    a value of Name_Value_Pair_Type, because it is declared as private
+      --    and in the nested package Name_Value_Pairs.
+      --  Perhaps, Current_Variable should be moved here.
+
+--  private
+      --  not specified by the languages
+--  end Name_Value_Pairs;
+
+--  use Name_Value_Pairs;
+
+--  type Environment_Variable_Listing is tagged limited private
+--    with
+--       Constant_Indexing => Current_Variable,
+--       Default_Iterator => Iterate,
+--       Iterator_Element => Name_Value_Pairs.Name_Value_Pair_Type;
+--  pragma Preelaborable_Initialization (Environment_Variable_Listing);
+
+--  function Environment return Environment_Variable_Listing;
+
+--  type Cursor is private; -- declared in above
+--  pragma Preelaborable_Initialization (Cursor);
+
+--  function Has_Environment_Variable (Position : Cursor) return Boolean
+--    renames Has_Element;
+
+--  package Environment_Variable_Iterators
+--    renames Iterator_Interfaces;
+
+--  function Iterate (Listing : Environment_Variable_Listing)
+--    return Environment_Variable_Iterators.Forward_Iterator'Class;
+
+--  function Current_Variable (
+--    Variables : Environment_Variable_Listing;
+--    Position : Cursor)
+--    return Name_Value_Pairs.Name_Value_Pair_Type;
+--    with Pre => Has_Environment_Variable (Position);
+
+   --  Note: These "renames" should be unified when the AI have been decided.
 
 private
 

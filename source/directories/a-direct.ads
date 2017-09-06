@@ -140,14 +140,7 @@ package Ada.Directories is
    type Filter_Type is array (File_Kind) of Boolean;
    pragma Pack (Filter_Type);
 
-   --  modified
-   --  Search_Type has its iterator. See below.
---  type Search_Type is limited private;
-   type Search_Type is tagged limited private
-      with
-         Constant_Indexing => Constant_Reference,
-         Default_Iterator => Iterate,
-         Iterator_Element => Directory_Entry_Type;
+   type Search_Type is limited private;
 
 --  subtype Open_Search_Type is Search_Type
 --    with
@@ -165,8 +158,6 @@ package Ada.Directories is
       Pattern : String := "*"; -- additional default
       Filter : Filter_Type := (others => True));
    --  extended
-   --  This function version Start_Search enables to write
-   --    "for E of Start_Search (...) loop".
    function Start_Search (
       Directory : String;
       Pattern : String := "*";
@@ -178,6 +169,7 @@ package Ada.Directories is
    function More_Entries (
       Search : Search_Type) -- Open_Search_Type
       return Boolean;
+   pragma Inline (More_Entries);
 
    procedure Get_Next_Entry (
       Search : in out Search_Type; -- Open_Search_Type
@@ -188,14 +180,22 @@ package Ada.Directories is
       Search : aliased in out Search_Type) -- Open_Search_Type
       return Directory_Entry_Type;
 
-   --  extended
-   --  Get Directory_Entry_Type of one file to get plural information.
-   procedure Get_Entry (
-      Name : String;
-      Directory_Entry : out Directory_Entry_Type);
-   function Get_Entry (
-      Name : String)
-      return Directory_Entry_Type;
+   --  extended from here
+   --  Efficient way to get the next entry without copying.
+
+   type Constant_Reference_Type (
+      Element : not null access constant Directory_Entry_Type) is null record
+      with Implicit_Dereference => Element;
+
+   function Look_Next_Entry (
+      Search : aliased Search_Type) -- Open_Search_Type
+      return Constant_Reference_Type;
+   pragma Inline (Look_Next_Entry);
+
+   procedure Skip_Next_Entry (
+      Search : in out Search_Type); -- Open_Search_Type
+
+   --  to here
 
    --  modified
    procedure Search (
@@ -206,39 +206,72 @@ package Ada.Directories is
          Directory_Entry : Directory_Entry_Type));
 
    --  extended from here
-   --  There is an iterator for AI12-0009-1 (?)
+   --  AI12-0009-1, Directory Iteration
+
+   type Directory_Listing is tagged limited private
+      with
+--       Constant_Indexing => Current_Entry,
+         Constant_Indexing => Constant_Reference,
+         Default_Iterator => Iterate,
+         Iterator_Element => Directory_Entry_Type;
+   pragma Preelaborable_Initialization (Directory_Listing);
+
+--  subtype Open_Directory_Listing is Directory_Listing
+--    with
+--       Dynamic_Predicate => Is_Open (Open_Directory_Listing),
+--       Predicate_Failure => raise Status_Error;
+
+   function Is_Open (Listing : Directory_Listing) return Boolean; -- additional
+   pragma Inline (Is_Open);
+
+   function Entries (
+      Directory : String;
+      Pattern : String := "*"; -- additional default
+      Filter : Filter_Type := (others => True))
+      return Directory_Listing;
 
    type Cursor is private;
    pragma Preelaborable_Initialization (Cursor);
 
-   function Has_Element (Position : Cursor) return Boolean;
-   pragma Inline (Has_Element);
+   function Has_Entry (Position : Cursor) return Boolean;
+   pragma Inline (Has_Entry);
 
-   function Element (
-      Container : Search_Type'Class; -- Open_Search_Type'Class
-      Position : Cursor)
-      return Directory_Entry_Type;
+   package Directory_Iterators is
+      new Iterator_Interfaces (Cursor, Has_Entry);
 
-   type Constant_Reference_Type (
-      Element : not null access constant Directory_Entry_Type) is null record
-      with Implicit_Dereference => Element;
-
-   function Constant_Reference (
-      Container : aliased Search_Type; -- Open_Search_Type
-      Position : Cursor)
-      return Constant_Reference_Type;
-   pragma Inline (Constant_Reference);
-
-   package Search_Iterator_Interfaces is
-      new Iterator_Interfaces (Cursor, Has_Element);
+   --  Note: To be consistent with the existing instances in Ada.Containers,
+   --    like Vector/List/Set/Map_Iterator_Interfaces, should it be renamed to
+   --    Directory_Listing_Iterator_Interfaces?
 
    function Iterate (
-      Container : Search_Type'Class) -- Open_Search_Type'Class
-      return Search_Iterator_Interfaces.Forward_Iterator'Class;
+      Listing : Directory_Listing'Class) -- Open_Directory_Listing'Class
+      return Directory_Iterators.Forward_Iterator'Class;
+
+   function Current_Entry (
+      Entries : Directory_Listing'Class; -- Open_Directory_Listing'Class
+      Position : Cursor)
+      return Directory_Entry_Type;
+--    with Pre => Has_Entry (Position);
+
+   function Constant_Reference (
+      Container : aliased Directory_Listing; -- Open_Directory_Listing
+      Position : Cursor)
+      return Constant_Reference_Type;
+      --  additional
+   pragma Inline (Constant_Reference);
 
    --  to here
 
    --  Operations on Directory Entries:
+
+   --  extended
+   --  Get Directory_Entry_Type of one file to get plural information.
+   procedure Get_Entry (
+      Name : String;
+      Directory_Entry : out Directory_Entry_Type);
+   function Get_Entry (
+      Name : String)
+      return Directory_Entry_Type;
 
    function Simple_Name (
       Directory_Entry : Directory_Entry_Type) -- Assigned_Directory_Entry_Type
@@ -322,9 +355,6 @@ private
 
    type String_Access is access String;
 
-   type Search_Access is access Search_Type;
-   for Search_Access'Storage_Size use 0;
-
    type Directory_Entry_Status is (Empty, Attached, Detached);
    pragma Discard_Names (Directory_Entry_Status);
 
@@ -334,10 +364,11 @@ private
          System.Native_Directories.Searching.Directory_Entry_Access;
       Additional : aliased
          System.Native_Directories.Searching.Directory_Entry_Additional_Type;
-      Status : Directory_Entry_Status := Empty;
+      Status : Directory_Entry_Status;
    end record;
+   pragma Suppress_Initialization (Non_Controlled_Directory_Entry_Type);
 
-   package Controlled is
+   package Controlled_Entries is
 
       type Directory_Entry_Type is limited private;
 
@@ -350,37 +381,74 @@ private
       type Directory_Entry_Type is
          limited new Finalization.Limited_Controlled with
       record
-         Data : aliased Non_Controlled_Directory_Entry_Type;
+         Data : aliased Non_Controlled_Directory_Entry_Type := (
+            Status => Empty,
+            others => <>);
       end record;
 
       overriding procedure Finalize (Object : in out Directory_Entry_Type);
 
-   end Controlled;
+   end Controlled_Entries;
 
-   type Directory_Entry_Type is new Controlled.Directory_Entry_Type;
+   type Directory_Entry_Type is new Controlled_Entries.Directory_Entry_Type;
 
-   type Search_Type is limited new Finalization.Limited_Controlled with record
-      Search : aliased System.Native_Directories.Searching.Search_Type := (
-         Handle => System.Native_Directories.Searching.Null_Handle,
-         others => <>);
+   type Non_Controlled_Search_Type is record
+      Search : aliased System.Native_Directories.Searching.Search_Type;
       Path : String_Access;
-      Next_Directory_Entry : aliased Directory_Entry_Type;
-      Next_Is_Queried : Boolean;
+   end record;
+   pragma Suppress_Initialization (Non_Controlled_Search_Type);
+
+   package Controlled_Searches is
+
+      type Search_Type is limited private;
+
+      function Reference (Object : Directories.Search_Type)
+         return not null access Non_Controlled_Search_Type;
+      pragma Inline (Reference);
+
+      function Next_Directory_Entry (Object : Directories.Search_Type)
+         return not null access Directory_Entry_Type;
+      pragma Inline (Reference);
+
+   private
+
+      type Search_Type is
+         limited new Finalization.Limited_Controlled with
+      record
+         Data : aliased Non_Controlled_Search_Type := (
+            Search => (
+               Handle => System.Native_Directories.Searching.Null_Handle,
+               others => <>),
+            others => <>);
+         Next_Directory_Entry : aliased Directory_Entry_Type;
+      end record;
+
+      overriding procedure Finalize (Search : in out Search_Type);
+
+   end Controlled_Searches;
+
+   type Search_Type is new Controlled_Searches.Search_Type;
+
+   --  Directory Iteration
+
+   type Directory_Listing is tagged limited record
+      Search : aliased Search_Type;
       Count : Natural;
    end record;
 
-   overriding procedure Finalize (Search : in out Search_Type);
-
    type Cursor is new Natural;
 
-   type Search_Iterator is
-      new Search_Iterator_Interfaces.Forward_Iterator with
+   type Directory_Listing_Access is access all Directory_Listing;
+   for Directory_Listing_Access'Storage_Size use 0;
+
+   type Directory_Iterator is
+      new Directory_Iterators.Forward_Iterator with
    record
-      Search : Search_Access;
+      Listing : Directory_Listing_Access;
    end record;
 
-   overriding function First (Object : Search_Iterator) return Cursor;
-   overriding function Next (Object : Search_Iterator; Position : Cursor)
+   overriding function First (Object : Directory_Iterator) return Cursor;
+   overriding function Next (Object : Directory_Iterator; Position : Cursor)
       return Cursor;
 
 end Ada.Directories;

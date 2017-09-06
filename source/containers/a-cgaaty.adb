@@ -355,7 +355,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
          if Container /= null then
             Array_Sorting.Reverse_Rotate (
                Index_Type'Pos (Container'First),
-               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Before),
                Index_Type'Pos (Container'Last),
                Context'Address,
                Swap => Swap'Access);
@@ -377,7 +377,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
          if Container /= null then
             Array_Sorting.Juggling_Rotate (
                Index_Type'Pos (Container'First),
-               Index_Type'Pos (Before) - 1,
+               Index_Type'Pos (Before),
                Index_Type'Pos (Container'Last),
                Context'Address,
                Swap => Swap'Access);
@@ -465,16 +465,16 @@ package body Ada.Containers.Generic_Array_Access_Types is
             Move (Target, Source);
          else
             declare
-               Old_Last : constant Index_Type'Base := Target'Last;
+               Before : constant Index_Type'Base := Target'Last + 1;
             begin
-               Append (Target, Source);
+               Insert (Target, Before, Source);
                Free (Source);
                declare
                   Context : Context_Type := (Container => Target);
                begin
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Target'First),
-                     Index_Type'Pos (Old_Last),
+                     Index_Type'Pos (Before),
                      Index_Type'Pos (Target'Last),
                      Context'Address,
                      LT => LT'Access,
@@ -503,33 +503,27 @@ package body Ada.Containers.Generic_Array_Access_Types is
          Left : Array_Access;
          Right : Element_Type;
          Space : Count_Type)
-         return New_Array_1 is
+         return New_Array_1
+      is
+         Data : Array_Access;
+         Last : Extended_Index;
       begin
          if Left = null then
-            declare
-               Result : constant New_Array_1 := (
-                  Data =>
-                     new Array_Type (
-                        Index_Type'First ..
-                        Index_Type'First + Index_Type'Base (Space)),
-                  Last => Index_Type'First);
-            begin
-               Result.Data (Index_Type'First) := Right;
-               return Result;
-            end;
+            Data :=
+               new Array_Type (
+                  Index_Type'First ..
+                  Index_Type'First + Index_Type'Base (Space));
+            Last := Index_Type'First;
+            Data (Last) := Right;
          else
-            declare
-               Result : constant New_Array_1 := (
-                  Data =>
-                     new Array_Type (
-                        Left'First .. Left'Last + 1 + Index_Type'Base (Space)),
-                  Last => Left'Last + 1);
-            begin
-               Result.Data (Left'Range) := Left.all;
-               Result.Data (Result.Last) := Right;
-               return Result;
-            end;
+            Data :=
+               new Array_Type (
+                  Left'First .. Left'Last + 1 + Index_Type'Base (Space));
+            Last := Left'Last + 1;
+            Data (Left'Range) := Left.all;
+            Data (Last) := Right;
          end if;
+         return (Data => Data, Last => Last);
       end Start;
 
       function Step (
@@ -541,26 +535,28 @@ package body Ada.Containers.Generic_Array_Access_Types is
          Left : New_Array_1;
          Right : Element_Type;
          Space : Count_Type)
-         return New_Array_1 is
+         return New_Array_1
+      is
+         Data : Array_Access;
+         Last : Extended_Index;
       begin
          if Left.Last + 1 <= Left.Data'Last then
-            Left.Data (Left.Last + 1) := Right;
-            return (Data => Left.Data, Last => Left.Last + 1);
+            Data := Left.Data;
+            Last := Left.Last + 1;
+            Left.Data (Last) := Right;
          else
+            Data := new Array_Type (
+               Left.Data'First .. Left.Last + 1 + Index_Type'Base (Space));
+            Last := Left.Last + 1;
+            Data (Left.Data'Range) := Left.Data.all;
+            Data (Last) := Right;
             declare
-               Data : Array_Access := Left.Data;
-               Result : constant New_Array_1 := (
-                  Data =>
-                     new Array_Type (
-                        Data'First .. Left.Last + 1 + Index_Type'Base (Space)),
-                  Last => Left.Last + 1);
+               Left_Data : Array_Access := Left.Data;
             begin
-               Result.Data (Data'Range) := Data.all;
-               Result.Data (Result.Last) := Right;
-               Free (Data);
-               return Result;
+               Free (Left_Data);
             end;
          end if;
+         return (Data => Data, Last => Last);
       end Step;
 
       --  implementation

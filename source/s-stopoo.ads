@@ -31,7 +31,7 @@ private
 
    type Root_Storage_Pool is
       abstract limited new Ada.Finalization.Limited_Controlled with
-      null record;
+         null record;
 
    --  required for allocation with explicit 'Storage_Pool by compiler
    --  (s-stopoo.ads)

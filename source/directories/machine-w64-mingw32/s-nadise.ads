@@ -26,7 +26,7 @@ package System.Native_Directories.Searching is
    Null_Handle : constant Handle_Type := Handle_Type (Null_Address);
 
    type Search_Type is record
-      Handle : C.winnt.HANDLE;
+      Handle : aliased C.winnt.HANDLE;
       Filter : Filter_Type;
       Directory_Entry : aliased C.winbase.WIN32_FIND_DATA;
    end record;

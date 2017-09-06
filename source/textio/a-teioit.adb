@@ -2,16 +2,17 @@ package body Ada.Text_IO.Iterators is
 
    function Unchecked_Next (Object : Line_Iterator) return Line_Cursor;
    function Unchecked_Next (Object : Line_Iterator) return Line_Cursor is
+      Lines : constant not null Lines_Access := Object.Lines;
    begin
-      if End_Of_File (Object.Lines.File.all) then
+      if End_Of_File (Lines.File.all) then
          return 0; -- No_Element
       else
-         Free (Object.Lines.Item);
-         Object.Lines.Count := Object.Lines.Count + 1;
+         Free (Lines.Item);
+         Lines.Count := Lines.Count + 1;
          Overloaded_Get_Line (
-            Object.Lines.File.all,
-            Object.Lines.Item); -- allocation
-         return Line_Cursor (Object.Lines.Count);
+            Lines.File.all,
+            Lines.Item); -- allocation
+         return Line_Cursor (Lines.Count);
       end if;
    end Unchecked_Next;
 
@@ -26,10 +27,8 @@ package body Ada.Text_IO.Iterators is
       pragma Check (Dynamic_Predicate,
          Check => Mode (File) = In_File or else raise Mode_Error);
    begin
-      return (Finalization.Limited_Controlled with
-         File => File'Unrestricted_Access,
-         Item => null,
-         Count => 0);
+      return (Finalization.Limited_Controlled
+         with File => File'Unrestricted_Access, Item => null, Count => 0);
    end Lines;
 
    function Has_Element (Position : Line_Cursor) return Boolean is

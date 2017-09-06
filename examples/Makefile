@@ -64,7 +64,7 @@ export DEBUG=2
 GFLAGS=
 GFLAGS_ALL=--RTS=$(abspath $(BUILDDIR))
 CFLAGS=
-CFLAGS_ALL=-pipe -gnatef -gnatf -gnatwI
+CFLAGS_ALL=-pipe -gnatef -gnatf -gnatwIue
 MFLAGS=
 MFLAGS_ALL=-D $(BUILDDIR)
 BFLAGS=

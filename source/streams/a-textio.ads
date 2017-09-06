@@ -149,8 +149,7 @@ package Ada.Text_IO is
 --  function Current_Output return File_Type;
 --  function Current_Error return File_Type;
 
---  type File_Access is access constant File_Type;
-   --  declarated in above
+--  type File_Access is access constant File_Type; -- declared in above
 
    function Standard_Input return File_Access;
    function Standard_Output return File_Access;
@@ -617,9 +616,7 @@ private
 
    private
 
-      type File_Type is
-         limited new Finalization.Limited_Controlled with
-      record
+      type File_Type is limited new Finalization.Limited_Controlled with record
          Text : aliased Naked_Text_IO.Non_Controlled_File_Type;
       end record;
 

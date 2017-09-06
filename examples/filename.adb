@@ -99,7 +99,7 @@ begin
 	pragma Assert (ADH.Relative_Name ("/A//B") = "A//B");
 	begin
 		declare
-			X : constant String := AD.Compose ("A", "B/C");
+			Dummy : constant String := AD.Compose ("A", "B/C");
 		begin
 			raise Program_Error; -- NG
 		end;
@@ -170,7 +170,7 @@ begin
 	end if;
 	begin
 		declare
-			X : constant String := AH.Relative_Name ("A", "..");
+			Dummy : constant String := AH.Relative_Name ("A", "..");
 		begin
 			raise Program_Error; -- NG
 		end;

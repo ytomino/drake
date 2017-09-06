@@ -132,8 +132,7 @@ package Ada.Containers.Limited_Vectors is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
 --  function Constant_Reference (
@@ -178,14 +177,14 @@ package Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Insert)
---
---
---
---
+   procedure Insert (
+      Container : in out Vector'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Insert (
-      Container : in out Vector;
+      Container : in out Vector'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -204,17 +203,17 @@ package Ada.Containers.Limited_Vectors is
 
 --  diff (Prepend)
 
---  diff (Prepend)
---
---
---
+   procedure Prepend (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
 --  diff (Append)
 
---  diff (Append)
---
---
---
+   procedure Append (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    --  modified
    procedure Insert_Space (
@@ -451,8 +450,7 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    type Vector_Iterator is
       new Vector_Iterator_Interfaces.Reversible_Iterator with

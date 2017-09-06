@@ -5,6 +5,7 @@ with System;
 package body Ada.Containers.Limited_Doubly_Linked_Lists is
    use type Linked_Lists.Node_Access;
 --  diff
+   use type System.Address;
 
    function Upcast is
       new Unchecked_Conversion (Cursor, Linked_Lists.Node_Access);
@@ -154,10 +155,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
---
---
 
    --  implementation
 
@@ -281,8 +278,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
---
---
 
    procedure Move (Target : in out List; Source : in out List) is
    begin
@@ -297,19 +292,19 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end if;
    end Move;
 
---  diff (Insert)
---
---
---
---
---
---
---
---
---
+   procedure Insert (
+      Container : in out List'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor;
+   begin
+      Insert (Container, Before, New_Item, Position, Count);
+   end Insert;
 
    procedure Insert (
-      Container : in out List;
+      Container : in out List'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -365,21 +360,21 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
---  diff (Prepend)
---
---
---
---
---
---
+   procedure Prepend (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, First (List (Container)), New_Item, Count);
+   end Prepend;
 
---  diff (Append)
---
---
---
---
---
---
+   procedure Append (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, null, New_Item, Count);
+   end Append;
 
    procedure Delete (
       Container : in out List;
@@ -479,9 +474,6 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Target : in out List;
       Before : Cursor;
       Source : in out List) is
---  diff
---  diff
---  diff
    begin
       if Target.First /= Source.First then
 --  diff
@@ -508,25 +500,27 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Source : in out List;
       Position : in out Cursor) is
    begin
+      if Before /= Position then -- RM A.18.3(114/3)
 --  diff
 --  diff
 --  diff
 --  diff
 --  diff
 --  diff
-      Base.Remove (
-         Source.First,
-         Source.Last,
-         Source.Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Target.First,
-         Target.Last,
-         Target.Length,
-         Upcast (Before),
-         Upcast (Position));
+         Base.Remove (
+            Source.First,
+            Source.Last,
+            Source.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Target.First,
+            Target.Last,
+            Target.Length,
+            Upcast (Before),
+            Upcast (Position));
 --  diff
+      end if;
    end Splice;
 
    procedure Splice (
@@ -534,23 +528,25 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       Before : Cursor;
       Position : Cursor) is
    begin
+      if Before /= Position then -- RM A.18.3(116/3)
 --  diff
 --  diff
 --  diff
 --  diff
-      Base.Remove (
-         Container.First,
-         Container.Last,
-         Container.Length,
-         Upcast (Position),
-         Position.Super.Next);
-      Base.Insert (
-         Container.First,
-         Container.Last,
-         Container.Length,
-         Upcast (Before),
-         Upcast (Position));
+         Base.Remove (
+            Container.First,
+            Container.Last,
+            Container.Length,
+            Upcast (Position),
+            Position.Super.Next);
+         Base.Insert (
+            Container.First,
+            Container.Last,
+            Container.Length,
+            Upcast (Before),
+            Upcast (Position));
 --  diff
+      end if;
    end Splice;
 
    function First (Container : List) return Cursor is
@@ -817,6 +813,12 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       end Sort;
 
       procedure Merge (Target : in out List; Source : in out List) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.3(151/3), same nonempty container
       begin
          if not Is_Empty (Source) then
             if Is_Empty (Target) then

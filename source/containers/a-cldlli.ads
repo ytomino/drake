@@ -64,8 +64,7 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
    function Constant_Reference (Container : aliased List; Position : Cursor)
@@ -80,14 +79,14 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 
    procedure Move (Target : in out List; Source : in out List);
 
---  diff (Insert)
---
---
---
---
+   procedure Insert (
+      Container : in out List'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Insert (
-      Container : in out List;
+      Container : in out List'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -99,15 +98,15 @@ package Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 
---  diff (Prepend)
---
---
---
+   procedure Prepend (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
---  diff (Append)
---
---
---
+   procedure Append (
+      Container : in out List'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1);
 
    procedure Delete (
       Container : in out List;
@@ -298,8 +297,7 @@ private
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    type List_Iterator is
       new List_Iterator_Interfaces.Reversible_Iterator with

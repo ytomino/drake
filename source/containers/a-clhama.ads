@@ -51,8 +51,8 @@ package Ada.Containers.Limited_Hashed_Maps is
 
    procedure Clear (Container : in out Map);
 
-   type Key_Reference_Type (
-      Element : not null access constant Key_Type) is private
+   type Key_Reference_Type (Element : not null access constant Key_Type) is
+      private
       with Implicit_Dereference => Element;
    function Key (Position : Cursor) return Key_Reference_Type;
 
@@ -81,8 +81,7 @@ package Ada.Containers.Limited_Hashed_Maps is
       Element : not null access constant Element_Type) is private
       with Implicit_Dereference => Element;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is private
+   type Reference_Type (Element : not null access Element_Type) is private
       with Implicit_Dereference => Element;
 
    function Constant_Reference (Container : aliased Map; Position : Cursor)
@@ -104,7 +103,7 @@ package Ada.Containers.Limited_Hashed_Maps is
    procedure Move (Target : in out Map; Source : in out Map);
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       New_Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -117,7 +116,7 @@ package Ada.Containers.Limited_Hashed_Maps is
 --
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type);
 
@@ -210,14 +209,13 @@ private
 
    type Cursor is access Node;
 
-   type Key_Reference_Type (
-      Element : not null access constant Key_Type) is null record;
+   type Key_Reference_Type (Element : not null access constant Key_Type) is
+      null record;
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;
 
-   type Reference_Type (
-      Element : not null access Element_Type) is null record;
+   type Reference_Type (Element : not null access Element_Type) is null record;
 
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;

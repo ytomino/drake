@@ -5,14 +5,14 @@ procedure input2forward is
 begin
 	declare
 		use Ada.Directories;
-		Search : aliased Search_Type := Start_Search (".", "*");
+		Listing : aliased Directory_Listing := Entries (".", "*");
 		package DII is new Ada.Containers.Forward_Iterators (
 			Input_Cursor => Ada.Directories.Cursor,
-			Has_Element => Ada.Directories.Has_Element,
-			Input_Iterator_Interfaces => Ada.Directories.Search_Iterator_Interfaces,
-			Input_Iterator => Ada.Directories.Iterate (Search),
+			Has_Element => Ada.Directories.Has_Entry,
+			Input_Iterator_Interfaces => Ada.Directories.Directory_Iterators,
+			Input_Iterator => Ada.Directories.Iterate (Listing),
 			Element_Type => Ada.Directories.Directory_Entry_Type,
-			Element => Search.Element);
+			Element => Listing.Current_Entry);
 		use DII, DII.Iterator_Interfaces;
 		Ite : DII.Iterator_Interfaces.Forward_Iterator'Class := DII.Iterate;
 		Pos : DII.Cursor := First (Ite);

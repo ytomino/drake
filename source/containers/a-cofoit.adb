@@ -70,11 +70,13 @@ package body Ada.Containers.Forward_Iterators is
 
    function Iterate return Iterator_Interfaces.Forward_Iterator'Class is
    begin
-      return Result : Iterator := (
-         Finalization.Limited_Controlled with
-         Last_Input_Cursor => Input_Iterator_Interfaces.First (Input_Iterator),
-         Last => null,
-         State => First)
+      return Result : Iterator :=
+         (Finalization.Limited_Controlled
+            with
+               Last_Input_Cursor =>
+                  Input_Iterator_Interfaces.First (Input_Iterator),
+               Last => null,
+               State => First)
       do
          Update_Last (Result);
       end return;

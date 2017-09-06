@@ -3,8 +3,9 @@ with Ada.Exceptions.Finally;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
-   use type System.Formatting.Unsigned;
+   use type System.Formatting.Word_Unsigned;
    use type System.Formatting.Longest_Unsigned;
+   use type System.Formatting.Literals.Word_Integer;
 
    procedure Skip_Spaces (
       File : File_Type); -- Input_File_Type
@@ -103,20 +104,20 @@ package body Ada.Text_IO.Formatting is
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
-      Item : Integer;
+      Item : System.Formatting.Literals.Word_Integer;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field)
    is
-      Unsigned_Item : System.Formatting.Unsigned;
+      Unsigned_Item : System.Formatting.Word_Unsigned;
    begin
       Last := To'First - 1;
       if Item < 0 then
          Last := Last + 1;
          To (Last) := '-';
-         Unsigned_Item := -System.Formatting.Unsigned'Mod (Item);
+         Unsigned_Item := -System.Formatting.Word_Unsigned'Mod (Item);
       else
-         Unsigned_Item := System.Formatting.Unsigned (Item);
+         Unsigned_Item := System.Formatting.Word_Unsigned (Item);
       end if;
       Modular_Image (
          To (Last + 1 .. To'Last),
@@ -133,31 +134,45 @@ package body Ada.Text_IO.Formatting is
       Item : Long_Long_Integer;
       Base : Number_Base;
       Padding : Character;
-      Padding_Width : Field)
-   is
-      Unsigned_Item : System.Formatting.Longest_Unsigned;
+      Padding_Width : Field) is
    begin
-      Last := To'First - 1;
-      if Item < 0 then
-         Last := Last + 1;
-         To (Last) := '-';
-         Unsigned_Item := -System.Formatting.Longest_Unsigned'Mod (Item);
+      if Standard'Word_Size < System.Formatting.Longest_Unsigned'Size then
+         --  optimized for 32bit
+         declare
+            Unsigned_Item : System.Formatting.Longest_Unsigned;
+         begin
+            Last := To'First - 1;
+            if Item < 0 then
+               Last := Last + 1;
+               To (Last) := '-';
+               Unsigned_Item := -System.Formatting.Longest_Unsigned'Mod (Item);
+            else
+               Unsigned_Item := System.Formatting.Longest_Unsigned (Item);
+            end if;
+            Modular_Image (
+               To (Last + 1 .. To'Last),
+               Last,
+               Unsigned_Item,
+               Base,
+               Padding,
+               Padding_Width);
+         end;
       else
-         Unsigned_Item := System.Formatting.Longest_Unsigned (Item);
+         --  optimized for 64bit
+         Integer_Image (
+            To,
+            Last,
+            System.Formatting.Literals.Word_Integer (Item),
+            Base,
+            Padding,
+            Padding_Width);
       end if;
-      Modular_Image (
-         To (Last + 1 .. To'Last),
-         Last,
-         Unsigned_Item,
-         Base,
-         Padding,
-         Padding_Width);
    end Integer_Image;
 
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
-      Item : System.Formatting.Unsigned;
+      Item : System.Formatting.Word_Unsigned;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field)
@@ -173,7 +188,7 @@ package body Ada.Text_IO.Formatting is
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
-            System.Formatting.Unsigned (Base),
+            System.Formatting.Word_Unsigned (Base),
             To (Last + 1 .. To'Last),
             Last,
             Error => Error);
@@ -215,52 +230,67 @@ package body Ada.Text_IO.Formatting is
       Item : System.Formatting.Longest_Unsigned;
       Base : Number_Base;
       Padding : Character;
-      Padding_Width : Field)
-   is
-      Actual_Padding_Width : Field;
-      Error : Boolean;
+      Padding_Width : Field) is
    begin
-      if Padding /= ' ' then
-         Actual_Padding_Width := Padding_Width;
+      if Standard'Word_Size < System.Formatting.Longest_Unsigned'Size then
+         --  optimized for 32bit
+         declare
+            Actual_Padding_Width : Field;
+            Error : Boolean;
+         begin
+            if Padding /= ' ' then
+               Actual_Padding_Width := Padding_Width;
+            else
+               Actual_Padding_Width := 1;
+            end if;
+            Last := To'First - 1;
+            if Base /= 10 then
+               System.Formatting.Image (
+                  System.Formatting.Word_Unsigned (Base),
+                  To (Last + 1 .. To'Last),
+                  Last,
+                  Error => Error);
+               if Error then
+                  Raise_Exception (Layout_Error'Identity);
+               end if;
+               Last := Last + 1;
+               if Last > To'Last then
+                  Raise_Exception (Layout_Error'Identity);
+               end if;
+               To (Last) := '#';
+               if Padding /= ' ' then
+                  Actual_Padding_Width :=
+                     Padding_Width - (Last - To'First + 2);
+               end if;
+            end if;
+            System.Formatting.Image (
+               Item,
+               To (Last + 1 .. To'Last),
+               Last,
+               Width => Actual_Padding_Width,
+               Base => Base,
+               Padding => Padding,
+               Error => Error);
+            if Error then
+               Raise_Exception (Layout_Error'Identity);
+            end if;
+            if Base /= 10 then
+               Last := Last + 1;
+               if Last > To'Last then
+                  Raise_Exception (Layout_Error'Identity);
+               end if;
+               To (Last) := '#';
+            end if;
+         end;
       else
-         Actual_Padding_Width := 1;
-      end if;
-      Last := To'First - 1;
-      if Base /= 10 then
-         System.Formatting.Image (
-            System.Formatting.Unsigned (Base),
-            To (Last + 1 .. To'Last),
+         --  optimized for 64bit
+         Modular_Image (
+            To,
             Last,
-            Error => Error);
-         if Error then
-            Raise_Exception (Layout_Error'Identity);
-         end if;
-         Last := Last + 1;
-         if Last > To'Last then
-            Raise_Exception (Layout_Error'Identity);
-         end if;
-         To (Last) := '#';
-         if Padding /= ' ' then
-            Actual_Padding_Width := Padding_Width - (Last - To'First + 2);
-         end if;
-      end if;
-      System.Formatting.Image (
-         Item,
-         To (Last + 1 .. To'Last),
-         Last,
-         Width => Actual_Padding_Width,
-         Base => Base,
-         Padding => Padding,
-         Error => Error);
-      if Error then
-         Raise_Exception (Layout_Error'Identity);
-      end if;
-      if Base /= 10 then
-         Last := Last + 1;
-         if Last > To'Last then
-            Raise_Exception (Layout_Error'Identity);
-         end if;
-         To (Last) := '#';
+            System.Formatting.Word_Unsigned (Item),
+            Base,
+            Padding,
+            Padding_Width);
       end if;
    end Modular_Image;
 
@@ -396,8 +426,8 @@ package body Ada.Text_IO.Formatting is
                if not End_Of_Line then
                   declare
                      Length : Natural;
-                     Sequence_Status : System.UTF_Conversions.
-                        Sequence_Status_Type; -- ignore
+                     Sequence_Status :
+                        System.UTF_Conversions.Sequence_Status_Type; -- ignore
                   begin
                      System.UTF_Conversions.UTF_8_Sequence (
                         Item,

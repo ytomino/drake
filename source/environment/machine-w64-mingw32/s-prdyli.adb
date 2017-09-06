@@ -10,6 +10,10 @@ package body System.Program.Dynamic_Linking is
    use type C.windef.HMODULE;
    use type C.windef.WINBOOL;
 
+   procedure memcpy (dst, src : Address; n : C.size_t)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memcpy";
+
    procedure Open (Handle : out C.windef.HMODULE; Name : String);
    procedure Open (Handle : out C.windef.HMODULE; Name : String) is
       W_Name : aliased C.winnt.WCHAR_array (
@@ -85,11 +89,12 @@ package body System.Program.Dynamic_Linking is
          new Ada.Unchecked_Conversion (C.windef.FARPROC, Address);
       Handle : C.windef.HMODULE
          renames Controlled.Reference (Lib).all;
-      Z_Symbol : String := Symbol & Character'Val (0);
-      C_Symbol : C.char_array (C.size_t);
-      for C_Symbol'Address use Z_Symbol'Address;
+      C_Symbol_Length : constant C.size_t := Symbol'Length;
+      C_Symbol : aliased C.char_array (0 .. C_Symbol_Length); -- NUL
       Result : C.windef.FARPROC;
    begin
+      memcpy (C_Symbol'Address, Symbol'Address, C_Symbol_Length);
+      C_Symbol (C_Symbol_Length) := C.char'Val (0);
       Result := C.winbase.GetProcAddress (Handle, C_Symbol (0)'Access);
       if Result = null then
          Raise_Exception (Data_Error'Identity);

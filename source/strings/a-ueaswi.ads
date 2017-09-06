@@ -12,13 +12,16 @@ package Ada.UCD.East_Asian_Width is
       Width : East_Asian_Width_Type;
    end record;
    pragma Suppress_Initialization (Table_16_Item_Type);
-   pragma Pack (Table_16_Item_Type);
-   pragma Compile_Time_Error (Table_16_Item_Type'Size /= 32, "packed?");
+   for Table_16_Item_Type'Size use 32; -- 16 + 13 + 3
+   for Table_16_Item_Type use record
+      Start at 0 range 0 .. 15;
+      Length at 0 range 16 .. 28;
+      Width at 0 range 29 .. 31;
+   end record;
 
    type Table_16_Type is array (Positive range <>) of Table_16_Item_Type;
    pragma Suppress_Initialization (Table_16_Type);
-   pragma Pack (Table_16_Type);
-   pragma Compile_Time_Error (Table_16_Type'Component_Size /= 32, "packed?");
+   for Table_16_Type'Component_Size use 32;
 
    type Table_32_Item_Type is record
       Start : UCS_4;
@@ -26,13 +29,16 @@ package Ada.UCD.East_Asian_Width is
       Width : East_Asian_Width_Type;
    end record;
    pragma Suppress_Initialization (Table_32_Item_Type);
-   pragma Pack (Table_32_Item_Type);
-   pragma Compile_Time_Error (Table_32_Item_Type'Size /= 64, "packed?");
+   for Table_32_Item_Type'Size use 64; -- 32 + 29 + 3
+   for Table_32_Item_Type use record
+      Start at 0 range 0 .. 31;
+      Length at 0 range 32 .. 60;
+      Width at 0 range 61 .. 63;
+   end record;
 
    type Table_32_Type is array (Positive range <>) of Table_32_Item_Type;
    pragma Suppress_Initialization (Table_32_Type);
-   pragma Pack (Table_32_Type);
-   pragma Compile_Time_Error (Table_32_Type'Component_Size /= 64, "packed?");
+   for Table_32_Type'Component_Size use 64;
 
    subtype Table_XXXX_Type is Table_16_Type (1 .. 216);
 

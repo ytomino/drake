@@ -76,7 +76,8 @@ package body Separated is
                --  In case of failure, assume this is a leaf function.
                context.Rip :=
                   DWORD64_const_ptr_Conv.To_Pointer (
-                     System'To_Address (context.Rsp)).all;
+                        System'To_Address (context.Rsp))
+                     .all;
                context.Rsp := context.Rsp + 8;
             else
                --  Unwind.

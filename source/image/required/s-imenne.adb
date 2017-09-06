@@ -9,11 +9,11 @@ package body System.Img_Enum_New is
    is
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 8;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
-      First : constant Natural := Natural (Indexes_2 (Pos));
-      Next : constant Natural := Natural (Indexes_2 (Pos + 1));
+      type Index_Array_Type is array (0 .. Pos + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
+      First : constant Natural := Natural (Indexes_All (Pos));
+      Next : constant Natural := Natural (Indexes_All (Pos + 1));
    begin
       pragma Assert (S'Length >= Next - First);
       P := S'First - 1 + Next - First;
@@ -29,11 +29,11 @@ package body System.Img_Enum_New is
    is
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 16;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
-      First : constant Natural := Natural (Indexes_2 (Pos));
-      Next : constant Natural := Natural (Indexes_2 (Pos + 1));
+      type Index_Array_Type is array (0 .. Pos + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
+      First : constant Natural := Natural (Indexes_All (Pos));
+      Next : constant Natural := Natural (Indexes_All (Pos + 1));
    begin
       pragma Assert (S'Length >= Next - First);
       P := S'First - 1 + Next - First;
@@ -49,11 +49,11 @@ package body System.Img_Enum_New is
    is
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 32;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
-      First : constant Natural := Natural (Indexes_2 (Pos));
-      Next : constant Natural := Natural (Indexes_2 (Pos + 1));
+      type Index_Array_Type is array (0 .. Pos + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
+      First : constant Natural := Natural (Indexes_All (Pos));
+      Next : constant Natural := Natural (Indexes_All (Pos + 1));
    begin
       pragma Assert (S'Length >= Next - First);
       P := S'First - 1 + Next - First;

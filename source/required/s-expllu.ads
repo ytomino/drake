@@ -6,7 +6,7 @@ package System.Exp_LLU is
    pragma Pure;
 
    --  required for "**" by compiler (s-expllu.ads)
-   --  modular type does not raise exceptions.
+   --  Modular types do not raise the exceptions.
    function Exp_Long_Long_Unsigned is
       new Exponentiations.Generic_Exp_Unsigned (
          Unsigned_Types.Long_Long_Unsigned,

@@ -128,11 +128,9 @@ package Ada.Numerics.SFMT is
    --  This constant means the minimum size of array used for
    --    Fill_Random_32 procedure.
    Min_Array_Length_32 : constant Natural;
-   pragma Warnings (Off, Min_Array_Length_32);
    --  This constant means the minimum size of array used for
    --    Fill_Random_64 procedure.
    Min_Array_Length_64 : constant Natural;
-   pragma Warnings (Off, Min_Array_Length_64);
 
    subtype Uniformly_Distributed is Long_Long_Float range 0.0 .. 1.0;
 
@@ -174,7 +172,7 @@ package Ada.Numerics.SFMT is
    Use_Error : exception
       renames IO_Exceptions.Use_Error;
 
-   --  Note: Use_Error may be raised from Initialize.
+   --  Note: Initialize propagates Use_Error if it failed.
 
 private
 
@@ -197,13 +195,12 @@ private
 
    --  128-bit data type
    type w128_t is array (0 .. 3) of Unsigned_32;
+   for w128_t'Alignment use 16;
    pragma Suppress_Initialization (w128_t);
    type w128_t_Array is array (Natural range <>) of aliased w128_t;
-   for w128_t_Array'Alignment use 16;
    pragma Suppress_Initialization (w128_t_Array);
 
    subtype w128_t_Array_N is w128_t_Array (0 .. N - 1);
-   subtype w128_t_Array_Fixed is w128_t_Array (Natural);
 
    --  SFMT internal state
    type State is record

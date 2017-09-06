@@ -57,7 +57,7 @@ package body System.Formatting.Fixed is
       --  opening '#'
       if Base_Form then
          Image (
-            Unsigned (Base),
+            Word_Unsigned (Base),
             Item (Last + 1 .. Item'Last),
             Last,
             Error => Error);

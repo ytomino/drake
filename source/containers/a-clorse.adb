@@ -156,19 +156,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
    procedure Free_Data (Data : in out Set) is
 --  diff
    begin
-      Binary_Trees.Free (
-         Data.Root,
-         Data.Length,
-         Free => Free_Node'Access);
+      Binary_Trees.Free (Data.Root, Data.Length, Free => Free_Node'Access);
 --  diff
 --  diff
    end Free_Data;
 
 --  diff (Unique)
---
---
---
---
 --
 --
 --
@@ -340,8 +333,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
---
---
 
    procedure Move (Target : in out Set; Source : in out Set) is
    begin
@@ -355,7 +346,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Move;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Inserted : out Boolean)
@@ -363,7 +354,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Element_Access, Free);
       New_Element : aliased Element_Access := new Element_Type'(New_Item.all);
-      Before : constant Cursor := Ceiling (Container, New_Element.all);
+      Before : constant Cursor := Ceiling (Set (Container), New_Element.all);
    begin
       Holder.Assign (New_Element);
       Inserted := Before = null or else New_Element.all < Before.Element.all;
@@ -385,7 +376,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
    end Insert;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type)
    is
       Position : Cursor;
@@ -500,9 +491,12 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
 
    procedure Intersection (Target : in out Set; Source : Set) is
    begin
+--  diff
 --  diff
 --  diff
 --  diff
@@ -520,7 +514,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Compare => Compare_Node'Access,
          Copy => null,
          Free => Free_Node'Access);
---  diff
 --  diff
 --  diff
    end Intersection;
@@ -548,9 +541,18 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -591,32 +593,42 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --
@@ -932,7 +944,6 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Right : Key_Type
             renames Key (Downcast (Position).Element.all);
       begin
-         --  [gcc-4.9] same as above
          if Left < Right then
             return -1;
          elsif Right < Left then
@@ -1044,10 +1055,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
          Process : not null access procedure (
             Element : in out Element_Type)) is
       begin
-         Process (
-            Reference_Preserving_Key (
-               Container,
-               Position).Element.all);
+         Process (Reference_Preserving_Key (Container, Position).Element.all);
       end Update_Element_Preserving_Key;
 
       function Reference_Preserving_Key (

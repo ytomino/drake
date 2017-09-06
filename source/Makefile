@@ -29,10 +29,8 @@ TARGET=$(HOST)
 GCCSUFFIX=
 ifeq ($(TARGET),$(HOST))
 GCCPREFIX=
-AR=ar
 else
 GCCPREFIX=$(TARGET)-
-AR=$(TARGET)-ar
 endif
 GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
@@ -87,14 +85,17 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
+ARGLIMIT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
+ARGLIMIT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
+ARGLIMIT=
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
@@ -103,10 +104,12 @@ EH=sjlj
 endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
+ARGLIMIT=500
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
+ARGLIMIT=
 endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
@@ -276,9 +279,9 @@ ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
 ifeq ($(OBJFMT),ELF)
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn -gnatp -ffunction-sections -fdata-sections
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp -ffunction-sections -fdata-sections
 else
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn -gnatp
+CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp
 endif
 endif
 
@@ -291,9 +294,15 @@ CFLAGS_MATH=
 endif
 
 ifneq ($(WITHL),0)
-CFLAGS_LTO=-flto -fwhole-program
+CFLAGS_LTO=-flto
+ifneq ($(findstring darwin,$(TARGET)),)
+AR=$(GCCPREFIX)ar
+else
+AR=$(GCCPREFIX)gcc-ar
+endif
 else
 CFLAGS_LTO=
+AR=$(GCCPREFIX)ar
 endif
 
 ifneq ($(ADC),)
@@ -321,7 +330,12 @@ tree: $(TREE)
 
 $(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
+ifneq ($(ARGLIMIT),)
+	find $(LIBGNAT_BUILDDIR) -name "*.o" | xargs -L $(ARGLIMIT) $(AR) -qS $@
+	$(AR) -s $@
+else
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+endif
 
 $(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@

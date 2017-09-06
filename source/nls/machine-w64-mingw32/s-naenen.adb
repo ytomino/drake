@@ -179,7 +179,6 @@ package body System.Native_Environment_Encoding is
       Finish : Boolean;
       Status : out Subsequence_Status_Type)
    is
-      Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased Wide_String (1 .. 2);
       Buffer_As_C : aliased C.winnt.WCHAR_array (0 .. 1);
       for Buffer_As_C'Address use Buffer'Address;
@@ -195,19 +194,20 @@ package body System.Native_Environment_Encoding is
          case Object.From is
             when UTF_8 =>
                declare
-                  Item_As_S : aliased String (1 .. Natural (Item_Length));
-                  for Item_As_S'Address use Item'Address;
-                  Item_As_C : aliased C.char_array (C.size_t);
-                  for Item_As_C'Address use Item'Address;
                   Length : C.signed_int;
-                  Dummy_Code : UTF_Conversions.UCS_4;
                   From_Status : UTF_Conversions.From_Status_Type;
                begin
-                  UTF_Conversions.From_UTF_8 (
-                     Item_As_S,
-                     Integer (Length),
-                     Dummy_Code,
-                     From_Status);
+                  declare
+                     Item_As_String : aliased String (1 .. Item'Length);
+                     for Item_As_String'Address use Item'Address;
+                     Dummy_Code : UTF_Conversions.UCS_4;
+                  begin
+                     UTF_Conversions.From_UTF_8 (
+                        Item_As_String,
+                        Integer (Length),
+                        Dummy_Code,
+                        From_Status);
+                  end;
                   case From_Status is
                      when UTF_Conversions.Success =>
                         null;
@@ -226,13 +226,18 @@ package body System.Native_Environment_Encoding is
                         pragma Check (Trace, Ada.Debug.Put ("truncated"));
                         return;
                   end case;
-                  Buffer_Length := C.winnls.MultiByteToWideChar (
-                     C.windef.UINT (Object.From),
-                     C.winnls.MB_ERR_INVALID_CHARS,
-                     Item_As_C (0)'Access,
-                     Length,
-                     Buffer_As_C (0)'Access,
-                     Buffer'Length);
+                  declare
+                     Item_As_C : aliased C.char_array (0 .. 0); -- at least
+                     for Item_As_C'Address use Item'Address;
+                  begin
+                     Buffer_Length := C.winnls.MultiByteToWideChar (
+                        C.windef.UINT (Object.From),
+                        C.winnls.MB_ERR_INVALID_CHARS,
+                        Item_As_C (0)'Access,
+                        Length,
+                        Buffer_As_C (0)'Access,
+                        Buffer'Length);
+                  end;
                   if Buffer_Length = 0 then
                      Last := Item'First - 1;
                      Out_Last := Out_Item'First - 1;
@@ -320,7 +325,7 @@ package body System.Native_Environment_Encoding is
                end;
             when others =>
                declare
-                  Item_As_C : aliased C.char_array (C.size_t);
+                  Item_As_C : aliased C.char_array (0 .. 0); -- at least
                   for Item_As_C'Address use Item'Address;
                   Length : C.signed_int;
                begin
@@ -411,7 +416,7 @@ package body System.Native_Environment_Encoding is
                end;
             when others => -- including UTF_8
                declare
-                  Out_Item_As_C : aliased C.char_array (C.size_t);
+                  Out_Item_As_C : aliased C.char_array (0 .. 0); -- at least
                   for Out_Item_As_C'Address use Out_Item'Address;
                   Out_Length : C.signed_int;
                begin
@@ -505,7 +510,7 @@ package body System.Native_Environment_Encoding is
       pragma Unreferenced (Finish);
       Item_Length : constant Ada.Streams.Stream_Element_Offset := Item'Length;
       Buffer : aliased Wide_String (1 .. Natural (Item_Length));
-      Buffer_As_C : aliased C.winnt.WCHAR_array (C.size_t);
+      Buffer_As_C : aliased C.winnt.WCHAR_array (0 .. 0); -- at least
       for Buffer_As_C'Address use Buffer'Address;
       Buffer_As_SEA : aliased
          Ada.Streams.Stream_Element_Array (1 .. 2 * Item_Length);
@@ -540,7 +545,7 @@ package body System.Native_Environment_Encoding is
             end if;
          when others => -- including UTF_8
             declare
-               Item_As_C : aliased C.char_array (C.size_t);
+               Item_As_C : aliased C.char_array (0 .. 0); -- at least
                for Item_As_C'Address use Item'Address;
             begin
                Buffer_Length := C.winnls.MultiByteToWideChar (
@@ -604,7 +609,7 @@ package body System.Native_Environment_Encoding is
             end;
          when others => -- including UTF_8
             declare
-               Out_Item_As_C : aliased C.char_array (C.size_t);
+               Out_Item_As_C : aliased C.char_array (0 .. 0); -- at least
                for Out_Item_As_C'Address use Out_Item'Address;
                Out_Length : C.signed_int;
                Substitute_P : C.char_const_ptr;

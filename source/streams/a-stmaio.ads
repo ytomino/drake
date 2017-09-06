@@ -94,7 +94,6 @@ private
          Data : aliased Non_Controlled_Mapping := (
             Mapping => (
                Storage_Address => System.Null_Address,
-               Storage_Size => 0,
                others => <>),
             File => null);
       end record;

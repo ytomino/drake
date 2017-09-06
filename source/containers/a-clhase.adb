@@ -146,23 +146,21 @@ package body Ada.Containers.Limited_Hashed_Sets is
    procedure Free_Data (Data : in out Set) is
 --  diff
    begin
-      Hash_Tables.Free (
-         Data.Table,
-         Data.Length,
-         Free => Free_Node'Access);
+      Hash_Tables.Free (Data.Table, Data.Length, Free => Free_Node'Access);
 --  diff
 --  diff
    end Free_Data;
 
    procedure Reallocate (Container : in out Set; Capacity : Count_Type);
+--  diff
+--  diff
+--  diff
    procedure Reallocate (Container : in out Set; Capacity : Count_Type) is
+--  diff
+--  diff
+--  diff
    begin
       Hash_Tables.Rebuild (Container.Table, Capacity);
---  diff
---  diff
---  diff
---  diff
---  diff
 --  diff
 --  diff
 --  diff
@@ -394,7 +392,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Move;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Inserted : out Boolean)
@@ -406,7 +404,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    begin
       Holder.Assign (New_Element);
       New_Hash := Hash (New_Element.all);
-      Position := Find (Container, New_Hash, New_Element.all);
+      Position := Find (Set (Container), New_Hash, New_Element.all);
       Inserted := Position = null;
       if Inserted then
          Position := new Node'(Super => <>, Element => New_Element);
@@ -424,7 +422,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
    end Insert;
 
    procedure Insert (
-      Container : in out Set;
+      Container : in out Set'Class;
       New_Item : not null access function return Element_Type)
    is
       Position : Cursor;
@@ -503,9 +501,10 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
---
 
 --  diff (Union)
+--
+--
 --
 --
 --
@@ -560,7 +559,6 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Free => Free_Node'Access);
 --  diff
 --  diff
---  diff
    end Intersection;
 
 --  diff (Intersection)
@@ -591,9 +589,18 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
+--
+--
+--
+--
 
    procedure Difference (Target : in out Set; Source : Set) is
    begin
+--  diff
+--  diff
+--  diff
+--  diff
+--  diff
 --  diff
 --  diff
 --  diff
@@ -641,35 +648,44 @@ package body Ada.Containers.Limited_Hashed_Sets is
 --
 --
 --
-
---  diff (Symmetric_Difference)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
 --
 
 --  diff (Symmetric_Difference)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Symmetric_Difference)
+--
+--
+--
+--
 --
 --
 --
@@ -900,10 +916,7 @@ package body Ada.Containers.Limited_Hashed_Sets is
          Process : not null access procedure (
             Element : in out Element_Type)) is
       begin
-         Process (
-            Reference_Preserving_Key (
-               Container,
-               Position).Element.all);
+         Process (Reference_Preserving_Key (Container, Position).Element.all);
       end Update_Element_Preserving_Key;
 
       function Reference_Preserving_Key (

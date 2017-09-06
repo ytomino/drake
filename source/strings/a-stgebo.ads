@@ -299,12 +299,12 @@ package Ada.Strings.Generic_Bounded is
          procedure Read (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : out Bounded_String);
-         function Input (
-            Stream : not null access Streams.Root_Stream_Type'Class)
-            return Bounded_String;
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Bounded_String);
+         function Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Bounded_String;
 
       end Streaming;
 

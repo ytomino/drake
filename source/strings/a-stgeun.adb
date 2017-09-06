@@ -66,9 +66,8 @@ package body Ada.Strings.Generic_Unbounded is
       Usable_Size : constant System.Storage_Elements.Storage_Count :=
          System.System_Allocators.Allocated_Size (M) - Header_Size;
    begin
-      if String_Type'Component_Size
-         rem Standard'Storage_Unit = 0
-      then -- optimized for packed
+      if String_Type'Component_Size rem Standard'Storage_Unit = 0 then
+         --  optimized for packed
          Data.Capacity :=
             Integer (
                Usable_Size
@@ -302,24 +301,18 @@ package body Ada.Strings.Generic_Unbounded is
    is
       pragma Suppress (Access_Check);
       New_Item_Length : constant Natural := New_Item.Length;
+      Old_Length : constant Natural := Source.Length;
    begin
-      if New_Item_Length > 0 then
+      if Old_Length = 0 and then Capacity (Source) < New_Item_Length then
+         Assign (Source, New_Item);
+      else
          declare
-            Old_Length : constant Natural := Source.Length;
+            Total_Length : constant Natural := Old_Length + New_Item_Length;
          begin
-            if Old_Length = 0 and then Capacity (Source) < New_Item_Length then
-               Assign (Source, New_Item);
-            else
-               declare
-                  Total_Length : constant Natural :=
-                     Old_Length + New_Item_Length;
-               begin
-                  Set_Length (Source, Total_Length);
-                  Source.Data.Items (Old_Length + 1 .. Total_Length) :=
-                     New_Item.Data.Items (1 .. New_Item_Length);
-                  --  Do not use New_Item.Length in here for Append (X, X).
-               end;
-            end if;
+            Set_Length (Source, Total_Length);
+            Source.Data.Items (Old_Length + 1 .. Total_Length) :=
+               New_Item.Data.Items (1 .. New_Item_Length);
+            --  Do not use New_Item.Length in here for Append (X, X).
          end;
       end if;
    end Append;

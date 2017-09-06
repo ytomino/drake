@@ -386,7 +386,11 @@ package body Ada.Containers.Hash_Tables is
          Source : not null Node_Access);
       Free : access procedure (Object : in out Node_Access)) is
    begin
-      if Length = 0 then
+      if Target = Source then -- RM A.18.7(62/2, 66/2)
+         if not Filter (In_Both) then
+            Hash_Tables.Free (Target, Length, Free);
+         end if;
+      elsif Length = 0 then
          if Filter (In_Only_Right) and then Source_Length > 0 then
             Hash_Tables.Free (Target);
             Hash_Tables.Copy (Target, Length, Source, Source_Length, Copy);

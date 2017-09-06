@@ -43,10 +43,8 @@ package body System.Unwind.Mapping is
       pragma Inspection_Point (Info);
       pragma Inspection_Point (uap);
       --  the components of the exception.
-      C_Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
-      subtype Fixed_String is String (Positive);
-      Message : Fixed_String;
-      for Message'Address use C_Message.all'Address;
+      Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
+      Message_Length : constant C.size_t := strlen (Message);
       Eexception_Id : Exception_Data_Access;
       Stack_Guard : Address := Null_Address;
    begin
@@ -65,10 +63,15 @@ package body System.Unwind.Mapping is
          when others =>
             Eexception_Id := Standard.Program_Error'Access;
       end case;
-      Raising.Raise_From_Signal_Handler (
-         Eexception_Id,
-         Message => Message (1 .. Integer (strlen (C_Message))),
-         Stack_Guard => Stack_Guard);
+      declare
+         Message_All : String (1 .. Integer (Message_Length));
+         for Message_All'Address use Message.all'Address;
+      begin
+         Raising.Raise_From_Signal_Handler (
+            Eexception_Id,
+            Message => Message_All,
+            Stack_Guard => Stack_Guard);
+      end;
    end sigaction_Handler;
 
    procedure Set_Signal_Stack (S : access Signal_Stack_Type);

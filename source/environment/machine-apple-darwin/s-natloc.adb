@@ -1,4 +1,4 @@
-with System.Address_To_Named_Access_Conversions;
+with Ada.Unchecked_Conversion;
 with C.stdlib;
 package body System.Native_Locales is
    use type C.char;
@@ -6,8 +6,11 @@ package body System.Native_Locales is
    use type C.char_ptr;
    use type C.size_t;
 
-   package char_ptr_Conv is
-      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
+   subtype Fixed_char_array is C.char_array (C.size_t);
+   type char_array_const_ptr is access constant Fixed_char_array
+      with Convention => C;
+   function To_char_array_const_ptr is
+      new Ada.Unchecked_Conversion (C.char_ptr, char_array_const_ptr);
 
    --  should it use CFLocaleGetValue in OSX ???
 
@@ -20,8 +23,8 @@ package body System.Native_Locales is
    begin
       if P /= null then
          declare
-            Value : C.char_array (C.size_t);
-            for Value'Address use char_ptr_Conv.To_Address (P);
+            Value : constant char_array_const_ptr :=
+               To_char_array_const_ptr (P);
             Len : C.size_t := 0;
          begin
             while Value (Len) in 'a' .. 'z' loop
@@ -45,8 +48,8 @@ package body System.Native_Locales is
    begin
       if P /= null then
          declare
-            Value : C.char_array (C.size_t);
-            for Value'Address use char_ptr_Conv.To_Address (P);
+            Value : constant char_array_const_ptr :=
+               To_char_array_const_ptr (P);
             I : C.size_t := 0;
          begin
             while Value (I) /= C.char'Val (0)

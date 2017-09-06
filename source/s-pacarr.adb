@@ -73,12 +73,9 @@ package body System.Packed_Arrays is
       type Record_8_Units is record
          E0, E1, E2, E3, E4, E5, E6, E7 : Element_Type;
       end record;
+      for Record_8_Units'Alignment use 1;
       pragma Pack (Record_8_Units);
       pragma Suppress_Initialization (Record_8_Units);
-      pragma Compile_Time_Error (
-         Record_8_Units'Size /= Element_Type'Size * 8
-            or else Record_8_Units'Size rem Standard'Storage_Unit /= 0,
-         "Is Storage_Unit not a mutiple of 8 ?");
 
       function Get (Arr : Address; N : Natural) return Element_Type;
       pragma Machine_Attribute (Get, "pure");

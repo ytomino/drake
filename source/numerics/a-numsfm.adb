@@ -102,49 +102,49 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1 .. Last + 5) := "SFMT-";
       Last := Last + 5;
       System.Formatting.Image (
-         System.Formatting.Unsigned (MEXP),
+         System.Formatting.Word_Unsigned (MEXP),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (POS1),
+         System.Formatting.Word_Unsigned (POS1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (SL1),
+         System.Formatting.Word_Unsigned (SL1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (SL2),
+         System.Formatting.Word_Unsigned (SL2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (SR1),
+         System.Formatting.Word_Unsigned (SR1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (SR2),
+         System.Formatting.Word_Unsigned (SR2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (MSK1),
+         System.Formatting.Word_Unsigned (MSK1),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -154,7 +154,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (MSK2),
+         System.Formatting.Word_Unsigned (MSK2),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -164,7 +164,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (MSK3),
+         System.Formatting.Word_Unsigned (MSK3),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -174,7 +174,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Unsigned (MSK4),
+         System.Formatting.Word_Unsigned (MSK4),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -270,10 +270,10 @@ package body Ada.Numerics.SFMT is
       else
          declare
             pragma Suppress (Alignment_Check);
-            the_array : w128_t_Array_Fixed;
+            the_array : w128_t_Array (0 .. 0); -- size / 2 - 1
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.sfmt.state, the_array, size / 4);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array (0), size / 4);
          end;
          Gen.sfmt.idx := N32;
       end if;
@@ -298,13 +298,13 @@ package body Ada.Numerics.SFMT is
       else
          declare
             pragma Suppress (Alignment_Check);
-            the_array : w128_t_Array_Fixed;
+            the_array : w128_t_Array (0 .. size / 2 - 1);
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.sfmt.state, the_array, size / 2);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array (0), size / 2);
             if System.Default_Bit_Order /= System.Low_Order_First then
                --  swap
-               for I in 0 .. size / 2 - 1 loop
+               for I in the_array'Range loop
                   declare
                      a : w128_t renames the_array (I);
                      x : constant Unsigned_32 := a (0);
@@ -521,11 +521,9 @@ package body Ada.Numerics.SFMT is
          Error : Boolean;
          Last : Natural;
       begin
-         pragma Compile_Time_Error (
-            System.Formatting.Unsigned'Size < 32,
-            "integer size < 32");
+         pragma Compile_Time_Error (Standard'Word_Size < 32, "word size < 32");
          System.Formatting.Image (
-            System.Formatting.Unsigned (Item),
+            System.Formatting.Word_Unsigned (Item),
             To,
             Last,
             Base => 16,
@@ -564,7 +562,7 @@ package body Ada.Numerics.SFMT is
          System.Formatting.Value (
             From,
             Last,
-            System.Formatting.Unsigned (Item),
+            System.Formatting.Word_Unsigned (Item),
             Base => 16,
             Error => Error);
          if Error or else Last /= From'Last then
@@ -658,7 +656,8 @@ package body Ada.Numerics.SFMT is
    function To_53_0_To_Less_Than_1 (v : Unsigned_64)
       return Uniformly_Distributed is
    begin
-      return Long_Long_Float (v) * (1.0 / 2.0 ** 64);
+      return Long_Long_Float (
+         Interfaces.Shift_Right (v, 11)) * (1.0 / 2.0 ** 53);
    end To_53_0_To_Less_Than_1;
 
    --  generates a random number on [0,1) with 53-bit resolution

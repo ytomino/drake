@@ -11,7 +11,7 @@ package body System.Storage_Map is
    --  implementation
 
    function Load_Address return Address is
-      type Link_map_ptr is access C.sys.link_elf.Link_map
+      type Link_map_ptr is access all C.sys.link_elf.Link_map
          with Convention => C;
       for Link_map_ptr'Storage_Size use 0;
       Map : aliased Link_map_ptr;

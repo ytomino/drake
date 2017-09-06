@@ -22,7 +22,7 @@ begin
 	if Wide_Wide_String'Input (Stream) /= "ABCDEFG" then
 		raise Program_Error;
 	end if;
-	declare
+	declare -- do something with a copy
 		N : Ada.Streams.Unbounded_Storage_IO.Buffer_Type := Memory;
 		N_Stream : not null access Ada.Streams.Seekable_Stream_Type'Class :=
 			Ada.Streams.Seekable_Stream_Type'Class (
@@ -42,6 +42,21 @@ begin
 		end if;
 		Ada.Streams.Set_Index (Stream.all, Index);
 		if String'Input (Stream) /= "ANOTHER" then
+			raise Program_Error;
+		end if;
+	end;
+	declare -- write and read Buffer_Type itself
+		Another : Ada.Streams.Unbounded_Storage_IO.Buffer_Type;
+	begin
+		Ada.Streams.Unbounded_Storage_IO.Buffer_Type'Write (
+			Ada.Streams.Unbounded_Storage_IO.Stream (Another),
+			Memory); -- save to another
+		Ada.Streams.Unbounded_Storage_IO.Set_Size (Memory, 0); -- clear
+		Ada.Streams.Unbounded_Storage_IO.Reset (Another);
+		Ada.Streams.Unbounded_Storage_IO.Buffer_Type'Read (
+			Ada.Streams.Unbounded_Storage_IO.Stream (Another),
+			Memory); -- restore from another
+		if Wide_Wide_String'Input (Stream) /= "ABCDEFG" then
 			raise Program_Error;
 		end if;
 	end;

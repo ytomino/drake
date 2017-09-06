@@ -155,7 +155,7 @@ package body System.Native_IO.Sockets is
             Host_Name,
             W_Host_Name (0)'Access);
          Formatting.Image (
-            Formatting.Unsigned (Port),
+            Formatting.Word_Unsigned (Port),
             Service,
             Service_Last,
             Base => 10,
@@ -238,7 +238,7 @@ package body System.Native_IO.Sockets is
          Error : Boolean;
       begin
          Formatting.Image (
-            Formatting.Unsigned (Port),
+            Formatting.Word_Unsigned (Port),
             Service,
             Service_Last,
             Base => 10,

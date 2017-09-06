@@ -499,15 +499,6 @@ package body Ada.Strings.Generic_Bounded is
             end;
          end Read;
 
-         function Input (
-            Stream : not null access Streams.Root_Stream_Type'Class)
-            return Bounded_String is
-         begin
-            return Result : Bounded_String do
-               Read (Stream, Result);
-            end return;
-         end Input;
-
          procedure Write (
             Stream : not null access Streams.Root_Stream_Type'Class;
             Item : Bounded_String) is
@@ -516,6 +507,15 @@ package body Ada.Strings.Generic_Bounded is
             Integer'Write (Stream, Item.Length);
             Write (Stream, Item.Element (1 .. Item.Length));
          end Write;
+
+         function Input (
+            Stream : not null access Streams.Root_Stream_Type'Class)
+            return Bounded_String is
+         begin
+            return Result : Bounded_String do
+               Read (Stream, Result);
+            end return;
+         end Input;
 
       end Streaming;
 

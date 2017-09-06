@@ -17,7 +17,7 @@ package body Ada.Text_IO.Integer_IO is
       Padding : Character;
       Padding_Width : Field) is
    begin
-      if Num'Size > Integer'Size then
+      if Num'Size > Standard'Word_Size then
          Formatting.Integer_Image (
             To,
             Last,
@@ -29,7 +29,7 @@ package body Ada.Text_IO.Integer_IO is
          Formatting.Integer_Image (
             To,
             Last,
-            Integer (Item),
+            System.Formatting.Literals.Word_Integer (Item),
             Base,
             Padding,
             Padding_Width);
@@ -45,7 +45,7 @@ package body Ada.Text_IO.Integer_IO is
       Item : out Num;
       Last : out Positive) is
    begin
-      if Num'Size > Integer'Size then
+      if Num'Size > Standard'Word_Size then
          declare
             Base_Item : Long_Long_Integer;
             Error : Boolean;
@@ -65,7 +65,7 @@ package body Ada.Text_IO.Integer_IO is
          end;
       else
          declare
-            Base_Item : Integer;
+            Base_Item : System.Formatting.Literals.Word_Integer;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
@@ -75,7 +75,8 @@ package body Ada.Text_IO.Integer_IO is
                Error => Error);
             if Error
                or else Base_Item not in
-                  Integer (Num'First) .. Integer (Num'Last)
+                  System.Formatting.Literals.Word_Integer (Num'First) ..
+                  System.Formatting.Literals.Word_Integer (Num'Last)
             then
                raise Data_Error;
             end if;

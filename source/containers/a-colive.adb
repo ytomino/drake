@@ -5,8 +5,7 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Limited_Vectors is
    pragma Check_Policy (Validate => Ignore);
 --  diff
-
---  diff (Element_Array_Access)
+   use type System.Address;
 
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -19,12 +18,24 @@ package body Ada.Containers.Limited_Vectors is
    procedure Free is new Unchecked_Deallocation (Element_Type, Element_Access);
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+--  diff (Assign_Element)
+--
+--
+--
+--
+--
+--
+--
+--
+
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
       Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Access := Data.Items (Index_Type'Val (I));
    begin
       Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
+--  diff
+--  diff
       Data.Items (Index_Type'Val (J)) := Temp;
    end Swap_Element;
 
@@ -36,15 +47,15 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
---  diff (Allocate_Element)
---
---
---
---
---
---
---
---
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : not null access function return Element_Type);
+   procedure Allocate_Element (
+      Item : out Element_Access;
+      New_Item : not null access function return Element_Type) is
+   begin
+      Item := new Element_Type'(New_Item.all);
+   end Allocate_Element;
 
    procedure Release (Data : in out Data_Access);
    procedure Release (Data : in out Data_Access) is
@@ -126,6 +137,14 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+
+--  diff (Max_Length)
 --
 --
 --
@@ -299,7 +318,6 @@ package body Ada.Containers.Limited_Vectors is
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
 --  diff
---  diff
    begin
 --  diff
 --  diff
@@ -360,6 +378,7 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
 
 --  diff (Replace_Element)
 --
@@ -388,8 +407,9 @@ package body Ada.Containers.Limited_Vectors is
    begin
       Process (
          Constant_Reference (
-            Vector (Container),
-            Index).Element.all); -- checking Constraint_Error
+               Vector (Container),
+               Index) -- checking Constraint_Error
+            .Element.all);
    end Query_Element;
 
    procedure Update_Element (
@@ -398,9 +418,8 @@ package body Ada.Containers.Limited_Vectors is
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
       Process (
-         Reference (
-            Vector (Container),
-            Position).Element.all); -- checking Constraint_Error
+         Reference (Vector (Container), Position) -- checking Constraint_Error
+            .Element.all);
    end Update_Element;
 
    function Constant_Reference (Container : aliased Vector; Position : Cursor)
@@ -514,15 +533,6 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
-
---  diff (Insert)
---
---
---
---
---
---
---
 --
 --
 --
@@ -532,14 +542,30 @@ package body Ada.Containers.Limited_Vectors is
 --
 
    procedure Insert (
-      Container : in out Vector;
+      Container : in out Vector'Class;
+      Before : Cursor;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Position : Cursor;
+   begin
+      Insert (
+         Container,
+         Before, -- checking Constraint_Error
+         New_Item,
+         Position,
+         Count);
+   end Insert;
+
+   procedure Insert (
+      Container : in out Vector'Class;
       Before : Cursor;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
       Count : Count_Type := 1) is
    begin
       Insert_Space (
-         Container,
+         Vector (Container),
          Before, -- checking Constraint_Error
          Position,
          Count);
@@ -549,7 +575,7 @@ package body Ada.Containers.Limited_Vectors is
                renames Container.Data.Items (I);
          begin
             pragma Check (Validate, E = null);
-            E := new Element_Type'(New_Item.all);
+            Allocate_Element (E, New_Item);
          end;
       end loop;
    end Insert;
@@ -558,49 +584,17 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
-
---  diff (Prepend)
---
---
---
 --
 --
 --
 
---  diff (Append)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
---
+   procedure Prepend (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1) is
+   begin
+      Insert (Container, Index_Type'First, New_Item, Count);
+   end Prepend;
 
 --  diff (Append)
 --
@@ -622,6 +616,36 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
+--
+--
+--
+--
+
+   procedure Append (
+      Container : in out Vector'Class;
+      New_Item : not null access function return Element_Type;
+      Count : Count_Type := 1)
+   is
+      Old_Length : constant Count_Type := Container.Length;
+   begin
+      Set_Length (Vector (Container), Old_Length + Count);
+      for I in
+         Index_Type'First + Index_Type'Base (Old_Length) ..
+         Last (Vector (Container))
+      loop
+         declare
+            E : Element_Access
+               renames Container.Data.Items (I);
+         begin
+            pragma Check (Validate, E = null);
+            Allocate_Element (E, New_Item);
+         end;
+      end loop;
+   end Append;
 
    procedure Insert_Space (
       Container : in out Vector'Class;
@@ -703,12 +727,10 @@ package body Ada.Containers.Limited_Vectors is
                      Container.Data;
                   subtype R1 is
                      Extended_Index range
-                        Position ..
-                        After_Last - 1 - Index_Type'Base (Count);
+                        Position .. After_Last - 1 - Index_Type'Base (Count);
                   subtype R2 is
                      Extended_Index range
-                        Position + Index_Type'Base (Count) ..
-                        After_Last - 1;
+                        Position + Index_Type'Base (Count) .. After_Last - 1;
                begin
                   for I in R1'First .. R2'First - 1 loop
                      Free (Data.Items (I));
@@ -968,8 +990,12 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
 
 --  diff (Reference)
+--
+--
 --
 --
 --
@@ -1075,6 +1101,12 @@ package body Ada.Containers.Limited_Vectors is
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.2(237/3), same nonempty container
       begin
          if Source.Length > 0 then
             declare
@@ -1095,7 +1127,7 @@ package body Ada.Containers.Limited_Vectors is
                   Source.Length := 0;
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
-                     Integer (Index_Type'First) - 1 + Integer (Old_Length),
+                     Integer (Index_Type'First) + Integer (Old_Length),
                      Index_Type'Pos (Last (Target)),
                      DA_Conv.To_Address (Target.Data),
                      LT => LT'Access,

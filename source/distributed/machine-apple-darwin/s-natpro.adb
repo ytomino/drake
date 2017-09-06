@@ -104,10 +104,7 @@ package body System.Native_Processes is
       Command : Command_Type;
       Command_Line : not null C.char_ptr)
    is
-      Command_Line_As_A : String (Positive);
-      for Command_Line_As_A'Address use
-         char_ptr_Conv.To_Address (Command_Line);
-      Last : Natural := 0;
+      Length : C.size_t := 0;
    begin
       if Command /= null then
          declare
@@ -115,16 +112,27 @@ package body System.Native_Processes is
          begin
             while P.all /= null loop
                declare
-                  S : String (1 .. Natural (strlen (P.all)));
-                  for S'Address use char_ptr_Conv.To_Address (P.all);
+                  P_Length : constant C.size_t := strlen (P.all);
+                  Command_Line_All : String (
+                     1 .. Integer (Length + P_Length * 2 + 1));
+                  for Command_Line_All'Address use
+                     char_ptr_Conv.To_Address (Command_Line);
+                  P_All : String (1 .. Natural (P_Length));
+                  for P_All'Address use char_ptr_Conv.To_Address (P.all);
                begin
-                  Append_Argument (Command_Line_As_A, Last, S);
+                  Append_Argument (Command_Line_All, Integer (Length), P_All);
                end;
                P := P + 1;
             end loop;
          end;
       end if;
-      Command_Line_As_A (Last + 1) := Character'Val (0);
+      declare
+         Command_Line_All : C.char_array (0 .. Length); -- NUL
+         for Command_Line_All'Address use
+            char_ptr_Conv.To_Address (Command_Line);
+      begin
+         Command_Line_All (Length) := C.char'Val (0);
+      end;
    end C_Image;
 
    procedure Insert (

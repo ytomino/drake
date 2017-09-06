@@ -9,7 +9,7 @@ package body System.Version_Control is
    begin
       return Result : Version_String do
          Formatting.Image (
-            Formatting.Unsigned (V),
+            Formatting.Word_Unsigned (V),
             Result,
             Last,
             Base => 16,

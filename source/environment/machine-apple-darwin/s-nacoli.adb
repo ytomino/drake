@@ -12,7 +12,8 @@ package body System.Native_Command_Line is
    function Argument (Number : Natural) return String is
       subtype Fixed_char_const_ptr_array is C.char_const_ptr_array (C.size_t);
       type char_const_ptr_array_const_ptr is
-         access constant Fixed_char_const_ptr_array;
+         access constant Fixed_char_const_ptr_array
+         with Convention => C;
       package Conv is
          new Address_To_Constant_Access_Conversions (
             Fixed_char_const_ptr_array,

@@ -61,7 +61,7 @@ package body System.Native_IO.Names is
          Error : Boolean;
       begin
          System.Formatting.Image (
-            System.Formatting.Unsigned (Handle),
+            System.Formatting.Word_Unsigned (Handle),
             S (proc_self_fd'Length + 1 .. S'Last),
             Last,
             Error => Error);
@@ -126,14 +126,15 @@ package body System.Native_IO.Names is
             New_Name := New_New_Name;
          end;
          declare
-            New_Name_As : C.char_array (C.size_t);
-            for New_Name_As'Address use
+            New_Name_All : C.char_array (
+               0 .. New_Name_Length + 1); -- '*' & NUL
+            for New_Name_All'Address use
                Name_Pointer_Conv.To_Address (New_Name);
          begin
-            New_Name_As (1 .. New_Name_Length) :=
-               New_Name_As (0 .. New_Name_Length - 1);
-            New_Name_As (0) := '*';
-            New_Name_As (New_Name_Length + 1) := C.char'Val (0);
+            New_Name_All (1 .. New_Name_Length) :=
+               New_Name_All (0 .. New_Name_Length - 1);
+            New_Name_All (0) := '*';
+            New_Name_All (New_Name_Length + 1) := C.char'Val (0);
          end;
       end if;
       if not Is_Standard then

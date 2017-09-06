@@ -67,12 +67,11 @@ package body System.Native_IO.Names is
                return;
             end if;
             declare
-               New_Name_As_C : Name_String (C.size_t);
-               for New_Name_As_C'Address use
+               New_Name_All : Name_String (0 .. New_Name_Length);
+               for New_Name_All'Address use
                   Name_Pointer_Conv.To_Address (New_Name);
             begin
-               New_Name_As_C (0 .. New_Name_Length) :=
-                  Path (0 .. New_Name_Length);
+               New_Name_All := Path (0 .. New_Name_Length);
             end;
             if not Is_Standard then
                Free (Name); -- External or External_No_Close

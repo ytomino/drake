@@ -7,7 +7,7 @@ package body System.Formatting.Address is
       Set : Type_Set := Upper_Case)
    is
       Use_Longest : constant Boolean :=
-         Standard'Address_Size > Formatting.Unsigned'Size;
+         Standard'Address_Size > Standard'Word_Size;
       Last : Natural; -- ignore
       Error : Boolean; -- ignore
    begin
@@ -22,7 +22,7 @@ package body System.Formatting.Address is
             Error => Error);
       else
          Image (
-            Unsigned (Value),
+            Word_Unsigned (Value),
             Item,
             Last,
             Base => 16,
@@ -38,7 +38,7 @@ package body System.Formatting.Address is
       Error : out Boolean)
    is
       Use_Longest : constant Boolean :=
-         Standard'Address_Size > Formatting.Unsigned'Size;
+         Standard'Address_Size > Standard'Word_Size;
       Last : Natural;
    begin
       if Use_Longest then
@@ -52,7 +52,7 @@ package body System.Formatting.Address is
          Value (
             Item,
             Last,
-            Formatting.Unsigned (Result),
+            Word_Unsigned (Result),
             Base => 16,
             Error => Error);
       end if;

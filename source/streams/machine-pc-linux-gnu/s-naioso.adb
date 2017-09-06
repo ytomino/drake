@@ -102,7 +102,7 @@ package body System.Native_IO.Sockets is
          Service_Last : Natural;
       begin
          Formatting.Image (
-            Formatting.Unsigned (Port),
+            Formatting.Word_Unsigned (Port),
             Service_As_String,
             Service_Last,
             Base => 10,
@@ -175,7 +175,7 @@ package body System.Native_IO.Sockets is
          Error : Boolean;
       begin
          Formatting.Image (
-            Formatting.Unsigned (Port),
+            Formatting.Word_Unsigned (Port),
             Service_As_String,
             Service_Last,
             Base => 10,

@@ -160,19 +160,12 @@ package body Ada.Containers.Limited_Ordered_Maps is
    procedure Free_Data (Data : in out Map) is
 --  diff
    begin
-      Binary_Trees.Free (
-         Data.Root,
-         Data.Length,
-         Free => Free_Node'Access);
+      Binary_Trees.Free (Data.Root, Data.Length, Free => Free_Node'Access);
 --  diff
 --  diff
    end Free_Data;
 
 --  diff (Unique)
---
---
---
---
 --
 --
 --
@@ -340,8 +333,6 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 --
 --
---
---
 
    procedure Move (Target : in out Map; Source : in out Map) is
    begin
@@ -355,7 +346,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
    end Move;
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       New_Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type;
       Position : out Cursor;
@@ -375,7 +366,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
       package Holder is
          new Exceptions.Finally.Scoped_Holder (Pair, Finally);
       New_Pair : aliased Pair := (new Key_Type'(New_Key.all), null);
-      Before : constant Cursor := Ceiling (Container, New_Pair.Key.all);
+      Before : constant Cursor := Ceiling (Map (Container), New_Pair.Key.all);
    begin
       Holder.Assign (New_Pair);
       Inserted := Before = null or else New_Pair.Key.all < Before.Key.all;
@@ -424,7 +415,7 @@ package body Ada.Containers.Limited_Ordered_Maps is
 --
 
    procedure Insert (
-      Container : in out Map;
+      Container : in out Map'Class;
       Key : not null access function return Key_Type;
       New_Item : not null access function return Element_Type)
    is

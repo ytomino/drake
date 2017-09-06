@@ -3,6 +3,7 @@
 --     source/boot/boot-132/i386/libsaio/hfs_compare.c
 --  http://www.opensource.apple.com/
 --     source/xnu/xnu-1504.15.3/bsd/vfs/vfs_utfconv.c
+with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
@@ -104,9 +105,18 @@ package body System.Native_Directories.File_Names is
          return Item; -- out of gCompareTable
       else
          declare
-            subtype Fixed_Table is C.unsigned_short_array (C.size_t);
-            Table : Fixed_Table;
-            for Table'Address use C.hfs_casetables.gLowerCaseTable.all'Address;
+            subtype Fixed_unsigned_short_array is
+               C.unsigned_short_array (C.size_t);
+            type unsigned_short_array_const_ptr is
+               access constant Fixed_unsigned_short_array
+               with Convention => C;
+            function To_unsigned_short_array_const_ptr is
+               new Ada.Unchecked_Conversion (
+                  C.unsigned_short_ptr,
+                  unsigned_short_array_const_ptr);
+            Table : constant unsigned_short_array_const_ptr :=
+               To_unsigned_short_array_const_ptr (
+                  C.hfs_casetables.gLowerCaseTable);
             cn : constant C.unsigned_short := C.unsigned_short (Item);
             temp : constant C.unsigned_short := Table (C.size_t (cn / 256));
          begin
@@ -191,7 +201,11 @@ package body System.Native_Directories.File_Names is
       character : C.vfs_utfconvdata.u_int16_t)
       return C.vfs_utfconvdata.u_int16_t
    is
-      type unicode_mappings16_array is array (C.size_t) of unicode_mappings16;
+      type unicode_mappings16_array is
+         array (C.size_t range
+               0 ..
+               C.vfs_utfconvdata.CFUniCharDecompositionTable'Length / 2 - 1) of
+            unicode_mappings16;
       pragma Suppress_Initialization (unicode_mappings16_array);
       table : unicode_mappings16_array;
       for table'Address use

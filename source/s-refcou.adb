@@ -24,62 +24,29 @@ package body System.Reference_Counting is
       with Import,
          Convention => Intrinsic, External_Name => "__atomic_sub_fetch_4";
 
-   function atomic_compare_exchange (
-      ptr : not null access Length_Type;
-      expected : not null access Length_Type;
-      desired : Length_Type)
-      return Boolean
-      with Convention => Intrinsic;
-   pragma Inline_Always (atomic_compare_exchange);
+   pragma Compile_Time_Error (
+      Storage_Elements.Storage_Offset'Size /= 32
+         and then Storage_Elements.Storage_Offset'Size /= 64,
+      "Storage_Elements.Storage_Offset'Size is neither 32 nor 64");
+
+   --  Use sequentially consistent model because an object's length and
+   --    contents should be synchronized.
+   Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
 
    function atomic_compare_exchange (
       ptr : not null access Length_Type;
       expected : not null access Length_Type;
-      desired : Length_Type)
+      desired : Length_Type;
+      weak : Boolean := False;
+      success_memorder : Integer := Order;
+      failure_memorder : Integer := Order)
       return Boolean
-   is
-      pragma Compile_Time_Error (
-         Storage_Elements.Storage_Offset'Size /= 32
-            and then Storage_Elements.Storage_Offset'Size /= 64,
-         "Storage_Elements.Storage_Offset'Size is neither 32 nor 64");
-      --  Use sequentially consistent model because an object's length and
-      --    contents should be synchronized.
-      Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
-   begin
-      if Storage_Elements.Storage_Offset'Size = 32 then
-         declare
-            function atomic_compare_exchange_4 (
-               ptr : not null access Length_Type;
-               expected : not null access Length_Type;
-               desired : Length_Type;
-               weak : Boolean := False;
-               success_memorder : Integer := Order;
-               failure_memorder : Integer := Order)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__atomic_compare_exchange_4";
-         begin
-            return atomic_compare_exchange_4 (ptr, expected, desired);
-         end;
-      else
-         declare
-            function atomic_compare_exchange_8 (
-               ptr : not null access Length_Type;
-               expected : not null access Length_Type;
-               desired : Length_Type;
-               weak : Boolean := False;
-               success_memorder : Integer := Order;
-               failure_memorder : Integer := Order)
-               return Boolean
-               with Import,
-                  Convention => Intrinsic,
-                  External_Name => "__atomic_compare_exchange_8";
-         begin
-            return atomic_compare_exchange_8 (ptr, expected, desired);
-         end;
-      end if;
-   end atomic_compare_exchange;
+      with Import,
+         Convention => Intrinsic,
+         External_Name =>
+            (case Storage_Elements.Storage_Offset'Size is
+               when 32 => "__atomic_compare_exchange_4",
+               when others => "__atomic_compare_exchange_8");
 
    --  implementation
 

@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  extended unit
+with Ada.IO_Exceptions;
 with System.Storage_Elements;
 private with Ada.Finalization;
 private with System.Reference_Counting;
@@ -37,6 +38,15 @@ package Ada.Streams.Unbounded_Storage_IO is
    function Stream (Object : Buffer_Type)
       return not null access Root_Stream_Type'Class;
    pragma Inline (Stream);
+
+   procedure Write_To_Stream (
+      Stream : not null access Root_Stream_Type'Class;
+      Item : Buffer_Type);
+
+   --  Exceptions
+
+   End_Error : exception
+      renames IO_Exceptions.End_Error;
 
 private
 
@@ -113,28 +123,17 @@ private
 
       package Streaming is
 
-         procedure Missing_Read (
+         procedure Read (
             Stream : not null access Root_Stream_Type'Class;
-            Item : out Buffer_Type)
-            with Import,
-               Convention => Ada, External_Name => "__drake_program_error";
-         function Missing_Input (
-            Stream : not null access Root_Stream_Type'Class)
-            return Buffer_Type
-            with Import,
-               Convention => Ada, External_Name => "__drake_program_error";
-            --  "out" parameter destructs size info, and result is also
-
+            Item : out Buffer_Type);
          procedure Write (
             Stream : not null access Root_Stream_Type'Class;
             Item : Buffer_Type);
 
       end Streaming;
 
-      for Buffer_Type'Read use Streaming.Missing_Read;
-      for Buffer_Type'Input use Streaming.Missing_Input;
+      for Buffer_Type'Read use Streaming.Read;
       for Buffer_Type'Write use Streaming.Write;
-      for Buffer_Type'Output use Streaming.Write;
 
    end Controlled;
 

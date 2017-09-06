@@ -1,6 +1,5 @@
 -- *** this line is for test ***
 with Ada.Calendar;
-with Ada.Command_Line;
 with Ada.Credentials;
 with Ada.Directories.Information;
 with Ada.Directories.Temporary;
@@ -30,22 +29,26 @@ begin
 	begin
 		Ada.Directories.Search (".", "*", Process => Process'Access);
 	end;
-	-- iteration (iterator style)
+	-- iteration (AI12-0009-1, iterator)
 	Ada.Debug.Put ("**** iterate 2");
 	declare
-		Search : aliased Ada.Directories.Search_Type := Ada.Directories.Start_Search (".");
-		Ite : Ada.Directories.Search_Iterator_Interfaces.Forward_Iterator'Class :=
-			Ada.Directories.Iterate (Search);
-		Position : Ada.Directories.Cursor := Ada.Directories.Search_Iterator_Interfaces.First (Ite);
+		Listing : aliased Ada.Directories.Directory_Listing :=
+			Ada.Directories.Entries (".");
+		Ite : Ada.Directories.Directory_Iterators.Forward_Iterator'Class :=
+			Ada.Directories.Iterate (Listing);
+		Position : Ada.Directories.Cursor :=
+			Ada.Directories.Directory_Iterators.First (Ite);
 	begin
-		while Ada.Directories.Has_Element (Position) loop
-			Ada.Debug.Put (Ada.Directories.Simple_Name (Search.Constant_Reference (Position).Element.all));
-			Position := Ada.Directories.Search_Iterator_Interfaces.Next (Ite, Position);
+		while Ada.Directories.Has_Entry (Position) loop
+			Ada.Debug.Put (
+				Ada.Directories.Simple_Name (
+					Listing.Constant_Reference (Position).Element.all));
+			Position := Ada.Directories.Directory_Iterators.Next (Ite, Position);
 		end loop;
 	end;
-	-- iteration (Ada 2012)
+	-- iteration (AI12-0009-1, generalized loop iteration)
 	Ada.Debug.Put ("**** iterate 3");
-	for I of Ada.Directories.Start_Search (".") loop
+	for I of Ada.Directories.Entries (".") loop
 		Ada.Debug.Put (Ada.Directories.Simple_Name (I));
 	end loop;
 	-- copy

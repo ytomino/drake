@@ -1,9 +1,10 @@
 with C.elf;
 with C.link;
+with C.sys.types;
 package body System.Storage_Map is
    pragma Suppress (All_Checks);
    use type C.signed_int;
-   use type C.size_t;
+   use type C.signed_long; -- 64bit ssize_t
 
    type Rec is record
       First_Load_Address : Address;
@@ -32,15 +33,16 @@ package body System.Storage_Map is
             use type C.elf.Elf32_Half; -- dlpi_phnum
             use type C.elf.Elf32_Word; -- p_type and p_vaddr
             type Elf32_Phdr_array is
-               array (C.size_t) of aliased C.elf.Elf32_Phdr
+               array (C.sys.types.ssize_t range <>) of aliased C.elf.Elf32_Phdr
                with Convention => C;
-            dlpi_phdr : Elf32_Phdr_array;
+            dlpi_phdr : Elf32_Phdr_array (
+               0 .. C.sys.types.ssize_t (Info.dlpi_phnum) - 1);
             for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
          begin
-            for I in 0 .. Info.dlpi_phnum - 1 loop
-               if dlpi_phdr (C.size_t (I)).p_type = C.elf.PT_LOAD then
+            for I in dlpi_phdr'Range loop
+               if dlpi_phdr (I).p_type = C.elf.PT_LOAD then
                   R.First_Load_Address := System'To_Address (
-                     dlpi_phdr (C.size_t (I)).p_vaddr
+                     dlpi_phdr (I).p_vaddr
                      + C.elf.Elf32_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish
                end if;
@@ -52,15 +54,16 @@ package body System.Storage_Map is
             use type C.elf.Elf64_Word; -- p_type
             use type C.elf.Elf64_Addr; -- p_vaddr
             type Elf64_Phdr_array is
-               array (C.size_t) of aliased C.elf.Elf64_Phdr
+               array (C.sys.types.ssize_t range <>) of aliased C.elf.Elf64_Phdr
                with Convention => C;
-            dlpi_phdr : Elf64_Phdr_array;
+            dlpi_phdr : Elf64_Phdr_array (
+               0 .. C.sys.types.ssize_t (Info.dlpi_phnum) - 1);
             for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
          begin
-            for I in 0 .. Info.dlpi_phnum - 1 loop
-               if dlpi_phdr (C.size_t (I)).p_type = C.elf.PT_LOAD then
+            for I in dlpi_phdr'Range loop
+               if dlpi_phdr (I).p_type = C.elf.PT_LOAD then
                   R.First_Load_Address := System'To_Address (
-                     dlpi_phdr (C.size_t (I)).p_vaddr
+                     dlpi_phdr (I).p_vaddr
                      + C.elf.Elf64_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish
                end if;

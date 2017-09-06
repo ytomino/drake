@@ -30,18 +30,18 @@ package System.Native_Environment_Encoding is
       "UTF-8" & C.char'Val (0);
    UTF_8 : constant Encoding_Id := UTF_8_Name (0)'Access;
    UTF_16_Names : aliased constant
-      array (Bit_Order) of aliased C.char_array (0 .. 8) := (
-         High_Order_First => "UTF-16BE" & C.char'Val (0),
-         Low_Order_First => "UTF-16LE" & C.char'Val (0));
+         array (Bit_Order) of aliased C.char_array (0 .. 8) := (
+      High_Order_First => "UTF-16BE" & C.char'Val (0),
+      Low_Order_First => "UTF-16LE" & C.char'Val (0));
    UTF_16 : constant Encoding_Id := UTF_16_Names (Default_Bit_Order)(0)'Access;
    UTF_16BE : constant Encoding_Id :=
       UTF_16_Names (High_Order_First)(0)'Access;
    UTF_16LE : constant Encoding_Id :=
       UTF_16_Names (Low_Order_First)(0)'Access;
    UTF_32_Names : aliased constant
-      array (Bit_Order) of aliased C.char_array (0 .. 8) := (
-         High_Order_First => "UTF-32BE" & C.char'Val (0),
-         Low_Order_First => "UTF-32LE" & C.char'Val (0));
+         array (Bit_Order) of aliased C.char_array (0 .. 8) := (
+      High_Order_First => "UTF-32BE" & C.char'Val (0),
+      Low_Order_First => "UTF-32LE" & C.char'Val (0));
    UTF_32 : constant Encoding_Id := UTF_32_Names (Default_Bit_Order)(0)'Access;
    UTF_32BE : constant Encoding_Id :=
       UTF_32_Names (High_Order_First)(0)'Access;

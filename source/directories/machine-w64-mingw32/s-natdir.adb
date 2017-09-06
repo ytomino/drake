@@ -148,8 +148,8 @@ package body System.Native_Directories is
       Zero_Terminated_WStrings.To_C (Source_Name, W_Source_Name (0)'Access);
       Zero_Terminated_WStrings.To_C (Target_Name, W_Target_Name (0)'Access);
       if C.winbase.ReplaceFile (
-            W_Source_Name (0)'Access,
             W_Target_Name (0)'Access,
+            W_Source_Name (0)'Access,
             null,
             0,
             C.windef.LPVOID (Null_Address),
@@ -178,47 +178,57 @@ package body System.Native_Directories is
 
    function Full_Name (Name : String) return String is
       Name_Length : constant C.size_t := Name'Length;
-      W_Name : C.winnt.WCHAR_array (
-         0 ..
-         Name_Length * Zero_Terminated_WStrings.Expanding);
-      Buffer_Length : constant C.size_t := Name_Length + C.windef.MAX_PATH;
-      Long : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
-      Long_Last : C.size_t;
-      Full : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
-      Full_Last : C.size_t;
    begin
-      Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
-      --  expand short filename to long filename
-      Long_Last := C.size_t (
-         C.winbase.GetLongPathName (
-            W_Name (0)'Access,
-            Long (0)'Access,
-            Long'Length));
-      if Long_Last = 0 or else Long_Last > Long'Last then
-         Long (0 .. Name_Length) := W_Name (0 .. Name_Length);
-         Long_Last := Name_Length;
+      if Name_Length = 0 then
+         --  Full_Name (Containing_Directory ("RELATIVE")) =
+         --     Containing_Directory (Full_Name ("RELATIVE"))
+         return Current_Directory;
+      else
+         declare
+            W_Name : C.winnt.WCHAR_array (
+               0 ..
+               Name_Length * Zero_Terminated_WStrings.Expanding);
+            Buffer_Length : constant C.size_t :=
+               Name_Length + C.windef.MAX_PATH;
+            Long : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
+            Long_Last : C.size_t;
+            Full : C.winnt.WCHAR_array (0 .. Buffer_Length - 1);
+            Full_Last : C.size_t;
+         begin
+            Zero_Terminated_WStrings.To_C (Name, W_Name (0)'Access);
+            --  expand short filename to long filename
+            Long_Last := C.size_t (
+               C.winbase.GetLongPathName (
+                  W_Name (0)'Access,
+                  Long (0)'Access,
+                  Long'Length));
+            if Long_Last = 0 or else Long_Last > Long'Last then
+               Long (0 .. Name_Length) := W_Name (0 .. Name_Length);
+               Long_Last := Name_Length;
+            end if;
+            --  expand directories
+            Full_Last := C.size_t (
+               C.winbase.GetFullPathName (
+                  Long (0)'Access,
+                  Full'Length,
+                  Full (0)'Access,
+                  null));
+            if Full_Last = 0 or else Full_Last > Full'Last then
+               Full (0 .. Long_Last) := Long (0 .. Long_Last);
+               Full_Last := Long_Last;
+            end if;
+            --  drive letter to upper case
+            if Full_Last >= 2
+               and then Wide_Character'Val (Full (1)) = ':'
+               and then Wide_Character'Val (Full (0)) in 'a' .. 'z'
+            then
+               Full (0) := C.winnt.WCHAR'Val (
+                  C.winnt.WCHAR'Pos (Full (0))
+                     - (Wide_Character'Pos ('a') - Wide_Character'Pos ('A')));
+            end if;
+            return Zero_Terminated_WStrings.Value (Full (0)'Access, Full_Last);
+         end;
       end if;
-      --  expand directories
-      Full_Last := C.size_t (
-         C.winbase.GetFullPathName (
-            Long (0)'Access,
-            Full'Length,
-            Full (0)'Access,
-            null));
-      if Full_Last = 0 or else Full_Last > Full'Last then
-         Full (0 .. Long_Last) := Long (0 .. Long_Last);
-         Full_Last := Long_Last;
-      end if;
-      --  drive letter to upper case
-      if Full_Last >= 2
-         and then Wide_Character'Val (Full (1)) = ':'
-         and then Wide_Character'Val (Full (0)) in 'a' .. 'z'
-      then
-         Full (0) := C.winnt.WCHAR'Val (
-            C.winnt.WCHAR'Pos (Full (0))
-            - (Wide_Character'Pos ('a') - Wide_Character'Pos ('A')));
-      end if;
-      return Zero_Terminated_WStrings.Value (Full (0)'Access, Full_Last);
    end Full_Name;
 
    function Exists (Name : String) return Boolean is
@@ -262,7 +272,7 @@ package body System.Native_Directories is
          and (
             C.winnt.FILE_ATTRIBUTE_DEVICE
             or C.winnt.FILE_ATTRIBUTE_REPARSE_POINT
-            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) = 0
+            or C.winnt.FILE_ATTRIBUTE_VIRTUAL)) /= 0
       then
          return Special_File;
       else

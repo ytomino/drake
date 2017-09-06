@@ -45,11 +45,11 @@ package body System.Native_IO is
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
-         Out_Item_A : Name_String (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
+         Out_Item_All : Name_String (0 .. 1); -- at least
+         for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
-         Out_Item_A (0) := Name_Character'Val (Wide_Character'Pos ('*'));
-         Zero_Terminated_WStrings.To_C (Item, Out_Item_A (1)'Access);
+         Out_Item_All (0) := Name_Character'Val (Wide_Character'Pos ('*'));
+         Zero_Terminated_WStrings.To_C (Item, Out_Item_All (1)'Access);
       end;
    end New_External_Name;
 
@@ -98,11 +98,10 @@ package body System.Native_IO is
             * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
-         Out_Item_A : C.winnt.WCHAR_array (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
+         Out_Item_All : C.winnt.WCHAR_array (0 .. Out_Length); -- NUL
+         for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
-         Out_Item_A (0 .. Out_Length) :=
-            Temp_Name (0 .. Out_Length); -- including nul
+         Out_Item_All := Temp_Name (0 .. Out_Length); -- including nul
       end;
    end Open_Temporary;
 
@@ -188,11 +187,13 @@ package body System.Native_IO is
             ShareMode := C.winnt.FILE_SHARE_READ or C.winnt.FILE_SHARE_WRITE;
          else
             declare
-               Lock_Flags : constant array (
-                  Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-                  Ada.IO_Modes.Deny) of C.windef.DWORD := (
-                     Ada.IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
-                     Ada.IO_Modes.Deny => 0);
+               Lock_Flags : constant
+                     array (
+                           Ada.IO_Modes.File_Shared range
+                              Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
+                        C.windef.DWORD := (
+                  Ada.IO_Modes.Read_Only => C.winnt.FILE_SHARE_READ,
+                  Ada.IO_Modes.Deny => 0);
             begin
                ShareMode := Lock_Flags (Shared);
             end;
@@ -227,11 +228,13 @@ package body System.Native_IO is
       end if;
       if Shared /= Ada.IO_Modes.Allow and then Form.Wait then
          declare
-            Flags : constant array (
-               Ada.IO_Modes.File_Shared'(Ada.IO_Modes.Read_Only) ..
-               Ada.IO_Modes.Deny) of C.windef.DWORD := (
-                  Ada.IO_Modes.Read_Only => 0,
-                  Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
+            Flags : constant
+                  array (
+                        Ada.IO_Modes.File_Shared range
+                           Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
+                     C.windef.DWORD := (
+               Ada.IO_Modes.Read_Only => 0,
+               Ada.IO_Modes.Deny => C.winbase.LOCKFILE_EXCLUSIVE_LOCK);
             Overlapped : aliased C.winbase.OVERLAPPED :=
                (0, 0, (0, 0, 0), C.winnt.HANDLE (Null_Address));
          begin

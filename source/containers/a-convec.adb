@@ -5,8 +5,7 @@ with System.Address_To_Named_Access_Conversions;
 package body Ada.Containers.Vectors is
    pragma Check_Policy (Validate => Ignore);
    use type Copy_On_Write.Data_Access;
-
-   type Element_Array_Access is access all Element_Array;
+   use type System.Address;
 
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -19,13 +18,25 @@ package body Ada.Containers.Vectors is
 --  diff (Free)
    procedure Free is new Unchecked_Deallocation (Data, Data_Access);
 
+   procedure Assign_Element (
+      Target : out Element_Type;
+      Source : Element_Type);
+   procedure Assign_Element (
+      Target : out Element_Type;
+      Source : Element_Type) is
+   begin
+      Target := Source;
+   end Assign_Element;
+
    procedure Swap_Element (I, J : Integer; Params : System.Address);
    procedure Swap_Element (I, J : Integer; Params : System.Address) is
       Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Type := Data.Items (Index_Type'Val (I));
    begin
-      Data.Items (Index_Type'Val (I)) := Data.Items (Index_Type'Val (J));
-      Data.Items (Index_Type'Val (J)) := Temp;
+      Assign_Element (
+         Data.Items (Index_Type'Val (I)),
+         Data.Items (Index_Type'Val (J)));
+      Assign_Element (Data.Items (Index_Type'Val (J)), Temp);
    end Swap_Element;
 
 --  diff (Equivalent_Element)
@@ -59,18 +70,18 @@ package body Ada.Containers.Vectors is
 
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Allocate_Data (
       Target : out not null Copy_On_Write.Data_Access;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type)
    is
       New_Data : constant Data_Access :=
          new Data'(
             Capacity_Last => Index_Type'First - 1 + Index_Type'Base (Capacity),
             Super => <>,
-            Max_Length => Max_Length,
+            Max_Length => New_Length,
             Items => <>);
    begin
       Target := Upcast (New_Data);
@@ -107,16 +118,16 @@ package body Ada.Containers.Vectors is
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type);
    procedure Copy_Data (
       Target : out not null Copy_On_Write.Data_Access;
       Source : not null Copy_On_Write.Data_Access;
       Length : Count_Type;
-      Max_Length : Count_Type;
+      New_Length : Count_Type;
       Capacity : Count_Type) is
    begin
-      Allocate_Data (Target, Max_Length, Capacity);
+      Allocate_Data (Target, New_Length, Capacity);
       declare
          subtype R is
             Extended_Index range
@@ -132,6 +143,14 @@ package body Ada.Containers.Vectors is
 --  diff
       end;
    end Copy_Data;
+
+   function Max_Length (Data : not null Copy_On_Write.Data_Access)
+      return not null access Count_Type;
+   function Max_Length (Data : not null Copy_On_Write.Data_Access)
+      return not null access Count_Type is
+   begin
+      return Downcast (Data).Max_Length'Access;
+   end Max_Length;
 
    procedure Reallocate (
       Container : in out Vector;
@@ -154,8 +173,8 @@ package body Ada.Containers.Vectors is
          Allocate => Allocate_Data'Access,
          Move => Copy_Data'Access,
          Copy => Copy_Data'Access,
-         Free => Free_Data'Access);
---  diff
+         Free => Free_Data'Access,
+         Max_Length => Max_Length'Access);
    end Reallocate;
 
    procedure Unique (Container : in out Vector; To_Update : Boolean);
@@ -186,7 +205,7 @@ package body Ada.Containers.Vectors is
    begin
       if Left.Length /= Right.Length then
          return False;
-      elsif Left.Super.Data = Right.Super.Data then
+      elsif Left.Length = 0 or else Left.Super.Data = Right.Super.Data then
          return True;
       else
          Unique (Left'Unrestricted_Access.all, False); -- private
@@ -298,16 +317,15 @@ package body Ada.Containers.Vectors is
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
       Old_Capacity : constant Count_Type := Capacity (Container);
-      Data : constant Data_Access := Downcast (Container.Super.Data);
       Failure : Boolean;
    begin
       Copy_On_Write.In_Place_Set_Length (
-         Target_Data => Upcast (Data),
+         Target => Container.Super'Access,
          Target_Length => Container.Length,
-         Target_Max_Length => Data.Max_Length,
          Target_Capacity => Old_Capacity,
          New_Length => Length,
-         Failure => Failure);
+         Failure => Failure,
+         Max_Length => Max_Length'Access);
       if Failure then
          declare
             New_Capacity : Count_Type;
@@ -357,8 +375,9 @@ package body Ada.Containers.Vectors is
       return Element_Type is
    begin
       return Constant_Reference (
-         Vector (Container),
-         Index).Element.all; -- checking Constraint_Error
+            Vector (Container),
+            Index) -- checking Constraint_Error
+         .Element.all;
    end Element;
 
    procedure Replace_Element (
@@ -377,7 +396,7 @@ package body Ada.Containers.Vectors is
             renames Downcast (Container.Super.Data).Items (Position);
       begin
 --  diff
-         E := New_Item;
+         Assign_Element (E, New_Item);
       end;
    end Replace_Element;
 
@@ -388,8 +407,9 @@ package body Ada.Containers.Vectors is
    begin
       Process (
          Constant_Reference (
-            Vector (Container),
-            Index).Element.all); -- checking Constraint_Error
+               Vector (Container),
+               Index) -- checking Constraint_Error
+            .Element.all);
    end Query_Element;
 
    procedure Update_Element (
@@ -398,9 +418,8 @@ package body Ada.Containers.Vectors is
       Process : not null access procedure (Element : in out Element_Type)) is
    begin
       Process (
-         Reference (
-            Vector (Container),
-            Position).Element.all); -- checking Constraint_Error
+         Reference (Vector (Container), Position) -- checking Constraint_Error
+            .Element.all);
    end Update_Element;
 
    function Constant_Reference (Container : aliased Vector; Position : Cursor)
@@ -471,7 +490,7 @@ package body Ada.Containers.Vectors is
       Insert (
          Container,
          Before, -- checking Constraint_Error
-         New_Item,
+         New_Item, -- checking Program_Error if same nonempty container
          Position);
    end Insert;
 
@@ -484,6 +503,12 @@ package body Ada.Containers.Vectors is
       pragma Check (Pre,
          Check =>
             Before <= Last (Container) + 1 or else raise Constraint_Error);
+      pragma Check (Pre,
+         Check =>
+            Container'Address /= New_Item'Address
+            or else Is_Empty (Container)
+            or else raise Program_Error);
+            --  same nonempty container (should this case be supported?)
       New_Item_Length : constant Count_Type := New_Item.Length;
    begin
       if Container.Length = 0
@@ -494,6 +519,7 @@ package body Ada.Containers.Vectors is
       else
          Insert_Space (Container, Before, Position, New_Item_Length);
          if New_Item_Length > 0 then
+            Unique (New_Item'Unrestricted_Access.all, False); -- private
             declare
                subtype R1 is
                   Extended_Index range
@@ -503,15 +529,15 @@ package body Ada.Containers.Vectors is
                   Extended_Index range
                      Index_Type'First ..
                      Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
-               --  Do not use New_Item.Length or Last (New_Item) in here
-               --    for Append (X, X).
             begin
                Downcast (Container.Super.Data).Items (R1) :=
                   Downcast (New_Item.Super.Data).Items (R2);
             end;
+--  diff
+--  diff
+--  diff
+--  diff
          end if;
---  diff
---  diff
       end if;
    end Insert;
 
@@ -549,14 +575,17 @@ package body Ada.Containers.Vectors is
                renames Downcast (Container.Super.Data).Items (I);
          begin
 --  diff
-            E := New_Item;
+            Assign_Element (E, New_Item);
          end;
       end loop;
    end Insert;
 
    procedure Prepend (Container : in out Vector; New_Item : Vector) is
    begin
-      Insert (Container, Index_Type'First, New_Item);
+      Insert (
+         Container,
+         Index_Type'First,
+         New_Item); -- checking Program_Error if same nonempty container
    end Prepend;
 
    procedure Prepend (
@@ -569,36 +598,30 @@ package body Ada.Containers.Vectors is
 
    procedure Append (Container : in out Vector; New_Item : Vector) is
       New_Item_Length : constant Count_Type := New_Item.Length;
+      Old_Length : constant Count_Type := Container.Length;
    begin
-      if New_Item_Length > 0 then
+      if Old_Length = 0 and then Capacity (Container) < New_Item_Length then
+         Assign (Container, New_Item);
+      elsif New_Item_Length > 0 then
+         Set_Length (Container, Old_Length + New_Item_Length);
+         Unique (New_Item'Unrestricted_Access.all, False); -- private
          declare
-            Old_Length : constant Count_Type := Container.Length;
+            subtype R1 is
+               Extended_Index range
+                  Index_Type'First + Index_Type'Base (Old_Length) ..
+                  Last (Container);
+            subtype R2 is
+               Extended_Index range
+                  Index_Type'First ..
+                  Index_Type'First - 1 + Index_Type'Base (New_Item_Length);
+            --  Do not use New_Item.Length or Last (New_Item) in here
+            --    for Append (X, X).
          begin
-            if Old_Length = 0
-               and then Capacity (Container) < New_Item_Length
-            then
-               Assign (Container, New_Item);
-            else
-               Set_Length (Container, Old_Length + New_Item.Length);
-               declare
-                  subtype R1 is
-                     Extended_Index range
-                        Index_Type'First + Index_Type'Base (Old_Length) ..
-                        Last (Container);
-                  subtype R2 is
-                     Extended_Index range
-                        Index_Type'First ..
-                        Index_Type'First
-                           - 1
-                           + Index_Type'Base (New_Item_Length);
-                  --  Do not use New_Item.Length or Last (New_Item) in here
-                  --    for Append (X, X).
-               begin
-                  Downcast (Container.Super.Data).Items (R1) :=
-                     Downcast (New_Item.Super.Data).Items (R2);
-               end;
-            end if;
+            Downcast (Container.Super.Data).Items (R1) :=
+               Downcast (New_Item.Super.Data).Items (R2);
          end;
+--  diff
+--  diff
       end if;
    end Append;
 
@@ -611,14 +634,15 @@ package body Ada.Containers.Vectors is
    begin
       Set_Length (Container, Old_Length + Count);
       for I in
-         Index_Type'First + Index_Type'Base (Old_Length) .. Last (Container)
+         Index_Type'First + Index_Type'Base (Old_Length) ..
+         Last (Container)
       loop
          declare
             E : Element_Type
                renames Downcast (Container.Super.Data).Items (I);
          begin
 --  diff
-            E := New_Item;
+            Assign_Element (E, New_Item);
          end;
       end loop;
    end Append;
@@ -703,12 +727,10 @@ package body Ada.Containers.Vectors is
                      Downcast (Container.Super.Data);
                   subtype R1 is
                      Extended_Index range
-                        Position ..
-                        After_Last - 1 - Index_Type'Base (Count);
+                        Position .. After_Last - 1 - Index_Type'Base (Count);
                   subtype R2 is
                      Extended_Index range
-                        Position + Index_Type'Base (Count) ..
-                        After_Last - 1;
+                        Position + Index_Type'Base (Count) .. After_Last - 1;
                begin
 --  diff
 --  diff
@@ -960,6 +982,8 @@ package body Ada.Containers.Vectors is
    begin
       Unique (Container'Unrestricted_Access.all, False);
       declare
+         type Element_Array_Access is access constant Element_Array;
+         for Element_Array_Access'Storage_Size use 0;
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Constant_Slice (
@@ -974,6 +998,8 @@ package body Ada.Containers.Vectors is
    begin
       Unique (Container, True);
       declare
+         type Element_Array_Access is access all Element_Array;
+         for Element_Array_Access'Storage_Size use 0;
          Data : constant Data_Access := Downcast (Container.Super.Data);
       begin
          return Slicing.Slice (
@@ -1075,6 +1101,12 @@ package body Ada.Containers.Vectors is
       end Sort;
 
       procedure Merge (Target : in out Vector; Source : in out Vector) is
+         pragma Check (Pre,
+            Check =>
+               Target'Address /= Source'Address
+               or else Is_Empty (Target)
+               or else raise Program_Error);
+               --  RM A.18.2(237/3), same nonempty container
       begin
          if Source.Length > 0 then
             declare
@@ -1095,7 +1127,7 @@ package body Ada.Containers.Vectors is
                   Set_Length (Source, 0);
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
-                     Integer (Index_Type'First) - 1 + Integer (Old_Length),
+                     Integer (Index_Type'First) + Integer (Old_Length),
                      Index_Type'Pos (Last (Target)),
                      DA_Conv.To_Address (Downcast (Target.Super.Data)),
                      LT => LT'Access,
@@ -1122,8 +1154,8 @@ package body Ada.Containers.Vectors is
             Element_Array'Read (
                Stream,
                Downcast (Item.Super.Data).Items (
-                  Index_Type'First ..
-                  Last (Item)));
+                  Index_Type'First .. Last (Item)));
+--  diff
 --  diff
 --  diff
 --  diff
@@ -1143,8 +1175,8 @@ package body Ada.Containers.Vectors is
             Element_Array'Write (
                Stream,
                Downcast (Item.Super.Data).Items (
-                  Index_Type'First ..
-                  Last (Item)));
+                  Index_Type'First .. Last (Item)));
+--  diff
          end if;
       end Write;
 

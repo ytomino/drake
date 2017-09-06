@@ -14,6 +14,7 @@ package Interfaces.C is
    type int is new Integer; -- implementation-defined
    type short is new Short_Integer; -- implementation-defined
    type long is new Long_Integer; -- implementation-defined
+   type long_long is new Long_Long_Integer; -- AI12-0184-1, 64-bit
 
    type signed_char is range SCHAR_MIN .. SCHAR_MAX;
    for signed_char'Size use CHAR_BIT;
@@ -21,6 +22,7 @@ package Interfaces.C is
    type unsigned is mod 2 ** int'Size; -- implementation-defined
    type unsigned_short is mod 2 ** short'Size; -- implementation-defined
    type unsigned_long is mod 2 ** long'Size; -- implementation-defined
+   type unsigned_long_long is mod 2 ** long_long'Size; -- AI12-0184-1, 64-bit
 
    type unsigned_char is mod UCHAR_MAX + 1;
    for unsigned_char'Size use CHAR_BIT;

@@ -404,9 +404,9 @@ package body System.Native_Text_IO is
                Unchecked_Tag => 0,
                UnicodeChar => C.winnt.WCHAR'Val (16#20#)),
             Attributes => Info.wAttributes);
-         Buffer : aliased constant array (
-            0 .. Info.dwSize.Y - 1,
-            0 .. Info.dwSize.X - 1) of aliased C.wincon.CHAR_INFO :=
+         Buffer : aliased constant
+               array (0 .. Info.dwSize.Y - 1, 0 .. Info.dwSize.X - 1) of
+                  aliased C.wincon.CHAR_INFO :=
             (others => (others => Clear_Char_Info));
          Region : aliased C.wincon.SMALL_RECT;
       begin

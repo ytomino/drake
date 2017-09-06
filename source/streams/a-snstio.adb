@@ -35,6 +35,7 @@ package body Ada.Streams.Naked_Stream_IO is
          if Item'Length > 0
             and then (
                Item (Item'First) = 'a' -- allow
+               or else Item (Item'First) = 'n' -- no, compatibility
                or else Item (Item'First) = 'y') -- yes, compatibility
          then
             Form.Shared := IO_Modes.Allow;
@@ -42,8 +43,6 @@ package body Ada.Streams.Naked_Stream_IO is
             Form.Shared := IO_Modes.Read_Only;
          elsif Item'Length > 0 and then Item (Item'First) = 'd' then -- deny
             Form.Shared := IO_Modes.Deny;
-         elsif Item'Length > 0 and then Item (Item'First) = 'n' then -- no
-            Form.Shared := IO_Modes.By_Mode;
          end if;
       elsif Keyword = "wait" then
          if Item'Length > 0 and then Item (Item'First) = 'f' then -- false
@@ -437,7 +436,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Stream_Element_Offset'Min (
             Item'Last - Item'First + 1,
             File.Buffer_Index - File.Reading_Index);
-      Buffer : Stream_Element_Array (Stream_Element_Count);
+      Buffer : Stream_Element_Array (
+         0 .. Stream_Element_Offset'Max (0, File.Buffer_Length - 1));
       for Buffer'Address use File.Buffer;
    begin
       Last := Item'First + (Taking_Length - 1);
@@ -459,7 +459,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Stream_Element_Offset'Min (
             Item'Last - Item'First + 1,
             File.Buffer_Length - File.Writing_Index);
-      Buffer : Stream_Element_Array (Stream_Element_Count);
+      Buffer : Stream_Element_Array (
+         0 .. Stream_Element_Offset'Max (0, File.Buffer_Length - 1));
       for Buffer'Address use File.Buffer;
    begin
       Last := Item'First + (Taking_Length - 1);

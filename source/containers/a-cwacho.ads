@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  implementation unit for Ada.Containers.Counted_Access_Holders
+--  implementation unit for Ada.Containers.Access_Holders
 with System.Reference_Counting;
 private package Ada.Containers.Weak_Access_Holders is
    pragma Preelaborate;

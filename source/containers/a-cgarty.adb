@@ -355,7 +355,7 @@ package body Ada.Containers.Generic_Array_Types is
 --  diff
          Array_Sorting.Reverse_Rotate (
             Index_Type'Pos (Container'First),
-            Index_Type'Pos (Before) - 1,
+            Index_Type'Pos (Before),
             Index_Type'Pos (Container'Last),
             Context'Address,
             Swap => Swap'Access);
@@ -377,7 +377,7 @@ package body Ada.Containers.Generic_Array_Types is
 --  diff
          Array_Sorting.Juggling_Rotate (
             Index_Type'Pos (Container'First),
-            Index_Type'Pos (Before) - 1,
+            Index_Type'Pos (Before),
             Index_Type'Pos (Container'Last),
             Context'Address,
             Swap => Swap'Access);

@@ -83,7 +83,7 @@ private
 
    overriding procedure Initialize (Object : in out Finalization_Master);
    overriding procedure Finalize (Object : in out Finalization_Master);
-      --  reraise some exception raised from its own objects
+      --  reraise some exception propagated from its own objects
 
    --  required by compiler (s-finmas.ads)
    function Base_Pool (Master : Finalization_Master'Class)

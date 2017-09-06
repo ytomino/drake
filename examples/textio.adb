@@ -1,4 +1,3 @@
-with Ada.Command_Line;
 with Ada.Directories.Temporary;
 with Ada.Streams;
 with Ada.Text_IO.Text_Streams;

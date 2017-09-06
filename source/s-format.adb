@@ -10,12 +10,17 @@ package body System.Formatting is
          Convention => Intrinsic, External_Name => "__builtin_memset";
 
    function add_overflow (
-      a, b : Unsigned;
-      res : not null access Unsigned)
+      a, b : Word_Unsigned;
+      res : not null access Word_Unsigned)
       return Boolean
       with Import,
          Convention => Intrinsic,
-         External_Name => "__builtin_uadd_overflow";
+         External_Name =>
+            (if Standard'Word_Size = Integer'Size then
+                  "__builtin_uadd_overflow"
+               elsif Standard'Word_Size = Long_Integer'Size then
+                  "__builtin_uaddl_overflow"
+               else "__builtin_uaddll_overflow");
 
    function add_overflow (
       a, b : Longest_Unsigned;
@@ -26,12 +31,17 @@ package body System.Formatting is
          External_Name => "__builtin_uaddll_overflow";
 
    function mul_overflow (
-      a, b : Unsigned;
-      res : not null access Unsigned)
+      a, b : Word_Unsigned;
+      res : not null access Word_Unsigned)
       return Boolean
       with Import,
          Convention => Intrinsic,
-         External_Name => "__builtin_umul_overflow";
+         External_Name =>
+            (if Standard'Word_Size = Integer'Size then
+                  "__builtin_umul_overflow"
+               elsif Standard'Word_Size = Long_Integer'Size then
+                  "__builtin_umull_overflow"
+               else "__builtin_umulll_overflow");
 
    function mul_overflow (
       a, b : Longest_Unsigned;
@@ -41,16 +51,16 @@ package body System.Formatting is
          Convention => Intrinsic,
          External_Name => "__builtin_umulll_overflow";
 
-   function Width_Digits (Value : Unsigned; Base : Number_Base)
+   function Width_Digits (Value : Word_Unsigned; Base : Number_Base)
       return Positive;
-   function Width_Digits (Value : Unsigned; Base : Number_Base)
+   function Width_Digits (Value : Word_Unsigned; Base : Number_Base)
       return Positive
    is
-      V : Unsigned := Value;
+      V : Word_Unsigned := Value;
       Result : Positive := 1;
    begin
-      while V >= Unsigned (Base) loop
-         V := V / Unsigned (Base);
+      while V >= Word_Unsigned (Base) loop
+         V := V / Word_Unsigned (Base);
          Result := Result + 1;
       end loop;
       return Result;
@@ -67,43 +77,34 @@ package body System.Formatting is
             V : Longest_Unsigned := Value;
             Offset : Natural := 0;
          begin
-            while V > Longest_Unsigned (Unsigned'Last) loop
+            while V > Longest_Unsigned (Word_Unsigned'Last) loop
                V := V / Longest_Unsigned (Base);
                Offset := Offset + 1;
             end loop;
-            return Offset + Width_Digits (Unsigned (V), Base);
+            return Offset + Width_Digits (Word_Unsigned (V), Base);
          end;
       else
          --  optimized for 64bit
-         declare
-            V : Longest_Unsigned := Value;
-            Result : Positive := 1;
-         begin
-            while V >= Longest_Unsigned (Base) loop
-               V := V / Longest_Unsigned (Base);
-               Result := Result + 1;
-            end loop;
-            return Result;
-         end;
+         return Width_Digits (Word_Unsigned (Value), Base);
       end if;
    end Width_Digits;
 
    procedure Fill_Digits (
-      Value : Unsigned;
+      Value : Word_Unsigned;
       Item : out String;
       Base : Number_Base;
       Set : Type_Set);
    procedure Fill_Digits (
-      Value : Unsigned;
+      Value : Word_Unsigned;
       Item : out String;
       Base : Number_Base;
       Set : Type_Set)
    is
-      V : Unsigned := Value;
+      V : Word_Unsigned := Value;
    begin
       for I in reverse Item'Range loop
-         Image (Digit (V rem Unsigned (Base)), Item (I), Set);
-         V := V / Unsigned (Base);
+         Image (Digit (V rem Word_Unsigned (Base)), Item (I), Set);
+         V := V / Word_Unsigned (Base);
       end loop;
    end Fill_Digits;
 
@@ -124,42 +125,35 @@ package body System.Formatting is
             V : Longest_Unsigned := Value;
             I : Positive := Item'Last;
          begin
-            while V > Longest_Unsigned (Unsigned'Last) loop
+            while V > Longest_Unsigned (Word_Unsigned'Last) loop
                Image (Digit (V rem Longest_Unsigned (Base)), Item (I), Set);
                V := V / Longest_Unsigned (Base);
                I := I - 1;
             end loop;
-            Fill_Digits (Unsigned (V), Item (Item'First .. I), Base, Set);
+            Fill_Digits (Word_Unsigned (V), Item (Item'First .. I), Base, Set);
          end;
       else
          --  optimized for 64bit
-         declare
-            V : Longest_Unsigned := Value;
-         begin
-            for I in reverse Item'Range loop
-               Image (Digit (V rem Longest_Unsigned (Base)), Item (I), Set);
-               V := V / Longest_Unsigned (Base);
-            end loop;
-         end;
+         Fill_Digits (Word_Unsigned (Value), Item, Base, Set);
       end if;
    end Fill_Digits;
 
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean)
    is
-      R : aliased Unsigned := 0;
+      R : aliased Word_Unsigned := 0;
    begin
       Last := Item'First - 1;
       Overflow := False;
@@ -177,8 +171,8 @@ package body System.Formatting is
             end if;
             Value (Item (Next), X, Is_Invalid);
             exit when Is_Invalid or else X >= Base;
-            if mul_overflow (R, Unsigned (Base), R'Access)
-               or else add_overflow (R, Unsigned (X), R'Access)
+            if mul_overflow (R, Word_Unsigned (Base), R'Access)
+               or else add_overflow (R, Word_Unsigned (X), R'Access)
             then
                Overflow := True;
                exit;
@@ -202,77 +196,71 @@ package body System.Formatting is
       Result : out Longest_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
-      Overflow : out Boolean)
-   is
-      R : aliased Longest_Unsigned := 0;
+      Overflow : out Boolean) is
    begin
       if Standard'Word_Size < Longest_Unsigned'Size then
          --  optimized for 32bit
+         declare
+            R : aliased Longest_Unsigned := 0;
+         begin
+            Take_Digits (
+               Item,
+               Last,
+               Word_Unsigned (R),
+               Base,
+               Skip_Underscore,
+               Overflow);
+            if Overflow then
+               Overflow := False;
+               while Last < Item'Last loop
+                  declare
+                     X : Digit;
+                     Is_Invalid : Boolean;
+                     Next : Positive := Last + 1;
+                  begin
+                     if Item (Next) = '_' then
+                        exit when not Skip_Underscore
+                           or else Next >= Item'Last;
+                        Next := Next + 1;
+                     end if;
+                     Value (Item (Next), X, Is_Invalid);
+                     exit when Is_Invalid or else X >= Base;
+                     if mul_overflow (R, Longest_Unsigned (Base), R'Access)
+                        or else add_overflow (
+                           R,
+                           Longest_Unsigned (X),
+                           R'Access)
+                     then
+                        Overflow := True;
+                        exit;
+                     end if;
+                     Last := Next;
+                  end;
+               end loop;
+            end if;
+            Result := R;
+         end;
+      else
+         --  optimized for 64bit
          Take_Digits (
             Item,
             Last,
-            Unsigned (R),
+            Word_Unsigned (Result),
             Base,
             Skip_Underscore,
             Overflow);
-         if Overflow then
-            Overflow := False;
-            while Last < Item'Last loop
-               declare
-                  X : Digit;
-                  Is_Invalid : Boolean;
-                  Next : Positive := Last + 1;
-               begin
-                  if Item (Next) = '_' then
-                     exit when not Skip_Underscore or else Next >= Item'Last;
-                     Next := Next + 1;
-                  end if;
-                  Value (Item (Next), X, Is_Invalid);
-                  exit when Is_Invalid or else X >= Base;
-                  if mul_overflow (R, Longest_Unsigned (Base), R'Access)
-                     or else add_overflow (R, Longest_Unsigned (X), R'Access)
-                  then
-                     Overflow := True;
-                     exit;
-                  end if;
-                  Last := Next;
-               end;
-            end loop;
-         end if;
-      else
-         --  optimized for 64bit
-         Last := Item'First - 1;
-         Overflow := False;
-         while Last < Item'Last loop
-            declare
-               X : Digit;
-               Is_Invalid : Boolean;
-               Next : Positive := Last + 1;
-            begin
-               if Item (Next) = '_' then
-                  exit when not Skip_Underscore
-                     or else Next = Item'First
-                     or else Next >= Item'Last;
-                  Next := Next + 1;
-               end if;
-               Value (Item (Next), X, Is_Invalid);
-               exit when Is_Invalid or else X >= Base;
-               if mul_overflow (R, Longest_Unsigned (Base), R'Access)
-                  or else add_overflow (R, Longest_Unsigned (X), R'Access)
-               then
-                  Overflow := True;
-                  exit;
-               end if;
-               Last := Next;
-            end;
-         end loop;
       end if;
-      Result := R;
    end Take_Digits;
 
    --  implementation
 
-   function Width (Value : Unsigned; Base : Number_Base := 10)
+   function Width (Value : Word_Unsigned; Base : Number_Base := 10)
+      return Positive is
+   begin
+      return Width_Digits (Value, Base);
+   end Width;
+
+   function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
       return Positive is
    begin
       if Standard'Word_Size < Longest_Unsigned'Size then
@@ -280,14 +268,8 @@ package body System.Formatting is
          return Width_Digits (Value, Base);
       else
          --  optimized for 64bit
-         return Width (Longest_Unsigned (Value), Base);
+         return Width (Word_Unsigned (Value), Base);
       end if;
-   end Width;
-
-   function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
-      return Positive is
-   begin
-      return Width_Digits (Value, Base);
    end Width;
 
    procedure Image (
@@ -309,7 +291,37 @@ package body System.Formatting is
    end Image;
 
    procedure Image (
-      Value : Unsigned;
+      Value : Word_Unsigned;
+      Item : out String;
+      Last : out Natural;
+      Base : Number_Base := 10;
+      Set : Type_Set := Upper_Case;
+      Width : Positive := 1;
+      Padding : Character := '0';
+      Error : out Boolean)
+   is
+      W : constant Positive := Formatting.Width (Value, Base);
+      Padding_Length : constant Natural := Integer'Max (0, Width - W);
+      Length : constant Natural := Padding_Length + W;
+   begin
+      Error := Item'First + Length - 1 > Item'Last;
+      if Error then
+         Last := Item'First - 1;
+      else
+         Last := Item'First + Length - 1;
+         Fill_Padding (
+            Item (Item'First .. Item'First + Padding_Length - 1),
+            Padding);
+         Fill_Digits (
+            Value,
+            Item (Item'First + Padding_Length .. Last),
+            Base,
+            Set);
+      end if;
+   end Image;
+
+   procedure Image (
+      Value : Longest_Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
@@ -343,7 +355,7 @@ package body System.Formatting is
       else
          --  optimized for 64bit
          Image (
-            Longest_Unsigned (Value),
+            Word_Unsigned (Value),
             Item,
             Last,
             Base,
@@ -351,36 +363,6 @@ package body System.Formatting is
             Width,
             Padding,
             Error);
-      end if;
-   end Image;
-
-   procedure Image (
-      Value : Longest_Unsigned;
-      Item : out String;
-      Last : out Natural;
-      Base : Number_Base := 10;
-      Set : Type_Set := Upper_Case;
-      Width : Positive := 1;
-      Padding : Character := '0';
-      Error : out Boolean)
-   is
-      W : constant Positive := Formatting.Width (Value, Base);
-      Padding_Length : constant Natural := Integer'Max (0, Width - W);
-      Length : constant Natural := Padding_Length + W;
-   begin
-      Error := Item'First + Length - 1 > Item'Last;
-      if Error then
-         Last := Item'First - 1;
-      else
-         Last := Item'First + Length - 1;
-         Fill_Padding (
-            Item (Item'First .. Item'First + Padding_Length - 1),
-            Padding);
-         Fill_Digits (
-            Value,
-            Item (Item'First + Padding_Length .. Last),
-            Base,
-            Set);
       end if;
    end Image;
 
@@ -407,7 +389,27 @@ package body System.Formatting is
    procedure Value (
       Item : String;
       Last : out Natural;
-      Result : out Unsigned;
+      Result : out Word_Unsigned;
+      Base : Number_Base := 10;
+      Skip_Underscore : Boolean := False;
+      Error : out Boolean)
+   is
+      Overflow : Boolean;
+   begin
+      Take_Digits (Item, Last, Result, Base, Skip_Underscore, Overflow);
+      if Overflow then
+         Result := 0;
+         Last := Item'First - 1;
+         Error := True;
+      else
+         Error := Last < Item'First;
+      end if;
+   end Value;
+
+   procedure Value (
+      Item : String;
+      Last : out Natural;
+      Result : out Longest_Unsigned;
       Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean) is
@@ -428,38 +430,13 @@ package body System.Formatting is
          end;
       else
          --  optimized for 64bit
-         declare
-            Longest_Result : Longest_Unsigned;
-         begin
-            Value (Item, Last, Longest_Result, Base, Skip_Underscore, Error);
-            if Longest_Result > Longest_Unsigned (Unsigned'Last) then
-               Result := 0;
-               Last := Item'First - 1;
-               Error := True;
-            else
-               Result := Unsigned (Longest_Result);
-            end if;
-         end;
-      end if;
-   end Value;
-
-   procedure Value (
-      Item : String;
-      Last : out Natural;
-      Result : out Longest_Unsigned;
-      Base : Number_Base := 10;
-      Skip_Underscore : Boolean := False;
-      Error : out Boolean)
-   is
-      Overflow : Boolean;
-   begin
-      Take_Digits (Item, Last, Result, Base, Skip_Underscore, Overflow);
-      if Overflow then
-         Result := 0;
-         Last := Item'First - 1;
-         Error := True;
-      else
-         Error := Last < Item'First;
+         Value (
+            Item,
+            Last,
+            Word_Unsigned (Result),
+            Base,
+            Skip_Underscore,
+            Error);
       end if;
    end Value;
 
