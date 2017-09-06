@@ -40,32 +40,19 @@ package body System.Native_Directories.Searching is
                      C.winnt.WCHAR'Val (0))));
    end Match_Filter;
 
-   --  implementation
-
-   function New_Directory_Entry (Source : not null Directory_Entry_Access)
-      return not null Directory_Entry_Access
-   is
-      Result : constant Directory_Entry_Access :=
-         LPWIN32_FIND_DATA_Conv.To_Pointer (
-            Standard_Allocators.Allocate (
-               C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
-   begin
-      Result.all := Source.all;
-      return Result;
-   end New_Directory_Entry;
-
-   procedure Free (X : in out Directory_Entry_Access) is
-   begin
-      Standard_Allocators.Free (LPWIN32_FIND_DATA_Conv.To_Address (X));
-      X := null;
-   end Free;
-
    procedure Start_Search (
-      Search : aliased in out Search_Type;
+      Handle : aliased out C.winnt.HANDLE;
       Directory : String;
       Pattern : String;
       Filter : Filter_Type;
-      Directory_Entry : out Directory_Entry_Access;
+      Directory_Entry : not null Directory_Entry_Access;
+      Has_Next_Entry : out Boolean);
+   procedure Start_Search (
+      Handle : aliased out C.winnt.HANDLE;
+      Directory : String;
+      Pattern : String;
+      Filter : Filter_Type;
+      Directory_Entry : not null Directory_Entry_Access;
       Has_Next_Entry : out Boolean) is
    begin
       if Directory'Length = 0 then -- reject
@@ -96,12 +83,10 @@ package body System.Native_Directories.Searching is
             Pattern,
             Wildcard (Wildcard_Length)'Access);
          --  start search
-         Directory_Entry := Search.Directory_Entry'Unchecked_Access;
-         Search.Handle := C.winbase.FindFirstFileW (
-            Wildcard (0)'Access,
-            Directory_Entry);
+         Handle :=
+            C.winbase.FindFirstFileW (Wildcard (0)'Access, Directory_Entry);
       end;
-      if Search.Handle = C.winbase.INVALID_HANDLE_VALUE then
+      if Handle = C.winbase.INVALID_HANDLE_VALUE then
          declare
             Error : constant C.windef.DWORD := C.winbase.GetLastError;
          begin
@@ -115,13 +100,12 @@ package body System.Native_Directories.Searching is
             end case;
          end;
       else
-         Search.Filter := Filter;
          loop
-            if Match_Filter (Search.Filter, Directory_Entry) then
+            if Match_Filter (Filter, Directory_Entry) then
                Has_Next_Entry := True;
                exit; -- found
             end if;
-            if C.winbase.FindNextFile (Search.Handle, Directory_Entry) =
+            if C.winbase.FindNextFile (Handle, Directory_Entry) =
                C.windef.FALSE
             then
                declare
@@ -142,19 +126,68 @@ package body System.Native_Directories.Searching is
    end Start_Search;
 
    procedure End_Search (
-      Search : aliased in out Search_Type;
+      Handle : aliased in out C.winnt.HANDLE;
+      Raise_On_Error : Boolean);
+   procedure End_Search (
+      Handle : aliased in out C.winnt.HANDLE;
       Raise_On_Error : Boolean)
    is
-      Handle : constant C.winnt.HANDLE := Search.Handle;
+      Closing_Handle : constant C.winnt.HANDLE := Handle;
    begin
-      Search.Handle := Handle_Type (Null_Address);
-      if Handle /= C.winbase.INVALID_HANDLE_VALUE then
-         if C.winbase.FindClose (Handle) = C.windef.FALSE then
+      Handle := Handle_Type (Null_Address);
+      if Closing_Handle /= C.winbase.INVALID_HANDLE_VALUE then
+         if C.winbase.FindClose (Closing_Handle) = C.windef.FALSE then
             if Raise_On_Error then
                Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
             end if;
          end if;
       end if;
+   end End_Search;
+
+   --  implementation
+
+   function New_Directory_Entry (Source : not null Directory_Entry_Access)
+      return not null Directory_Entry_Access
+   is
+      Result : constant Directory_Entry_Access :=
+         LPWIN32_FIND_DATA_Conv.To_Pointer (
+            Standard_Allocators.Allocate (
+               C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
+   begin
+      Result.all := Source.all;
+      return Result;
+   end New_Directory_Entry;
+
+   procedure Free (X : in out Directory_Entry_Access) is
+   begin
+      Standard_Allocators.Free (LPWIN32_FIND_DATA_Conv.To_Address (X));
+      X := null;
+   end Free;
+
+   procedure Start_Search (
+      Search : aliased in out Search_Type;
+      Directory : String;
+      Pattern : String;
+      Filter : Filter_Type;
+      Directory_Entry : out Directory_Entry_Access;
+      Has_Next_Entry : out Boolean) is
+   begin
+      Start_Search (
+         Search.Handle,
+         Directory,
+         Pattern,
+         Filter,
+         Search.Directory_Entry'Unchecked_Access,
+         Has_Next_Entry);
+      Search.Filter := Filter;
+      Directory_Entry := Search.Directory_Entry'Unchecked_Access;
+   end Start_Search;
+
+   procedure End_Search (
+      Search : aliased in out Search_Type;
+      Raise_On_Error : Boolean) is
+   begin
+      End_Search (Search.Handle, Raise_On_Error => Raise_On_Error);
    end End_Search;
 
    procedure Get_Next_Entry (
@@ -196,7 +229,7 @@ package body System.Native_Directories.Searching is
       Additional : aliased in out Directory_Entry_Additional_Type)
    is
       pragma Unreferenced (Additional);
-      Search : aliased Search_Type;
+      Handle : aliased C.winnt.HANDLE;
       Has_Entry : Boolean;
    begin
       --  raise Name_Error if Name contains wildcard characters
@@ -214,13 +247,13 @@ package body System.Native_Directories.Searching is
             C.winbase.WIN32_FIND_DATA'Size / Standard'Storage_Unit));
       --  filling components
       Start_Search (
-         Search,
+         Handle,
          Directory,
          Name,
          (others => True),
          Directory_Entry,
          Has_Entry);
-      End_Search (Search, Raise_On_Error => True);
+      End_Search (Handle, Raise_On_Error => True);
       if not Has_Entry then
          Raise_Exception (Name_Error'Identity);
       end if;
