@@ -148,12 +148,16 @@ package body System.Native_Environment_Variables is
          begin
             Do_Separate (Item, Name_Length, Value);
             declare
-               Item_A : C.char_array (C.size_t);
-               for Item_A'Address use char_const_ptr_Conv.To_Address (Item);
                Name : aliased C.char_array (0 .. Name_Length);
             begin
-               Name (0 .. Name_Length - 1) := Item_A (0 .. Name_Length - 1);
-               Name (Name_Length) := C.char'Val (0);
+               declare
+                  Item_All : C.char_array (0 .. Name_Length - 1);
+                  for Item_All'Address use
+                     char_const_ptr_Conv.To_Address (Item);
+               begin
+                  Name (0 .. Name_Length - 1) := Item_All;
+                  Name (Name_Length) := C.char'Val (0);
+               end;
                if C.stdlib.unsetenv (Name (0)'Access) < 0 then
                   raise Constraint_Error;
                end if;

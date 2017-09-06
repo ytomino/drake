@@ -30,9 +30,6 @@ package body Interfaces.C.Pointers is
    is
       pragma Check (Dynamic_Predicate,
          Check => Ref /= null or else raise Dereference_Error); -- CXB3014
-      pragma Suppress (Alignment_Check);
-      Source : Element_Array (Index);
-      for Source'Address use To_Address (Ref);
       First : Index;
       Last : Index'Base;
    begin
@@ -43,7 +40,13 @@ package body Interfaces.C.Pointers is
          First := Index'First;
          Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
       end if;
-      return Source (First .. Last);
+      declare
+         pragma Suppress (Alignment_Check);
+         Source : Element_Array (First .. Last);
+         for Source'Address use To_Address (Ref);
+      begin
+         return Source;
+      end;
    end Value;
 
    function "+" (
@@ -151,17 +154,12 @@ package body Interfaces.C.Pointers is
    is
       pragma Check (Dynamic_Predicate,
          Check => Ref /= null or else raise Dereference_Error); -- CXB3016
-      pragma Suppress (Alignment_Check);
-      Source : Element_Array (Index);
-      for Source'Address use To_Address (Ref);
-      I : Index'Base := Index'First;
+      Result : ptrdiff_t := 0;
    begin
-      loop
-         if Source (I) = Terminator then
-            return Index'Base'Pos (I) - Index'Pos (Index'First);
-         end if;
-         I := Index'Base'Succ (I);
+      while Constant_Pointer'(Ref + Result).all /= Terminator loop
+         Result := Result + 1;
       end loop;
+      return Result;
    end Virtual_Length;
 
    function Virtual_Length (
@@ -170,14 +168,10 @@ package body Interfaces.C.Pointers is
       Terminator : Element := Default_Terminator)
       return ptrdiff_t
    is
-      pragma Suppress (Alignment_Check);
-      Source : Element_Array (Index);
-      for Source'Address use To_Address (Ref);
       Result : ptrdiff_t := 0;
    begin
       while Result < Limit
-         and then Source (Index'Val (Index'Pos (Index'First) + Result)) /=
-            Terminator
+         and then Constant_Pointer'(Ref + Result).all /= Terminator
       loop
          Result := Result + 1;
       end loop;

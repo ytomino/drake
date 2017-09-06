@@ -60,24 +60,24 @@ package body System.Native_IO.Names is
          end;
          --  append slash
          declare
-            Out_Name_As : Name_String (C.size_t);
-            for Out_Name_As'Address use
+            Out_Name_All : Name_String (0 .. Out_Name_Length); -- '/'
+            for Out_Name_All'Address use
                Name_Pointer_Conv.To_Address (Out_Name);
          begin
-            if Out_Name_As (Out_Name_Length - 1) /= '/' then
-               Out_Name_As (Out_Name_Length) := '/';
+            if Out_Name_All (Out_Name_Length - 1) /= '/' then
+               Out_Name_All (Out_Name_Length) := '/';
                Out_Name_Length := Out_Name_Length + 1;
             end if;
          end;
       end if;
       --  append Item
       declare
-         Out_Name_As : Name_String (C.size_t);
-         for Out_Name_As'Address use Name_Pointer_Conv.To_Address (Out_Name);
+         Out_Name_All : Name_String (0 .. Out_Name_Length); -- NUL
+         for Out_Name_All'Address use Name_Pointer_Conv.To_Address (Out_Name);
       begin
          Zero_Terminated_Strings.To_C (
             Name,
-            Out_Name_As (Out_Name_Length)'Access);
+            Out_Name_All (Out_Name_Length)'Access);
       end;
       --  open
       Open_Ordinary (Method, Handle, Mode, Out_Name, Form);

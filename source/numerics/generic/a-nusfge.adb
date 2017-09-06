@@ -129,9 +129,12 @@ package body Ada.Numerics.SFMT.Generating is
    --  integers.
    procedure gen_rand_array (
       sfmt : in out w128_t_Array_N;
-      Item : in out w128_t_Array_Fixed;
+      Item : aliased in out w128_t;
       size : Integer)
    is
+      pragma Suppress (Alignment_Check);
+      the_array : w128_t_Array (0 .. size - 1);
+      for the_array'Address use Item'Address;
       i, j : Integer;
       r1, r2 : access w128_t;
    begin
@@ -140,52 +143,52 @@ package body Ada.Numerics.SFMT.Generating is
       i := 0;
       while i < N - POS1 loop
          do_recursion (
-            Item (i),
+            the_array (i),
             sfmt (i),
             sfmt (i + POS1),
             r1.all,
             r2.all);
          r1 := r2;
-         r2 := Item (i)'Access;
+         r2 := the_array (i)'Access;
          i := i + 1;
       end loop;
       while i < N loop
          do_recursion (
-            Item (i),
+            the_array (i),
             sfmt (i),
-            Item (i + POS1 - N),
+            the_array (i + POS1 - N),
             r1.all,
             r2.all);
          r1 := r2;
-         r2 := Item (i)'Access;
+         r2 := the_array (i)'Access;
          i := i + 1;
       end loop;
       while i < size - N loop
          do_recursion (
-            Item (i),
-            Item (i - N),
-            Item (i + POS1 - N),
+            the_array (i),
+            the_array (i - N),
+            the_array (i + POS1 - N),
             r1.all,
             r2.all);
          r1 := r2;
-         r2 := Item (i)'Access;
+         r2 := the_array (i)'Access;
          i := i + 1;
       end loop;
       j := 0;
       while j < 2 * N - size loop
-         sfmt (j) := Item (j + size - N);
+         sfmt (j) := the_array (j + size - N);
          j := j + 1;
       end loop;
       while i < size loop
          do_recursion (
-            Item (i),
-            Item (i - N),
-            Item (i + POS1 - N),
+            the_array (i),
+            the_array (i - N),
+            the_array (i + POS1 - N),
             r1.all,
             r2.all);
          r1 := r2;
-         r2 := Item (i)'Access;
-         sfmt (j) := Item (i);
+         r2 := the_array (i)'Access;
+         sfmt (j) := the_array (i);
          i := i + 1;
          j := j + 1;
       end loop;

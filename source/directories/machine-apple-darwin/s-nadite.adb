@@ -24,8 +24,12 @@ package body System.Native_Directories.Temporary is
       Template : not null C.char_ptr;
       Length : out C.size_t)
    is
-      Template_A : C.char_array (C.size_t);
-      for Template_A'Address use Template.all'Address;
+      Template_All : C.char_array (
+         0 ..
+         Directory'Length * Zero_Terminated_Strings.Expanding
+            + 1 -- '/'
+            + Temp_Template'Length);
+      for Template_All'Address use Template.all'Address;
    begin
       if Directory'Length = 0
          or else Ada.Hierarchical_File_Names.Is_Current_Directory_Name (
@@ -35,14 +39,14 @@ package body System.Native_Directories.Temporary is
       else
          Zero_Terminated_Strings.To_C (Directory, Template, Length);
          if not Ada.Hierarchical_File_Names.Is_Path_Delimiter (
-            Character (Template_A (Length - 1))) -- Length > 0
+            Character (Template_All (Length - 1))) -- Length > 0
          then
-            Template_A (Length) :=
+            Template_All (Length) :=
                C.char (Ada.Hierarchical_File_Names.Default_Path_Delimiter);
             Length := Length + 1;
          end if;
       end if;
-      Template_A (Length .. Length + (Temp_Template'Length - 1)) :=
+      Template_All (Length .. Length + (Temp_Template'Length - 1)) :=
          Temp_Template;
       Length := Length + (Temp_Template'Length - 1); -- exclude NUL
    end Put_Template;

@@ -201,7 +201,6 @@ private
    pragma Suppress_Initialization (w128_t_Array);
 
    subtype w128_t_Array_N is w128_t_Array (0 .. N - 1);
-   subtype w128_t_Array_Fixed is w128_t_Array (Natural);
 
    --  SFMT internal state
    type State is record

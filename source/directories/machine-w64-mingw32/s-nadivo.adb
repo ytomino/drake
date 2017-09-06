@@ -46,15 +46,16 @@ package body System.Native_Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
-               FileSystem_A : C.winnt.WCHAR_array (C.size_t);
-               for FileSystem_A'Address use
+               pragma Suppress (Alignment_Check);
+               FileSystem_All : C.winnt.WCHAR_array (0 .. 4); -- at least
+               for FileSystem_All'Address use
                   LPWSTR_Conv.To_Address (FileSystemNameBuffer);
             begin
-               FS.Is_NTFS := FileSystem_A (0) = Wide_Character'Pos ('N')
-                  and then FileSystem_A (1) = Wide_Character'Pos ('T')
-                  and then FileSystem_A (2) = Wide_Character'Pos ('F')
-                  and then FileSystem_A (3) = Wide_Character'Pos ('S')
-                  and then FileSystem_A (4) = C.winnt.WCHAR'Val (0);
+               FS.Is_NTFS := FileSystem_All (0) = Wide_Character'Pos ('N')
+                  and then FileSystem_All (1) = Wide_Character'Pos ('T')
+                  and then FileSystem_All (2) = Wide_Character'Pos ('F')
+                  and then FileSystem_All (3) = Wide_Character'Pos ('S')
+                  and then FileSystem_All (4) = C.winnt.WCHAR'Val (0);
             end;
             FS.Is_NTFS_Valid := True;
          end if;
@@ -94,11 +95,11 @@ package body System.Native_Directories.Volumes is
             Standard_Allocators.Allocate (
                (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
-         Dest_A : C.winnt.WCHAR_array (C.size_t);
-         for Dest_A'Address use Dest;
+         Dest_All : C.winnt.WCHAR_array (0 .. Root_Path_Length);
+         for Dest_All'Address use Dest;
       begin
          FS.Root_Path_Length := Root_Path_Length;
-         Dest_A (0 .. Root_Path_Length) := Root_Path (0 .. Root_Path_Length);
+         Dest_All := Root_Path (0 .. Root_Path_Length);
          FS.Root_Path := LPWSTR_Conv.To_Pointer (Dest);
       end;
       FS.Valid := False;

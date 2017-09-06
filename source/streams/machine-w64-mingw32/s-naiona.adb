@@ -100,7 +100,7 @@ package body System.Native_IO.Names is
       New_Name : Name_Pointer;
       Drives : aliased Name_String (0 .. 3 * 26); -- (A to Z) * "X:\"
       Drive : Name_String (0 .. 2); -- "X:"
-      Name_Length : C.size_t;
+      New_Name_Length : C.size_t;
       Relative_Index : C.size_t;
       Skip_Length : C.size_t;
    begin
@@ -174,10 +174,11 @@ package body System.Native_IO.Names is
       Drive (2) := Name_Character'Val (0);
       Skip_Length := 0;
       Relative_Index := 0;
-      Name_Length := C.size_t (Unicode_Name.Length);
+      New_Name_Length := C.size_t (Unicode_Name.Length);
       declare
-         Source : Name_String (C.size_t);
-         for Source'Address use
+         Unicode_Name_All : Name_String (
+            0 .. C.size_t (Unicode_Name.Length) - 1);
+         for Unicode_Name_All'Address use
             Name_Pointer_Conv.To_Address (Unicode_Name.Buffer);
          P : Name_Pointer := Drives (0)'Unchecked_Access;
       begin
@@ -211,13 +212,14 @@ package body System.Native_IO.Names is
                            Long_Name_Length := Long_Name_Length + 1;
                         end loop;
                         if Long_Name (0 .. Long_Name_Length - 1) =
-                              Source (0 .. Long_Name_Length - 1)
-                           and then Source (Long_Name_Length) =
+                              Unicode_Name_All (0 .. Long_Name_Length - 1)
+                           and then Unicode_Name_All (Long_Name_Length) =
                               Name_Character'Val (Character'Pos ('\'))
                         then
                            Skip_Length := Long_Name_Length;
                            Relative_Index := 2;
-                           Name_Length := Name_Length - Skip_Length + 2;
+                           New_Name_Length :=
+                              New_Name_Length - Skip_Length + 2;
                            exit;
                         end if;
                      end;
@@ -228,22 +230,24 @@ package body System.Native_IO.Names is
             P := P + 1; -- skip NUL
          end loop;
          if Relative_Index = 0
-            and then Source (1) /= Name_Character'Val (Character'Pos (':'))
+            and then Unicode_Name_All (1) /=
+               Name_Character'Val (Character'Pos (':'))
             and then (
-               Source (0) /= Name_Character'Val (Character'Pos ('\'))
-               or else Source (1) /= Name_Character'Val (Character'Pos ('\')))
+               Unicode_Name_All (0) /= Name_Character'Val (Character'Pos ('\'))
+               or else Unicode_Name_All (1) /=
+                  Name_Character'Val (Character'Pos ('\')))
          then
             --  For example, a pipe's name is like "pipe:[N]".
             Drive (0) := Name_Character'Val (Character'Pos ('*'));
             Relative_Index := 1;
-            Name_Length := Name_Length + 1;
+            New_Name_Length := New_Name_Length + 1;
          end if;
       end;
       --  Copy a name.
       New_Name :=
          Name_Pointer_Conv.To_Pointer (
             System_Allocators.Allocate (
-               (Storage_Elements.Storage_Offset (Name_Length) + 1)
+               (Storage_Elements.Storage_Offset (New_Name_Length) + 1)
                   * (Name_Character'Size / Standard'Storage_Unit)));
       if New_Name = null then
          --  Failed, keep Has_Full_Name and Name.
@@ -253,19 +257,21 @@ package body System.Native_IO.Names is
          return;
       end if;
       declare
-         Source : Name_String (C.size_t);
-         for Source'Address use
+         Unicode_Name_All : Name_String (
+            0 .. C.size_t (Unicode_Name.Length) - 1);
+         for Unicode_Name_All'Address use
             Name_Pointer_Conv.To_Address (Unicode_Name.Buffer);
-         Target : Name_String (C.size_t);
-         for Target'Address use Name_Pointer_Conv.To_Address (New_Name);
+         New_Name_All : Name_String (0 .. New_Name_Length); -- NUL
+         for New_Name_All'Address use Name_Pointer_Conv.To_Address (New_Name);
       begin
          if Relative_Index > 0 then
-            Target (0 .. Relative_Index - 1) :=
+            New_Name_All (0 .. Relative_Index - 1) :=
                Drive (0 .. Relative_Index - 1);
          end if;
-         Target (Relative_Index .. Name_Length - 1) :=
-            Source (Skip_Length .. C.size_t (Unicode_Name.Length) - 1);
-         Target (Name_Length) := Name_Character'Val (0);
+         New_Name_All (Relative_Index .. New_Name_Length - 1) :=
+            Unicode_Name_All (
+               Skip_Length .. C.size_t (Unicode_Name.Length) - 1);
+         New_Name_All (New_Name_Length) := Name_Character'Val (0);
       end;
       --  Succeeded.
       if not Is_Standard then

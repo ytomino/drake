@@ -271,14 +271,15 @@ package body System.Unwind.Occurrences is
       X : Exception_Occurrence;
       Params : Address;
       Put : not null access procedure (S : String; Params : Address);
-      New_Line : not null access procedure (Params : Address))
-   is
-      subtype Fixed_String is String (Positive);
-      Full_Name : Fixed_String;
-      for Full_Name'Address use X.Id.Full_Name;
+      New_Line : not null access procedure (Params : Address)) is
    begin
       Put ("raised ", Params);
-      Put (Full_Name (1 .. X.Id.Name_Length - 1), Params);
+      declare
+         Full_Name_All : String (1 .. X.Id.Name_Length - 1);
+         for Full_Name_All'Address use X.Id.Full_Name;
+      begin
+         Put (Full_Name_All, Params);
+      end;
       if X.Msg_Length > 0 then
          Put (" : ", Params);
          Put (X.Msg (1 .. X.Msg_Length), Params);
@@ -314,11 +315,10 @@ package body System.Unwind.Occurrences is
          Last := Last + S'Length;
          Buffer (First .. Last) := S;
       end Put;
-      subtype Fixed_String is String (Positive);
-      Full_Name : Fixed_String;
-      for Full_Name'Address use X.Id.Full_Name;
+      Full_Name_All : String (1 .. 1); -- at least
+      for Full_Name_All'Address use X.Id.Full_Name;
       By_Abort : constant Boolean :=
-         Full_Name (1) = '_'; -- Standard'Abort_Signal
+         Full_Name_All (1) = '_'; -- Standard'Abort_Signal
       Backtrace : constant Boolean :=
          X.Num_Tracebacks > 0
          and then Report_Backtrace'Address /= Null_Address;

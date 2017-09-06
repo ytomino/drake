@@ -436,7 +436,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Stream_Element_Offset'Min (
             Item'Last - Item'First + 1,
             File.Buffer_Index - File.Reading_Index);
-      Buffer : Stream_Element_Array (Stream_Element_Count);
+      Buffer : Stream_Element_Array (
+         0 .. Stream_Element_Offset'Max (0, File.Buffer_Length - 1));
       for Buffer'Address use File.Buffer;
    begin
       Last := Item'First + (Taking_Length - 1);
@@ -458,7 +459,8 @@ package body Ada.Streams.Naked_Stream_IO is
          Stream_Element_Offset'Min (
             Item'Last - Item'First + 1,
             File.Buffer_Length - File.Writing_Index);
-      Buffer : Stream_Element_Array (Stream_Element_Count);
+      Buffer : Stream_Element_Array (
+         0 .. Stream_Element_Offset'Max (0, File.Buffer_Length - 1));
       for Buffer'Address use File.Buffer;
    begin
       Last := Item'First + (Taking_Length - 1);

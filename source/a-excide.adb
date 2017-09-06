@@ -7,11 +7,10 @@ package body Ada.Exception_Identification is
          raise Constraint_Error;
       else
          declare
-            subtype Fixed_String is String (Positive);
-            Full_Name : Fixed_String;
-            for Full_Name'Address use Id.Full_Name;
+            Full_Name_All : String (1 .. Id.Name_Length - 1);
+            for Full_Name_All'Address use Id.Full_Name;
          begin
-            return Full_Name (1 .. Id.Name_Length - 1);
+            return Full_Name_All;
          end;
       end if;
    end Exception_Name;

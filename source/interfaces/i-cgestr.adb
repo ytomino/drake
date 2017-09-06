@@ -263,10 +263,7 @@ package body Interfaces.C.Generic_Strings is
          (1 => Character_Type'Val (Character'Pos ('?'))))
       return String_Type
    is
-      pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item); -- checking
-      Source : Element_Array (size_t);
-      for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -277,10 +274,13 @@ package body Interfaces.C.Generic_Strings is
          First := 0;
          Last := Actual_Length - 1;
       end if;
-      return To_Ada (
-         Source (First .. Last),
-         Trim_Nul => False,
-         Substitute => Substitute);
+      declare
+         pragma Suppress (Alignment_Check);
+         Source : Element_Array (First .. Last);
+         for Source'Address use const_chars_ptr_Conv.To_Address (Item);
+      begin
+         return To_Ada (Source, Trim_Nul => False, Substitute => Substitute);
+      end;
    end Value;
 
    function Value (
@@ -294,10 +294,7 @@ package body Interfaces.C.Generic_Strings is
          Check =>
             Standard."/=" (Item, null) -- operator for anonymous access
             or else raise Dereference_Error); -- CXB3011
-      pragma Suppress (Alignment_Check);
       Actual_Length : constant size_t := Strlen (Item, Limit => Length);
-      Source : Element_Array (size_t);
-      for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       First : size_t;
       Last : size_t;
    begin
@@ -308,10 +305,13 @@ package body Interfaces.C.Generic_Strings is
          First := 0;
          Last := Actual_Length - 1;
       end if;
-      return To_Ada (
-         Source (First .. Last),
-         Trim_Nul => False,
-         Substitute => Substitute);
+      declare
+         pragma Suppress (Alignment_Check);
+         Source : Element_Array (First .. Last);
+         for Source'Address use const_chars_ptr_Conv.To_Address (Item);
+      begin
+         return To_Ada (Source, Trim_Nul => False, Substitute => Substitute);
+      end;
    end Value;
 
    function Strlen (

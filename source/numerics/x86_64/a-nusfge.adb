@@ -107,7 +107,7 @@ package body Ada.Numerics.SFMT.Generating is
    --  integers.
    procedure gen_rand_array (
       sfmt : in out w128_t_Array_N;
-      Item : in out w128_t_Array_Fixed;
+      Item : aliased in out w128_t;
       size : Integer)
    is
       pragma Suppress (Alignment_Check);
@@ -115,7 +115,7 @@ package body Ada.Numerics.SFMT.Generating is
       r1, r2 : m128i;
       pstate_si : array (0 .. sfmt'Size / 128 - 1) of aliased m128i;
       for pstate_si'Address use sfmt'Address;
-      array_si : array (Natural) of aliased m128i;
+      array_si : array (0 .. size - 1) of aliased m128i;
       for array_si'Address use Item'Address;
    begin
       r1 := pstate_si (N - 2);

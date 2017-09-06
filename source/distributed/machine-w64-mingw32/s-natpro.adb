@@ -71,11 +71,14 @@ package body System.Native_Processes is
       Index : in out C.size_t;
       New_Item : not null C.winnt.LPWSTR)
    is
-      D : C.winnt.WCHAR_array (C.size_t);
-      for D'Address use LPWSTR_Conv.To_Address (Command);
+      pragma Suppress (Alignment_Check);
+      New_Item_Length : constant C.size_t := C.string.wcslen (New_Item);
+      Command_All : C.winnt.WCHAR_array (
+         0 .. Index + New_Item_Length + 3); -- ' ' & '"' & '"' & NUL
+      for Command_All'Address use LPWSTR_Conv.To_Address (Command);
    begin
       if Index > 0 then
-         D (Index) := C.winnt.WCHAR'Val (Character'Pos (' '));
+         Command_All (Index) := C.winnt.WCHAR'Val (Character'Pos (' '));
          Index := Index + 1;
       end if;
       declare
@@ -85,23 +88,25 @@ package body System.Native_Processes is
                C.wchar_t'Val (Character'Pos (' '))) /= null;
       begin
          if Has_Space then
-            D (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
+            Command_All (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
             Index := Index + 1;
          end if;
-         declare
-            Length : constant C.size_t := C.string.wcslen (New_Item);
-            S : C.winnt.WCHAR_array (0 .. Length - 1);
-            for S'Address use LPWSTR_Conv.To_Address (New_Item);
-         begin
-            D (Index .. Index + Length - 1) := S;
-            Index := Index + Length;
-         end;
+         if New_Item_Length > 0 then
+            declare
+               New_Item_All : C.winnt.WCHAR_array (0 .. New_Item_Length - 1);
+               for New_Item_All'Address use LPWSTR_Conv.To_Address (New_Item);
+            begin
+               Command_All (Index .. Index + New_Item_Length - 1) :=
+                  New_Item_All;
+               Index := Index + New_Item_Length;
+            end;
+         end if;
          if Has_Space then
-            D (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
+            Command_All (Index) := C.winnt.WCHAR'Val (Character'Pos ('"'));
             Index := Index + 1;
          end if;
       end;
-      D (Index) := C.winnt.WCHAR'Val (0);
+      Command_All (Index) := C.winnt.WCHAR'Val (0);
    end C_Append;
 
    --  implementation

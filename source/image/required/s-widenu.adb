@@ -9,14 +9,14 @@ package body System.Wid_Enum is
       pragma Unreferenced (Names);
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 8;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
+      type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
       Result : Natural := 0;
    begin
       for I in Lo .. Hi loop
          Result := Natural'Max (
-            Natural (Indexes_2 (I + 1) - Indexes_2 (I)),
+            Natural (Indexes_All (I + 1) - Indexes_All (I)),
             Result);
       end loop;
       return Result;
@@ -31,14 +31,14 @@ package body System.Wid_Enum is
       pragma Unreferenced (Names);
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 16;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
+      type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
       Result : Natural := 0;
    begin
       for I in Lo .. Hi loop
          Result := Natural'Max (
-            Natural (Indexes_2 (I + 1) - Indexes_2 (I)),
+            Natural (Indexes_All (I + 1) - Indexes_All (I)),
             Result);
       end loop;
       return Result;
@@ -53,14 +53,14 @@ package body System.Wid_Enum is
       pragma Unreferenced (Names);
       pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 32;
-      type Array_Type is array (Natural) of Index_Type;
-      Indexes_2 : Array_Type;
-      for Indexes_2'Address use Indexes;
+      type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
+      Indexes_All : Index_Array_Type;
+      for Indexes_All'Address use Indexes;
       Result : Natural := 0;
    begin
       for I in Lo .. Hi loop
          Result := Natural'Max (
-            Natural (Indexes_2 (I + 1) - Indexes_2 (I)),
+            Natural (Indexes_All (I + 1) - Indexes_All (I)),
             Result);
       end loop;
       return Result;

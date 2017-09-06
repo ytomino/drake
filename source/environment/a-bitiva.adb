@@ -21,8 +21,6 @@ package body Ada.Bind_Time_Variables is
       return LA_Conv.To_Pointer (Position).all;
    end Read_Length;
 
-   subtype Fixed_String is String (Positive);
-
    function First return Cursor;
    function Next (Position : Cursor) return Cursor;
 
@@ -64,11 +62,11 @@ package body Ada.Bind_Time_Variables is
       type String_Constant_Access is access constant String;
       Name_Length : constant Natural :=
          Natural (Read_Length (System.Address (Position)));
-      Name : aliased Fixed_String;
-      for Name'Address use System.Address (Position) + 1;
+      Name_All : aliased String (1 .. Name_Length);
+      for Name_All'Address use System.Address (Position) + 1;
    begin
       return References.Strings.Slicing.Constant_Slice (
-         String_Constant_Access'(Name'Unrestricted_Access).all,
+         String_Constant_Access'(Name_All'Unrestricted_Access).all,
          First => 1,
          Last => Name_Length);
    end Name_Reference;
@@ -84,11 +82,11 @@ package body Ada.Bind_Time_Variables is
          System.Address (Position) + 1 + Name_Length;
       Value_Length : constant Natural :=
          Natural (Read_Length (Value_Address));
-      Value : aliased Fixed_String;
-      for Value'Address use Value_Address + 1;
+      Value_All : aliased String (1 .. Value_Length);
+      for Value_All'Address use Value_Address + 1;
    begin
       return References.Strings.Slicing.Constant_Slice (
-         String_Constant_Access'(Value'Unrestricted_Access).all,
+         String_Constant_Access'(Value_All'Unrestricted_Access).all,
          First => 1,
          Last => Value_Length);
    end Value_Reference;

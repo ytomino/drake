@@ -54,11 +54,11 @@ package body System.Native_IO is
          raise Storage_Error;
       end if;
       declare
-         Out_Item_A : Name_String (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
+         Out_Item_All : Name_String (0 .. 1); -- at least
+         for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
-         Out_Item_A (0) := '*';
-         Zero_Terminated_Strings.To_C (Item, Out_Item_A (1)'Access);
+         Out_Item_All (0) := '*';
+         Zero_Terminated_Strings.To_C (Item, Out_Item_All (1)'Access);
       end;
    end New_External_Name;
 
@@ -83,13 +83,14 @@ package body System.Native_IO is
             raise Storage_Error;
          end if;
          declare
-            Temp_Dir_A : C.char_array (C.size_t);
-            for Temp_Dir_A'Address use Name_Pointer_Conv.To_Address (Temp_Dir);
-            Out_Item_A : C.char_array (C.size_t);
-            for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
+            Temp_Dir_All : C.char_array (0 .. Out_Length - 1);
+            for Temp_Dir_All'Address use
+               Name_Pointer_Conv.To_Address (Temp_Dir);
+            Out_Item_All : C.char_array (0 .. Out_Length - 1);
+            for Out_Item_All'Address use
+               Name_Pointer_Conv.To_Address (Out_Item);
          begin
-            Out_Item_A (0 .. Out_Length - 1) :=
-               Temp_Dir_A (0 .. Out_Length - 1);
+            Out_Item_All := Temp_Dir_All;
          end;
       else
          --  current directory
@@ -111,16 +112,17 @@ package body System.Native_IO is
          end;
       end if;
       declare
-         Out_Item_A : C.char_array (C.size_t);
-         for Out_Item_A'Address use Name_Pointer_Conv.To_Address (Out_Item);
+         Out_Item_All : C.char_array (
+            0 .. Out_Length + Temp_Template_Length + 1); -- '/' & NUL
+         for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
          --  append slash
-         if Out_Item_A (Out_Length - 1) /= '/' then
-            Out_Item_A (Out_Length) := '/';
+         if Out_Item_All (Out_Length - 1) /= '/' then
+            Out_Item_All (Out_Length) := '/';
             Out_Length := Out_Length + 1;
          end if;
          --  append template
-         Out_Item_A (Out_Length .. Out_Length + Temp_Template_Length) :=
+         Out_Item_All (Out_Length .. Out_Length + Temp_Template_Length) :=
             Temp_Template; -- including nul
       end;
       --  open

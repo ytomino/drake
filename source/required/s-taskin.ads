@@ -77,7 +77,7 @@ package System.Tasking is
 
    --  dispatching domain (s-taskin.ads)
    type Dispatching_Domain is
-      array (Positive) of Boolean;
+      array (Positive range <>) of Boolean;
       --  array (Multiprocessors.CPU range <>) of Boolean
    pragma Suppress_Initialization (Dispatching_Domain);
    type Dispatching_Domain_Access is access Dispatching_Domain;
