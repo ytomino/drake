@@ -1,6 +1,7 @@
 with System.UTF_Conversions;
 package body System.C_Encoding is
    use type C.size_t;
+   use type C.wchar_t;
 
    --  implementation of Character (UTF-8) from/to char (UTF-8)
 
@@ -87,7 +88,7 @@ package body System.C_Encoding is
       Substitute : Wide_Character)
       return Wide_Character is
    begin
-      if C.wchar_t'Pos (Item) > 16#ffff# then
+      if Item > C.wchar_t'Val (16#ffff#) then
          --  a check for detecting illegal sequence are omitted
          return Substitute;
       else
@@ -249,7 +250,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Wide_Character'Pos (Item);
+      return C.wchar_t'Val (Wide_Wide_Character'Pos (Item));
    end To_wchar_t;
 
    function To_Wide_Wide_Character (
@@ -259,7 +260,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Wide_Character'Val (Item);
+      return Wide_Wide_Character'Val (C.wchar_t'Pos (Item));
    end To_Wide_Wide_Character;
 
    procedure To_Non_Nul_Terminated (

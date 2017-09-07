@@ -47,15 +47,21 @@ package body System.Native_Directories.Volumes is
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
                pragma Suppress (Alignment_Check);
+               NTFS : constant C.winnt.WCHAR_array (0 .. 4) := (
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('N')),
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('F')),
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('S')),
+                  C.winnt.WCHAR'Val (0));
                FileSystem_All : C.winnt.WCHAR_array (0 .. 4); -- at least
                for FileSystem_All'Address use
                   LPWSTR_Conv.To_Address (FileSystemNameBuffer);
             begin
-               FS.Is_NTFS := FileSystem_All (0) = Wide_Character'Pos ('N')
-                  and then FileSystem_All (1) = Wide_Character'Pos ('T')
-                  and then FileSystem_All (2) = Wide_Character'Pos ('F')
-                  and then FileSystem_All (3) = Wide_Character'Pos ('S')
-                  and then FileSystem_All (4) = C.winnt.WCHAR'Val (0);
+               FS.Is_NTFS := FileSystem_All (0) = NTFS (0)
+                  and then FileSystem_All (1) = NTFS (1)
+                  and then FileSystem_All (2) = NTFS (2)
+                  and then FileSystem_All (3) = NTFS (3)
+                  and then FileSystem_All (4) = NTFS (4);
             end;
             FS.Is_NTFS_Valid := True;
          end if;

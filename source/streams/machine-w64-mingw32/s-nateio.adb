@@ -226,7 +226,7 @@ package body System.Native_Text_IO is
          Out_Length := -1; -- error
       elsif Read_Size = 0
          or else (
-            Wide_Buffer (0) = 16#1A# -- Control+Z
+            Wide_Buffer (0) = C.winnt.WCHAR'Val (16#1A#) -- Control+Z
             and then Processed_Input_Is_Enabled (Handle))
       then
          Out_Length := 0; -- no data

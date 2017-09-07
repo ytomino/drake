@@ -774,10 +774,10 @@ package body Interfaces.C is
       Substitute : wchar_t)
       return wchar_t is
    begin
-      return wchar_t (
+      return Standard.C.wchar_t'Pos (
          System.C_Encoding.To_wchar_t (
             Item,
-            Substitute => Standard.C.wchar_t (Substitute)));
+            Substitute => Standard.C.wchar_t'Val (Substitute)));
    end To_wchar_t;
 
    function To_wchar_t (
@@ -793,7 +793,7 @@ package body Interfaces.C is
       return Wide_Character is
    begin
       return System.C_Encoding.To_Wide_Character (
-         Standard.C.wchar_t (Item),
+         Standard.C.wchar_t'Val (Item),
          Substitute => Substitute);
    end To_Wide_Character;
 
@@ -896,10 +896,10 @@ package body Interfaces.C is
       Substitute : wchar_t := Character'Pos ('?'))
       return wchar_t is
    begin
-      return wchar_t (
+      return Standard.C.wchar_t'Pos (
          System.C_Encoding.To_wchar_t (
             Item,
-            Substitute => Standard.C.wchar_t (Substitute)));
+            Substitute => Standard.C.wchar_t'Val (Substitute)));
    end To_wchar_t;
 
    function To_Wide_Wide_Character (
@@ -908,7 +908,7 @@ package body Interfaces.C is
       return Wide_Wide_Character is
    begin
       return System.C_Encoding.To_Wide_Wide_Character (
-         Standard.C.wchar_t (Item),
+         Standard.C.wchar_t'Val (Item),
          Substitute => Substitute);
    end To_Wide_Wide_Character;
 

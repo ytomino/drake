@@ -137,7 +137,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Character'Pos (Item);
+      return C.wchar_t'Val (Wide_Character'Pos (Item));
    end To_wchar_t;
 
    function To_Wide_Character (
@@ -147,7 +147,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Character'Val (Item);
+      return Wide_Character'Val (C.wchar_t'Pos (Item));
    end To_Wide_Character;
 
    procedure To_Non_Nul_Terminated (
@@ -205,7 +205,7 @@ package body System.C_Encoding is
          --  a check for detecting illegal sequence are omitted
          return Substitute;
       else
-         return Wide_Wide_Character'Pos (Item);
+         return C.wchar_t'Val (Wide_Wide_Character'Pos (Item));
       end if;
    end To_wchar_t;
 
@@ -214,7 +214,7 @@ package body System.C_Encoding is
       Substitute : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
-      if C.wchar_t'Pos (Item) in 16#D800# .. 16#DFFF# then
+      if Item in C.wchar_t'Val (16#D800#) .. C.wchar_t'Val (16#DFFF#) then
          return Substitute;
       else
          return Wide_Wide_Character'Val (C.wchar_t'Pos (Item));

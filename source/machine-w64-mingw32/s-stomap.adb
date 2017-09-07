@@ -8,10 +8,17 @@ package body System.Storage_Map is
    use type C.size_t;
    use type C.windef.ULONG;
 
-   A_NTDLL_DLL : aliased constant Wide_String (1 .. 10) :=
-      "NTDLL.DLL" & Wide_Character'Val (0);
-   C_NTDLL_DLL : aliased C.wchar_t_array (0 .. A_NTDLL_DLL'Length - 1);
-   for C_NTDLL_DLL'Address use A_NTDLL_DLL'Address;
+   NTDLL_DLL : aliased constant C.winnt.WCHAR_array (0 .. 9) := (
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('N')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('D')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('L')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('L')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('.')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('D')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('L')),
+      C.winnt.WCHAR'Val (Wide_Character'Pos ('L')),
+      C.winnt.WCHAR'Val (0));
 
    type NtQueryInformationProcess_Type is access function (
       ProcessHandle : C.winnt.HANDLE;
@@ -64,7 +71,7 @@ package body System.Storage_Map is
 
    function NTDLL return C.windef.HMODULE is
    begin
-      return C.winbase.GetModuleHandle (C_NTDLL_DLL (0)'Access);
+      return C.winbase.GetModuleHandle (NTDLL_DLL (0)'Access);
    end NTDLL;
 
 end System.Storage_Map;

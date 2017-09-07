@@ -17,7 +17,6 @@ with C.winnt;
 package body System.Unwind.Mapping is
    pragma Suppress (All_Checks);
    use type C.size_t;
-   use type C.wchar_t_array;
    use type C.windef.DWORD;
    use type C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr;
 

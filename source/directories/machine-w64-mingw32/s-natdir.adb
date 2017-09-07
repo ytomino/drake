@@ -9,6 +9,7 @@ package body System.Native_Directories is
    use type C.windef.DWORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
+   use type C.winnt.WCHAR;
 
    --  implementation
 
@@ -219,8 +220,10 @@ package body System.Native_Directories is
             end if;
             --  drive letter to upper case
             if Full_Last >= 2
-               and then Wide_Character'Val (Full (1)) = ':'
-               and then Wide_Character'Val (Full (0)) in 'a' .. 'z'
+               and then Full (1) = C.winnt.WCHAR'Val (Wide_Character'Pos (':'))
+               and then Full (0) in
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('a')) ..
+                  C.winnt.WCHAR'Val (Wide_Character'Pos ('z'))
             then
                Full (0) := C.winnt.WCHAR'Val (
                   C.winnt.WCHAR'Pos (Full (0))
