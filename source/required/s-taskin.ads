@@ -66,6 +66,7 @@ package System.Tasking is
    type Storage_Size_Handler is access function (T : Task_Id)
       return Storage_Elements.Storage_Count;
       --  System.Parameters.Size_Type ???
+   pragma Favor_Top_Level (Storage_Size_Handler);
    pragma Suppress (Access_Check, Storage_Size_Handler);
 
    --  required for 'Storage_Size by compiler (s-taskin.ads)

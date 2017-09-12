@@ -201,6 +201,7 @@ private
       Handle : System.Native_IO.Handle_Type;
       Name : System.Native_IO.Name_Pointer;
       Raise_On_Error : Boolean);
+   pragma Favor_Top_Level (Close_Handler);
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter

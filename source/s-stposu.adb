@@ -86,6 +86,7 @@ package body System.Storage_Pools.Subpools is
       Fin_Address : Finalization_Masters.Finalize_Address_Ptr;
       Subpool : out Subpool_Handle;
       Master : out Finalization_Masters.Finalization_Master_Ptr);
+   pragma Favor_Top_Level (Setup_Allocation_Handler);
 
    Setup_Allocation_Hook : not null Setup_Allocation_Handler :=
       Setup_Allocation'Access;

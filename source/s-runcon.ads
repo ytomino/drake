@@ -24,6 +24,7 @@ package System.Runtime_Context is
 
    type Get_Task_Local_Storage_Handler is
       access function return not null Task_Local_Storage_Access;
+   pragma Favor_Top_Level (Get_Task_Local_Storage_Handler);
    pragma Suppress (Access_Check, Get_Task_Local_Storage_Handler);
 
    Get_Task_Local_Storage_Hook : Get_Task_Local_Storage_Handler :=

@@ -139,6 +139,7 @@ package System.Tasks is
 
    type Cancel_Call_Handler is access procedure (
       X : in out Synchronous_Objects.Queue_Node_Access);
+   pragma Favor_Top_Level (Cancel_Call_Handler);
 
    Cancel_Call_Hook : Cancel_Call_Handler := null;
 
@@ -262,6 +263,8 @@ private
    type Rendezvous_Access is access Rendezvous_Record;
 
    type Abort_Handler is access procedure (T : Task_Id);
+   pragma Favor_Top_Level (Abort_Handler);
+
    type Process_Handler is access procedure (Params : Address);
 
    type Task_Record (Kind : Task_Kind) is limited record

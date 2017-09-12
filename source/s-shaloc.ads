@@ -7,6 +7,7 @@ package System.Shared_Locking is
    procedure Nop is null;
 
    type Enter_Handler is access procedure;
+   pragma Favor_Top_Level (Enter_Handler);
    pragma Suppress (Access_Check, Enter_Handler);
 
    Enter_Hook : Enter_Handler := Nop'Access;
@@ -15,6 +16,7 @@ package System.Shared_Locking is
    procedure Enter;
 
    type Leave_Handler is access procedure;
+   pragma Favor_Top_Level (Leave_Handler);
    pragma Suppress (Access_Check, Leave_Handler);
 
    Leave_Hook : Leave_Handler := Nop'Access;
