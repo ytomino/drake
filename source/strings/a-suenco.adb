@@ -354,26 +354,26 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end if;
    end From_UTF_32LE;
 
-   To_UTF : constant
-         array (Encoding_Scheme) of
-            not null access procedure (
-               Code : System.UTF_Conversions.UCS_4;
-               Result : out UTF_String;
-               Last : out Natural;
-               Status : out System.UTF_Conversions.To_Status_Type) := (
+   type To_UTF_Type is access procedure (
+      Code : System.UTF_Conversions.UCS_4;
+      Result : out UTF_String;
+      Last : out Natural;
+      Status : out System.UTF_Conversions.To_Status_Type);
+
+   To_UTF : constant array (Encoding_Scheme) of not null To_UTF_Type := (
       UTF_8 => To_UTF_8'Access,
       UTF_16BE => To_UTF_16BE'Access,
       UTF_16LE => To_UTF_16LE'Access,
       UTF_32BE => To_UTF_32BE'Access,
       UTF_32LE => To_UTF_32LE'Access);
 
-   From_UTF : constant
-         array (Encoding_Scheme) of
-            not null access procedure (
-               Data : UTF_String;
-               Last : out Natural;
-               Result : out System.UTF_Conversions.UCS_4;
-               Status : out System.UTF_Conversions.From_Status_Type) := (
+   type From_UTF_Type is access procedure (
+      Data : UTF_String;
+      Last : out Natural;
+      Result : out System.UTF_Conversions.UCS_4;
+      Status : out System.UTF_Conversions.From_Status_Type);
+
+   From_UTF : constant array (Encoding_Scheme) of not null From_UTF_Type := (
       UTF_8 => From_UTF_8'Access,
       UTF_16BE => From_UTF_16BE'Access,
       UTF_16LE => From_UTF_16LE'Access,
