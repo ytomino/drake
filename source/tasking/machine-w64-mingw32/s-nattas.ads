@@ -43,6 +43,7 @@ package System.Native_Tasks is
    --  signals
 
    type Abort_Handler is access procedure;
+   pragma Favor_Top_Level (Abort_Handler);
 
    procedure Install_Abort_Handler (Handler : Abort_Handler);
    procedure Uninstall_Abort_Handler;

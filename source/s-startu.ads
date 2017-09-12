@@ -92,6 +92,7 @@ package System.Startup is
    --  finalize library-level controlled objects (s-soflin.ads)
 
    type Finalize_Library_Objects_Handler is access procedure;
+   pragma Favor_Top_Level (Finalize_Library_Objects_Handler);
    pragma Suppress (Access_Check, Finalize_Library_Objects_Handler);
 
    Finalize_Library_Objects : Finalize_Library_Objects_Handler

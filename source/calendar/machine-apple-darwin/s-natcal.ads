@@ -67,6 +67,7 @@ package System.Native_Calendar is
    procedure Simple_Delay_Until (T : Native_Time);
 
    type Delay_Until_Handler is access procedure (T : Native_Time);
+   pragma Favor_Top_Level (Delay_Until_Handler);
 
    --  equivalent to Timed_Delay (s-soflin.ads)
    Delay_Until_Hook : not null Delay_Until_Handler :=

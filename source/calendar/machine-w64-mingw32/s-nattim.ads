@@ -20,6 +20,7 @@ package System.Native_Time is
    procedure Simple_Delay_For (D : Duration);
 
    type Delay_For_Handler is access procedure (D : Duration);
+   pragma Favor_Top_Level (Delay_For_Handler);
 
    --  equivalent to Timed_Delay (s-soflin.ads)
    Delay_For_Hook : not null Delay_For_Handler := Simple_Delay_For'Access;

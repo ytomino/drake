@@ -11,7 +11,10 @@ package System.Termination is
    pragma No_Return (Force_Abort);
 
    --  register exit handler
+
    type Exit_Handler is access procedure;
+   pragma Favor_Top_Level (Exit_Handler);
+
    procedure Register_Exit (Handler : not null Exit_Handler);
 
 end System.Termination;

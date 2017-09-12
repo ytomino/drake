@@ -359,6 +359,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Result : out UTF_String;
       Last : out Natural;
       Status : out System.UTF_Conversions.To_Status_Type);
+   pragma Favor_Top_Level (To_UTF_Type);
 
    To_UTF : constant array (Encoding_Scheme) of not null To_UTF_Type := (
       UTF_8 => To_UTF_8'Access,
@@ -372,6 +373,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Last : out Natural;
       Result : out System.UTF_Conversions.UCS_4;
       Status : out System.UTF_Conversions.From_Status_Type);
+   pragma Favor_Top_Level (From_UTF_Type);
 
    From_UTF : constant array (Encoding_Scheme) of not null From_UTF_Type := (
       UTF_8 => From_UTF_8'Access,

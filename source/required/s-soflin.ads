@@ -10,6 +10,7 @@ package System.Soft_Links is
 
    type Get_Current_Excep_Handler is
       access function return Ada.Exceptions.Exception_Occurrence_Access;
+   pragma Favor_Top_Level (Get_Current_Excep_Handler);
 
    --  required for elaboration of packages by compiler (s-soflin.ads)
    --  the result would passed to Save_Occurrence or Save_Library_Occurrence.
@@ -36,8 +37,13 @@ package System.Soft_Links is
       renames Synchronous_Control.Nop;
 
    type Current_Master_Handler is access function return Integer;
+   pragma Favor_Top_Level (Current_Master_Handler);
+
    type Enter_Master_Handler is access procedure;
+   pragma Favor_Top_Level (Enter_Master_Handler);
+
    type Complete_Master_Handler is access procedure;
+   pragma Favor_Top_Level (Complete_Master_Handler);
 
    --  required for controlled types and task by compiler (s-soflin.ads)
    Current_Master : not null Current_Master_Handler := Zero'Access;

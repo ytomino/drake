@@ -313,6 +313,7 @@ private
       Object : System.Address;
       Interface_Tag : Tag)
       return System.Address;
+   pragma Favor_Top_Level (Get_Delegation_Handler);
 
    Get_Delegation : Get_Delegation_Handler := null;
    pragma Atomic (Get_Delegation);

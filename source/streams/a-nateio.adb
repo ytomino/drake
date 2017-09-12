@@ -185,6 +185,7 @@ package body Ada.Naked_Text_IO is
       Mode : IO_Modes.File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form);
+   pragma Favor_Top_Level (Open_Access);
 
    procedure Open_File (
       Open_Proc : Open_Access;

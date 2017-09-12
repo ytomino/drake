@@ -9,6 +9,7 @@ package System.Synchronous_Control is
    --  yield
 
    type Yield_Handler is access procedure;
+   pragma Favor_Top_Level (Yield_Handler);
 
    Yield_Hook : not null Yield_Handler := Nop'Access;
 
@@ -17,6 +18,7 @@ package System.Synchronous_Control is
    --  abortable region control
 
    type Unlock_Abort_Handler is access procedure;
+   pragma Favor_Top_Level (Unlock_Abort_Handler);
 
    Unlock_Abort_Hook : not null Unlock_Abort_Handler := Nop'Access;
 
@@ -28,6 +30,7 @@ package System.Synchronous_Control is
          External_Name => "system__standard_library__abort_undefer_direct";
 
    type Lock_Abort_Handler is access procedure;
+   pragma Favor_Top_Level (Lock_Abort_Handler);
 
    Lock_Abort_Hook : not null Lock_Abort_Handler := Nop'Access;
 
