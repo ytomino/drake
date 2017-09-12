@@ -137,7 +137,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Character'Pos (Item);
+      return C.wchar_t'Val (Wide_Character'Pos (Item));
    end To_wchar_t;
 
    function To_Wide_Character (
@@ -147,7 +147,7 @@ package body System.C_Encoding is
    is
       pragma Unreferenced (Substitute);
    begin
-      return Wide_Character'Val (Item);
+      return Wide_Character'Val (C.wchar_t'Pos (Item));
    end To_Wide_Character;
 
    procedure To_Non_Nul_Terminated (
@@ -165,10 +165,10 @@ package body System.C_Encoding is
          end if;
          declare
             pragma Suppress (Alignment_Check);
-            C_Item : C.wchar_t_array (0 .. Count - 1);
-            for C_Item'Address use Item'Address;
+            Item_As_C : C.wchar_t_array (0 .. Count - 1);
+            for Item_As_C'Address use Item'Address;
          begin
-            Target (Target'First .. Target'First + (Count - 1)) := C_Item;
+            Target (Target'First .. Target'First + (Count - 1)) := Item_As_C;
          end;
       end if;
    end To_Non_Nul_Terminated;
@@ -187,10 +187,10 @@ package body System.C_Encoding is
       end if;
       declare
          pragma Suppress (Alignment_Check);
-         Ada_Item : Wide_String (1 .. Count);
-         for Ada_Item'Address use Item'Address;
+         Item_As_Ada : Wide_String (1 .. Count);
+         for Item_As_Ada'Address use Item'Address;
       begin
-         Target (Target'First .. Target'First + (Count - 1)) := Ada_Item;
+         Target (Target'First .. Target'First + (Count - 1)) := Item_As_Ada;
       end;
    end From_Non_Nul_Terminated;
 
@@ -205,7 +205,7 @@ package body System.C_Encoding is
          --  a check for detecting illegal sequence are omitted
          return Substitute;
       else
-         return Wide_Wide_Character'Pos (Item);
+         return C.wchar_t'Val (Wide_Wide_Character'Pos (Item));
       end if;
    end To_wchar_t;
 
@@ -214,7 +214,7 @@ package body System.C_Encoding is
       Substitute : Wide_Wide_Character)
       return Wide_Wide_Character is
    begin
-      if C.wchar_t'Pos (Item) in 16#D800# .. 16#DFFF# then
+      if Item in C.wchar_t'Val (16#D800#) .. C.wchar_t'Val (16#DFFF#) then
          return Substitute;
       else
          return Wide_Wide_Character'Val (C.wchar_t'Pos (Item));
@@ -233,8 +233,8 @@ package body System.C_Encoding is
       Count := 0;
       if Item_Index <= Item'Last then
          declare
-            Ada_Target : Wide_String (1 .. Target'Length);
-            for Ada_Target'Address use Target'Address;
+            Target_As_Ada : Wide_String (1 .. Target'Length);
+            for Target_As_Ada'Address use Target'Address;
             Target_Index : C.size_t := Target'First;
          begin
             loop
@@ -242,7 +242,7 @@ package body System.C_Encoding is
                   Code : UTF_Conversions.UCS_4;
                   Item_Used : Natural;
                   From_Status : UTF_Conversions.From_Status_Type;
-                  Ada_Target_Last : Natural;
+                  Target_Ada_Last : Natural;
                   Target_Last : C.size_t;
                   To_Status : UTF_Conversions.To_Status_Type;
                begin
@@ -255,14 +255,14 @@ package body System.C_Encoding is
                      when UTF_Conversions.Success =>
                         UTF_Conversions.To_UTF_16 (
                            Code,
-                           Ada_Target (
-                              Ada_Target'First
+                           Target_As_Ada (
+                              Target_As_Ada'First
                                  + Integer (Target_Index - Target'First) ..
-                              Ada_Target'Last),
-                           Ada_Target_Last,
+                              Target_As_Ada'Last),
+                           Target_Ada_Last,
                            To_Status);
                         Target_Last := Target'First
-                           + C.size_t (Ada_Target_Last - Ada_Target'First);
+                           + C.size_t (Target_Ada_Last - Target_As_Ada'First);
                         case To_Status is
                            when UTF_Conversions.Success =>
                               null;
@@ -304,14 +304,14 @@ package body System.C_Encoding is
       Count := 0;
       if Item_Index <= Item'Last then
          declare
-            Ada_Item : Wide_String (1 .. Item'Length);
-            for Ada_Item'Address use Item'Address;
+            Item_As_Ada : Wide_String (1 .. Item'Length);
+            for Item_As_Ada'Address use Item'Address;
             Target_Index : Positive := Target'First;
          begin
             loop
                declare
                   Code : UTF_Conversions.UCS_4;
-                  Ada_Item_Used : Natural;
+                  Item_Ada_Used : Natural;
                   Item_Used : C.size_t;
                   From_Status : UTF_Conversions.From_Status_Type;
                   Target_Last : Natural;
@@ -319,14 +319,15 @@ package body System.C_Encoding is
                   Put_Substitute : Boolean;
                begin
                   UTF_Conversions.From_UTF_16 (
-                     Ada_Item (
-                        Ada_Item'First + Integer (Item_Index - Item'First) ..
-                        Ada_Item'Last),
-                     Ada_Item_Used,
+                     Item_As_Ada (
+                        Item_As_Ada'First
+                           + Integer (Item_Index - Item'First) ..
+                        Item_As_Ada'Last),
+                     Item_Ada_Used,
                      Code,
                      From_Status);
                   Item_Used :=
-                     Item'First + C.size_t (Ada_Item_Used - Ada_Item'First);
+                     Item'First + C.size_t (Item_Ada_Used - Item_As_Ada'First);
                   case From_Status is
                      when UTF_Conversions.Success =>
                         UTF_Conversions.To_UTF_32 (

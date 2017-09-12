@@ -18,10 +18,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 2
       pragma Assert (Length rem 2 = 0);
       pragma Assert (Item mod 2 = 0); -- stack may be aligned
-      Item_As : UTF_16_Wide_String (1 .. Length / 2);
-      for Item_As'Address use Item;
+      Item_All : UTF_16_Wide_String (1 .. Length / 2);
+      for Item_All'Address use Item;
    begin
-      return Item_As;
+      return Item_All;
    end To_UTF_16_Wide_String;
 
    function To_UTF_32_Wide_Wide_String (
@@ -36,10 +36,10 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       pragma Suppress (Alignment_Check); -- Item'Alignment = 4
       pragma Assert (Length rem 4 = 0);
       pragma Assert (Item mod 4 = 0); -- stack may be aligned
-      Item_As : UTF_32_Wide_Wide_String (1 .. Length / 4);
-      for Item_As'Address use Item;
+      Item_All : UTF_32_Wide_Wide_String (1 .. Length / 4);
+      for Item_All'Address use Item;
    begin
-      return Item_As;
+      return Item_All;
    end To_UTF_32_Wide_Wide_String;
 
    --  binary version subprograms of System.UTF_Conversions
@@ -354,26 +354,26 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end if;
    end From_UTF_32LE;
 
-   To_UTF : constant
-         array (Encoding_Scheme) of
-            not null access procedure (
-               Code : System.UTF_Conversions.UCS_4;
-               Result : out UTF_String;
-               Last : out Natural;
-               Status : out System.UTF_Conversions.To_Status_Type) := (
+   type To_UTF_Type is access procedure (
+      Code : System.UTF_Conversions.UCS_4;
+      Result : out UTF_String;
+      Last : out Natural;
+      Status : out System.UTF_Conversions.To_Status_Type);
+
+   To_UTF : constant array (Encoding_Scheme) of not null To_UTF_Type := (
       UTF_8 => To_UTF_8'Access,
       UTF_16BE => To_UTF_16BE'Access,
       UTF_16LE => To_UTF_16LE'Access,
       UTF_32BE => To_UTF_32BE'Access,
       UTF_32LE => To_UTF_32LE'Access);
 
-   From_UTF : constant
-         array (Encoding_Scheme) of
-            not null access procedure (
-               Data : UTF_String;
-               Last : out Natural;
-               Result : out System.UTF_Conversions.UCS_4;
-               Status : out System.UTF_Conversions.From_Status_Type) := (
+   type From_UTF_Type is access procedure (
+      Data : UTF_String;
+      Last : out Natural;
+      Result : out System.UTF_Conversions.UCS_4;
+      Status : out System.UTF_Conversions.From_Status_Type);
+
+   From_UTF : constant array (Encoding_Scheme) of not null From_UTF_Type := (
       UTF_8 => From_UTF_8'Access,
       UTF_16BE => From_UTF_16BE'Access,
       UTF_16LE => From_UTF_16LE'Access,
@@ -578,8 +578,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 2);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 2);
+      for Item_As_UTF'Address use Item'Address;
       --  from 16 to 8 : 3 * Item'Length + 3
       --  from 16 to 16 : (Item'Length + 1) * 2 = 2 * Item'Length + 2
       --  from 16 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max)
@@ -587,7 +587,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Last : Natural;
    begin
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_16_Wide_String_Scheme,
          Output_Scheme,
          Output_BOM,
@@ -602,8 +602,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_8_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 2);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 2);
+      for Item_As_UTF'Address use Item'Address;
       Result : UTF_String (
          1 ..
          Item_Length * System.UTF_Conversions.Expanding_From_16_To_8 + 3);
@@ -611,7 +611,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    begin
       --  it should be specialized version ?
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_16_Wide_String_Scheme,
          UTF_8,
          Output_BOM,
@@ -626,8 +626,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_32_Wide_Wide_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 2);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 2);
+      for Item_As_UTF'Address use Item'Address;
       Result : UTF_String (
          1 ..
          (Item_Length * System.UTF_Conversions.Expanding_From_16_To_32 + 1)
@@ -637,7 +637,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    begin
       --  it should be specialized version ?
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_16_Wide_String_Scheme,
          UTF_32_Wide_Wide_String_Scheme,
          Output_BOM,
@@ -653,8 +653,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 4);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 4);
+      for Item_As_UTF'Address use Item'Address;
       --  from 32 to 8 : 6 * Item'Length + 3 (max rate)
       --  from 32 to 16 : (2 * Item'Length + 1) * 2 = 4 * Item'Length + 2
       --  from 32 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max BOM)
@@ -662,7 +662,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Last : Natural;
    begin
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_32_Wide_Wide_String_Scheme,
          Output_Scheme,
          Output_BOM,
@@ -677,8 +677,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_8_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 4);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 4);
+      for Item_As_UTF'Address use Item'Address;
       Result : UTF_String (
          1 ..
          Item_Length * System.UTF_Conversions.Expanding_From_32_To_8 + 3);
@@ -686,7 +686,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    begin
       --  it should be specialized version ?
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_32_Wide_Wide_String_Scheme,
          UTF_8,
          Output_BOM,
@@ -701,8 +701,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       return UTF_16_Wide_String
    is
       Item_Length : constant Natural := Item'Length;
-      Item_A : UTF_String (1 .. Item_Length * 4);
-      for Item_A'Address use Item'Address;
+      Item_As_UTF : UTF_String (1 .. Item_Length * 4);
+      for Item_As_UTF'Address use Item'Address;
       Result : UTF_String (
          1 ..
          (Item_Length * System.UTF_Conversions.Expanding_From_32_To_16 + 1)
@@ -712,7 +712,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    begin
       --  it should be specialized version ?
       Do_Convert (
-         Item_A,
+         Item_As_UTF,
          UTF_32_Wide_Wide_String_Scheme,
          UTF_16_Wide_String_Scheme,
          Output_BOM,

@@ -233,9 +233,9 @@ private
       Next : Task_Id;
    end record;
    pragma Suppress_Initialization (Attribute);
-   type Attribute_Array is array (Natural) of Attribute;
-   pragma Suppress_Initialization (Attribute_Array);
-   type Attribute_Array_Access is access all Attribute_Array;
+   type Fixed_Attribute_Array is array (Natural) of Attribute;
+   pragma Suppress_Initialization (Fixed_Attribute_Array);
+   type Attribute_Array_Access is access all Fixed_Attribute_Array;
 
    type Activation_State is range 0 .. 4;
    for Activation_State'Size use 8;

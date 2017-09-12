@@ -106,8 +106,8 @@ package body System.Tasks is
 
    generic
       type Element_Type is private;
-      type Array_Type is array (Natural) of Element_Type;
-      type Array_Access is access all Array_Type;
+      type Fixed_Array_Type is array (Natural) of Element_Type;
+      type Array_Access is access all Fixed_Array_Type;
    package Simple_Vectors is
 
       procedure Expand (
@@ -123,7 +123,9 @@ package body System.Tasks is
    package body Simple_Vectors is
 
       package AA_Conv is
-         new Address_To_Named_Access_Conversions (Array_Type, Array_Access);
+         new Address_To_Named_Access_Conversions (
+            Fixed_Array_Type,
+            Array_Access);
 
       procedure Expand (
          Data : in out Array_Access;
@@ -136,7 +138,9 @@ package body System.Tasks is
                Standard_Allocators.Reallocate (
                   AA_Conv.To_Address (Data),
                   Storage_Elements.Storage_Offset (New_Length)
-                     * (Array_Type'Component_Size / Standard'Storage_Unit)));
+                     * (
+                        Fixed_Array_Type'Component_Size
+                           / Standard'Storage_Unit)));
             for I in Length .. New_Length - 1 loop
                Data (I) := New_Item;
             end loop;
@@ -154,7 +158,10 @@ package body System.Tasks is
    end Simple_Vectors;
 
    package Attribute_Vectors is
-      new Simple_Vectors (Attribute, Attribute_Array, Attribute_Array_Access);
+      new Simple_Vectors (
+         Attribute,
+         Fixed_Attribute_Array,
+         Attribute_Array_Access);
 
    procedure Clear_Attributes (Item : Task_Id);
    procedure Clear_Attributes (Item : Task_Id) is
@@ -174,9 +181,9 @@ package body System.Tasks is
 
    Attribute_Indexes_Lock : Synchronous_Objects.Mutex; -- uninitialized
 
-   type Attribute_Index_Set is array (Natural) of Word;
-   pragma Suppress_Initialization (Attribute_Index_Set);
-   type Attribute_Index_Set_Access is access all Attribute_Index_Set;
+   type Fixed_Attribute_Index_Set is array (Natural) of Word;
+   pragma Suppress_Initialization (Fixed_Attribute_Index_Set);
+   type Attribute_Index_Set_Access is access all Fixed_Attribute_Index_Set;
 
    Attribute_Indexes : Attribute_Index_Set_Access := null;
    Attribute_Indexes_Length : Natural := 0;
@@ -184,7 +191,7 @@ package body System.Tasks is
    package Attribute_Index_Sets is
       new Simple_Vectors (
          Word,
-         Attribute_Index_Set,
+         Fixed_Attribute_Index_Set,
          Attribute_Index_Set_Access);
 
    --  task record

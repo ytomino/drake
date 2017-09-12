@@ -30,10 +30,10 @@ package body System.Native_Text_IO.Terminal_Colors is
          and then strlen (TERM) = xterm_256color'Length
       then
          declare
-            TERM_A : String (1 .. xterm_256color'Length);
-            for TERM_A'Address use char_ptr_Conv.To_Address (TERM);
+            TERM_All : String (1 .. xterm_256color'Length);
+            for TERM_All'Address use char_ptr_Conv.To_Address (TERM);
          begin
-            Support_256_Color := TERM_A = xterm_256color;
+            Support_256_Color := TERM_All = xterm_256color;
          end;
       else
          Support_256_Color := False;

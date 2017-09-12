@@ -125,10 +125,10 @@ package body Interfaces.C is
                raise Constraint_Error;
             end if;
             declare
-               C_Item : Element_Array (0 .. Count - 1);
-               for C_Item'Address use Item'Address;
+               Item_As_C : Element_Array (0 .. Count - 1);
+               for Item_As_C'Address use Item'Address;
             begin
-               Target (Target'First .. Target'First + Count - 1) := C_Item;
+               Target (Target'First .. Target'First + Count - 1) := Item_As_C;
             end;
          end if;
       end To_Non_Nul_Terminated;
@@ -146,10 +146,10 @@ package body Interfaces.C is
             raise Constraint_Error;
          end if;
          declare
-            Ada_Item : String_Type (1 .. Count);
-            for Ada_Item'Address use Item'Address;
+            Item_As_Ada : String_Type (1 .. Count);
+            for Item_As_Ada'Address use Item'Address;
          begin
-            Target (Target'First .. Target'First + Count - 1) := Ada_Item;
+            Target (Target'First .. Target'First + Count - 1) := Item_As_Ada;
          end;
       end From_Non_Nul_Terminated;
 
@@ -774,10 +774,10 @@ package body Interfaces.C is
       Substitute : wchar_t)
       return wchar_t is
    begin
-      return wchar_t (
+      return Standard.C.wchar_t'Pos (
          System.C_Encoding.To_wchar_t (
             Item,
-            Substitute => Standard.C.wchar_t (Substitute)));
+            Substitute => Standard.C.wchar_t'Val (Substitute)));
    end To_wchar_t;
 
    function To_wchar_t (
@@ -793,7 +793,7 @@ package body Interfaces.C is
       return Wide_Character is
    begin
       return System.C_Encoding.To_Wide_Character (
-         Standard.C.wchar_t (Item),
+         Standard.C.wchar_t'Val (Item),
          Substitute => Substitute);
    end To_Wide_Character;
 
@@ -896,10 +896,10 @@ package body Interfaces.C is
       Substitute : wchar_t := Character'Pos ('?'))
       return wchar_t is
    begin
-      return wchar_t (
+      return Standard.C.wchar_t'Pos (
          System.C_Encoding.To_wchar_t (
             Item,
-            Substitute => Standard.C.wchar_t (Substitute)));
+            Substitute => Standard.C.wchar_t'Val (Substitute)));
    end To_wchar_t;
 
    function To_Wide_Wide_Character (
@@ -908,7 +908,7 @@ package body Interfaces.C is
       return Wide_Wide_Character is
    begin
       return System.C_Encoding.To_Wide_Wide_Character (
-         Standard.C.wchar_t (Item),
+         Standard.C.wchar_t'Val (Item),
          Substitute => Substitute);
    end To_Wide_Wide_Character;
 

@@ -48,13 +48,14 @@ package body System.Native_Credentials is
          return True;
       else
          declare
-            type gid_t_array is array (C.size_t) of aliased C.sys.types.gid_t
+            type Fixed_gid_t_array is
+               array (C.size_t) of aliased C.sys.types.gid_t
                with Convention => C;
-            type gid_t_array_ptr is access all gid_t_array
+            type gid_t_array_ptr is access all Fixed_gid_t_array
                with Convention => C;
             package Conv is
                new Address_To_Named_Access_Conversions (
-                  gid_t_array,
+                  Fixed_gid_t_array,
                   gid_t_array_ptr);
             procedure Finally (X : in out gid_t_array_ptr);
             procedure Finally (X : in out gid_t_array_ptr) is

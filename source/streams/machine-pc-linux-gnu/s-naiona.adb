@@ -55,14 +55,14 @@ package body System.Native_IO.Names is
       Holder.Assign (New_Name);
       Link (0 .. 13) := proc_self_fd;
       declare
-         S : String (1 .. Link'Length);
-         for S'Address use Link'Address;
+         Link_As_String : String (1 .. Link'Length);
+         for Link_As_String'Address use Link'Address;
          Last : Natural;
          Error : Boolean;
       begin
          System.Formatting.Image (
             System.Formatting.Word_Unsigned (Handle),
-            S (proc_self_fd'Length + 1 .. S'Last),
+            Link_As_String (proc_self_fd'Length + 1 .. Link_As_String'Last),
             Last,
             Error => Error);
          Link (C.size_t (Last)) := C.char'Val (0);

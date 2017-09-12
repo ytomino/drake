@@ -34,7 +34,7 @@ package body Ada.Tags is
          Object_Specific_Data,
          Object_Specific_Data_Ptr);
 
-   function strlen (Item : not null Cstring_Ptr)
+   function strlen (s : not null Cstring_Ptr)
       return System.Storage_Elements.Storage_Count
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";

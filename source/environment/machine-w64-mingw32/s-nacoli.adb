@@ -10,15 +10,14 @@ package body System.Native_Command_Line is
    end Argument_Count;
 
    function Argument (Number : Natural) return String is
-      type wchar_t_const_ptr_array is array (C.size_t) of C.winnt.LPCWSTR
+      type Fixed_LPCWSTR_array is array (C.size_t) of C.winnt.LPCWSTR
          with Convention => C;
-      type wchar_t_const_ptr_array_const_ptr is
-         access constant wchar_t_const_ptr_array
+      type LPCWSTR_array_const_ptr is access constant Fixed_LPCWSTR_array
          with Convention => C;
       package Conv is
          new Address_To_Constant_Access_Conversions (
-            wchar_t_const_ptr_array,
-            wchar_t_const_ptr_array_const_ptr);
+            Fixed_LPCWSTR_array,
+            LPCWSTR_array_const_ptr);
    begin
       return Zero_Terminated_WStrings.Value (
          Conv.To_Pointer (Wide_Startup.wargv) (C.size_t (Number)));

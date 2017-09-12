@@ -43,22 +43,22 @@ package body Interfaces.C.Generic_Strings is
                --  'Scalar_Storage_Order is unrelated since searching 0
             then
                declare
-                  ca_Item : char_array (Item'Range);
-                  for ca_Item'Address use Item.all'Address;
+                  Source : char_array (Item'Range);
+                  for Source'Address use Item.all'Address;
                   Dummy : size_t;
                begin
-                  Dummy := Length (ca_Item);
+                  Dummy := Length (Source);
                end;
             elsif Element'Size = wchar_t'Size
                and then Element_Array'Component_Size =
                   wchar_array'Component_Size
             then
                declare
-                  wa_Item : wchar_array (Item'Range);
-                  for wa_Item'Address use Item.all'Address;
+                  Source : wchar_array (Item'Range);
+                  for Source'Address use Item.all'Address;
                   Dummy : size_t;
                begin
-                  Dummy := Length (wa_Item);
+                  Dummy := Length (Source);
                end;
             else
                declare
@@ -328,7 +328,7 @@ package body Interfaces.C.Generic_Strings is
          --  'Scalar_Storage_Order is unrelated since searching 0
       then
          declare
-            function strlen (Item : not null access constant Element)
+            function strlen (s : not null access constant Element)
                return size_t
                with Import,
                   Convention => Intrinsic, External_Name => "__builtin_strlen";
@@ -339,7 +339,7 @@ package body Interfaces.C.Generic_Strings is
          and then Element_Array'Component_Size = wchar_array'Component_Size
       then
          declare
-            function wcslen (Item : not null access constant Element)
+            function wcslen (s : not null access constant Element)
                return size_t
                with Import, Convention => C;
          begin

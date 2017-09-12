@@ -11,15 +11,14 @@ package body System.Zero_Terminated_WStrings is
 
    --  implementation
 
-   function Value (
-      First : not null access constant C.winnt.WCHAR)
+   function Value (Item : not null access constant C.winnt.WCHAR)
       return String is
    begin
-      return Value (First, C.string.wcslen (First));
+      return Value (Item, C.string.wcslen (Item));
    end Value;
 
    function Value (
-      First : not null access constant C.winnt.WCHAR;
+      Item : not null access constant C.winnt.WCHAR;
       Length : C.size_t)
       return String
    is
@@ -30,7 +29,7 @@ package body System.Zero_Terminated_WStrings is
          C.winnls.WideCharToMultiByte (
             C.winnls.CP_UTF8,
             0,
-            First,
+            Item,
             C.signed_int (Length),
             LPSTR_Conv.To_Pointer (Result'Address),
             Result'Length,

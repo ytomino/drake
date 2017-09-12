@@ -75,7 +75,7 @@ package body System.Native_Environment_Variables is
             LPCWCH_Conv.To_Address (Item)
                + Storage_Elements.Storage_Offset'(
                   C.winnt.WCHAR'Size / Standard'Storage_Unit));
-      P : C.wchar_t_ptr;
+      P : C.winnt.LPWCH;
    begin
       P := C.string.wcschr (Next, C.wchar_t'Val (Character'Pos ('=')));
       if P /= null then
@@ -187,7 +187,9 @@ package body System.Native_Environment_Variables is
             Item : constant C.winnt.LPCWCH :=
                LPCWCH_Conv.To_Pointer (Address (I));
          begin
-            if Item.all /= Character'Pos ('=') then -- skip special variable
+            if Item.all /=
+               C.winnt.WCHAR'Val (Wide_Character'Pos ('='))
+            then -- skip special variable
                declare
                   Name_Length : C.size_t;
                   Value : C.winnt.LPCWCH;

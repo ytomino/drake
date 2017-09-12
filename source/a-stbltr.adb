@@ -11,12 +11,12 @@ package body Ada.Streams.Block_Transmission is
          and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
-            Item_As : Stream_Element_Array (
+            Item_As_SEA : Stream_Element_Array (
                1 ..
                (Element_Type'Stream_Size / Stream_Element'Size) * Item'Length);
-            for Item_As'Address use Item'Address;
+            for Item_As_SEA'Address use Item'Address;
          begin
-            Stream_Element_Arrays.Read (Stream, Item_As);
+            Stream_Element_Arrays.Read (Stream, Item_As_SEA);
          end;
       else
          Array_Type'Read (Stream, Item);
@@ -31,12 +31,12 @@ package body Ada.Streams.Block_Transmission is
          and then Array_Type'Component_Size = Element_Type'Stream_Size
       then
          declare
-            Item_As : Stream_Element_Array (
+            Item_As_SEA : Stream_Element_Array (
                1 ..
                (Element_Type'Stream_Size / Stream_Element'Size) * Item'Length);
-            for Item_As'Address use Item'Address;
+            for Item_As_SEA'Address use Item'Address;
          begin
-            Stream_Element_Arrays.Write (Stream, Item_As);
+            Stream_Element_Arrays.Write (Stream, Item_As_SEA);
          end;
       else
          Array_Type'Write (Stream, Item);

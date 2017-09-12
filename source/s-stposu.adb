@@ -79,14 +79,15 @@ package body System.Storage_Pools.Subpools is
       end if;
    end Setup_Allocation_With_Subpools;
 
-   Setup_Allocation_Hook : not null access
-      procedure (
-         Pool : in out Root_Storage_Pool'Class;
-         Context_Subpool : Subpool_Handle;
-         Context_Master : Finalization_Masters.Finalization_Master_Ptr;
-         Fin_Address : Finalization_Masters.Finalize_Address_Ptr;
-         Subpool : out Subpool_Handle;
-         Master : out Finalization_Masters.Finalization_Master_Ptr) :=
+   type Setup_Allocation_Handler is access procedure (
+      Pool : in out Root_Storage_Pool'Class;
+      Context_Subpool : Subpool_Handle;
+      Context_Master : Finalization_Masters.Finalization_Master_Ptr;
+      Fin_Address : Finalization_Masters.Finalize_Address_Ptr;
+      Subpool : out Subpool_Handle;
+      Master : out Finalization_Masters.Finalization_Master_Ptr);
+
+   Setup_Allocation_Hook : not null Setup_Allocation_Handler :=
       Setup_Allocation'Access;
 
    --  subpools and theirs owner

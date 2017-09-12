@@ -365,11 +365,11 @@ package body System.Native_Environment_Encoding is
          case Object.To is
             when UTF_16 =>
                declare
-                  Buffer_As_SEA_Length : constant
+                  Buffer_SEA_Length : constant
                      Ada.Streams.Stream_Element_Offset :=
                         2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
                begin
-                  if Out_Item'First + (Buffer_As_SEA_Length - 1) >
+                  if Out_Item'First + (Buffer_SEA_Length - 1) >
                      Out_Item'Last
                   then
                      Last := Item'First - 1;
@@ -378,9 +378,9 @@ package body System.Native_Environment_Encoding is
                      pragma Check (Trace, Ada.Debug.Put ("overflow"));
                      return;
                   end if;
-                  Out_Last := Out_Item'First + (Buffer_As_SEA_Length - 1);
+                  Out_Last := Out_Item'First + (Buffer_SEA_Length - 1);
                   Out_Item (Out_Item'First .. Out_Last) :=
-                     Buffer_As_SEA (1 .. Buffer_As_SEA_Length);
+                     Buffer_As_SEA (1 .. Buffer_SEA_Length);
                end;
             when UTF_32 =>
                if Out_Item'First + 3 > Out_Item'Last then

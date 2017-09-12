@@ -239,10 +239,10 @@ package body System.Unwind.Raising is
       E : not null Exception_Data_Access;
       Message : String)
    is
-      File_S : String (1 .. Natural (strlen (File)));
-      for File_S'Address use File.all'Address;
+      File_All : String (1 .. Natural (strlen (File)));
+      for File_All'Address use File.all'Address;
    begin
-      Raise_Exception (E, File_S, Line, Message => Message);
+      Raise_Exception (E, File_All, Line, Message => Message);
    end Raise_From_rcheck;
 
    procedure rcheck_00 (File : not null access Character; Line : Integer) is
@@ -404,12 +404,12 @@ package body System.Unwind.Raising is
    end rcheck_22;
 
    procedure rcheck_23 (File : not null access Character; Line : Integer) is
-      File_S : String (1 .. Natural (strlen (File)));
-      for File_S'Address use File.all'Address;
+      File_All : String (1 .. Natural (strlen (File)));
+      for File_All'Address use File.all'Address;
    begin
       Raise_Exception_No_Defer (
          Unwind.Standard.Program_Error'Access,
-         File_S,
+         File_All,
          Line,
          Message => From_Finalize);
    end rcheck_23;

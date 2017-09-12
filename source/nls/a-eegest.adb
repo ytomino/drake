@@ -94,14 +94,21 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 :
+      Out_Item_As_SEA :
          Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
-      for Out_Item_2'Address use Out_Item'Address;
-      Out_Last_2 : Streams.Stream_Element_Offset;
+      for Out_Item_As_SEA'Address use Out_Item'Address;
+      Out_Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item,
+         Last,
+         Out_Item_As_SEA,
+         Out_Item_SEA_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Out_Item_SEA_Last rem CS_In_SE = 0);
+      Out_Last := Out_Item'First + Integer (Out_Item_SEA_Last / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -114,14 +121,14 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 :
+      Out_Item_As_SEA :
          Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
-      for Out_Item_2'Address use Out_Item'Address;
-      Out_Last_2 : Streams.Stream_Element_Offset;
+      for Out_Item_As_SEA'Address use Out_Item'Address;
+      Out_Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Status);
-      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
+      Convert (Object, Item, Last, Out_Item_As_SEA, Out_Item_SEA_Last, Status);
+      pragma Check (Validate, Out_Item_SEA_Last rem CS_In_SE = 0);
+      Out_Last := Out_Item'First + Integer (Out_Item_SEA_Last / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -133,14 +140,14 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 :
+      Out_Item_As_SEA :
          Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
-      for Out_Item_2'Address use Out_Item'Address;
-      Out_Last_2 : Streams.Stream_Element_Offset;
+      for Out_Item_As_SEA'Address use Out_Item'Address;
+      Out_Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
+      Convert (Object, Out_Item_As_SEA, Out_Item_SEA_Last, Finish, Status);
+      pragma Check (Validate, Out_Item_SEA_Last rem CS_In_SE = 0);
+      Out_Last := Out_Item'First + Integer (Out_Item_SEA_Last / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -154,14 +161,21 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 :
+      Out_Item_As_SEA :
          Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
-      for Out_Item_2'Address use Out_Item'Address;
-      Out_Last_2 : Streams.Stream_Element_Offset;
+      for Out_Item_As_SEA'Address use Out_Item'Address;
+      Out_Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item,
+         Last,
+         Out_Item_As_SEA,
+         Out_Item_SEA_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Out_Item_SEA_Last rem CS_In_SE = 0);
+      Out_Last := Out_Item'First + Integer (Out_Item_SEA_Last / CS_In_SE - 1);
    end Decode;
 
    procedure Decode (
@@ -175,14 +189,21 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Out_Item_2 :
+      Out_Item_As_SEA :
          Streams.Stream_Element_Array (1 .. Out_Item'Length * CS_In_SE);
-      for Out_Item_2'Address use Out_Item'Address;
-      Out_Last_2 : Streams.Stream_Element_Offset;
+      for Out_Item_As_SEA'Address use Out_Item'Address;
+      Out_Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item, Last, Out_Item_2, Out_Last_2, Finish, Status);
-      pragma Check (Validate, Out_Last_2 rem CS_In_SE = 0);
-      Out_Last := Out_Item'First + Integer (Out_Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item,
+         Last,
+         Out_Item_As_SEA,
+         Out_Item_SEA_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Out_Item_SEA_Last rem CS_In_SE = 0);
+      Out_Last := Out_Item'First + Integer (Out_Item_SEA_Last / CS_In_SE - 1);
    end Decode;
 
    function Decode (
@@ -259,13 +280,20 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
-      for Item_2'Address use Item'Address;
-      Last_2 : Streams.Stream_Element_Offset;
+      Item_As_SEA : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
+      for Item_As_SEA'Address use Item'Address;
+      Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item_As_SEA,
+         Item_SEA_Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Item_SEA_Last rem CS_In_SE = 0);
+      Last := Item'First + Integer (Item_SEA_Last / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -278,13 +306,13 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
-      for Item_2'Address use Item'Address;
-      Last_2 : Streams.Stream_Element_Offset;
+      Item_As_SEA : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
+      for Item_As_SEA'Address use Item'Address;
+      Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Status);
-      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
+      Convert (Object, Item_As_SEA, Item_SEA_Last, Out_Item, Out_Last, Status);
+      pragma Check (Validate, Item_SEA_Last rem CS_In_SE = 0);
+      Last := Item'First + Integer (Item_SEA_Last / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -298,13 +326,20 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
-      for Item_2'Address use Item'Address;
-      Last_2 : Streams.Stream_Element_Offset;
+      Item_As_SEA : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
+      for Item_As_SEA'Address use Item'Address;
+      Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item_As_SEA,
+         Item_SEA_Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Item_SEA_Last rem CS_In_SE = 0);
+      Last := Item'First + Integer (Item_SEA_Last / CS_In_SE - 1);
    end Encode;
 
    procedure Encode (
@@ -318,13 +353,20 @@ package body Ada.Environment_Encoding.Generic_Strings is
    is
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      Item_2 : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
-      for Item_2'Address use Item'Address;
-      Last_2 : Streams.Stream_Element_Offset;
+      Item_As_SEA : Streams.Stream_Element_Array (1 .. Item'Length * CS_In_SE);
+      for Item_As_SEA'Address use Item'Address;
+      Item_SEA_Last : Streams.Stream_Element_Offset;
    begin
-      Convert (Object, Item_2, Last_2, Out_Item, Out_Last, Finish, Status);
-      pragma Check (Validate, Last_2 rem CS_In_SE = 0);
-      Last := Item'First + Integer (Last_2 / CS_In_SE - 1);
+      Convert (
+         Object,
+         Item_As_SEA,
+         Item_SEA_Last,
+         Out_Item,
+         Out_Last,
+         Finish,
+         Status);
+      pragma Check (Validate, Item_SEA_Last rem CS_In_SE = 0);
+      Last := Item'First + Integer (Item_SEA_Last / CS_In_SE - 1);
    end Encode;
 
    function Encode (

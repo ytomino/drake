@@ -5,12 +5,16 @@ with System.Synchronous_Control;
 package System.Soft_Links is
    pragma Preelaborate;
 
-   --  required for elaboration of packages by compiler (s-soflin.ads)
-   --  the result would passed to Save_Occurrence or Save_Library_Occurrence.
    function Do_Get_Current_Excep
       return Ada.Exceptions.Exception_Occurrence_Access;
-   Get_Current_Excep : constant
-      access function return Ada.Exceptions.Exception_Occurrence_Access :=
+
+   type Get_Current_Excep_Handler is
+      access function return Ada.Exceptions.Exception_Occurrence_Access;
+   pragma Suppress (Access_Check, Get_Current_Excep_Handler);
+
+   --  required for elaboration of packages by compiler (s-soflin.ads)
+   --  the result would passed to Save_Occurrence or Save_Library_Occurrence.
+   Get_Current_Excep : constant Get_Current_Excep_Handler :=
       Do_Get_Current_Excep'Access;
    pragma Suppress (Access_Check, Get_Current_Excep); -- not null
 
