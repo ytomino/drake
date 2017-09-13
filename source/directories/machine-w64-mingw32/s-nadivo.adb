@@ -100,7 +100,7 @@ package body System.Native_Directories.Volumes is
          Dest : constant Address :=
             Standard_Allocators.Allocate (
                (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)
-               * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
+                  * (C.winnt.WCHAR'Size / Standard'Storage_Unit));
          Dest_All : C.winnt.WCHAR_array (0 .. Root_Path_Length);
          for Dest_All'Address use Dest;
       begin

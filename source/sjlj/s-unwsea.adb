@@ -37,7 +37,7 @@ package body System.Unwind.Searching is
    begin
       return unsigned_char_const_ptr_Conv.To_Pointer (
          unsigned_char_const_ptr_Conv.To_Address (Left)
-         + Storage_Elements.Storage_Offset (Right));
+            + Storage_Elements.Storage_Offset (Right));
    end "+";
 
    --  implementation
@@ -127,9 +127,8 @@ package body System.Unwind.Searching is
                         Ada.Debug.Put ("ttype_encoding = DW_EH_PE_omit"));
                   ttype_table := null; -- be access violation ?
                end if;
-               ttype_base := C.unwind_pe.base_of_encoded_value (
-                  ttype_encoding,
-                  Context);
+               ttype_base :=
+                  C.unwind_pe.base_of_encoded_value (ttype_encoding, Context);
                p := p + 1;
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
                action_table := call_site_table + C.ptrdiff_t (tmp);
@@ -156,18 +155,14 @@ package body System.Unwind.Searching is
                      cs_lp : aliased C.unwind.uleb128_t;
                      cs_action : aliased C.unwind.uleb128_t;
                   begin
-                     p := C.unwind_pe.read_uleb128 (
-                        p,
-                        cs_lp'Access);
-                     p := C.unwind_pe.read_uleb128 (
-                        p,
-                        cs_action'Access);
+                     p := C.unwind_pe.read_uleb128 (p, cs_lp'Access);
+                     p := C.unwind_pe.read_uleb128 (p, cs_action'Access);
                      call_site := call_site - 1;
                      if call_site = 0 then
                         landing_pad := C.unwind.Unwind_Ptr (cs_lp + 1);
                         if cs_action /= 0 then
-                           table_entry := action_table
-                              + C.ptrdiff_t (cs_action - 1);
+                           table_entry :=
+                              action_table + C.ptrdiff_t (cs_action - 1);
                         else
                            table_entry := null;
                         end if;
@@ -229,25 +224,25 @@ package body System.Unwind.Searching is
                            then
                               is_handled :=
                                  choice = Cast (GCC_Exception.Occurrence.Id)
-                                 or else
-                                    (choice = Cast (Others_Value'Access)
+                                 or else (
+                                    choice = Cast (Others_Value'Access)
                                     and then not GCC_Exception.Occurrence.Id
                                        .Not_Handled_By_Others)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access);
+                                 or else choice =
+                                    Cast (All_Others_Value'Access);
                            else
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("foreign exception"));
                               is_handled :=
                                  choice = Cast (Others_Value'Access)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access)
-                                 or else
-                                    choice = Cast (Foreign_Exception'Access);
+                                 or else choice =
+                                    Cast (All_Others_Value'Access)
+                                 or else choice =
+                                    Cast (Foreign_Exception'Access);
                            end if;
                            if is_handled then
-                              ttype_filter := C.unwind.Unwind_Sword (
-                                 ar_filter);
+                              ttype_filter :=
+                                 C.unwind.Unwind_Sword (ar_filter);
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("handler is found"));
                               exit;

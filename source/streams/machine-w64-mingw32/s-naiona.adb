@@ -205,7 +205,7 @@ package body System.Native_IO.Names is
                            then
                               --  Skip ";X:\" (Is it a bug of VirtualBox?)
                               Long_Name (
-                                 Long_Name_Length .. Long_Name'Last - 4) :=
+                                    Long_Name_Length .. Long_Name'Last - 4) :=
                                  Long_Name (
                                     Long_Name_Length + 4 .. Long_Name'Last);
                            end if;

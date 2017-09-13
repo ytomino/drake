@@ -76,7 +76,7 @@ package body System.Unbounded_Stack_Allocators is
          Aligned_Top_Used :=
             Address (
                (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
-               and not Mask);
+                  and not Mask);
          New_Top_Used := Aligned_Top_Used + Size_In_Storage_Elements;
          if New_Top_Used <= Cast (Top).Limit then
             Storage_Address := Aligned_Top_Used;
@@ -88,12 +88,12 @@ package body System.Unbounded_Stack_Allocators is
             Aligned_Header_Size :=
                Storage_Elements.Storage_Offset (
                   (Storage_Elements.Integer_Address (Header_Size) + Mask)
-                  and not Mask);
+                     and not Mask);
             declare
                Additional_Block_Size : constant
-                  Storage_Elements.Storage_Count :=
-                     Ceiling_Page_Size (
-                        Size_In_Storage_Elements + Aligned_Header_Size);
+                     Storage_Elements.Storage_Count :=
+                  Ceiling_Page_Size (
+                     Size_In_Storage_Elements + Aligned_Header_Size);
                Additional_Block : constant Address :=
                   System_Allocators.Map (
                      Cast (Top).Limit,
@@ -153,7 +153,7 @@ package body System.Unbounded_Stack_Allocators is
             Aligned_Header_Size :=
                Storage_Elements.Storage_Offset (
                   (Storage_Elements.Integer_Address (Header_Size) + Mask)
-                  and not Mask);
+                     and not Mask);
             New_Block_Size := Size_In_Storage_Elements + Aligned_Header_Size;
             if Top = Null_Address then
                New_Block_Size :=

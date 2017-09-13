@@ -28,7 +28,7 @@ package body Ada.Numerics.Distributions is
          --  no overflow
          return Target'Val (
             Longest_Unsigned (X) * (Target_W + 1) / (Source_W + 1)
-            + Target'Pos (Target'First));
+               + Target'Pos (Target'First));
       else
          --  use Long_Long_Float
          declare
@@ -149,7 +149,7 @@ package body Ada.Numerics.Distributions is
             begin
                return Target'Val (
                   X / (Source_W / (Target_W + 1) + 1)
-                  + Target'Pos (Target'First));
+                     + Target'Pos (Target'First));
             end;
          else
             loop
@@ -207,8 +207,11 @@ package body Ada.Numerics.Distributions is
          declare
             type Unsigned_24_plus_1 is range 0 .. 2 ** 24;
             function Unsigned_24_plus_1_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_24_plus_1,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_24_plus_1,
+                  Generator,
+                  Get);
             X : constant Unsigned_24_plus_1 := Unsigned_24_plus_1_Random (Gen);
          begin
             return Target'Base (X) * Target'Base (1.0 / 2 ** 24);
@@ -217,8 +220,11 @@ package body Ada.Numerics.Distributions is
          declare
             type Unsigned_53_plus_1 is range 0 .. 2 ** 53;
             function Unsigned_53_plus_1_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_53_plus_1,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_53_plus_1,
+                  Generator,
+                  Get);
             X : constant Unsigned_53_plus_1 := Unsigned_53_plus_1_Random (Gen);
          begin
             return Target'Base (X) * Target'Base (1.0 / 2 ** 53);
@@ -228,11 +234,17 @@ package body Ada.Numerics.Distributions is
             type Unsigned_1 is mod 2; -- high 1 bit
             type Unsigned_64 is mod 2 ** 64; -- low bits
             function Unsigned_1_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_1,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_1,
+                  Generator,
+                  Get);
             function Unsigned_64_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_64,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_64,
+                  Generator,
+                  Get);
          begin
             loop
                declare
@@ -259,8 +271,11 @@ package body Ada.Numerics.Distributions is
          declare
             type Unsigned_24 is mod 2 ** 24;
             function Unsigned_24_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_24,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_24,
+                  Generator,
+                  Get);
             function Float_0_To_Less_Than_1 is
                new Linear_Float_0_To_Less_Than_1 (Unsigned_24, Target);
          begin
@@ -270,8 +285,11 @@ package body Ada.Numerics.Distributions is
          declare
             type Unsigned_53 is mod 2 ** 53;
             function Unsigned_53_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_53,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_53,
+                  Generator,
+                  Get);
             function Float_0_To_Less_Than_1 is
                new Linear_Float_0_To_Less_Than_1 (Unsigned_53, Target);
          begin
@@ -281,8 +299,11 @@ package body Ada.Numerics.Distributions is
          declare
             type Unsigned_64 is mod 2 ** 64;
             function Unsigned_64_Random is
-               new Uniform_Discrete_Random (Source, Unsigned_64,
-                  Generator, Get);
+               new Uniform_Discrete_Random (
+                  Source,
+                  Unsigned_64,
+                  Generator,
+                  Get);
             function Float_0_To_Less_Than_1 is
                new Linear_Float_0_To_Less_Than_1 (Unsigned_64, Target);
          begin

@@ -205,9 +205,8 @@ package body System.Unwind.Raising is
                New_Message (Last + 1 .. Last + 2) := ": ";
                Last := Last + 2;
                declare
-                  Copy_Length : constant Natural := Integer'Min (
-                     X.Msg_Length,
-                     New_Message'Length - Last);
+                  Copy_Length : constant Natural :=
+                     Integer'Min (X.Msg_Length, New_Message'Length - Last);
                begin
                   New_Message (Last + 1 .. Last + Copy_Length) :=
                      X.Msg (1 .. Copy_Length);

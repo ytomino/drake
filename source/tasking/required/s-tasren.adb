@@ -225,8 +225,8 @@ package body System.Tasking.Rendezvous is
    end Requeue_Task_Entry;
 
    procedure Requeue_Protected_To_Task_Entry (
-      Object : not null access
-         Protected_Objects.Entries.Protection_Entries'Class;
+      Object :
+         not null access Protected_Objects.Entries.Protection_Entries'Class;
       Acceptor : Task_Id;
       E : Task_Entry_Index;
       With_Abort : Boolean) is

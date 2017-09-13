@@ -397,8 +397,9 @@ package body Ada.Text_IO.Editing is
                            Result_Index := Result_Index - 1;
                         else
                            Result (
-                              Result_Index - Currency_Length + 1 ..
-                              Result_Index) := Currency;
+                                 Result_Index - Currency_Length + 1 ..
+                                 Result_Index) :=
+                              Currency;
                            Result_Index := Result_Index - Currency_Length;
                            Currency_Filled := True;
                            Dollar_Used := True;
@@ -430,8 +431,9 @@ package body Ada.Text_IO.Editing is
                               end loop;
                            end;
                            Result (
-                              Result_Index - Currency_Length + 1 ..
-                              Result_Index) := Currency;
+                                 Result_Index - Currency_Length + 1 ..
+                                 Result_Index) :=
+                              Currency;
                            Result_Index := Result_Index - Currency_Length;
                            Currency_Filled := True;
                            Pic_Leading_Index := Pic_Index;
@@ -555,8 +557,9 @@ package body Ada.Text_IO.Editing is
                               end loop;
                            end;
                            Result (
-                              Result_Index ..
-                              Result_Index + Currency_Length - 1) := Currency;
+                                 Result_Index ..
+                                 Result_Index + Currency_Length - 1) :=
+                              Currency;
                            Result_Index := Result_Index + Currency_Length;
                            Currency_Filled := True;
                         end if;
@@ -741,13 +744,14 @@ package body Ada.Text_IO.Editing is
          return Wide_String
       is
          Currency_Length : constant Natural := Currency'Length;
-         Image : constant String := Overloaded_Image (
-            Item,
-            Pic,
-            Currency => String'(1 .. Currency_Length => '$'),
-            Fill => '*', -- Editing.Default_Fill
-            Separator => ',', -- Editing.Default_Separator
-            Radix_Mark => '.'); -- Editing.Default_Radix_Mark
+         Image : constant String :=
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => String'(1 .. Currency_Length => '$'),
+               Fill => '*', -- Editing.Default_Fill
+               Separator => ',', -- Editing.Default_Separator
+               Radix_Mark => '.'); -- Editing.Default_Radix_Mark
       begin
          return Result : Wide_String (Image'Range) do
             declare
@@ -787,13 +791,14 @@ package body Ada.Text_IO.Editing is
          return Wide_Wide_String
       is
          Currency_Length : constant Natural := Currency'Length;
-         Image : constant String := Overloaded_Image (
-            Item,
-            Pic,
-            Currency => String'(1 .. Currency_Length => '$'),
-            Fill => '*', -- Editing.Default_Fill
-            Separator => ',', -- Editing.Default_Separator
-            Radix_Mark => '.'); -- Editing.Default_Radix_Mark
+         Image : constant String :=
+            Overloaded_Image (
+               Item,
+               Pic,
+               Currency => String'(1 .. Currency_Length => '$'),
+               Fill => '*', -- Editing.Default_Fill
+               Separator => ',', -- Editing.Default_Separator
+               Radix_Mark => '.'); -- Editing.Default_Radix_Mark
       begin
          return Result : Wide_Wide_String (Image'Range) do
             declare

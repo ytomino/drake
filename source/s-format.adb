@@ -283,10 +283,10 @@ package body System.Formatting is
          when 10 .. 15 =>
             Item := Character'Val (
                Character'Pos ('a')
-               - 10
-               - (Character'Pos ('a') - Character'Pos ('A'))
-                  * Type_Set'Pos (Set)
-               + Value);
+                  - 10
+                  - (Character'Pos ('a') - Character'Pos ('A'))
+                     * Type_Set'Pos (Set)
+                  + Value);
       end case;
    end Image;
 

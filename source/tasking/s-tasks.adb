@@ -594,7 +594,7 @@ package body System.Tasks is
          if T.Master_Of_Parent /= null then
             declare
                Mutex_Ref : constant
-                  not null access Synchronous_Objects.Mutex :=
+                     not null access Synchronous_Objects.Mutex :=
                   T.Master_Of_Parent.Mutex'Access;
             begin
                Synchronous_Objects.Enter (Mutex_Ref.all);
@@ -1439,12 +1439,14 @@ package body System.Tasks is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T).all));
       declare
-         New_Master : constant Master_Access := new Master_Record'(
-            Previous => T.Master_Top,
-            Parent => T,
-            Within => Master_Level'Max (Master_Within, Library_Task_Level) + 1,
-            List => null,
-            Mutex => <>); -- uninitialized
+         New_Master : constant Master_Access :=
+            new Master_Record'(
+               Previous => T.Master_Top,
+               Parent => T,
+               Within =>
+                  Master_Level'Max (Master_Within, Library_Task_Level) + 1,
+               List => null,
+               Mutex => <>); -- uninitialized
       begin
          Synchronous_Objects.Initialize (New_Master.Mutex);
          T.Master_Top := New_Master;

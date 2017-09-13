@@ -89,7 +89,7 @@ package body System.Pool_Size is
                         --  split
                         declare
                            New_Index : constant
-                              Storage_Elements.Storage_Count :=
+                                 Storage_Elements.Storage_Count :=
                               Matched_Index + Actual_Size;
                            New_Chunk : Freed_Chunk;
                            for New_Chunk'Address use

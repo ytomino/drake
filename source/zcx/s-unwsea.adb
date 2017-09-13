@@ -43,7 +43,7 @@ package body System.Unwind.Searching is
    begin
       return unsigned_char_const_ptr_Conv.To_Pointer (
          unsigned_char_const_ptr_Conv.To_Address (Left)
-         + Storage_Elements.Storage_Offset (Right));
+            + Storage_Elements.Storage_Offset (Right));
    end "+";
 
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
@@ -137,9 +137,8 @@ package body System.Unwind.Searching is
                         Ada.Debug.Put ("ttype_encoding = DW_EH_PE_omit"));
                   ttype_table := null; -- be access violation ?
                end if;
-               ttype_base := C.unwind_pe.base_of_encoded_value (
-                  ttype_encoding,
-                  Context);
+               ttype_base :=
+                  C.unwind_pe.base_of_encoded_value (ttype_encoding, Context);
                call_site_encoding := p.all;
                p := p + 1;
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
@@ -263,21 +262,21 @@ package body System.Unwind.Searching is
                                     choice = Cast (Others_Value'Access)
                                     and then not GCC_Exception.Occurrence.Id
                                        .Not_Handled_By_Others)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access);
+                                 or else choice =
+                                    Cast (All_Others_Value'Access);
                            else
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("foreign exception"));
                               is_handled :=
                                  choice = Cast (Others_Value'Access)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access)
-                                 or else
-                                    choice = Cast (Foreign_Exception'Access);
+                                 or else choice =
+                                    Cast (All_Others_Value'Access)
+                                 or else choice =
+                                    Cast (Foreign_Exception'Access);
                            end if;
                            if is_handled then
-                              ttype_filter := C.unwind.Unwind_Sword (
-                                 ar_filter);
+                              ttype_filter :=
+                                 C.unwind.Unwind_Sword (ar_filter);
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("handler is found"));
                               exit;

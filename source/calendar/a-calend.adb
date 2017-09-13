@@ -98,7 +98,7 @@ package body Ada.Calendar is
    begin
       return Duration'Fixed_Value (
          System.Native_Time.Nanosecond_Number'Integer_Value (Date)
-         mod (24 * 60 * 60 * 1_000_000_000));
+            mod (24 * 60 * 60 * 1_000_000_000));
    end Seconds;
 
    procedure Split (

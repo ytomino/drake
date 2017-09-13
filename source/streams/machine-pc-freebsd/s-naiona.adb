@@ -32,7 +32,7 @@ package body System.Native_IO.Names is
             Address (
                C.stdlib.malloc (
                   C.size_t (Name_Length) * Zero_Terminated_Strings.Expanding
-                  + 1))); -- NUL
+                     + 1))); -- NUL
          if Out_Name = null then
             raise Storage_Error;
          end if;

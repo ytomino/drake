@@ -179,8 +179,8 @@ package Ada.Naked_Text_IO is
    function Stream (File : not null Non_Controlled_File_Type)
       return not null access Streams.Root_Stream_Type'Class;
    function Stream_IO (File : Non_Controlled_File_Type)
-      return not null access
-         Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      return not null
+         access Streams.Naked_Stream_IO.Non_Controlled_File_Type;
 
    pragma Inline (Stream_IO);
 

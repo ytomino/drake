@@ -202,15 +202,15 @@ package body System.Exponentiations is
                if Exponent rem 2 /= 0 then
                   Result := Unsigned_Type'Mod (
                      Long_Long_Unsigned'Mod (Result)
-                     * Long_Long_Unsigned'Mod (Factor)
-                     mod Long_Long_Unsigned'Mod (Modulus));
+                        * Long_Long_Unsigned'Mod (Factor)
+                        mod Long_Long_Unsigned'Mod (Modulus));
                end if;
                Exponent := Exponent / 2;
                exit when Exponent = 0;
                Factor := Unsigned_Type'Mod (
                   Long_Long_Unsigned'Mod (Factor)
-                  * Long_Long_Unsigned'Mod (Factor)
-                  mod Long_Long_Unsigned'Mod (Modulus));
+                     * Long_Long_Unsigned'Mod (Factor)
+                     mod Long_Long_Unsigned'Mod (Modulus));
             end loop;
             return Result;
          end;

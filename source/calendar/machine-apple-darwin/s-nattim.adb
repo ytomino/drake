@@ -27,7 +27,7 @@ package body System.Native_Time is
    begin
       return Duration'Fixed_Value (
          Nanosecond_Number'Integer_Value (To_Duration (D.tv_sec))
-         + Nanosecond_Number (D.tv_nsec));
+            + Nanosecond_Number (D.tv_nsec));
    end To_Duration;
 
    function To_Duration (D : C.sys.time.struct_timeval) return Duration is

@@ -281,7 +281,7 @@ package body System.Storage_Pools.Subpools is
             Actual_Size := Storage_Size + Header_And_Padding;
             declare
                TLS : constant
-                  not null Runtime_Context.Task_Local_Storage_Access :=
+                     not null Runtime_Context.Task_Local_Storage_Access :=
                   Runtime_Context.Get_Task_Local_Storage;
             begin
                Overlaid_Allocation := TLS.Overlaid_Allocation;
@@ -311,8 +311,8 @@ package body System.Storage_Pools.Subpools is
             N_Ptr : constant Finalization_Masters.FM_Node_Ptr :=
                FM_Node_Ptr_Conv.To_Pointer (
                   Actual_Storage_Address
-                  + Header_And_Padding
-                  - Finalization_Masters.Header_Size);
+                     + Header_And_Padding
+                     - Finalization_Masters.Header_Size);
          begin
             Finalization_Masters.Attach_Unprotected (
                N_Ptr,

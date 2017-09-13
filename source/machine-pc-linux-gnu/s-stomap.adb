@@ -43,7 +43,7 @@ package body System.Storage_Map is
                if dlpi_phdr (I).p_type = C.elf.PT_LOAD then
                   R.First_Load_Address := System'To_Address (
                      dlpi_phdr (I).p_vaddr
-                     + C.elf.Elf32_Addr'Mod (Info.dlpi_addr));
+                        + C.elf.Elf32_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish
                end if;
             end loop;
@@ -64,7 +64,7 @@ package body System.Storage_Map is
                if dlpi_phdr (I).p_type = C.elf.PT_LOAD then
                   R.First_Load_Address := System'To_Address (
                      dlpi_phdr (I).p_vaddr
-                     + C.elf.Elf64_Addr'Mod (Info.dlpi_addr));
+                        + C.elf.Elf64_Addr'Mod (Info.dlpi_addr));
                   return 1; -- finish
                end if;
             end loop;

@@ -48,7 +48,7 @@ package body System.Unwind.Searching is
    begin
       return unsigned_char_const_ptr_Conv.To_Pointer (
          unsigned_char_const_ptr_Conv.To_Address (Left)
-         + Storage_Elements.Storage_Offset (Right));
+            + Storage_Elements.Storage_Offset (Right));
    end "+";
 
    function "<" (Left, Right : C.unsigned_char_const_ptr) return Boolean
@@ -243,9 +243,8 @@ package body System.Unwind.Searching is
                         Ada.Debug.Put ("ttype_encoding = DW_EH_PE_omit"));
                   ttype_table := null; -- be access violation ?
                end if;
-               ttype_base := C.unwind_pe.base_of_encoded_value (
-                  ttype_encoding,
-                  Context);
+               ttype_base :=
+                  C.unwind_pe.base_of_encoded_value (ttype_encoding, Context);
                call_site_encoding := p.all;
                p := p + 1;
                call_site_table := C.unwind_pe.read_uleb128 (p, tmp'Access);
@@ -287,9 +286,7 @@ package body System.Unwind.Searching is
                         call_site_encoding,
                         p,
                         cs_lp'Access);
-                     p := C.unwind_pe.read_uleb128 (
-                        p,
-                        cs_action'Access);
+                     p := C.unwind_pe.read_uleb128 (p, cs_action'Access);
                      if ip < base + cs_start then
                         pragma Check (Trace,
                            Check =>
@@ -304,8 +301,8 @@ package body System.Unwind.Searching is
                            return C.unwind.URC_CONTINUE_UNWIND;
                         end if;
                         if cs_action /= 0 then
-                           table_entry := action_table
-                              + C.ptrdiff_t (cs_action - 1);
+                           table_entry :=
+                              action_table + C.ptrdiff_t (cs_action - 1);
                         else
                            table_entry := null;
                         end if;
@@ -379,22 +376,22 @@ package body System.Unwind.Searching is
                                        choice = Cast (Others_Value'Access)
                                        and then not GCC_Exception.Occurrence.Id
                                           .Not_Handled_By_Others)
-                                    or else
-                                       choice = Cast (All_Others_Value'Access);
+                                    or else choice =
+                                       Cast (All_Others_Value'Access);
                               end if;
                            else
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("foreign exception"));
                               is_handled :=
                                  choice = Cast (Others_Value'Access)
-                                 or else
-                                    choice = Cast (All_Others_Value'Access)
-                                 or else
-                                    choice = Cast (Foreign_Exception'Access);
+                                 or else choice =
+                                    Cast (All_Others_Value'Access)
+                                 or else choice =
+                                    Cast (Foreign_Exception'Access);
                            end if;
                            if is_handled then
-                              ttype_filter := C.unwind.Unwind_Sword (
-                                 ar_filter);
+                              ttype_filter :=
+                                 C.unwind.Unwind_Sword (ar_filter);
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("handler is found"));
                               exit;
@@ -572,7 +569,7 @@ package body System.Unwind.Searching is
                      Adjust_Context (
                         System'To_Address (
                            mf_imagebase
-                           + C.basetsd.ULONG64 (mf_func.UnwindData)),
+                              + C.basetsd.ULONG64 (mf_func.UnwindData)),
                         mf_rsp);
                   end if;
                end;

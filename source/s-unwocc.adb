@@ -166,12 +166,11 @@ package body System.Unwind.Occurrences is
             X.Msg (Last) := ' ';
          end if;
          declare
-            Copy_Length : constant Natural := Integer'Min (
-               Message'Length,
-               X.Msg'Length - Last);
+            Copy_Length : constant Natural :=
+               Integer'Min (Message'Length, X.Msg'Length - Last);
          begin
             X.Msg (Last + 1 .. Last + Copy_Length) :=
-            Message (Message'First .. Message'First + Copy_Length - 1);
+               Message (Message'First .. Message'First + Copy_Length - 1);
             Last := Last + Copy_Length;
          end;
          if Last < X.Msg'Last then
@@ -218,7 +217,7 @@ package body System.Unwind.Occurrences is
       return Exception_Occurrence_Access
    is
       Machine_Occurrence : constant
-         not null Representation.Machine_Occurrence_Access :=
+            not null Representation.Machine_Occurrence_Access :=
          TLS.Machine_Occurrence;
       Result : Exception_Occurrence_Access;
    begin

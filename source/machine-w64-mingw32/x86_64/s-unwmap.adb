@@ -167,7 +167,7 @@ package body System.Unwind.Mapping is
             end;
             declare
                Result : constant
-                  not null Representation.Machine_Occurrence_Access :=
+                     not null Representation.Machine_Occurrence_Access :=
                   Occurrences.New_Machine_Occurrence (
                      Stack_Guard => Stack_Guard);
             begin

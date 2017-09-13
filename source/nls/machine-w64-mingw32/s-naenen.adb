@@ -366,8 +366,8 @@ package body System.Native_Environment_Encoding is
             when UTF_16 =>
                declare
                   Buffer_SEA_Length : constant
-                     Ada.Streams.Stream_Element_Offset :=
-                        2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
+                        Ada.Streams.Stream_Element_Offset :=
+                     2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
                begin
                   if Out_Item'First + (Buffer_SEA_Length - 1) >
                      Out_Item'Last
@@ -561,8 +561,8 @@ package body System.Native_Environment_Encoding is
          when UTF_16 =>
             declare
                Buffer_Length_In_SEA : constant
-                  Ada.Streams.Stream_Element_Offset :=
-                     2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
+                     Ada.Streams.Stream_Element_Offset :=
+                  2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
             begin
                Out_Last := Out_Item'First + (Buffer_Length_In_SEA - 1);
                if Out_Last > Out_Item'Last then
@@ -592,8 +592,8 @@ package body System.Native_Environment_Encoding is
                   Substitute => "?"); -- use Substitute
                declare
                   Out_WW_Length_In_SEA : constant
-                     Ada.Streams.Stream_Element_Offset :=
-                        4 * Ada.Streams.Stream_Element_Offset (Out_WW_Length);
+                        Ada.Streams.Stream_Element_Offset :=
+                     4 * Ada.Streams.Stream_Element_Offset (Out_WW_Length);
                begin
                   Out_Last := Out_Item'First + (Out_WW_Length_In_SEA - 1);
                   if Out_Last > Out_Item'Last then

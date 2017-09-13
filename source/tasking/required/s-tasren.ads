@@ -92,8 +92,8 @@ package System.Tasking.Rendezvous is
 
    --  required for synchronized interface by compiler (s-tasren.ads)
    procedure Requeue_Protected_To_Task_Entry (
-      Object : not null access
-         Protected_Objects.Entries.Protection_Entries'Class;
+      Object :
+         not null access Protected_Objects.Entries.Protection_Entries'Class;
       Acceptor : Task_Id;
       E : Task_Entry_Index;
       With_Abort : Boolean);

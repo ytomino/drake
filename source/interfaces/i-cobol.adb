@@ -319,7 +319,7 @@ package body Interfaces.COBOL is
          if Item < 0 then
             Result (Result'First) := COBOL_Character'Val (
                COBOL_Character'Pos (Result (Result'First))
-               + (COBOL_Character'Pos ('p') - COBOL_Character'Pos ('0')));
+                  + (COBOL_Character'Pos ('p') - COBOL_Character'Pos ('0')));
          end if;
       end return;
    end To_Display_Leading_Nonseparate;
@@ -331,7 +331,7 @@ package body Interfaces.COBOL is
          if Item < 0 then
             Result (Result'Last) := COBOL_Character'Val (
                COBOL_Character'Pos (Result (Result'Last))
-               + (COBOL_Character'Pos ('p') - COBOL_Character'Pos ('0')));
+                  + (COBOL_Character'Pos ('p') - COBOL_Character'Pos ('0')));
          end if;
       end return;
    end To_Display_Trailing_Nonseparate;

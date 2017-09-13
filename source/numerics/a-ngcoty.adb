@@ -359,7 +359,8 @@ package body Ada.Numerics.Generic_Complex_Types is
          begin
             if Is_Infinity (Result.Re) then
                declare
-                  Re_2 : constant Real'Base := 4.0
+                  Re_2 : constant Real'Base :=
+                     4.0
                      * (
                         Real'Base'(Left.Re / 2.0)
                            * Real'Base'(Right.Re / 2.0)
@@ -373,7 +374,8 @@ package body Ada.Numerics.Generic_Complex_Types is
             end if;
             if Is_Infinity (Result.Im) then
                declare
-                  Im_2 : constant Real'Base := 4.0
+                  Im_2 : constant Real'Base :=
+                     4.0
                      * (
                         Real'Base'(Left.Re / 2.0)
                            * Real'Base'(Right.Im / 2.0)

@@ -94,7 +94,7 @@ package body Ada.Strings.Normalization is
          Process_After_Index : loop
             declare
                From : constant
-                  Canonical_Composites.Composing_Wide_Wide_String :=
+                     Canonical_Composites.Composing_Wide_Wide_String :=
                   (Item (I), Item (I + 1));
                C : constant Natural := Canonical_Composites.C_Find (From);
                To : Wide_Wide_Character;
@@ -119,8 +119,8 @@ package body Ada.Strings.Normalization is
                   begin
                      To := Wide_Wide_Character'Val (
                         UCD.Hangul.SBase
-                        + (LIndex * UCD.Hangul.VCount + VIndex)
-                           * UCD.Hangul.TCount);
+                           + (LIndex * UCD.Hangul.VCount + VIndex)
+                              * UCD.Hangul.TCount);
                   end;
                elsif Wide_Wide_Character'Pos (From (1)) in
                      UCD.Hangul.SBase ..

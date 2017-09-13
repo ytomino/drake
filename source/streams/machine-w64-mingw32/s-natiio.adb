@@ -42,7 +42,7 @@ package body System.Native_IO is
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
             (Item'Length * Zero_Terminated_WStrings.Expanding + 2) -- '*' & NUL
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
+               * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
          Out_Item_All : Name_String (0 .. 1); -- at least
@@ -95,7 +95,7 @@ package body System.Native_IO is
       Out_Item := Name_Pointer_Conv.To_Pointer (
          Standard_Allocators.Allocate (
             (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
-            * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
+               * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
          pragma Suppress (Alignment_Check);
          Out_Item_All : C.winnt.WCHAR_array (0 .. Out_Length); -- NUL

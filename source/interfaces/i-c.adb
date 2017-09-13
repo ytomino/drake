@@ -24,7 +24,7 @@ package body Interfaces.C is
    begin
       return To_Pointer (
          To_ptrdiff_t (Left)
-         + Right * (Element_Array'Component_Size / Standard'Storage_Unit));
+            + Right * (Element_Array'Component_Size / Standard'Storage_Unit));
    end Pointer_Add;
 
    generic

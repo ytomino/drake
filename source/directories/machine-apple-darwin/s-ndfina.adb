@@ -64,8 +64,8 @@ package body System.Native_Directories.File_Names is
             op.all := data;
             op := unsigned_short_ptr_Conv.To_Pointer (
                unsigned_short_ptr_Conv.To_Address (op)
-               + Storage_Elements.Storage_Offset'(
-                  C.unsigned_short'Size / Standard'Storage_Unit));
+                  + Storage_Elements.Storage_Offset'(
+                     C.unsigned_short'Size / Standard'Storage_Unit));
             if m_bp.f_type = C.hfs_casetables.kTypeAscending then
                data := data + 1;
             elsif m_bp.f_type = C.hfs_casetables.kTypeAscending256 then
@@ -74,9 +74,9 @@ package body System.Native_Directories.File_Names is
          end loop;
          m_bp := compressed_block_const_ptr_Conv.To_Pointer (
             compressed_block_const_ptr_Conv.To_Address (m_bp)
-            + Storage_Elements.Storage_Offset'(
-               C.hfs_casetables.compressed_block'Size
-               / Standard'Storage_Unit));
+               + Storage_Elements.Storage_Offset'(
+                  C.hfs_casetables.compressed_block'Size
+                     / Standard'Storage_Unit));
       end loop;
       return l_out;
    end UncompressStructure;
@@ -274,8 +274,10 @@ package body System.Native_Directories.File_Names is
       else
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             C.vfs_utfconvdata.CFUniCharMultipleDecompositionTable'Address
-            + Storage_Elements.Storage_Offset (firstChar)
-               * (C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
+               + Storage_Elements.Storage_Offset (firstChar)
+                  * (
+                     C.vfs_utfconvdata.u_int16_t'Size
+                     / Standard'Storage_Unit));
       end if;
       usedLength := 0;
       if (value and RECURSIVE_DECOMPOSITION) /= 0 then
@@ -289,15 +291,15 @@ package body System.Native_Directories.File_Names is
          end if;
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             u_int16_t_ptr_Conv.To_Address (bmpMappings)
-            + Storage_Elements.Storage_Offset'(
-               C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
+               + Storage_Elements.Storage_Offset'(
+                  C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
       end if;
       for I in 0 .. length - 1 loop
          convertedChars (usedLength + I) := bmpMappings.all;
          bmpMappings := u_int16_t_ptr_Conv.To_Pointer (
             u_int16_t_ptr_Conv.To_Address (bmpMappings)
-            + Storage_Elements.Storage_Offset'(
-               C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
+               + Storage_Elements.Storage_Offset'(
+                  C.vfs_utfconvdata.u_int16_t'Size / Standard'Storage_Unit));
       end loop;
       usedLength := usedLength + length;
    end unicode_recursive_decompose;

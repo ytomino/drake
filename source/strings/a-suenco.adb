@@ -121,7 +121,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                         Trailing : constant Wide_Character :=
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2)) * 256
-                              + Character'Pos (Data (Data'First + 3)));
+                                 + Character'Pos (Data (Data'First + 3)));
                         W_Data : constant
                               Wide_String (
                                  1 ..
@@ -209,7 +209,8 @@ package body Ada.Strings.UTF_Encoding.Conversions is
                         Trailing : constant Wide_Character :=
                            Wide_Character'Val (
                               Character'Pos (Data (Data'First + 2))
-                              + Character'Pos (Data (Data'First + 3)) * 256);
+                                 + Character'Pos (Data (Data'First + 3))
+                                    * 256);
                         W_Data : constant
                               Wide_String (
                                  1 ..

@@ -52,7 +52,7 @@ package body Ada.Text_IO.Enumeration_IO is
             System.Runtime_Context.Task_Local_Storage,
             Finally);
       TLS : constant
-         not null System.Runtime_Context.Task_Local_Storage_Access :=
+            not null System.Runtime_Context.Task_Local_Storage_Access :=
          System.Runtime_Context.Get_Task_Local_Storage;
       B : Enum'Base;
    begin

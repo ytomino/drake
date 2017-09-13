@@ -1119,8 +1119,8 @@ package body Ada.Containers.Indefinite_Vectors is
                   Unique (Target, True);
                   Unique (Source, True); -- splicing
                   for I in Index_Type'First .. Last (Source) loop
-                     Downcast (Target.Super.Data).Items
-                        (I + Index_Type'Base (Old_Length)) :=
+                     Downcast (Target.Super.Data).Items (
+                           I + Index_Type'Base (Old_Length)) :=
                         Downcast (Source.Super.Data).Items (I);
                      Downcast (Source.Super.Data).Items (I) := null;
                   end loop;

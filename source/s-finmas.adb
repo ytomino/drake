@@ -11,11 +11,9 @@ package body System.Finalization_Masters is
    package FMN_Ptr_Conv is
       new Address_To_Named_Access_Conversions (FM_Node, FM_Node_Ptr);
 
-   procedure Initialize_List (
-      List : not null FM_List_Access);
+   procedure Initialize_List (List : not null FM_List_Access);
 
-   procedure Initialize_List (
-      List : not null FM_List_Access) is
+   procedure Initialize_List (List : not null FM_List_Access) is
    begin
       List.Objects.Next := List.Objects'Access;
       List.Objects.Prev := List.Objects'Access;

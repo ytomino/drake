@@ -50,7 +50,7 @@ package body System.Native_IO is
          Address (
             C.stdlib.malloc (
                Item'Length * Zero_Terminated_Strings.Expanding
-               + 2))); -- '*' & NUL
+                  + 2))); -- '*' & NUL
       if Out_Item = null then
          raise Storage_Error;
       end if;
@@ -247,8 +247,7 @@ package body System.Native_IO is
          end if;
       end;
       declare
-         O_EXLOCK_Is_Missing : constant Boolean :=
-            C.fcntl.O_EXLOCK = 0;
+         O_EXLOCK_Is_Missing : constant Boolean := C.fcntl.O_EXLOCK = 0;
          pragma Warnings (Off, O_EXLOCK_Is_Missing);
          Race_Is_Raising : constant Boolean := not Form.Wait;
          Operation_Table : constant

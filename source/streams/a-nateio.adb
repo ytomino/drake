@@ -1639,8 +1639,8 @@ package body Ada.Naked_Text_IO is
    end Stream;
 
    function Stream_IO (File : Non_Controlled_File_Type)
-      return not null access
-         Streams.Naked_Stream_IO.Non_Controlled_File_Type
+      return not null
+         access Streams.Naked_Stream_IO.Non_Controlled_File_Type
    is
       pragma Check (Pre,
          Check =>

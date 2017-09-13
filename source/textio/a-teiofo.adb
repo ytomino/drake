@@ -91,8 +91,8 @@ package body Ada.Text_IO.Formatting is
          exit when Item not in '0' .. '9'
             and then (
                not Based
-               or else (Item not in 'A' .. 'F'
-                  and then Item not in 'a' .. 'f'));
+               or else (
+                  Item not in 'A' .. 'F' and then Item not in 'a' .. 'f'));
          Add (Buffer, Last, Item);
          Skip_Ahead (File);
          Look_Ahead (File, Item, End_Of_Line);

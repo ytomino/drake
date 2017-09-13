@@ -41,8 +41,7 @@ package System.Synchronous_Objects is
    procedure Initialize (
       Object : in out Queue;
       Mutex : not null Mutex_Access);
-   procedure Finalize (
-      Object : in out Queue);
+   procedure Finalize (Object : in out Queue);
    function Count (
       Object : Queue;
       Params : Address;

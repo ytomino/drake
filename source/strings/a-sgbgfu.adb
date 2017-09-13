@@ -112,7 +112,8 @@ package body Ada.Strings.Generic_Bounded.Generic_Functions is
       begin
          return Result : Bounded.Bounded_String do
             declare
-               New_Length : constant Natural := Source.Length
+               New_Length : constant Natural :=
+                  Source.Length
                   + By'Length
                   - Integer'Max (High - Low + 1, 0);
             begin

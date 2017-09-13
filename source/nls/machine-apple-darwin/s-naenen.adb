@@ -242,7 +242,7 @@ package body System.Native_Environment_Encoding is
       Unfilled_Buffer_Limit : constant C.icucore.UChar_const_ptr :=
          UChar_const_ptr_Conv.To_Pointer (
             NC_Object.Buffer'Address
-            + Storage_Elements.Storage_Offset'(Buffer_Type'Length));
+               + Storage_Elements.Storage_Offset'(Buffer_Type'Length));
       Pointer : aliased C.char_const_ptr :=
          char_const_ptr_Conv.To_Pointer (Item'Address);
       Limit : constant C.char_const_ptr :=
@@ -253,7 +253,7 @@ package body System.Native_Environment_Encoding is
       Out_Limit : constant C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             Out_Item'Address
-            + Storage_Elements.Storage_Offset'(Out_Item'Length));
+               + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Finish_2nd : Boolean;
       Error : aliased C.icucore.UErrorCode;
       pragma Suppress (Validity_Check, Error);
@@ -364,7 +364,7 @@ package body System.Native_Environment_Encoding is
       Out_Limit : constant C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             Out_Item'Address
-            + Storage_Elements.Storage_Offset'(Out_Item'Length));
+               + Storage_Elements.Storage_Offset'(Out_Item'Length));
       Error : aliased C.icucore.UErrorCode :=
          C.icucore.unicode.utypes.U_ZERO_ERROR;
       pragma Suppress (Validity_Check, Error);

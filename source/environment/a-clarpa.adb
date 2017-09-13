@@ -113,11 +113,12 @@ package body Ada.Command_Line.Argument_Parsing is
                declare
                   S : constant System.Address :=
                      Argument (First.Index)'Address;
-                  P : constant System.Address := memchr (
-                     S,
-                     Character'Pos ('='),
-                     System.Storage_Elements.Storage_Offset (
-                        Argument'Last - First.Index + 1));
+                  P : constant System.Address :=
+                     memchr (
+                        S,
+                        Character'Pos ('='),
+                        System.Storage_Elements.Storage_Offset (
+                           Argument'Last - First.Index + 1));
                begin
                   if P = System.Null_Address then
                      First.Option_Index := Argument'Last + 2;

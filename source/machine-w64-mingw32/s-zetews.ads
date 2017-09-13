@@ -4,7 +4,7 @@ with C.winnt;
 package System.Zero_Terminated_WStrings is
    pragma Preelaborate;
    --  This package targets at not Wide_String in Ada, not wchar_t in C
-   --  but LPWSTR in Windows
+   --    but LPWSTR in Windows.
 
    --  convert to UTF-8 from a first address of zero-terminated wide string
    function Value (Item : not null access constant C.winnt.WCHAR)

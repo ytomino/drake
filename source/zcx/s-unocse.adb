@@ -55,7 +55,7 @@ package body Separated is
       if Result = null then
          declare -- fallback for the heap is exhausted
             TLS : constant
-               not null Runtime_Context.Task_Local_Storage_Access :=
+                  not null Runtime_Context.Task_Local_Storage_Access :=
                Runtime_Context.Get_Task_Local_Storage;
          begin
             Result := TLS.Secondary_Occurrence'Access;
@@ -76,7 +76,7 @@ package body Separated is
          Result.Header.exception_cleanup'Address
             + Storage_Elements.Storage_Offset'(
                C.unwind.Unwind_Exception_Cleanup_Fn'Size
-               / Standard'Storage_Unit),
+                  / Standard'Storage_Unit),
          0,
          C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
             - Storage_Elements.Storage_Offset'(

@@ -82,18 +82,15 @@ package body System.Tasking.Protected_Objects.Operations is
       Object : constant not null access Entries.Protection_Entries'Class :=
          To_Pointer (Params);
       Index : constant Positive_Protected_Entry_Index :=
-         Object.Find_Body_Index (
-            Object.Compiler_Info,
-            Node.E);
+         Object.Find_Body_Index (Object.Compiler_Info, Node.E);
       Result : Boolean;
    begin
       --  queue is locked in filter
       Node.Action := False;
       Node.Requeued := False;
       begin
-         Result := Object.Entry_Bodies (Index).Barrier (
-            Object.Compiler_Info,
-            Node.E);
+         Result :=
+            Object.Entry_Bodies (Index).Barrier (Object.Compiler_Info, Node.E);
          Node.Action := Result; -- execute the body after removing node
       exception
          when others =>
@@ -130,9 +127,7 @@ package body System.Tasking.Protected_Objects.Operations is
             if Node.Action then
                declare
                   Index : constant Positive_Protected_Entry_Index :=
-                     Object.Find_Body_Index (
-                        Object.Compiler_Info,
-                        Node.E);
+                     Object.Find_Body_Index (Object.Compiler_Info, Node.E);
                begin
                   Object.Current_Calling := Node;
                   begin

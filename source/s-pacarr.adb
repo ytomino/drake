@@ -22,11 +22,12 @@ package body System.Packed_Arrays is
             and then Element_Type'Enum_Rep (Element_Type'First) = 0
          then
             declare
-               Result : constant Integer := memcmp (
-                  Left,
-                  Right,
-                  Storage_Elements.Storage_Offset (
-                     Integer'Min (Left_Len, Right_Len)));
+               Result : constant Integer :=
+                  memcmp (
+                     Left,
+                     Right,
+                     Storage_Elements.Storage_Offset (
+                        Integer'Min (Left_Len, Right_Len)));
             begin
                if Result /= 0 then
                   return Result;

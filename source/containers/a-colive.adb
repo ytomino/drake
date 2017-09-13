@@ -1119,8 +1119,8 @@ package body Ada.Containers.Limited_Vectors is
 --  diff
 --  diff
                   for I in Index_Type'First .. Last (Source) loop
-                     Target.Data.Items
-                        (I + Index_Type'Base (Old_Length)) :=
+                     Target.Data.Items (
+                           I + Index_Type'Base (Old_Length)) :=
                         Source.Data.Items (I);
                      Source.Data.Items (I) := null;
                   end loop;

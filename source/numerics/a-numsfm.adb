@@ -417,8 +417,8 @@ package body Ada.Numerics.SFMT is
             end if;
             r := func1 (
                psfmt32 (idxof (0))
-               xor psfmt32 (idxof (mid))
-               xor psfmt32 (idxof (N32 - 1)));
+                  xor psfmt32 (idxof (mid))
+                  xor psfmt32 (idxof (N32 - 1)));
             declare
                Index : constant Natural := idxof (mid);
             begin
@@ -437,8 +437,8 @@ package body Ada.Numerics.SFMT is
             while j < count and then j < key_length loop
                r := func1 (
                   psfmt32 (idxof (i))
-                  xor psfmt32 (idxof ((i + mid) rem N32))
-                  xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
+                     xor psfmt32 (idxof ((i + mid) rem N32))
+                     xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
                declare
                   Index : constant Natural := idxof ((i + mid) rem N32);
                begin
@@ -457,8 +457,8 @@ package body Ada.Numerics.SFMT is
             while j < count loop
                r := func1 (
                   psfmt32 (idxof (i))
-                  xor psfmt32 (idxof ((i + mid) rem N32))
-                  xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
+                     xor psfmt32 (idxof ((i + mid) rem N32))
+                     xor psfmt32 (idxof ((i + N32 - 1) rem N32)));
                declare
                   Index : constant Natural := idxof ((i + mid) rem N32);
                begin
@@ -478,8 +478,8 @@ package body Ada.Numerics.SFMT is
             while j < N32 loop
                r := func2 (
                   psfmt32 (idxof (i))
-                  + psfmt32 (idxof ((i + mid) rem N32))
-                  + psfmt32 (idxof ((i + N32 - 1) rem N32)));
+                     + psfmt32 (idxof ((i + mid) rem N32))
+                     + psfmt32 (idxof ((i + N32 - 1) rem N32)));
                declare
                   Index : constant Natural := idxof ((i + mid) rem N32);
                begin

@@ -166,7 +166,7 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                   New_Last : constant Stream_Element_Offset :=
                      I + (Move_Length - 1);
                   New_Context_Converted_First : constant
-                     Stream_Element_Offset :=
+                        Stream_Element_Offset :=
                      Context.Converted_First + Move_Length;
                begin
                   Item (I .. New_Last) :=

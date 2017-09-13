@@ -26,9 +26,10 @@ package body System.Secondary_Stack is
       --  alignment
       if Storage_Size <= Standard'Maximum_Alignment / 2 then
          declare
-            H : constant Integer := Integer (
-               clz (Unsigned (Storage_Size) * 2 - 1)
-               xor (Unsigned'Size - 1)); -- cancel wordy xor
+            H : constant Integer :=
+               Integer (
+                  clz (Unsigned (Storage_Size) * 2 - 1)
+                     xor (Unsigned'Size - 1)); -- cancel wordy xor
          begin
             if H not in 0 .. Standard'Address_Size - 1 then
                unreachable; -- assume H is in address-width

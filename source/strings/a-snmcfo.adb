@@ -41,10 +41,10 @@ package body Ada.Strings.Naked_Maps.Case_Folding is
       for J in Table'Range loop
          declare
             F : UCD.Case_Folding.Compressed_Item_Type renames Table (J);
-            From : Character_Type := Character_Type'Val (
-               UCD.Difference_Base (F.Start) + Offset);
-            To : Character_Type := Character_Type'Val (
-               Character_Type'Pos (From) + F.Diff);
+            From : Character_Type :=
+               Character_Type'Val (UCD.Difference_Base (F.Start) + Offset);
+            To : Character_Type :=
+               Character_Type'Val (Character_Type'Pos (From) + F.Diff);
          begin
             for K in 1 .. F.Length loop
                Mapping.From (I) := From;

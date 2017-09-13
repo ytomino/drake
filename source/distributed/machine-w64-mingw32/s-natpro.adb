@@ -344,8 +344,9 @@ package body System.Native_Processes is
       Process_Info : aliased C.winbase.PROCESS_INFORMATION;
       Current_Process : constant C.winnt.HANDLE := C.winbase.GetCurrentProcess;
       subtype Handle_Index is Integer range 0 .. 2;
-      Source_Files : array (Handle_Index) of
-         Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
+      Source_Files :
+         array (Handle_Index) of
+            Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Target_Handles : array (Handle_Index) of C.winnt.HANDLE;
       Duplicated_Handles : array (Handle_Index) of aliased C.winnt.HANDLE;
       Success : C.windef.WINBOOL;

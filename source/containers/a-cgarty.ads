@@ -93,8 +93,9 @@ package Ada.Containers.Generic_Array_Types is
    function Last_Index (Container : Array_Type) return Extended_Index;
 
    generic
-      with procedure Swap (Container : in out Array_Type; I, J : Index_Type)
-         is Generic_Array_Types.Swap;
+      with procedure Swap (
+         Container : in out Array_Type;
+         I, J : Index_Type) is Generic_Array_Types.Swap;
    package Generic_Reversing is
 
       procedure Reverse_Elements (Container : in out Array_Type);
@@ -114,8 +115,9 @@ package Ada.Containers.Generic_Array_Types is
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
-      with procedure Swap (Container : in out Array_Type; I, J : Index_Type)
-         is Generic_Array_Types.Swap;
+      with procedure Swap (
+         Container : in out Array_Type;
+         I, J : Index_Type) is Generic_Array_Types.Swap;
    package Generic_Sorting is
 
       function Is_Sorted (Container : Array_Type) return Boolean;

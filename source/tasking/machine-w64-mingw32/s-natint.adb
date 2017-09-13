@@ -42,9 +42,11 @@ package body System.Native_Interrupts is
    end record;
    pragma Suppress_Initialization (Signal_Rec);
 
-   type Signal_Vec is array (
-      Ada.Interrupts.Names.First_Interrupt_Id ..
-      Ada.Interrupts.Names.Last_Interrupt_Id) of Signal_Rec;
+   type Signal_Vec is
+      array (
+            Ada.Interrupts.Names.First_Interrupt_Id ..
+            Ada.Interrupts.Names.Last_Interrupt_Id) of
+         Signal_Rec;
    pragma Suppress_Initialization (Signal_Vec);
 
    Table : Signal_Vec;

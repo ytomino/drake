@@ -649,9 +649,8 @@ package body Ada.Locales is
                Middle : constant Positive := (First + Last) / 2;
                Middle_Item : Language_Table_Element
                   renames Lang_Map_3 (Middle);
-               Compared : constant Integer := Compare (
-                  Middle_Item.Alpha_3,
-                  Alpha_3_NP (Item));
+               Compared : constant Integer :=
+                  Compare (Middle_Item.Alpha_3, Alpha_3_NP (Item));
             begin
                if Compared > 0 then
                   Last := Middle - 1;
@@ -740,9 +739,8 @@ package body Ada.Locales is
                Middle : constant Positive := (First + Last) / 2;
                Middle_Item : Language_Table_Element
                   renames Lang_Map_2 (Middle);
-               Compared : constant Integer := Compare (
-                  Middle_Item.Alpha_2,
-                  Alpha_2_NP (Item));
+               Compared : constant Integer :=
+                  Compare (Middle_Item.Alpha_2, Alpha_2_NP (Item));
             begin
                if Compared > 0 then
                   Last := Middle - 1;

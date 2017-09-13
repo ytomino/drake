@@ -230,9 +230,10 @@ package body Ada.Direct_IO is
       File : File_Type)
       return Count
    is
-      Raw_Size : constant Count := Count (
-         Streams.Stream_IO.Size (
-            Streams.Stream_IO.File_Type (File))); -- checking the predicate
+      Raw_Size : constant Count :=
+         Count (
+            Streams.Stream_IO.Size (
+               Streams.Stream_IO.File_Type (File))); -- checking the predicate
    begin
       if Raw_Size rem Element_Type'Max_Size_In_Storage_Elements /= 0 then
          Raise_Exception (Use_Error'Identity);

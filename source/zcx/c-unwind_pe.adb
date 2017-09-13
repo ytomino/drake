@@ -26,7 +26,7 @@ package body C.unwind_pe is
    begin
       return unsigned_char_const_ptr_Conv.To_Pointer (
          unsigned_char_const_ptr_Conv.To_Address (Left)
-         + System.Storage_Elements.Storage_Offset (Right));
+            + System.Storage_Elements.Storage_Offset (Right));
    end "+";
 
    --  implementation
@@ -182,9 +182,10 @@ package body C.unwind_pe is
    begin
       if encoding = DW_EH_PE_aligned then
          declare
-            a : unwind.Unwind_Internal_Ptr := unwind.Unwind_Internal_Ptr (
-               System.Storage_Elements.To_Integer (
-                  unsigned_char_const_ptr_Conv.To_Address (Mutable_p)));
+            a : unwind.Unwind_Internal_Ptr :=
+               unwind.Unwind_Internal_Ptr (
+                  System.Storage_Elements.To_Integer (
+                     unsigned_char_const_ptr_Conv.To_Address (Mutable_p)));
          begin
             a := (a + void_ptr'Size / Standard'Storage_Unit - 1)
                and -(void_ptr'Size / Standard'Storage_Unit);
