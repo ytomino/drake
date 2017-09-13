@@ -43,8 +43,7 @@ package body System.Native_Tasks is
       errno := C.pthread.pthread_sigmask (How, Mask'Access, null);
       pragma Check (Debug,
          Check =>
-            errno = 0
-            or else Debug.Runtime_Error ("pthread_sigmask failed"));
+            errno = 0 or else Debug.Runtime_Error ("pthread_sigmask failed"));
    end Mask_SIGTERM;
 
    --  implementation of thread
@@ -105,8 +104,7 @@ package body System.Native_Tasks is
          Old_SIGTERM_Action.Handle'Access);
       pragma Check (Debug,
          Check =>
-            not (R < 0)
-            or else Debug.Runtime_Error ("sigaction failed"));
+            not (R < 0) or else Debug.Runtime_Error ("sigaction failed"));
    end Install_Abort_Handler;
 
    procedure Uninstall_Abort_Handler is
@@ -118,8 +116,7 @@ package body System.Native_Tasks is
          null);
       pragma Check (Debug,
          Check =>
-            not (R < 0)
-            or else Debug.Runtime_Error ("sigaction failed"));
+            not (R < 0) or else Debug.Runtime_Error ("sigaction failed"));
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (
@@ -158,8 +155,7 @@ package body System.Native_Tasks is
       R := C.sched.sched_yield;
       pragma Check (Debug,
          Check =>
-            not (R < 0)
-            or else Debug.Runtime_Error ("sched_yield failed"));
+            not (R < 0) or else Debug.Runtime_Error ("sched_yield failed"));
    end Yield;
 
 end System.Native_Tasks;

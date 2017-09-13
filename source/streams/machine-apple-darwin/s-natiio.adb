@@ -20,7 +20,8 @@ package body System.Native_IO is
    use type C.unsigned_short;
    use type C.sys.types.off_t;
 
-   pragma Compile_Time_Error (C.sys.types.off_t'Size /= 64,
+   pragma Compile_Time_Error (
+      C.sys.types.off_t'Size /= 64,
       "off_t is not 64bit");
 
    function strlen (s : not null access constant C.char) return C.size_t

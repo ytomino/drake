@@ -34,7 +34,8 @@ package body System.Packed_Arrays is
             end;
          else
             declare
-               pragma Compile_Time_Error (Element_Type'Alignment /= 1,
+               pragma Compile_Time_Error (
+                  Element_Type'Alignment /= 1,
                   "misaligned");
                Min_Length : constant Integer :=
                   Integer'Min (Left_Len, Right_Len);

@@ -6,7 +6,8 @@ package body Ada.Formatting is
    use type System.Formatting.Word_Unsigned;
    use type System.Formatting.Longest_Unsigned;
 
-   pragma Compile_Time_Error (No_Sign /= System.Formatting.No_Sign,
+   pragma Compile_Time_Error (
+      No_Sign /= System.Formatting.No_Sign,
       "No_Sign mismatch");
 
    function Integer_Image (Item : T) return String is

@@ -6,13 +6,17 @@ package body System.Atomic_Primitives is
    use type Interfaces.Unsigned_32;
    use type Interfaces.Unsigned_64;
 
-   pragma Compile_Time_Warning (not uint8'Atomic_Always_Lock_Free,
+   pragma Compile_Time_Warning (
+      not uint8'Atomic_Always_Lock_Free,
       "uint8 is not atomic");
-   pragma Compile_Time_Warning (not uint16'Atomic_Always_Lock_Free,
+   pragma Compile_Time_Warning (
+      not uint16'Atomic_Always_Lock_Free,
       "uint16 is not atomic");
-   pragma Compile_Time_Warning (not uint32'Atomic_Always_Lock_Free,
+   pragma Compile_Time_Warning (
+      not uint32'Atomic_Always_Lock_Free,
       "uint32 is not atomic");
---  pragma Compile_Time_Warning (not uint64'Atomic_Always_Lock_Free,
+--  pragma Compile_Time_Warning (
+--    not uint64'Atomic_Always_Lock_Free,
 --    "uint64 is not atomic");
 
    type uint8_Access is access all uint8;

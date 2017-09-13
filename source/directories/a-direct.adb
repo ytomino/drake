@@ -341,8 +341,7 @@ package body Ada.Directories is
    end Start_Search;
 
    procedure End_Search (Search : in out Search_Type) is
-      pragma Check (Pre,
-         Check => Is_Open (Search) or else raise Status_Error);
+      pragma Check (Pre, Is_Open (Search) or else raise Status_Error);
       NC_Search : Non_Controlled_Search_Type
          renames Controlled_Searches.Reference (Search).all;
    begin
@@ -489,8 +488,7 @@ package body Ada.Directories is
    is
       pragma Check (Dynamic_Predicate,
          Check =>
-            Is_Open (Directory_Listing (Listing))
-            or else raise Status_Error);
+            Is_Open (Directory_Listing (Listing)) or else raise Status_Error);
    begin
       return Directory_Iterator'(Listing => Listing'Unrestricted_Access);
    end Iterate;
@@ -527,8 +525,7 @@ package body Ada.Directories is
          Check => Is_Open (Container) or else raise Status_Error);
       pragma Check (Pre,
          Check =>
-            Integer (Position) = Container.Count
-            or else raise Status_Error);
+            Integer (Position) = Container.Count or else raise Status_Error);
    begin
       return Look_Next_Entry (Container.Search);
    end Constant_Reference;
