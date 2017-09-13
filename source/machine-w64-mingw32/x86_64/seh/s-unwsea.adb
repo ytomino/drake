@@ -173,6 +173,12 @@ package body System.Unwind.Searching is
          new Ada.Unchecked_Conversion (
             C.unwind.struct_Unwind_Exception_ptr,
             C.unwind.Unwind_Word);
+      function Cast is
+         new Ada.Unchecked_Conversion (
+            Exception_Data_Access,
+            C.unwind.Unwind_Ptr);
+      function Cast is
+         new Ada.Unchecked_Conversion (C.char_const_ptr, C.unwind.Unwind_Ptr);
       GCC_Exception : constant Representation.Machine_Occurrence_Access :=
          To_GNAT (Exception_Object);
       landing_pad : C.unwind.Unwind_Ptr;
@@ -316,6 +322,9 @@ package body System.Unwind.Searching is
                ttype_filter := 0;
             else
                declare
+                  ttype_size : constant C.ptrdiff_t :=
+                     C.ptrdiff_t (
+                        C.unwind_pe.size_of_encoded_value (ttype_encoding));
                   p : C.unsigned_char_const_ptr := table_entry;
                   ar_filter, ar_disp : aliased C.unwind.sleb128_t;
                begin
@@ -337,19 +346,8 @@ package body System.Unwind.Searching is
                            and C.unwind.UA_FORCE_UNWIND) = 0
                      then
                         declare
-                           function Cast is
-                              new Ada.Unchecked_Conversion (
-                                 Exception_Data_Access,
-                                 C.unwind.Unwind_Ptr);
-                           function Cast is
-                              new Ada.Unchecked_Conversion (
-                                 C.char_const_ptr,
-                                 C.unwind.Unwind_Ptr);
                            filter : constant C.ptrdiff_t :=
-                              C.ptrdiff_t (ar_filter)
-                              * C.ptrdiff_t (
-                                 C.unwind_pe.size_of_encoded_value (
-                                    ttype_encoding));
+                              C.ptrdiff_t (ar_filter) * ttype_size;
                            choice : aliased C.unwind.Unwind_Ptr;
                            is_handled : Boolean;
                            Dummy : C.unsigned_char_const_ptr;
@@ -373,9 +371,10 @@ package body System.Unwind.Searching is
                                  is_handled :=
                                     choice = Cast (GCC_Exception.Occurrence.Id)
                                     or else (
-                                       choice = Cast (Others_Value'Access)
-                                       and then not GCC_Exception.Occurrence.Id
-                                          .Not_Handled_By_Others)
+                                       not GCC_Exception.Occurrence.Id
+                                          .Not_Handled_By_Others
+                                       and then choice =
+                                          Cast (Others_Value'Access))
                                     or else choice =
                                        Cast (All_Others_Value'Access);
                               end if;
@@ -383,11 +382,10 @@ package body System.Unwind.Searching is
                               pragma Check (Trace,
                                  Check => Ada.Debug.Put ("foreign exception"));
                               is_handled :=
-                                 choice = Cast (Others_Value'Access)
+                                 choice = Cast (Foreign_Exception'Access)
+                                 or else choice = Cast (Others_Value'Access)
                                  or else choice =
-                                    Cast (All_Others_Value'Access)
-                                 or else choice =
-                                    Cast (Foreign_Exception'Access);
+                                    Cast (All_Others_Value'Access);
                            end if;
                            if is_handled then
                               ttype_filter :=
