@@ -58,13 +58,12 @@ endif
 
 export INSTALL=ln -s
 export WITHA=0
-export WITHF=0
 export DEBUG=2
 
 GFLAGS=
 GFLAGS_ALL=--RTS=$(abspath $(BUILDDIR))
 CFLAGS=
-CFLAGS_ALL=-pipe -gnatef -gnatf -gnatwIue
+CFLAGS_ALL=-gnatef -gnatf -gnatwIue
 MFLAGS=
 MFLAGS_ALL=-D $(BUILDDIR)
 BFLAGS=
@@ -104,8 +103,12 @@ LFLAGS_ALL+=-Wl,--gc-sections
 endif
 endif
 
-ifneq ($(WITHF),0)
-CFLAGS_ALL+=-ffast-math -gnatec=../source/fastmath.adc
+ifeq ($(filter -save-temps%,$(CFLAGS)),)
+CFLAGS_ALL+=-pipe
+endif
+
+ifneq ($(filter -ffast-math,$(CFLAGS)),)
+CFLAGS_ALL+=-gnatec=../source/fastmath.adc
 endif
 
 GFLAGS_ALL:=$(strip $(GFLAGS_ALL) $(GFLAGS))
@@ -124,12 +127,13 @@ tree:
 
 cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libgnat$GCCSUFFIX.a
 	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
-		if [[ -f $(BUILDDIR)/$$I ]] ; then \
-			echo rm $$I ; \
-			rm $(BUILDDIR)/$$I ; \
-			rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/$$I ; \
-			if [[ -f $(BUILDDIR)/adalib/$$I ]] ; then \
-				rm -f $(BUILDDIR)/adalib/$$I ; \
+		B=$${I%.*} ; \
+		if [[ -f $(BUILDDIR)/$$B.o ]] ; then \
+			echo rm $$B.\* ; \
+			rm $(BUILDDIR)/$$B.* ; \
+			rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/$$B.* ; \
+			if [[ -f $(BUILDDIR)/adalib/$$B.ali ]] ; then \
+				rm -f $(BUILDDIR)/adalib/$$B.ali ; \
 			fi ; \
 			REMOVED_A=1 ; \
 			if [[ $$I =~ ^c- ]] ; then \
@@ -138,8 +142,8 @@ cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libg
 		fi ; \
 	done ; \
 	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ]] ; then \
-		echo rm c.o ; \
-		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ; \
+		echo rm c.\* ; \
+		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.* ; \
 	fi ; \
 	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a ]] ; then \
 		echo rm libgnat$(GCCSUFFIX).a ; \

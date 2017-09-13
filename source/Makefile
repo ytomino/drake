@@ -17,10 +17,9 @@
 #   EH=         mechanism of exception handling (default:selected by $TARGET)
 #   WITHA=      if 0, building minimum runtime (default:1)
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
-#   WITHF=      -ffast-math (default:0)
-#   WITHL=      link time optimization (default:0)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
 #   CFLAGS=     additional options for gcc (default:empty)
+#               -ffast-math -flto -save-temps=obj
 
 export MAKEFLAGS+=r
 
@@ -48,16 +47,6 @@ endif
 # if WITHC=1, including c-*.o to libgnat.a
 ifeq ($(WITHC),)
 WITHC=1
-endif
-
-# if WITHF=1, -ffast-math
-ifeq ($(WITHF),)
-WITHF=0
-endif
-
-# if WITHL=1, link-time optimization be enabled
-ifeq ($(WITHL),)
-WITHL=0
 endif
 
 # if DEBUG>0, debug info
@@ -286,23 +275,24 @@ endif
 endif
 
 ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
-ifneq ($(WITHF),0)
-CFLAGS_MATH=-ffast-math
+ifneq ($(filter -ffast-math,$(CFLAGS)),)
 ADC+=fastmath.adc
-else
-CFLAGS_MATH=
 endif
 
-ifneq ($(WITHL),0)
-CFLAGS_LTO=-flto
+ifneq ($(filter -flto,$(CFLAGS)),)
 ifneq ($(findstring darwin,$(TARGET)),)
 AR=$(GCCPREFIX)ar
 else
 AR=$(GCCPREFIX)gcc-ar
 endif
 else
-CFLAGS_LTO=
 AR=$(GCCPREFIX)ar
+endif
+
+ifneq ($(filter -save-temps%,$(CFLAGS)),)
+CFLAGS_PIPE=
+else
+CFLAGS_PIPE=-pipe
 endif
 
 ifneq ($(ADC),)
@@ -314,8 +304,8 @@ endif
 CFLAGS=
 
 CFLAGS_FOR_COMPILER_UNIT=$(strip \
-	-pipe -nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
-	$(CFLAGS_OPTIMIZE) $(CFLAGS_DEBUG) $(CFLAGS_MATH) $(CFLAGS_ADC) $(CFLAGS_LTO) $(CFLAGS))
+	-nostdinc -I$(RTSDIR)/adainclude -gnatef -gnatg -gnatwP \
+	$(CFLAGS_DEBUG) $(CFLAGS_OPTIMIZE) $(CFLAGS_PIPE) $(CFLAGS_ADC) $(CFLAGS))
 
 TREE= \
 	$(RTSDIR)/adainclude/system.ads \
@@ -602,7 +592,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 # do not apply -ffast-math
-$(NOFASTMATH_OBJS): CFLAGS_MATH:=$(filter-out -ffast-math,$(CFLAGS_MATH))
+$(NOFASTMATH_OBJS): CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
 
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
