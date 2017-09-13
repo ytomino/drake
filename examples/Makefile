@@ -1,17 +1,17 @@
 # targets:
-#   all      building all examples (default target)
-#   tree     building only adainclude
-#   clean    deleting all built files
+#   all      building all examples, default target
+#   tree     building adainclude only
+#   clean    deleting all build directories
 #   xfind    finding the declaration of the symbol $X
 #   xfindall finding all references of the symbol $X
 # variables:
-#   HOST, TARGET, IMPORTDIR, GCC are based on ../source/Makefile
-#   GFLAGS= additional options for all gnattools (default:empty)
-#   CFLAGS= additional options for gcc (default:empty)
-#   MFLAGS= additional options for gnatmake (default:empty)
-#   BFLAGS= additional options for gnatbind (default:empty)
-#   LFLAGS= additional options for gnatlink (default:empty)
-#   FFLAGS= additional options for gnatfind (default:empty)
+#   GFLAGS=  additional options for all gnattools (default:empty)
+#   CFLAGS=  additional options for gcc (default:empty)
+#   MFLAGS=  additional options for gnatmake (default:empty)
+#   BFLAGS=  additional options for gnatbind (default:empty)
+#   LFLAGS=  additional options for gnatlink (default:empty)
+#   FFLAGS=  additional options for gnatfind (default:empty)
+#   other variables are based on ../source/Makefile
 
 export MAKEFLAGS+=r
 
@@ -122,7 +122,7 @@ all: $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a $(EXAMPLES)
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
-cleanup-rts: # rm duplicated object files in $(BUILDDIR) and $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a
+cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libgnat$GCCSUFFIX.a
 	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
 		if [[ -f $(BUILDDIR)/$$I ]] ; then \
 			echo rm $$I ; \

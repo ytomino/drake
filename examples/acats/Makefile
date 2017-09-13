@@ -1,12 +1,22 @@
-# example for continue:
-#   make CONTINUE=aa2010a.ada
+# targets:
+#   test      run the tests, default target
+#   setup     building support files only
+# variables:
+#   CONTINUE= continuing from it
+#   ONCE=     testing it only
+#   RTSDIR=   runtime, use GNAT runtime if empty (default:../$TARGET.build)
+# examples:
+#   make                  # run the all tests
+#   make CONTINUE=aa2010a # continue the tests from aa2010a
+#   make ONCE=aa2010a     # run aa2010a only
+#   make RTSDIR=          # run the all tests with GNAT runtime
 
 export HOST=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)
 
-# if RTSDIR is empty, test with GNAT runtime
+# if $RTSDIR is empty, test with GNAT runtime
 export RTSDIR=$(abspath ../$(TARGET).build)
 
 ACATSARCHIVE=acats_31.tar.Z

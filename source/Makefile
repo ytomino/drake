@@ -1,17 +1,17 @@
 # targets:
-#   all         building drake runtime (default target)
-#   tree        building only adainclude
-#   import_objs compiling only translated headers for nesting
-#   c-archive   archiving translated headers to tar.bz2
+#   all         building drake runtime, default target
+#   tree        building adainclude only
+#   import_objs compiling translated headers only, by recursive
+#   c-archive   archiving translated headers to .tar.bz2
 # variables:
 #   HOST=       host platform (default:`gcc -dumpmachine`)
 #   TARGET=     target platform (default:$HOST)
 #   IMPORTDIR=  pre-translated headers (default:empty, generating on make)
 #   RTSDIR=     output directory (default:.)
-#   BUILDDIR=   temporary directory (default:$RTSDIR/adalib)
-#   GCCPREFIX=  the prefix of gcc (default:$TARGET-)
-#   GCCSUFFIX=  the suffix of gcc (default:empty)
-#   GCC=        compiler (default:$GCCPREFIX\gcc$GCCSUFFIX)
+#   BUILDDIR=   parent of build directories (default:$RTSDIR/adalib)
+#   GCCPREFIX=  prefix of gcc (default:$TARGET-)
+#   GCCSUFFIX=  suffix of gcc (default:empty)
+#   GCC=        compiler (default:$GCCPREFIX/gcc$GCCSUFFIX)
 #   AR=         librarian (default:$TARGET-ar)
 #   INSTALL=    copy source files to adainclude (default:install -m 444)
 #   EH=         mechanism of exception handling (default:selected by $TARGET)
@@ -128,21 +128,21 @@ SIMDSUBDIR=nosimd
 endif
 
 # relation of sub directoris
-# (root) + zcx or sjlj -- minimum runtime
+# root directory with required and $EH contains minimum runtime
 # ada83       : calendar stream text_io        # Ada 83 names
-# calendar    :                                # support for delay statement, Ada.Calendars, Ada.Execution_Time and Ada.Real_Time
+# calendar    :                                # support for delay, Ada.Calendars, Ada.Execution_Time, and Ada.Real_Time
 # containers  :                                # Ada.Containers
 # directories : calendar                       # Ada.Directories
 # distributed : environment streams            # Annex E, Distributed Systems
 # hash        : strings                        # Ada.Strings.Hash and Hash_Case_Insensitive
-# image       :                                # support for 'Image and 'Value attributes
+# image       :                                # support for 'Image and 'Value
 # interfaces  :                                # Interfaces.C and Interfaces.COBOL
 # nls         :                                # System.Native_Encoding
-# numerics    :                                # support for float attributes, Ada.Numerics and Interfaces.Fortran
-# pools       :                                # support for 'Storage_Size and custom Storage_Pools
+# numerics    :                                # support for float attributes, Ada.Numerics, and Interfaces.Fortran
+# pools       :                                # support for 'Storage_Size and custom storage pools
 # streams     :                                # all *_IO packages (including Text_IO)
 # strings     :                                # Ada.Characters and Ada.Strings
-# tasking     : calendar                       # support for task and protected syntax and all tasking packages
+# tasking     : calendar                       # support for task, protected, and all tasking packages
 # text_io     : image numerics streams strings # child packages of Text_IO
 
 SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGETSUBDIR)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
@@ -151,7 +151,7 @@ SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGE
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
-ifdef EH # all mechanisms (zcx, sjlj, seh)
+ifdef EH # all mechanisms (zcx, sjlj, or seh)
 EH_OBJS=c-unwind_pe.o
 else # unknown mechanism
 EH_OBJS=
@@ -188,13 +188,13 @@ COMPILER_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	s-unwsta.o \
 	system.o)
 
+# s-maccod.o, s-stoele.o, and system.o are also the standard library
+
 EXTRA_OBJS=$(addprefix $(RTSDIR)/adalib/, \
 	nosig.o)
 ifneq ($(findstring darwin,$(TARGET)),)
 EXTRA_OBJS+=$(RTSDIR)/adalib/notb.o
 endif
-
-# s-maccod.o and s-stoele.o are also standard library
 
 ifneq ($(WITHA),0)
 ALL_OBJS=$(addprefix $(LIBGNAT_BUILDDIR)/, \
@@ -607,7 +607,7 @@ $(NOFASTMATH_OBJS): CFLAGS_MATH:=$(filter-out -ffast-math,$(CFLAGS_MATH))
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
 
-# keep the order from AAA to ZZZ
+# keep symbols order from AAA to ZZZ
 $(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 
 ifneq ($(findstring darwin,$(TARGET)),)
