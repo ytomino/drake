@@ -203,6 +203,13 @@ private
    type Addr_Ptr is access System.Address;
    for Addr_Ptr'Storage_Size use 0;
 
+   --  Note: All type tags have TSD but not always have DT.
+   --    TAGGED_RECORD'Tag has a primary DT with TSD.
+   --    INTERFACE'Tag has a NDT with TSD.
+   --  On the other hand, all object tags have DT but not always have TSD.
+   --    Base_Address (Object) is TAGGED_RECORD'Tag.
+   --    INTERFACE'Class (Object) has a secondary DT with OSD.
+
    --  required by compiler (a-tags.ads)
    --  for INTERFACE'Class (Object)'Access (exp_attr.adb)
    --  for accessibility checks of new access INTERFACE'Class (exp_ch4.adb)
