@@ -227,6 +227,18 @@
 #pragma for Ada "pthread.h" include "sys/_types/_pthread_t.h"
 #pragma for Ada "signal.h" include "sys/_types/_sigaltstack.h" /* stack_t */
 #pragma for Ada "signal.h" include "sys/_types/_sigset_t.h"
+#pragma for Ada "stdint.h" include "sys/_types/_int8_t.h" /* int8_t */
+#pragma for Ada "stdint.h" include "sys/_types/_int16_t.h" /* int16_t */
+#pragma for Ada "stdint.h" include "sys/_types/_int32_t.h" /* int32_t */
+#pragma for Ada "stdint.h" include "sys/_types/_int64_t.h" /* int64_t */
+#pragma for Ada "stdint.h" include "_types/_uint8_t.h" /* uint8_t */
+#pragma for Ada "stdint.h" include "_types/_uint16_t.h" /* uint16_t */
+#pragma for Ada "stdint.h" include "_types/_uint32_t.h" /* uint32_t */
+#pragma for Ada "stdint.h" include "_types/_uint64_t.h" /* uint64_t */
+#pragma for Ada "stdint.h" include "sys/_types/_intptr_t.h" /* intptr_t */
+#pragma for Ada "stdint.h" include "sys/_types/_uintptr_t.h" /* uintptr_t */
+#pragma for Ada "stdint.h" include "_types/_intmax_t.h" /* intmax_t */
+#pragma for Ada "stdint.h" include "_types/_uintmax_t.h" /* uintmax_t */
 #pragma for Ada "sys/socket.h" include "sys/_types/_socklen_t.h" /* socklen_t */
 #pragma for Ada "sys/stat.h" include "sys/_types/_s_ifmt.h" /* S_IF* */
 #pragma for Ada "sys/time.h" include "sys/_types/_timeval.h"
@@ -262,6 +274,7 @@
 #pragma for Ada "unistd.h" include "sys/unistd.h"
 #if __FreeBSD__ >= 9
 #pragma for Ada "stdint.h" include "machine/_types.h"
+#pragma for Ada "stdint.h" include "sys/_stdint.h"
 #pragma for Ada "termios.h" include "sys/_termios.h"
 #endif
 #elif defined(__linux__)
