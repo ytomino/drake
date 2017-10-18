@@ -197,9 +197,11 @@ private
    type w128_t is array (0 .. 3) of Unsigned_32;
    for w128_t'Alignment use 16;
    pragma Suppress_Initialization (w128_t);
-   type w128_t_Array is array (Natural range <>) of aliased w128_t;
+   type w128_t_Array is array (Natural range <>) of aliased w128_t
+      with Convention => Ada_Pass_By_Reference;
    pragma Suppress_Initialization (w128_t_Array);
 
+   subtype w128_t_Array_1 is w128_t_Array (0 .. 0);
    subtype w128_t_Array_N is w128_t_Array (0 .. N - 1);
 
    --  SFMT internal state

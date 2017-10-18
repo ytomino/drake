@@ -11,7 +11,7 @@ package Ada.Numerics.SFMT.Generating is
 
    procedure gen_rand_array (
       sfmt : in out w128_t_Array_N;
-      Item : aliased in out w128_t; -- w128_t_Array (0 .. size - 1)
+      Item : in out w128_t_Array_1; -- w128_t_Array (0 .. size - 1)
       size : Integer);
    pragma Inline (gen_rand_array);
 

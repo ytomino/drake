@@ -273,7 +273,7 @@ package body Ada.Numerics.SFMT is
             the_array : w128_t_Array (0 .. 0); -- size / 2 - 1
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.sfmt.state, the_array (0), size / 4);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array (0 .. 0), size / 4);
          end;
          Gen.sfmt.idx := N32;
       end if;
@@ -301,7 +301,7 @@ package body Ada.Numerics.SFMT is
             the_array : w128_t_Array (0 .. size / 2 - 1);
             for the_array'Address use Item'Address;
          begin
-            Impl.gen_rand_array (Gen.sfmt.state, the_array (0), size / 2);
+            Impl.gen_rand_array (Gen.sfmt.state, the_array (0 .. 0), size / 2);
             if System.Default_Bit_Order /= System.Low_Order_First then
                --  swap
                for I in the_array'Range loop

@@ -107,7 +107,7 @@ package body Ada.Numerics.SFMT.Generating is
    --  integers.
    procedure gen_rand_array (
       sfmt : in out w128_t_Array_N;
-      Item : aliased in out w128_t;
+      Item : in out w128_t_Array_1;
       size : Integer)
    is
       pragma Suppress (Alignment_Check);
