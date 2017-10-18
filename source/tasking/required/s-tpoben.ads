@@ -28,17 +28,18 @@ package System.Tasking.Protected_Objects.Entries is
       E : Protected_Entry_Index)
       return Protected_Entry_Index;
 
+   type Protected_Entry_Queue_Max_Array is
+      array (Positive_Protected_Entry_Index range <>) of Natural;
+   type Protected_Entry_Queue_Max_Access is
+      access constant Protected_Entry_Queue_Max_Array;
+
    --  required by compiler
    type Protected_Entry_Body_Array is
       array (Positive_Protected_Entry_Index range <>) of Entry_Body;
    pragma Suppress_Initialization (Protected_Entry_Body_Array);
 
-   type Protected_Entry_Body_Access is access all Protected_Entry_Body_Array;
-
-   --  required by compiler
-   type Protected_Entry_Names_Array is
-      array (Entry_Index range <>) of Entry_Name_Access;
-   pragma Suppress_Initialization (Protected_Entry_Names_Array);
+   type Protected_Entry_Body_Access is
+      access constant Protected_Entry_Body_Array;
 
    --  required by compiler
    --  (if it is not controlled type, compiler may be crashed!)
@@ -63,15 +64,11 @@ package System.Tasking.Protected_Objects.Entries is
       Object : not null access Protection_Entries'Class;
       Ceiling_Priority : Integer;
       Compiler_Info : Address;
+      Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
       Entry_Bodies : Protected_Entry_Body_Access;
       Find_Body_Index : Find_Body_Index_Access);
 
    overriding procedure Finalize (Object : in out Protection_Entries);
-
-   --  required by compiler
-   procedure Set_Entry_Names (
-      Object : not null access Protection_Entries'Class;
-      Names : access Protected_Entry_Names_Array) is null;
 
    --  required by compiler
    procedure Lock_Entries (

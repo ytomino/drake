@@ -134,6 +134,7 @@ private
          File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Root_Dispatcher);
+      for Root_Dispatcher'Size use Standard'Address_Size * 2; -- [gcc-7] ?
 
       overriding procedure Read (
          Stream : in out Root_Dispatcher;
@@ -148,6 +149,7 @@ private
          File : Non_Controlled_File_Type;
       end record;
       pragma Suppress_Initialization (Seekable_Dispatcher);
+      for Seekable_Dispatcher'Size use Standard'Address_Size * 2; -- [gcc-7] ?
 
       overriding procedure Read (
          Stream : in out Seekable_Dispatcher;
@@ -172,6 +174,7 @@ private
          File : Non_Controlled_File_Type := null;
       end record;
       pragma Suppress_Initialization (Dispatcher);
+      for Dispatcher'Size use Standard'Address_Size * 2; -- [gcc-7] ?
       for Dispatcher'Alignment use
          Standard'Address_Size / Standard'Storage_Unit;
 

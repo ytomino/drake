@@ -22,10 +22,12 @@ package body System.Tasking.Protected_Objects.Entries is
       Object : not null access Protection_Entries'Class;
       Ceiling_Priority : Integer;
       Compiler_Info : Address;
+      Entry_Queue_Maxes : Protected_Entry_Queue_Max_Access;
       Entry_Bodies : Protected_Entry_Body_Access;
       Find_Body_Index : Find_Body_Index_Access)
    is
       pragma Unreferenced (Ceiling_Priority);
+      pragma Unreferenced (Entry_Queue_Maxes);
    begin
       Synchronous_Objects.Initialize (Object.Mutex);
       Synchronous_Objects.Initialize (Object.Calling, Object.Mutex'Access);

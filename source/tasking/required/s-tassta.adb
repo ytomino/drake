@@ -47,6 +47,7 @@ package body System.Tasking.Stages is
    procedure Create_Task (
       Priority : Integer;
       Size : Parameters.Size_Type;
+      Secondary_Stack_Size : Parameters.Size_Type;
       Task_Info : System.Task_Info.Task_Info_Type;
       CPU : Integer;
       Relative_Deadline : Ada.Real_Time.Time_Span;
@@ -62,6 +63,7 @@ package body System.Tasking.Stages is
    is
       pragma Unreferenced (Priority);
       pragma Unreferenced (Size);
+      pragma Unreferenced (Secondary_Stack_Size);
       pragma Unreferenced (Task_Info);
       pragma Unreferenced (CPU);
       pragma Unreferenced (Relative_Deadline);
