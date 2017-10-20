@@ -15,6 +15,8 @@ package Ada is
          with Import, Convention => Intrinsic;
       function Enclosing_Entity return String
          with Import, Convention => Intrinsic;
+      function Compilation_ISO_Date return String
+         with Import, Convention => Intrinsic;
       function Compilation_Date return String
          with Import, Convention => Intrinsic;
       function Compilation_Time return String
