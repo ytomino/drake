@@ -39,6 +39,16 @@ package body Ada.Tags is
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
 
+   function TSD_With_Checking (T : Tag) return Type_Specific_Data_Ptr;
+   function TSD_With_Checking (T : Tag) return Type_Specific_Data_Ptr is
+   begin
+      if T = No_Tag then
+         Raise_Exception (Tag_Error'Identity);
+      else
+         return TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
+      end if;
+   end TSD_With_Checking;
+
    type E_Node;
    type E_Node_Access is access E_Node;
    type E_Node is record
@@ -114,16 +124,6 @@ package body Ada.Tags is
    end E_Find;
 
    External_Map : aliased E_Node_Access := null;
-
-   function TSD_With_Checking (T : Tag) return Type_Specific_Data_Ptr;
-   function TSD_With_Checking (T : Tag) return Type_Specific_Data_Ptr is
-   begin
-      if T = No_Tag then
-         Raise_Exception (Tag_Error'Identity);
-      else
-         return TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
-      end if;
-   end TSD_With_Checking;
 
    --  inheritance relation check, for tagged record types only
    --  equivalent to CW_Membership (a-tags.adb)
