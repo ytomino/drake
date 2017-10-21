@@ -157,35 +157,23 @@ package body Ada.Tags is
    end Is_Descendant_Primary_Only;
 
    --  inheritance relation check
-   function Is_Descendant (Descendant, Ancestor : Tag; Same_Level : Boolean)
-      return Boolean;
-   function Is_Descendant (Descendant, Ancestor : Tag; Same_Level : Boolean)
-      return Boolean
-   is
+   function Is_Descendant (Descendant, Ancestor : Tag) return Boolean;
+   function Is_Descendant (Descendant, Ancestor : Tag) return Boolean is
       D_TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (Descendant).TSD);
-      A_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (DT (Ancestor).TSD);
+      D_Interfaces_Table : constant Interface_Data_Ptr :=
+         D_TSD.Interfaces_Table;
    begin
-      if Same_Level and then D_TSD.Access_Level /= A_TSD.Access_Level then
-         return False;
-      else
-         declare
-            D_Interfaces_Table : constant Interface_Data_Ptr :=
-               D_TSD.Interfaces_Table;
-         begin
-            if D_Interfaces_Table /= null then
-               for I in 1 .. D_Interfaces_Table.Nb_Ifaces loop
-                  if D_Interfaces_Table.Ifaces_Table (I).Iface_Tag =
-                     Ancestor
-                  then
-                     return True;
-                  end if;
-               end loop;
+      if D_Interfaces_Table /= null then
+         for I in 1 .. D_Interfaces_Table.Nb_Ifaces loop
+            if D_Interfaces_Table.Ifaces_Table (I).Iface_Tag =
+               Ancestor
+            then
+               return True;
             end if;
-         end;
-         return Is_Descendant_Primary_Only (Descendant, Ancestor);
+         end loop;
       end if;
+      return Is_Descendant_Primary_Only (Descendant, Ancestor);
    end Is_Descendant;
 
    --  implementation
@@ -288,7 +276,7 @@ package body Ada.Tags is
       declare
          Result : constant Tag := Internal_Tag (External);
       begin
-         if not Is_Descendant (Result, Ancestor, Same_Level => False) then
+         if not Is_Descendant (Result, Ancestor) then
             Raise_Exception (Tag_Error'Identity);
          end if;
          return Result;
@@ -296,12 +284,17 @@ package body Ada.Tags is
    end Descendant_Tag;
 
    function Is_Descendant_At_Same_Level (Descendant, Ancestor : Tag)
-      return Boolean is
+      return Boolean
+   is
+      D_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_With_Checking (Descendant);
+      A_TSD : constant Type_Specific_Data_Ptr := TSD_With_Checking (Ancestor);
    begin
-      if Descendant = No_Tag or else Ancestor = No_Tag then
-         Raise_Exception (Tag_Error'Identity);
+      if D_TSD.Access_Level /= A_TSD.Access_Level then
+         return False;
+      else
+         return Is_Descendant (Descendant, Ancestor);
       end if;
-      return Is_Descendant (Descendant, Ancestor, Same_Level => True);
    end Is_Descendant_At_Same_Level;
 
    function Parent_Tag (T : Tag) return Tag is
@@ -471,7 +464,7 @@ package body Ada.Tags is
       Base_Object : constant System.Address := Base_Address (Object);
       Base_Tag : constant Tag := Tag_Ptr_Conv.To_Pointer (Base_Object).all;
    begin
-      if Is_Descendant (Base_Tag, T, Same_Level => False) then
+      if Is_Descendant (Base_Tag, T) then
          return True;
       else
          if Get_Delegation /= null then
