@@ -24,6 +24,8 @@ package System.Native_Environment_Variables is
    procedure Release_Block (Block : Address) is null;
 
    pragma Inline (Get_Block);
+   pragma Inline (Release_Block);
+      --  [gcc-7] can not skip calling null procedure
 
    function First (Block : Address) return Cursor;
    function Next (Block : Address; Position : Cursor) return Cursor;

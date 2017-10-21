@@ -67,6 +67,7 @@ package System.Storage_Pools.Subpools is
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is null;
+   pragma Inline (Deallocate); -- [gcc-7] can not skip calling null procedure
 
    overriding function Storage_Size (Pool : Root_Storage_Pool_With_Subpools)
       return Storage_Elements.Storage_Count is

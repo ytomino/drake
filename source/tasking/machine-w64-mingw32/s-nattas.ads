@@ -59,6 +59,9 @@ package System.Native_Tasks is
    procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event);
    procedure Unblock_Abort_Signal is null;
 
+   pragma Inline (Unblock_Abort_Signal);
+      --  [gcc-7] can not skip calling null procedure
+
    --  scheduling
 
    procedure Yield;

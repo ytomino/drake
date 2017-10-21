@@ -17,5 +17,7 @@ package System.Native_IO.Names is
       Name : in out Name_Pointer;
       Is_Standard : Boolean;
       Raise_On_Error : Boolean) is null;
+   pragma Inline (Get_Full_Name);
+      --  [gcc-7] can not skip calling null procedure
 
 end System.Native_IO.Names;

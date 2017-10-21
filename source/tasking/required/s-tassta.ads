@@ -35,6 +35,8 @@ package System.Tasking.Stages is
    --  required for dynamic allocation of task by compiler (s-tassta.ads)
    procedure Expunge_Unactivated_Tasks (Chain : in out Activation_Chain) is
       null;
+   pragma Inline (Expunge_Unactivated_Tasks);
+      --  [gcc-7] can not skip calling null procedure
 
    --  required for dynamic deallocation of task by compiler (s-tassta.ads)
    procedure Free_Task (T : Task_Id);

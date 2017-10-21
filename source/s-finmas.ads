@@ -47,6 +47,8 @@ package System.Finalization_Masters is
    --  required by compiler (s-finmas.ads)
    procedure Set_Is_Heterogeneous (
       Master : in out Finalization_Master'Class) is null;
+   pragma Inline (Set_Is_Heterogeneous);
+      --  [gcc-7] can not skip calling null procedure
 
    --  required by compiler (s-finmas.ads)
    type Finalization_Master_Ptr is access all Finalization_Master;

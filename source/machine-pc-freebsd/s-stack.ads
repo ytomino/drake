@@ -10,5 +10,7 @@ package System.Stack is
 
    procedure Fake_Return_From_Signal_Handler is null;
       --  FreeBSD does not have UC_RESET_ALT_STACK ?
+   pragma Inline (Fake_Return_From_Signal_Handler);
+      --  [gcc-7] can not skip calling null procedure
 
 end System.Stack;

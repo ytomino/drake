@@ -134,6 +134,7 @@ package System.Native_IO is
       Standard_Input_Handle : aliased in out Handle_Type;
       Standard_Output_Handle : aliased in out Handle_Type;
       Standard_Error_Handle : aliased in out Handle_Type) is null;
+   pragma Inline (Initialize); -- [gcc-7] can not skip calling null procedure
 
    --  pipes
 
