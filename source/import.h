@@ -125,13 +125,12 @@
 #include <sys/param.h>
 #include <malloc_np.h>
 #include <pthread_np.h>
-#include <link.h>
+#include <sys/link_elf.h>
 #elif defined(__linux__)
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
 #include <sys/sendfile.h>
-#include <sys/statvfs.h>
 #include <link.h>
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
@@ -297,7 +296,6 @@
 #pragma for Ada "errno.h" include "asm-generic/errno.h"
 #pragma for Ada "errno.h" include "asm-generic/errno-base.h"
 #pragma for Ada "errno.h" include "bits/errno.h"
-#pragma for Ada "fcntl.h" include "bits/fcntl.h"
 #pragma for Ada "fcntl.h" include "bits/fcntl-linux.h"
 #pragma for Ada "poll.h" include "bits/poll.h"
 #pragma for Ada "poll.h" include "sys/poll.h"
@@ -307,11 +305,9 @@
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
-#pragma for Ada "sys/file.h" include "bits/fcntl.h"
 #pragma for Ada "sys/file.h" include "bits/fcntl-linux.h"
 #pragma for Ada "sys/ioctl.h" include "asm-generic/ioctls.h"
 #pragma for Ada "sys/ioctl.h" include "bits/ioctl-types.h"
-#pragma for Ada "sys/mman.h" include "bits/mman.h"
 #pragma for Ada "sys/mman.h" include "bits/mman-linux.h"
 #pragma for Ada "sys/resource.h" include "bits/resource.h"
 #pragma for Ada "sys/socket.h" include "asm-generic/socket.h"
@@ -319,10 +315,9 @@
 #pragma for Ada "sys/socket.h" include "bits/socket_type.h"
 #pragma for Ada "sys/stat.h" include "bits/stat.h"
 #pragma for Ada "sys/statfs.h" include "bits/statfs.h"
-#pragma for Ada "sys/statvfs.h" include "bits/statvfs.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
-#pragma for Ada "sys/types.h" include "bits/types.h" /* time_t */
+#pragma for Ada "sys/types.h" include "bits/types.h" /* __time_t */
 #pragma for Ada "sys/uio.h" include "bits/uio.h" /* struct iovec */
 #pragma for Ada "sys/wait.h" include "bits/waitflags.h" /* WNOHANG */
 #pragma for Ada "termios.h" include "bits/termios.h"
