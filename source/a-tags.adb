@@ -195,13 +195,13 @@ package body Ada.Tags is
       TSD : constant Type_Specific_Data_Ptr := TSD_With_Checking (T);
       Result : String
          renames TSD.External_Tag (1 .. Natural (strlen (TSD.External_Tag)));
-      L : constant Natural := Result'First + (Nested_Prefix'Length - 1);
    begin
-      if L < Result'Last
-         and then Result (Result'First .. L) = Nested_Prefix
-      then
-         null; -- nested
-      else
+--    pragma Assert (
+--       TSD.Access_Level = 0
+--          xor (
+--             Nested_Prefix'Length <= Result'Length
+--             and then Result (1 .. Nested_Prefix'Length) = Nested_Prefix));
+      if TSD.Access_Level = 0 then
          System.Shared_Locking.Enter;
          E_Insert (External_Map, T, Result); -- library-level
          System.Shared_Locking.Leave;
@@ -234,7 +234,7 @@ package body Ada.Tags is
                   External (Addr_First .. Addr_Last),
                   Result,
                   Error => Error);
-               if Error then
+               if Error or else Result = System.Null_Address then
                   Raise_Exception (Tag_Error'Identity);
                end if;
                return Tag_Conv.To_Pointer (Result);
