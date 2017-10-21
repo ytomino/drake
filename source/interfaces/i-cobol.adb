@@ -637,20 +637,26 @@ package body Interfaces.COBOL is
       Item : String;
       Target : out Alphanumeric;
       Last : out Natural;
-      Substitute : Alphanumeric := "?")
-   is
-      Target_As_C : C.char_array (0 .. Target'Length - 1);
-      for Target_As_C'Address use Target'Address;
-      Substitute_As_C : C.char_array (0 .. Substitute'Length - 1);
-      for Substitute_As_C'Address use Substitute'Address;
-      Count : C.size_t;
+      Substitute : Alphanumeric := "?") is
    begin
-      System.C_Encoding.To_Non_Nul_Terminated (
-         Item,
-         Target_As_C,
-         Count,
-         Substitute => Substitute_As_C);
-      Last := Target'First + Natural (Count) - 1;
+      if Item'Length = 0 then
+         Last := Target'First - 1;
+      else
+         declare
+            Target_As_C : C.char_array (0 .. Target'Length - 1);
+            for Target_As_C'Address use Target'Address;
+            Substitute_As_C : C.char_array (0 .. Substitute'Length - 1);
+            for Substitute_As_C'Address use Substitute'Address;
+            Count : C.size_t;
+         begin
+            System.C_Encoding.To_Non_Nul_Terminated (
+               Item,
+               Target_As_C,
+               Count,
+               Substitute => Substitute_As_C);
+            Last := Target'First + Natural (Count) - 1;
+         end;
+      end if;
    end To_COBOL;
 
    procedure To_Ada (
@@ -659,16 +665,23 @@ package body Interfaces.COBOL is
       Last : out Natural;
       Substitute : String := "?")
    is
-      Item_As_C : C.char_array (0 .. Item'Length - 1);
-      for Item_As_C'Address use Item'Address;
-      Count : Natural;
    begin
-      System.C_Encoding.From_Non_Nul_Terminated (
-         Item_As_C,
-         Target,
-         Count,
-         Substitute => Substitute);
-      Last := Target'First + Count - 1;
+      if Item'Length = 0 then
+         Last := Target'First - 1;
+      else
+         declare
+            Item_As_C : C.char_array (0 .. Item'Length - 1);
+            for Item_As_C'Address use Item'Address;
+            Count : Natural;
+         begin
+            System.C_Encoding.From_Non_Nul_Terminated (
+               Item_As_C,
+               Target,
+               Count,
+               Substitute => Substitute);
+            Last := Target'First + Count - 1;
+         end;
+      end if;
    end To_Ada;
 
    package body Decimal_Conversions is
