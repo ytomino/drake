@@ -102,8 +102,7 @@ private package Ada.UCD is
 
    type Map_16x2_Type is array (Positive range <>) of Map_16x2_Item_Type;
    pragma Suppress_Initialization (Map_16x2_Type);
---  for Map_16x2_Type'Component_Size use 48;
-      --  [gcc-6] can not initialize explicit 48bit array constants statically
+   for Map_16x2_Type'Component_Size use 48;
 
    type Map_32x2_Item_Type is record
       Code : UCS_4;
