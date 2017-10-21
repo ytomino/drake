@@ -144,8 +144,8 @@ package body Ada.Tags.Delegating is
 
    Delegating_Map : aliased D_Node_Access := null;
 
-   --  implementation
-
+   function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
+      return System.Address;
    function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
       return System.Address
    is
@@ -178,6 +178,11 @@ package body Ada.Tags.Delegating is
       T : Tag;
       Interface_Tag : Tag;
       Get : not null access function (Object : System.Address)
+         return System.Address);
+   procedure Register_Delegation (
+      T : Tag;
+      Interface_Tag : Tag;
+      Get : not null access function (Object : System.Address)
          return System.Address)
    is
       D : D_Node_Access;
@@ -187,6 +192,8 @@ package body Ada.Tags.Delegating is
       I_Insert (D.Map, Interface_Tag, Get);
       System.Shared_Locking.Leave;
    end Register_Delegation;
+
+   --  implementation
 
    type Get_Access is
       access function (Object : System.Address) return System.Address;
