@@ -19,17 +19,12 @@ package System.Native_Directories.Volumes is
    function Size (FS : Non_Controlled_File_System) return File_Size;
    function Free_Space (FS : Non_Controlled_File_System) return File_Size;
 
-   pragma Inline (Size);
-   pragma Inline (Free_Space);
+   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
+      (True);
+   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
+      (True);
 
-   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
-
-   pragma Inline (Case_Preserving);
-   pragma Inline (Case_Sensitive);
-
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-   pragma Inline (Is_HFS);
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is (False);
 
    subtype File_System_Id is C.sys.types.fsid_t;
 

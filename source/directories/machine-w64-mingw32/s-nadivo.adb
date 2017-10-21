@@ -222,12 +222,6 @@ package body System.Native_Directories.Volumes is
       end if;
    end Case_Sensitive;
 
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return False;
-   end Is_HFS;
-
    function Identity (FS : aliased in out Non_Controlled_File_System)
       return File_System_Id is
    begin

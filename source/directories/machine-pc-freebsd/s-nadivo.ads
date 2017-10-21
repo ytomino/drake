@@ -27,14 +27,12 @@ package System.Native_Directories.Volumes is
    function Directory (FS : Non_Controlled_File_System) return String;
    function Device (FS : Non_Controlled_File_System) return String;
 
-   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean;
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean;
+   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
+      (True);
+   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
+      (True);
 
-   pragma Inline (Case_Preserving);
-   pragma Inline (Case_Sensitive);
-
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-   pragma Inline (Is_HFS);
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is (False);
 
    subtype File_System_Id is C.sys.mount.fsid_t;
 

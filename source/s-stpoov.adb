@@ -43,12 +43,4 @@ package body System.Storage_Pools.Overlaps is
       TLS.Overlaid_Allocation := Null_Address;
    end Deallocate;
 
-   overriding function Storage_Size (Pool : Overlay_Pool)
-      return Storage_Elements.Storage_Count
-   is
-      pragma Unreferenced (Pool);
-   begin
-      return 0;
-   end Storage_Size;
-
 end System.Storage_Pools.Overlaps;

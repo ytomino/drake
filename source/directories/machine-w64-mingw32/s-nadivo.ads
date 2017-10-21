@@ -39,8 +39,7 @@ package System.Native_Directories.Volumes is
    function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
       return Boolean;
 
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean;
-   pragma Inline (Is_HFS);
+   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is (False);
 
    subtype File_System_Id is C.windef.DWORD;
 

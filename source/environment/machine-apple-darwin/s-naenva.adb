@@ -193,11 +193,6 @@ package body System.Native_Environment_Variables is
       return Zero_Terminated_Strings.Value (Value);
    end Value;
 
-   function Get_Block return Address is
-   begin
-      return Null_Address;
-   end Get_Block;
-
    function First (Block : Address) return Cursor is
       pragma Unreferenced (Block);
    begin

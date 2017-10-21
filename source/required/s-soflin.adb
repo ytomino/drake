@@ -32,9 +32,4 @@ package body System.Soft_Links is
       return Cast (Cast (Get_Current_Excep.all).Id);
    end Get_GNAT_Exception;
 
-   function Zero return Integer is
-   begin
-      return 0;
-   end Zero;
-
 end System.Soft_Links;

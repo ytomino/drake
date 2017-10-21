@@ -348,12 +348,6 @@ package body System.Native_Text_IO is
       Bottom := Natural (Info.srWindow.Bottom + 1);
    end Terminal_View;
 
-   function Use_Terminal_Position (Handle : Handle_Type) return Boolean is
-      pragma Unreferenced (Handle);
-   begin
-      return True;
-   end Use_Terminal_Position;
-
    procedure Terminal_Position (
       Handle : Handle_Type;
       Col, Line : out Positive)

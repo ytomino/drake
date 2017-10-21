@@ -1,14 +1,6 @@
 pragma Check_Policy (Trace => Ignore);
 package body System.Shared_Storage is
 
-   function Nop (Key : String)
-      return access Ada.Streams.Root_Stream_Type'Class
-   is
-      pragma Unreferenced (Key);
-   begin
-      return null;
-   end Nop;
-
    procedure Shared_Var_Lock (Var : String) is
    begin
       pragma Check (Trace, Ada.Debug.Put (Var));
