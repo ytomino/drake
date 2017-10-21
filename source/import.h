@@ -25,7 +25,13 @@
 #if defined(__unix__) || defined(__APPLE__)
 #include <stddef.h>
 #include <errno.h>
+#if defined(__linux__)
+#define _SYS_SELECT_H
+#endif
 #include <sys/types.h> /* before other system headers */
+#if defined(__linux__)
+#undef _SYS_SELECT_H
+#endif
 #include <sys/ucontext.h> /* before signal.h */
 #include <signal.h> /* before unistd.h and time.h */
 #include <time.h>
@@ -298,7 +304,6 @@
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
 #pragma for Ada "pthread.h" include "bits/sigthread.h"
 #pragma for Ada "signal.h" include "bits/siginfo.h"
-#pragma for Ada "signal.h" include "bits/sigset.h"
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
