@@ -25,7 +25,9 @@ package System.Formatting.Float is
       Width : Positive := Standard.Float'Digits - 1);
 
    --  Width of integer part.
-   function Fore_Width (Value : Long_Long_Float; Base : Number_Base := 10)
+   function Fore_Width (
+      Value : Longest_Unsigned_Float;
+      Base : Number_Base := 10)
       return Positive;
    function Fore_Width (
       First, Last : Long_Long_Float;

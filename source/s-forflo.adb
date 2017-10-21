@@ -128,15 +128,17 @@ package body System.Formatting.Float is
       pragma Assert (X = 0.0);
    end Aft_Image;
 
-   function Fore_Width (Value : Long_Long_Float; Base : Number_Base := 10)
+   function Fore_Width (
+      Value : Longest_Unsigned_Float;
+      Base : Number_Base := 10)
       return Positive
    is
-      V : Long_Long_Float := Value;
+      P : Long_Long_Float := Long_Long_Float (Base);
       Result : Positive := 1;
    begin
-      while V >= Long_Long_Float (Base) loop
-         V := V / Long_Long_Float (Base);
+      while P <= Value loop -- Value is finite, so exit when isinfl (P)
          Result := Result + 1;
+         P := P * Long_Long_Float (Base);
       end loop;
       return Result;
    end Fore_Width;

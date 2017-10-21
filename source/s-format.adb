@@ -56,12 +56,12 @@ package body System.Formatting is
    function Width_Digits (Value : Word_Unsigned; Base : Number_Base)
       return Positive
    is
-      V : Word_Unsigned := Value;
+      P : aliased Word_Unsigned := Word_Unsigned (Base);
       Result : Positive := 1;
    begin
-      while V >= Word_Unsigned (Base) loop
-         V := V / Word_Unsigned (Base);
+      while P <= Value loop
          Result := Result + 1;
+         exit when mul_overflow (P, Word_Unsigned (Base), P'Access);
       end loop;
       return Result;
    end Width_Digits;
@@ -74,14 +74,14 @@ package body System.Formatting is
       if Standard'Word_Size < Longest_Unsigned'Size then
          --  optimized for 32bit
          declare
-            V : Longest_Unsigned := Value;
-            Offset : Natural := 0;
+            P : aliased Longest_Unsigned := Longest_Unsigned (Base);
+            Result : Positive := 1;
          begin
-            while V > Longest_Unsigned (Word_Unsigned'Last) loop
-               V := V / Longest_Unsigned (Base);
-               Offset := Offset + 1;
+            while P <= Value loop
+               Result := Result + 1;
+               exit when mul_overflow (P, Longest_Unsigned (Base), P'Access);
             end loop;
-            return Offset + Width_Digits (Word_Unsigned (V), Base);
+            return Result;
          end;
       else
          --  optimized for 64bit
