@@ -2,7 +2,6 @@ with System.UTF_Conversions;
 with C.winnls;
 with C.winnt;
 package body System.C_Encoding is
-   use type C.char_array;
    use type C.signed_int;
    use type C.size_t;
 
