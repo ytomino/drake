@@ -75,8 +75,11 @@ package body System.Unwind.Occurrences is
       Current : Exception_Occurrence) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      --  in GNAT runtime, task termination handler will be unset
-      --  and Standard_Library.AdaFinal will be called here
+      --  Only flush Text_IO, similar to abort that flushes stdio and does not
+      --    finalize any others (atexit, __attribute__((destructor)), etc).
+      --  GNAT runtime calls System.Standard_Library.Adafinal to complete tasks
+      --    here, but drake does not it according with abort.
+      Flush_IO;
       Report (Current, "");
       Termination.Force_Abort;
    end Last_Chance_Handler;
@@ -297,6 +300,11 @@ package body System.Unwind.Occurrences is
             New_Line => New_Line);
       end if;
    end Exception_Information;
+
+   procedure Flush_IO is
+   begin
+      Flush_IO_Hook.all;
+   end Flush_IO;
 
    procedure Default_Report (X : Exception_Occurrence; Where : String) is
       subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);

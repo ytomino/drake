@@ -24,6 +24,7 @@ with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Reallocation;
+with System.Unwind.Occurrences;
 package body Ada.Text_IO is
    use Exception_Identification.From_Here;
 
@@ -31,6 +32,13 @@ package body Ada.Text_IO is
       new Unchecked_Conversion (Controlled.File_Access, File_Access);
    function To_Controlled_File_Access is
       new Unchecked_Conversion (File_Access, Controlled.File_Access);
+
+   procedure Flush_IO;
+   procedure Flush_IO is
+   begin
+      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Output);
+      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Error);
+   end Flush_IO;
 
    procedure Reallocate is
       new Unchecked_Reallocation (
@@ -1575,4 +1583,6 @@ package body Ada.Text_IO is
 
    end Controlled;
 
+begin
+   System.Unwind.Occurrences.Flush_IO_Hook := Flush_IO'Access;
 end Ada.Text_IO;

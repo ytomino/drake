@@ -70,6 +70,8 @@ procedure btsym is
 							Ada.Text_IO.Standard_Error.all,
 							"failed: " & Command (1 .. Last));
 				end;
+				--  Report_Hook is called just before abort, so it should flush.
+				Ada.Text_IO.Flush (Ada.Text_IO.Standard_Error.all);
 			end;
 		end if;
 	end Report;
