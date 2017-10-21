@@ -223,6 +223,10 @@ cxa3001 C unicode incompatibility of Handling.Is_XXX, Latin_1, @testsuite
 cxa3002 C unicode incompatibility of To_Basic, Latin_1, @testsuite
 cxa3003 C unicode incompatibility of Is_/To_ISO_646, Latin_1, @testsuite
 cxa3004 F unicode incompatibility of Is_/To_String, To_Character, @testsuite
+cxa4004 F Constraint_Error from Fixed.Index
+cxa4006 F Constraint_Error from Bounded.Generic_Bounded_Length.Index
+cxa4015 F Constraint_Error from Wide_Fixed.Index
+cxa4017 F Constraint_Error from Wide_Bounded.Generic_Bounded_Length.Index
 cxa4025 F unicode incompatibility of To_Upper, @testsuite
 cxa4026 A unicode incompatibility of To_Upper, Latin_1, @testsuite
 cxa4028 C "use" and "use type" Ada.Strings.Bounded, @testsuite
@@ -235,6 +239,8 @@ cxaa019 C it requires Ada95 mode (Ada.Text_IO.Current_Output)
 cxab001 F strict End_Of_Line
 cxac003 F strict End_Of_Line
 cxac004 C unicode incompatibility of Latin_1.Yen_Sign, @testsuite
+cxb3009 F Storage_Error from Interfaces.C.Strings.New_String
+cxb4002 F Storage_Error from Interfaces.COBOL.To_Ada
 cxb4005 C Ada_To_COBOL and COBOL_To_Ada are not variables
 cxb4009 C it requites COBOL compiler
 cxc7001 C unimplemented tasking features (select)
