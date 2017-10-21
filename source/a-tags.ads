@@ -319,13 +319,16 @@ private
 
    --  interface delegation
 
+   function Nop (Object : System.Address; Interface_Tag : Tag)
+      return System.Address is (System.Null_Address);
+
    type Get_Delegation_Handler is access function (
       Object : System.Address;
       Interface_Tag : Tag)
       return System.Address;
    pragma Favor_Top_Level (Get_Delegation_Handler);
 
-   Get_Delegation : Get_Delegation_Handler := null;
+   Get_Delegation : not null Get_Delegation_Handler := Nop'Access;
    pragma Atomic (Get_Delegation);
 
 end Ada.Tags;
