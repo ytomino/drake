@@ -36,10 +36,10 @@ Clone this repository. ::
 
  $ git clone git://github.com/ytomino/drake.git
 
-The *master* branch is targeted for gcc 6.
+The *master* branch is targeted for gcc 7.
 Please checkout a branch corresponds to the version of your gcc. ::
 
- $ git checkout gcc-5 # for example
+ $ git checkout gcc-6 # for example
 
 How to build
 ------------
