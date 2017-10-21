@@ -49,6 +49,21 @@ package body Ada.Tags is
       end if;
    end TSD_With_Checking;
 
+   procedure Expanded_Name (
+      T : Tag; -- checking
+      Item : out Cstring_Ptr;
+      Last : out Natural);
+   procedure Expanded_Name (
+      T : Tag;
+      Item : out Cstring_Ptr;
+      Last : out Natural)
+   is
+      TSD : constant Type_Specific_Data_Ptr := TSD_With_Checking (T);
+   begin
+      Item := TSD.Expanded_Name;
+      Last := Integer (strlen (Item));
+   end Expanded_Name;
+
    type E_Node;
    type E_Node_Access is access E_Node;
    type E_Node is record
@@ -176,19 +191,29 @@ package body Ada.Tags is
    --  implementation
 
    function Expanded_Name (T : Tag) return String is
-      TSD : constant Type_Specific_Data_Ptr := TSD_With_Checking (T);
+      Item : Cstring_Ptr;
+      Last : Natural;
    begin
-      return TSD.Expanded_Name (1 .. Natural (strlen (TSD.Expanded_Name)));
+      Expanded_Name (T, Item, Last); -- checking Tag_Error
+      return Item (Item'First .. Last);
    end Expanded_Name;
 
    function Wide_Expanded_Name (T : Tag) return Wide_String is
+      Item : Cstring_Ptr;
+      Last : Natural;
    begin
-      return System.UTF_Conversions.From_8_To_16.Convert (Expanded_Name (T));
+      Expanded_Name (T, Item, Last); -- checking Tag_Error
+      return System.UTF_Conversions.From_8_To_16.Convert (
+         Item (Item'First .. Last));
    end Wide_Expanded_Name;
 
    function Wide_Wide_Expanded_Name (T : Tag) return Wide_Wide_String is
+      Item : Cstring_Ptr;
+      Last : Natural;
    begin
-      return System.UTF_Conversions.From_8_To_32.Convert (Expanded_Name (T));
+      Expanded_Name (T, Item, Last); -- checking Tag_Error
+      return System.UTF_Conversions.From_8_To_32.Convert (
+         Item (Item'First .. Last));
    end Wide_Wide_Expanded_Name;
 
    function External_Tag (T : Tag) return String is
