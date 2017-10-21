@@ -55,7 +55,8 @@ private
    type Cstring_Ptr is access all Fixed_String;
    for Cstring_Ptr'Storage_Size use 0;
 
-   type Offset_To_Top_Function_Ptr is access function (This : System.Address)
+   type Offset_To_Top_Function_Ptr is access function (
+      Object : System.Address)
       return System.Storage_Elements.Storage_Offset;
 
    type Interface_Data_Element is record
@@ -215,7 +216,7 @@ private
    --  for accessibility checks of new access INTERFACE'Class (exp_ch4.adb)
    --  for accessibility checks of return access INTERFACE'Class (exp_ch6.adb)
    --  for Unchecked_Deallocation of access INTERFACE'Class (exp_intr.adb)
-   function Base_Address (This : System.Address) return System.Address;
+   function Base_Address (Object : System.Address) return System.Address;
 
    --  optionally required by compiler (a-tags.ads)
    --  for Duplicated_Tag_Check (exp_disp.adb)
@@ -226,7 +227,8 @@ private
    --  for new INTERFACE'Class'(...) (exp_ch4.adb)
    --  for non-statically upcast to INTERFACE'Class (exp_disp.adb)
    --  for assignment to INTERFACE'Class (exp_util.adb)
-   function Displace (This : System.Address; T : Tag) return System.Address;
+   function Displace (Object : System.Address; T : Tag)
+      return System.Address;
 
    --  required by compiler (a-tags.ads)
    --  for elaborating dispatch tables of derived types (exp_atag.adb)
@@ -239,7 +241,8 @@ private
 
    --  required by compiler (a-tags.ads)
    --  for select statements using synchronized interface (exp_sel.adb)
-   function Get_Offset_Index (T : Tag; Position : Positive) return Positive;
+   function Get_Offset_Index (Object_T : Tag; Position : Positive)
+      return Positive;
 
    --  required by compiler (a-tags.ads)
    --  for select statements using synchronized interface (exp_atag.adb)
@@ -249,27 +252,27 @@ private
 
    --  required by compiler (a-tags.ads)
    --  for select statements using synchronized interface (exp_sel.adb)
-   function Get_Tagged_Kind (T : Tag) return Tagged_Kind;
+   function Get_Tagged_Kind (Object_T : Tag) return Tagged_Kind;
 
    --  required by compiler (a-tags.ads)
    --  for Object in INTERFACE'Class (exp_ch4.adb)
    --  for Generic_Dispatching_Constructor (exp_intr.adb)
-   function IW_Membership (This : System.Address; T : Tag) return Boolean;
+   function IW_Membership (Object : System.Address; T : Tag) return Boolean;
 
    --  required by compiler (a-tags.ads)
    --  for deferencing access values associated to Checked_Pool (exp_ch4.adb)
    --  for Unchecked_Deallocation of access TAGGED'Class (exp_util.adb)
-   function Needs_Finalization (T : Tag) return Boolean;
+   function Needs_Finalization (Object_T : Tag) return Boolean;
 
    --  optionally required by compiler (a-tags.ads)
    --  for implicit primitives derived from plural parent types (exp_disp.adb)
---  function Offset_To_Top (This : System.Address)
+--  function Offset_To_Top (Object : System.Address)
 --    return System.Storage_Elements.Storage_Offset;
 
    --  required by compiler (a-tags.ads)
    --  for types implementing interfaces (exp_ch3.adb)
    procedure Register_Interface_Offset (
-      This : System.Address;
+      Object : System.Address;
       Interface_T : Tag;
       Is_Static : Boolean;
       Offset_Value : System.Storage_Elements.Storage_Offset;
@@ -289,7 +292,7 @@ private
    --  required by compiler (a-tags.ads)
    --  for variable-sized types implementing interfaces (exp_ch3.adb)
 --  procedure Set_Dynamic_Offset_To_Top (
---    This : System.Address;
+--    Object : System.Address;
 --    Interface_T : Tag;
 --    Offset_Value : System.Storage_Elements.Storage_Offset;
 --    Offset_Func : Offset_To_Top_Function_Ptr);

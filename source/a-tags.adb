@@ -313,16 +313,16 @@ package body Ada.Tags is
       return TSD.Type_Is_Abstract;
    end Is_Abstract;
 
-   function Base_Address (This : System.Address) return System.Address is
-      function Offset_To_Top (This : System.Address)
+   function Base_Address (Object : System.Address) return System.Address is
+      function Offset_To_Top (Object : System.Address)
          return System.Storage_Elements.Storage_Offset;
-      function Offset_To_Top (This : System.Address)
+      function Offset_To_Top (Object : System.Address)
          return System.Storage_Elements.Storage_Offset
       is
-         T : constant Tag := Tag_Ptr_Conv.To_Pointer (This).all;
-         T_DT : constant Dispatch_Table_Ptr := DT (T);
+         Object_Tag : constant Tag := Tag_Ptr_Conv.To_Pointer (Object).all;
+         Object_DT : constant Dispatch_Table_Ptr := DT (Object_Tag);
       begin
---       if T_DT.Offset_To_Top =
+--       if Object_DT.Offset_To_Top =
 --          System.Storage_Elements.Storage_Offset'Last
 --       then -- set by Set_Dynamic_Offset_To_Top
 --          declare
@@ -333,22 +333,23 @@ package body Ada.Tags is
 --             Tag_Size : constant :=
 --                Standard'Address_Size / Standard'Storage_Unit;
 --          begin
---             return OTT_Ptr_Conv.To_Pointer (This + Tag_Size).all;
+--             return OTT_Ptr_Conv.To_Pointer (Object + Tag_Size).all;
 --          end;
 --       end if;
-         return T_DT.Offset_To_Top;
+         return Object_DT.Offset_To_Top;
       end Offset_To_Top;
    begin
-      return This - Offset_To_Top (This);
+      return Object - Offset_To_Top (Object);
    end Base_Address;
 
-   function Displace (This : System.Address; T : Tag) return System.Address is
+   function Displace (Object : System.Address; T : Tag)
+      return System.Address is
    begin
-      if This = System.Null_Address then
+      if Object = System.Null_Address then
          return System.Null_Address;
       else
          declare
-            Base_Object : constant System.Address := Base_Address (This);
+            Base_Object : constant System.Address := Base_Address (Object);
             Base_Tag : constant Tag :=
                Tag_Ptr_Conv.To_Pointer (Base_Object).all;
             Base_DT : constant Dispatch_Table_Ptr := DT (Base_Tag);
@@ -403,23 +404,25 @@ package body Ada.Tags is
    end DT;
 
    function Get_Entry_Index (T : Tag; Position : Positive) return Positive is
-      T_TSD : constant Type_Specific_Data_Ptr :=
+      TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
    begin
-      return T_TSD.SSD.SSD_Table (Position).Index;
+      return TSD.SSD.SSD_Table (Position).Index;
    end Get_Entry_Index;
 
-   function Get_Offset_Index (T : Tag; Position : Positive) return Positive is
-      T_DT : constant Dispatch_Table_Ptr := DT (T);
+   function Get_Offset_Index (Object_T : Tag; Position : Positive)
+      return Positive
+   is
+      Object_DT : constant Dispatch_Table_Ptr := DT (Object_T);
    begin
-      if T_DT.Signature = Primary_DT then
+      if Object_DT.Signature = Primary_DT then
          return Position;
       else
          declare
-            T_OSD : constant Object_Specific_Data_Ptr :=
-               OSD_Ptr_Conv.To_Pointer (T_DT.TSD);
+            Object_OSD : constant Object_Specific_Data_Ptr :=
+               OSD_Ptr_Conv.To_Pointer (Object_DT.TSD);
          begin
-            return T_OSD.OSD_Table (Position);
+            return Object_OSD.OSD_Table (Position);
          end;
       end if;
    end Get_Offset_Index;
@@ -427,20 +430,20 @@ package body Ada.Tags is
    function Get_Prim_Op_Kind (T : Tag; Position : Positive)
       return Prim_Op_Kind
    is
-      T_TSD : constant Type_Specific_Data_Ptr :=
+      TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
    begin
-      return T_TSD.SSD.SSD_Table (Position).Kind;
+      return TSD.SSD.SSD_Table (Position).Kind;
    end Get_Prim_Op_Kind;
 
-   function Get_Tagged_Kind (T : Tag) return Tagged_Kind is
-      T_DT : constant Dispatch_Table_Ptr := DT (T);
+   function Get_Tagged_Kind (Object_T : Tag) return Tagged_Kind is
+      Object_DT : constant Dispatch_Table_Ptr := DT (Object_T);
    begin
-      return T_DT.Tag_Kind;
+      return Object_DT.Tag_Kind;
    end Get_Tagged_Kind;
 
-   function IW_Membership (This : System.Address; T : Tag) return Boolean is
-      Base_Object : constant System.Address := Base_Address (This);
+   function IW_Membership (Object : System.Address; T : Tag) return Boolean is
+      Base_Object : constant System.Address := Base_Address (Object);
       Base_Tag : constant Tag := Tag_Ptr_Conv.To_Pointer (Base_Object).all;
    begin
       if Is_Descendant (Base_Tag, T, Same_Level => False) then
@@ -461,32 +464,32 @@ package body Ada.Tags is
       end if;
    end IW_Membership;
 
-   function Needs_Finalization (T : Tag) return Boolean is
-      T_DT : constant Dispatch_Table_Ptr := DT (T);
-      T_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (T_DT.TSD);
+   function Needs_Finalization (Object_T : Tag) return Boolean is
+      Object_DT : constant Dispatch_Table_Ptr := DT (Object_T);
+      Object_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (Object_DT.TSD);
    begin
-      return T_TSD.Needs_Finalization;
+      return Object_TSD.Needs_Finalization;
    end Needs_Finalization;
 
    procedure Register_Interface_Offset (
-      This : System.Address;
+      Object : System.Address;
       Interface_T : Tag;
       Is_Static : Boolean;
       Offset_Value : System.Storage_Elements.Storage_Offset;
       Offset_Func : Offset_To_Top_Function_Ptr)
    is
-      T : constant Tag := Tag_Ptr_Conv.To_Pointer (This).all;
-      T_DT : constant Dispatch_Table_Ptr := DT (T);
-      T_TSD : constant Type_Specific_Data_Ptr :=
-         TSD_Ptr_Conv.To_Pointer (T_DT.TSD);
-      T_Interfaces_Table : constant Interface_Data_Ptr :=
-         T_TSD.Interfaces_Table;
+      Object_Tag : constant Tag := Tag_Ptr_Conv.To_Pointer (Object).all;
+      Object_DT : constant Dispatch_Table_Ptr := DT (Object_Tag);
+      Object_TSD : constant Type_Specific_Data_Ptr :=
+         TSD_Ptr_Conv.To_Pointer (Object_DT.TSD);
+      Object_Interfaces_Table : constant Interface_Data_Ptr :=
+         Object_TSD.Interfaces_Table;
    begin
-      for I in 1 .. T_Interfaces_Table.Nb_Ifaces loop
+      for I in 1 .. Object_Interfaces_Table.Nb_Ifaces loop
          declare
             E : Interface_Data_Element
-               renames T_Interfaces_Table.Ifaces_Table (I);
+               renames Object_Interfaces_Table.Ifaces_Table (I);
          begin
             if E.Iface_Tag = Interface_T then
                E.Static_Offset_To_Top := Is_Static or else Offset_Value = 0;
@@ -528,10 +531,10 @@ package body Ada.Tags is
       Position : Positive;
       Value : Positive)
    is
-      T_TSD : constant Type_Specific_Data_Ptr :=
+      TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
    begin
-      T_TSD.SSD.SSD_Table (Position).Index := Value;
+      TSD.SSD.SSD_Table (Position).Index := Value;
    end Set_Entry_Index;
 
    procedure Set_Prim_Op_Kind (
@@ -539,10 +542,10 @@ package body Ada.Tags is
       Position : Positive;
       Value : Prim_Op_Kind)
    is
-      T_TSD : constant Type_Specific_Data_Ptr :=
+      TSD : constant Type_Specific_Data_Ptr :=
          TSD_Ptr_Conv.To_Pointer (DT (T).TSD);
    begin
-      T_TSD.SSD.SSD_Table (Position).Kind := Value;
+      TSD.SSD.SSD_Table (Position).Kind := Value;
    end Set_Prim_Op_Kind;
 
 end Ada.Tags;
