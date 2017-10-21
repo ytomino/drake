@@ -55,6 +55,8 @@ package System.Debug is
       return Boolean
       with Export, Convention => Ada, External_Name => "__drake_runtime_error";
    pragma Machine_Attribute (Runtime_Error, "noreturn");
+   pragma Inline_Always (Runtime_Error);
+      --  [gcc-7] can not skip calling Raise_Assertion_Error after "noreturn"
 
 private
 
