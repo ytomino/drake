@@ -14,7 +14,7 @@ package body System.Native_Text_IO is
    use type C.winnt.WCHAR;
 
    package LPSTR_Conv is
-      new Address_To_Named_Access_Conversions (C.winnt.CCHAR, C.winnt.LPSTR);
+      new Address_To_Named_Access_Conversions (C.char, C.winnt.LPSTR);
 
    function Processed_Input_Is_Enabled (Handle : Handle_Type) return Boolean;
    function Processed_Input_Is_Enabled (Handle : Handle_Type) return Boolean is
