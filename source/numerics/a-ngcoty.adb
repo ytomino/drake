@@ -85,11 +85,6 @@ package body Ada.Numerics.Generic_Complex_Types is
 
    --  implementation
 
-   function i return Imaginary is
-   begin
-      return 1.0;
-   end i;
-
    function Re (X : Complex) return Real'Base is
    begin
       return X.Re;

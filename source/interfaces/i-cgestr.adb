@@ -102,11 +102,11 @@ package body Interfaces.C.Generic_Strings is
       return not null chars_ptr
    is
       C : constant Element_Array :=
-         To_C (Str, Append_Nul => False, Substitute => Substitute);
+         To_C (Str, Append_Nul => True, Substitute => Substitute);
    begin
       return New_Chars_Ptr (
          const_chars_ptr_Conv.To_Pointer (C'Address),
-         C'Length);
+         C'Length - 1);
    end New_String;
 
    function New_Chars_Ptr (Length : size_t) return not null chars_ptr is
@@ -448,12 +448,23 @@ package body Interfaces.C.Generic_Strings is
       Str : String_Type;
       Check : Boolean := True;
       Substitute : Element_Array :=
-         (0 => Element'Val (Character'Pos ('?')))) is
+         (0 => Element'Val (Character'Pos ('?'))))
+   is
+      Chars : constant Element_Array :=
+         To_C (Str, Append_Nul => True, Substitute => Substitute);
+      First, Last : C.size_t;
    begin
+      if Chars'First >= Chars'Last then -- Chars'Length <= 1
+         First := Chars'First + 1;
+         Last := Chars'First;
+      else
+         First := Chars'First;
+         Last := Chars'Last - 1;
+      end if;
       Update (
          Item, -- checking Dereference_Error
          Offset,
-         To_C (Str, Append_Nul => False, Substitute => Substitute),
+         Chars (First .. Last),
          Check);
    end Update;
 

@@ -20,11 +20,7 @@ package body Ada.Hierarchical_File_Names is
       end return;
    end Parent_Directory_Name;
 
-   function Current_Directory_Name return String;
-   function Current_Directory_Name return String is
-   begin
-      return ".";
-   end Current_Directory_Name;
+   function Current_Directory_Name return String is (".");
 
    procedure Containing_Root_Directory (Name : String; Last : out Natural);
    procedure Containing_Root_Directory (Name : String; Last : out Natural) is

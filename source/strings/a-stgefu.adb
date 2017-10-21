@@ -269,7 +269,7 @@ package body Ada.Strings.Generic_Functions is
       else
          declare
             Pattern_Length : constant Natural := Pattern'Length;
-            Unsearched_Last : Natural := Source'Last - (Pattern_Length - 1);
+            Unsearched_Last : Integer := Source'Last - (Pattern_Length - 1);
          begin
             while Unsearched_Last >= Source'First loop
                declare

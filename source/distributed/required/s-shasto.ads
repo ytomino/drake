@@ -6,7 +6,7 @@ package System.Shared_Storage is
    --  no-operation
    procedure Nop (Key : String) is null;
    function Nop (Key : String)
-      return access Ada.Streams.Root_Stream_Type'Class;
+      return access Ada.Streams.Root_Stream_Type'Class is (null);
 
    type Lock_Handler is access procedure (Key : String);
 

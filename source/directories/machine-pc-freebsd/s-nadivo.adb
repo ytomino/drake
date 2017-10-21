@@ -61,24 +61,6 @@ package body System.Native_Directories.Volumes is
       return Zero_Terminated_Strings.Value (FS.f_mntfromname (0)'Access);
    end Device;
 
-   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return True;
-   end Case_Preserving;
-
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return True;
-   end Case_Sensitive;
-
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return False;
-   end Is_HFS;
-
    function Identity (FS : Non_Controlled_File_System) return File_System_Id is
    begin
       return FS.f_fsid;

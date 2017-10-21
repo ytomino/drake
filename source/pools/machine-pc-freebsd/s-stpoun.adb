@@ -64,12 +64,4 @@ package body System.Storage_Pools.Unbounded is
       Standard_Allocators.Free (X);
    end Deallocate;
 
-   overriding function Storage_Size (Pool : Unbounded_Pool)
-      return Storage_Elements.Storage_Count
-   is
-      pragma Unreferenced (Pool);
-   begin
-      return Storage_Elements.Storage_Count'Last;
-   end Storage_Size;
-
 end System.Storage_Pools.Unbounded;

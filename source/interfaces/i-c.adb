@@ -230,17 +230,25 @@ package body Interfaces.C is
       function To_Non_Nul_Terminated (
          Item : String_Type;
          Substitute : Element_Array)
-         return Element_Array
-      is
-         Result : Element_Array (
-            0 ..
-            Item'Length * C.size_t'Max (Expanding_To_C, Substitute'Length)
-               - 1);
-         Count : size_t;
+         return Element_Array is
       begin
-         To_Non_Nul_Terminated (Item, Result, Count,
-            Substitute => Substitute);
-         return Result (0 .. Count - 1);
+         if Item'Length > 0 then
+            declare
+               Result : Element_Array (
+                  0 ..
+                  Item'Length
+                        * C.size_t'Max (Expanding_To_C, Substitute'Length)
+                     - 1);
+               Count : size_t;
+            begin
+               To_Non_Nul_Terminated (Item, Result, Count,
+                  Substitute => Substitute);
+               if Count > 0 then
+                  return Result (0 .. Count - 1);
+               end if;
+            end;
+         end if;
+         raise Constraint_Error; -- RM B.3(50/2)
       end To_Non_Nul_Terminated;
 
       function From_Nul_Terminated (

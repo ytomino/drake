@@ -26,8 +26,7 @@ package System.Storage_Pools.Overlaps is
    pragma Inline (Deallocate);
 
    overriding function Storage_Size (Pool : Overlay_Pool)
-      return Storage_Elements.Storage_Count;
-   pragma Inline (Storage_Size);
+      return Storage_Elements.Storage_Count is (0);
 
    Pool : constant not null access Overlay_Pool;
 

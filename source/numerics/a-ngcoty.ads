@@ -153,5 +153,6 @@ private
    type Imaginary is new Real'Base;
 --  i : constant Imaginary := 1.0;
 --  j : constant Imaginary := 1.0;
+   function i return Imaginary is (1.0);
 
 end Ada.Numerics.Generic_Complex_Types;

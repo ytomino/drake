@@ -32,7 +32,7 @@ package System.Soft_Links is
          External_Name => "system__soft_links__save_library_occurrence";
 
    --  no-operation
-   function Zero return Integer; -- always return 0
+   function Zero return Integer is (0);
    procedure Nop
       renames Synchronous_Control.Nop;
 

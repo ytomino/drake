@@ -20,10 +20,8 @@ package System.Native_Environment_Variables is
    function Name (Position : Cursor) return String;
    function Value (Position : Cursor) return String;
 
-   function Get_Block return Address;
+   function Get_Block return Address is (Null_Address);
    procedure Release_Block (Block : Address) is null;
-
-   pragma Inline (Get_Block);
 
    function First (Block : Address) return Cursor;
    function Next (Block : Address; Position : Cursor) return Cursor;

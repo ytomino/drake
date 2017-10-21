@@ -21,7 +21,8 @@ package System.Storage_Pools.Standard_Pools is
       Alignment : Storage_Elements.Storage_Count);
 
    overriding function Storage_Size (Pool : Standard_Pool)
-      return Storage_Elements.Storage_Count;
+      return Storage_Elements.Storage_Count is
+      (Storage_Elements.Storage_Count'Last);
 
    --  The "standard storage pool" object, is implementation-defined,
    --    but mentioned in RM 13.11(17).

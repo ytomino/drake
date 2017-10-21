@@ -39,24 +39,6 @@ package body System.Native_Directories.Volumes is
       return File_Size (FS.f_bfree) * File_Size (FS.f_bsize);
    end Free_Space;
 
-   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return True;
-   end Case_Preserving;
-
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return True;
-   end Case_Sensitive;
-
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is
-      pragma Unreferenced (FS);
-   begin
-      return False;
-   end Is_HFS;
-
    function Identity (FS : Non_Controlled_File_System) return File_System_Id is
    begin
       return FS.f_fsid;
