@@ -21,28 +21,28 @@ package body System.Formatting.Float is
          Convention => Intrinsic, External_Name => "__builtin_signbitl";
 
    procedure Split (
-      X : Longest_Unsigned_Float;
+      X : Long_Long_Unsigned_Float;
       Fore : out Digit; -- Fore < Base
-      Aft : out Longest_Unsigned_Float;
+      Aft : out Long_Long_Unsigned_Float;
       Exponent : out Integer;
       Base : Number_Base := 10);
    procedure Split (
-      X : Longest_Unsigned_Float;
+      X : Long_Long_Unsigned_Float;
       Fore : out Digit;
-      Aft : out Longest_Unsigned_Float;
+      Aft : out Long_Long_Unsigned_Float;
       Exponent : out Integer;
       Base : Number_Base := 10) is
    begin
       if X > 0.0 then
-         if X >= Longest_Unsigned_Float (Base) then
+         if X >= Long_Long_Unsigned_Float (Base) then
             declare
-               B : Longest_Unsigned_Float := Longest_Unsigned_Float (Base);
+               B : Long_Long_Unsigned_Float := Long_Long_Unsigned_Float (Base);
             begin
                Exponent := 1;
                loop
                   declare
-                     Next_B : constant Longest_Unsigned_Float :=
-                        B * Longest_Unsigned_Float (Base);
+                     Next_B : constant Long_Long_Unsigned_Float :=
+                        B * Long_Long_Unsigned_Float (Base);
                   begin
                      exit when Next_B > X;
                      B := Next_B;
@@ -50,8 +50,8 @@ package body System.Formatting.Float is
                   Exponent := Exponent + 1;
                end loop;
                declare
-                  Scaled : constant Longest_Unsigned_Float := X / B;
-                  Fore_Float : constant Longest_Unsigned_Float :=
+                  Scaled : constant Long_Long_Unsigned_Float := X / B;
+                  Fore_Float : constant Long_Long_Unsigned_Float :=
                      truncl (Scaled);
                begin
                   Fore := Digit (Fore_Float);
@@ -60,17 +60,17 @@ package body System.Formatting.Float is
             end;
          else
             declare
-               Scaled : Longest_Unsigned_Float := X;
-               B : Longest_Unsigned_Float := 1.0;
+               Scaled : Long_Long_Unsigned_Float := X;
+               B : Long_Long_Unsigned_Float := 1.0;
             begin
                Exponent := 0;
                while Scaled < 1.0 loop
-                  Scaled := Scaled * Longest_Unsigned_Float (Base);
-                  B := B * Longest_Unsigned_Float (Base);
+                  Scaled := Scaled * Long_Long_Unsigned_Float (Base);
+                  B := B * Long_Long_Unsigned_Float (Base);
                   Exponent := Exponent - 1;
                end loop;
                declare
-                  Fore_Float : constant Longest_Unsigned_Float :=
+                  Fore_Float : constant Long_Long_Unsigned_Float :=
                      truncl (Scaled);
                begin
                   Fore := Digit (Fore_Float);
@@ -88,30 +88,30 @@ package body System.Formatting.Float is
    --  implementation
 
    procedure Aft_Scale (
-      Aft : Longest_Unsigned_Float;
-      Scaled_Aft : out Longest_Unsigned_Float;
+      Aft : Long_Long_Unsigned_Float;
+      Scaled_Aft : out Long_Long_Unsigned_Float;
       Exponent : Integer;
       Round_Up : out Boolean;
       Base : Number_Base := 10;
       Width : Positive := Standard.Float'Digits - 1)
    is
-      L : constant Longest_Unsigned_Float :=
-         Longest_Unsigned_Float (Base) ** Width;
+      L : constant Long_Long_Unsigned_Float :=
+         Long_Long_Unsigned_Float (Base) ** Width;
    begin
       Scaled_Aft := roundl (
-         Aft * Longest_Unsigned_Float (Base) ** (Width - Exponent));
+         Aft * Long_Long_Unsigned_Float (Base) ** (Width - Exponent));
       Round_Up := Scaled_Aft >= L; -- ".99"99.. would be rounded up to 1".00"
    end Aft_Scale;
 
    procedure Aft_Image (
-      Value : Longest_Unsigned_Float;
+      Value : Long_Long_Unsigned_Float;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := Standard.Float'Digits - 1)
    is
-      X : Longest_Unsigned_Float := Value;
+      X : Long_Long_Unsigned_Float := Value;
    begin
       Last := Item'First + Width;
       Item (Item'First) := '.';
@@ -129,7 +129,7 @@ package body System.Formatting.Float is
    end Aft_Image;
 
    function Fore_Width (
-      Value : Longest_Unsigned_Float;
+      Value : Long_Long_Unsigned_Float;
       Base : Number_Base := 10)
       return Positive
    is
