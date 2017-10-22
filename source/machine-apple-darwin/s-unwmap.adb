@@ -9,7 +9,6 @@ package body System.Unwind.Mapping is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.signed_long;
-   use type C.size_t;
    use type C.unsigned_int;
    use type C.unsigned_long;
 
