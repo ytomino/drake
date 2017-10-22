@@ -34,4 +34,9 @@ package body System.Stack is
                "syscall (SYS_sigreturn, ...) failed"));
    end Fake_Return_From_Signal_Handler;
 
+   function Fault_Address (Info : C.signal.siginfo_t) return Address is
+   begin
+      return Info.si_addr;
+   end Fault_Address;
+
 end System.Stack;

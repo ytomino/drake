@@ -41,6 +41,9 @@ package body System.Unwind.Mapping is
       pragma Inspection_Point (Signal_Number);
       pragma Inspection_Point (Info);
       pragma Inspection_Point (uap);
+      --  space for overflow detection, that is baseless and from experience
+      Stack_Overflow_Space : constant :=
+         (Standard'Address_Size / Standard'Storage_Unit) * 1024 * 1024;
       --  the components of the exception.
       Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       Message_Length : constant C.size_t := strlen (Message);
@@ -52,13 +55,26 @@ package body System.Unwind.Mapping is
             Eexception_Id := Standard.Constraint_Error'Access;
          when C.signal.SIGBUS | C.signal.SIGSEGV =>
             declare
-               Dummy : Address;
+               Top, Bottom : Address;
+               Fault : Address;
             begin
-               Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+               Stack.Get (Top => Top, Bottom => Bottom);
+               Stack.Fake_Return_From_Signal_Handler;
+               if Info /= null then
+                  Fault := Stack.Fault_Address (Info.all);
+               else
+                  Fault := Null_Address;
+               end if;
+               if Fault /= Null_Address
+                  and then Fault >= Top - Stack_Overflow_Space
+                  and then Fault < Bottom
+               then -- stack overflow
+                  Stack_Guard := Top + C.signal.MINSIGSTKSZ;
+                  Eexception_Id := Standard.Storage_Error'Access;
+               else
+                  Eexception_Id := Standard.Program_Error'Access;
+               end if;
             end;
-            Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
-            Stack.Fake_Return_From_Signal_Handler;
-            Eexception_Id := Standard.Storage_Error'Access;
          when others =>
             Eexception_Id := Standard.Program_Error'Access;
       end case;

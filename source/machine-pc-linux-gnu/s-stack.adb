@@ -39,4 +39,9 @@ package body System.Stack is
       end if;
    end Get;
 
+   function Fault_Address (Info : C.signal.siginfo_t) return Address is
+   begin
+      return Info.sifields.sigfault.si_addr;
+   end Fault_Address;
+
 end System.Stack;

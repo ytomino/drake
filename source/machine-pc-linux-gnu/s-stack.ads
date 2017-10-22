@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  runtime unit specialized for Linux
 with C.pthread;
+with C.signal;
 package System.Stack is
    pragma Preelaborate;
 
@@ -13,5 +14,8 @@ package System.Stack is
       --    and 64bit Linux does not have SYS_sigreturn.
    pragma Inline (Fake_Return_From_Signal_Handler);
       --  [gcc-7] can not skip calling null procedure
+
+   function Fault_Address (Info : C.signal.siginfo_t) return Address;
+   pragma Inline (Fault_Address);
 
 end System.Stack;
