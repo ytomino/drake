@@ -1,7 +1,11 @@
 with System.Formatting;
-with System.Unsigned_Types;
+with System.Long_Long_Integer_Types;
 package body System.Wid_LLI is
-   use type Unsigned_Types.Long_Long_Unsigned;
+   use type Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
 
    function Width_Long_Long_Integer (Lo, Hi : Long_Long_Integer)
       return Natural is
@@ -10,19 +14,18 @@ package body System.Wid_LLI is
          return 0;
       else
          declare
-            Max_Abs : Unsigned_Types.Long_Long_Unsigned;
+            Max_Abs : Long_Long_Unsigned;
          begin
             if Hi <= 0 then
-               Max_Abs := -Unsigned_Types.Long_Long_Unsigned'Mod (Lo);
+               Max_Abs := -Long_Long_Unsigned'Mod (Lo);
             elsif Lo >= 0 then
-               Max_Abs := Unsigned_Types.Long_Long_Unsigned (Hi);
+               Max_Abs := Long_Long_Unsigned (Hi);
             else -- Lo < 0 and then Hi > 0
-               Max_Abs := Unsigned_Types.Long_Long_Unsigned'Max (
-                  -Unsigned_Types.Long_Long_Unsigned'Mod (Lo),
-                  Unsigned_Types.Long_Long_Unsigned (Hi));
+               Max_Abs := Long_Long_Unsigned'Max (
+                  -Long_Long_Unsigned'Mod (Lo),
+                  Long_Long_Unsigned (Hi));
             end if;
-            return 1
-               + Formatting.Width (Formatting.Longest_Unsigned (Max_Abs));
+            return 1 + Formatting.Width (Max_Abs);
          end;
       end if;
    end Width_Long_Long_Integer;

@@ -1,6 +1,10 @@
 package body System.Formatting.Address is
    pragma Suppress (All_Checks);
 
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
+
    procedure Image (
       Value : System.Address;
       Item : out Address_String;
@@ -13,7 +17,7 @@ package body System.Formatting.Address is
    begin
       if Use_Longest then
          Image (
-            Longest_Unsigned (Value),
+            Long_Long_Unsigned (Value),
             Item,
             Last,
             Base => 16,
@@ -45,7 +49,7 @@ package body System.Formatting.Address is
          Value (
             Item,
             Last,
-            Formatting.Longest_Unsigned (Result),
+            Long_Long_Unsigned (Result),
             Base => 16,
             Error => Error);
       else

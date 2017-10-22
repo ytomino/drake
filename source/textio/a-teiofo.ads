@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 private package Ada.Text_IO.Formatting is
 
    --  for Integer_IO
@@ -30,7 +31,7 @@ private package Ada.Text_IO.Formatting is
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
-      Item : System.Formatting.Longest_Unsigned;
+      Item : System.Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field);

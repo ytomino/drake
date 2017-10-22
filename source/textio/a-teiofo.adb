@@ -1,11 +1,15 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
+with System.Formatting;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
    use type System.Formatting.Word_Unsigned;
-   use type System.Formatting.Longest_Unsigned;
    use type System.Formatting.Literals.Word_Integer;
+   use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure Skip_Spaces (
       File : File_Type); -- Input_File_Type
@@ -136,18 +140,18 @@ package body Ada.Text_IO.Formatting is
       Padding : Character;
       Padding_Width : Field) is
    begin
-      if Standard'Word_Size < System.Formatting.Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            Unsigned_Item : System.Formatting.Longest_Unsigned;
+            Unsigned_Item : Long_Long_Unsigned;
          begin
             Last := To'First - 1;
             if Item < 0 then
                Last := Last + 1;
                To (Last) := '-';
-               Unsigned_Item := -System.Formatting.Longest_Unsigned'Mod (Item);
+               Unsigned_Item := -Long_Long_Unsigned'Mod (Item);
             else
-               Unsigned_Item := System.Formatting.Longest_Unsigned (Item);
+               Unsigned_Item := Long_Long_Unsigned (Item);
             end if;
             Modular_Image (
                To (Last + 1 .. To'Last),
@@ -227,12 +231,12 @@ package body Ada.Text_IO.Formatting is
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
-      Item : System.Formatting.Longest_Unsigned;
+      Item : System.Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field) is
    begin
-      if Standard'Word_Size < System.Formatting.Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
             Actual_Padding_Width : Field;

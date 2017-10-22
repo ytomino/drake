@@ -45,7 +45,7 @@ package System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Unsigned;
+      Result : out Long_Long_Integer_Types.Long_Long_Unsigned;
       Error : out Boolean);
 
 end System.Formatting.Literals;

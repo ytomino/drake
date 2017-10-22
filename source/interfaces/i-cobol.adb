@@ -10,6 +10,9 @@ package body Interfaces.COBOL is
    use type System.Formatting.Word_Unsigned;
    use type C.size_t;
 
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
    function add_overflow (
       a, b : Long_Long_Integer;
       res : not null access Long_Long_Integer)
@@ -240,8 +243,7 @@ package body Interfaces.COBOL is
    function Length_To_Display_Unsigned (Item : Long_Long_Integer)
       return Natural is
    begin
-      return System.Formatting.Width (
-         System.Formatting.Longest_Unsigned (Item));
+      return System.Formatting.Width (Long_Long_Unsigned (Item));
    end Length_To_Display_Unsigned;
 
    procedure To_Display_Unsigned (
@@ -257,7 +259,7 @@ package body Interfaces.COBOL is
       Error : Boolean; -- ignored
    begin
       System.Formatting.Image (
-         System.Formatting.Longest_Unsigned (Item),
+         Long_Long_Unsigned (Item),
          Result_As_Ada,
          Last,
          Width => Result'Length,
@@ -430,8 +432,7 @@ package body Interfaces.COBOL is
       return 2
          + Natural (
             System.Formatting.Word_Unsigned (
-               System.Formatting.Width (
-                  System.Formatting.Longest_Unsigned (Item)))
+               System.Formatting.Width (Long_Long_Unsigned (Item)))
             and not 1);
    end Length_To_Packed;
 
@@ -443,15 +444,12 @@ package body Interfaces.COBOL is
       end if;
       return Result : Packed_Decimal (1 .. Length_To_Packed (Item)) do
          declare
-            X : System.Long_Long_Integer_Types.Longest_Unsigned :=
-               System.Long_Long_Integer_Types.Longest_Unsigned (Item);
+            X : Long_Long_Unsigned := Long_Long_Unsigned (Item);
          begin
             for I in reverse Result'First .. Result'Last - 1 loop
                System.Long_Long_Integer_Types.Divide (X, 10,
                   Quotient => X,
-                  Remainder =>
-                     System.Long_Long_Integer_Types.Longest_Unsigned (
-                        Result (I)));
+                  Remainder => Long_Long_Unsigned (Result (I)));
             end loop;
          end;
          Result (Result'Last) := 16#F#;

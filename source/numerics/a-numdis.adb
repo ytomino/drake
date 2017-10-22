@@ -1,18 +1,21 @@
 with System.Long_Long_Elementary_Functions;
+with System.Long_Long_Integer_Types;
 package body Ada.Numerics.Distributions is
+   use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
-   type Longest_Unsigned is mod 2 ** Long_Long_Integer'Size;
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
-   function popcountll (x : Longest_Unsigned) return Integer
+   function popcountll (x : Long_Long_Unsigned) return Integer
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_popcountll";
 
    --  Simple distributions
 
    function Linear_Discrete (X : Source) return Target is
-      Source_W : constant Longest_Unsigned :=
+      Source_W : constant Long_Long_Unsigned :=
          Source'Pos (Source'Last) - Source'Pos (Source'First);
-      Target_W : constant Longest_Unsigned :=
+      Target_W : constant Long_Long_Unsigned :=
          Target'Pos (Target'Last) - Target'Pos (Target'First);
    begin
       if Source_W = 0 or else Target_W = 0 then
@@ -20,14 +23,16 @@ package body Ada.Numerics.Distributions is
          return Target'First;
       elsif Source_W = Target_W then
          --  1:1 mapping
-         return Target'Val (Longest_Unsigned (X) + Target'Pos (Target'First));
-      elsif Longest_Unsigned'Max (Source_W, Target_W) < Longest_Unsigned'Last
+         return Target'Val (
+            Long_Long_Unsigned (X) + Target'Pos (Target'First));
+      elsif Long_Long_Unsigned'Max (Source_W, Target_W) <
+            Long_Long_Unsigned'Last
          and then (Source_W + 1) * (Target_W + 1) >= Source_W
          and then (Source_W + 1) * (Target_W + 1) >= Target_W
       then
          --  no overflow
          return Target'Val (
-            Longest_Unsigned (X) * (Target_W + 1) / (Source_W + 1)
+            Long_Long_Unsigned (X) * (Target_W + 1) / (Source_W + 1)
                + Target'Pos (Target'First));
       else
          --  use Long_Long_Float
@@ -38,7 +43,7 @@ package body Ada.Numerics.Distributions is
                   Long_Long_Float);
          begin
             return Target'Val (
-               Longest_Unsigned (
+               Long_Long_Unsigned (
                   Long_Long_Float'Floor (
                      To_Float (X) * (Long_Long_Float (Target_W) + 1.0)))
                + Target'Pos (Target'First));
@@ -122,9 +127,9 @@ package body Ada.Numerics.Distributions is
          raise Constraint_Error;
       end if;
       declare
-         Source_W : constant Longest_Unsigned :=
+         Source_W : constant Long_Long_Unsigned :=
             Source'Pos (Source'Last) - Source'Pos (Source'First);
-         Target_W : constant Longest_Unsigned :=
+         Target_W : constant Long_Long_Unsigned :=
             Target'Pos (Target'Last) - Target'Pos (Target'First);
       begin
          if Source_W = 0 or else Target_W = 0 then
@@ -133,19 +138,21 @@ package body Ada.Numerics.Distributions is
          elsif Source_W = Target_W then
             --  1:1 mapping
             declare
-               X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
+               X : constant Long_Long_Unsigned :=
+                  Long_Long_Unsigned (Get (Gen));
             begin
                return Target'Val (X + Target'Pos (Target'First));
             end;
          elsif Source_W > Target_W
             and then (
-               Source_W = Longest_Unsigned'Last
+               Source_W = Long_Long_Unsigned'Last
                or else popcountll (Source_W + 1) = 1)
             and then popcountll (Target_W + 1) = 1
          then
             --  narrow, and 2 ** n
             declare
-               X : constant Longest_Unsigned := Longest_Unsigned (Get (Gen));
+               X : constant Long_Long_Unsigned :=
+                  Long_Long_Unsigned (Get (Gen));
             begin
                return Target'Val (
                   X / (Source_W / (Target_W + 1) + 1)
@@ -154,36 +161,38 @@ package body Ada.Numerics.Distributions is
          else
             loop
                declare
-                  Max : Longest_Unsigned;
-                  X : Longest_Unsigned;
+                  Max : Long_Long_Unsigned;
+                  X : Long_Long_Unsigned;
                begin
                   if Source_W > Target_W then
                      --  narrow
                      Max := Source_W;
-                     X := Longest_Unsigned (Get (Gen));
+                     X := Long_Long_Unsigned (Get (Gen));
                   else
                      --  wide
                      Max := 0;
                      X := 0;
                      loop
                         declare
-                           Old_Max : constant Longest_Unsigned := Max;
+                           Old_Max : constant Long_Long_Unsigned := Max;
                         begin
                            Max := (Max * (Source_W + 1)) + Source_W;
                            X := (X * (Source_W + 1))
-                              + Longest_Unsigned (Get (Gen));
+                              + Long_Long_Unsigned (Get (Gen));
                            exit when Max >= Target_W
                               or else Max <= Old_Max; -- overflow
                         end;
                      end loop;
                   end if;
-                  if Target_W = Longest_Unsigned'Last then
-                     --  Source'Range_Length < Target'RL = Longest_Unsigned'RL
+                  if Target_W = Long_Long_Unsigned'Last then
+                     --  Source'Range_Length <
+                     --     Target'Range_Length =
+                     --     Long_Long_Unsigned'Range_Length
                      return Target'Val (X + Target'Pos (Target'First));
                   else
                      declare
                         --  (Max + 1) mod (Target_W + 1)
-                        R : constant Longest_Unsigned :=
+                        R : constant Long_Long_Unsigned :=
                            (Max mod (Target_W + 1) + 1) mod (Target_W + 1);
                      begin
                         --  (Max - R + 1) mod (Target_W + 1) = 0

@@ -1,8 +1,12 @@
 with Ada.Text_IO.Formatting;
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 package body Ada.Text_IO.Modular_IO is
    use type System.Formatting.Word_Unsigned;
-   use type System.Formatting.Longest_Unsigned;
+   use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure Put_To_Field (
       To : out String;
@@ -23,7 +27,7 @@ package body Ada.Text_IO.Modular_IO is
          Formatting.Modular_Image (
             To,
             Last,
-            System.Formatting.Longest_Unsigned (Item),
+            Long_Long_Unsigned (Item),
             Base,
             Padding,
             Padding_Width);
@@ -49,7 +53,7 @@ package body Ada.Text_IO.Modular_IO is
    begin
       if Num'Size > Standard'Word_Size then
          declare
-            Base_Item : System.Formatting.Longest_Unsigned;
+            Base_Item : Long_Long_Unsigned;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
@@ -57,10 +61,7 @@ package body Ada.Text_IO.Modular_IO is
                Last,
                Base_Item,
                Error => Error);
-            if Error
-               or else Base_Item >
-                  System.Formatting.Longest_Unsigned (Num'Last)
-            then
+            if Error or else Base_Item > Long_Long_Unsigned (Num'Last) then
                raise Data_Error;
             end if;
             Item := Num (Base_Item);

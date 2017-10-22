@@ -9,6 +9,9 @@ package body Ada.Calendar.Formatting is
    use type System.Formatting.Word_Unsigned;
    use type System.Native_Time.Nanosecond_Number;
 
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
    --  for Year, Month, Day
 
    type Packed_Split_Time is mod 2 ** 64;
@@ -97,24 +100,24 @@ package body Ada.Calendar.Formatting is
       Q, R : System.Native_Time.Nanosecond_Number;
    begin
       System.Long_Long_Integer_Types.Divide (
-         System.Long_Long_Integer_Types.Longest_Unsigned (X),
+         Long_Long_Unsigned (X),
          1_000_000_000, -- unit is 1-second
-         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Types.Longest_Unsigned (R));
+         Long_Long_Unsigned (Q),
+         Long_Long_Unsigned (R));
       Sub_Second := Duration'Fixed_Value (R);
       X := Q;
       System.Long_Long_Integer_Types.Divide (
-         System.Long_Long_Integer_Types.Longest_Unsigned (X),
+         Long_Long_Unsigned (X),
          60, -- unit is 1-minute
-         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Types.Longest_Unsigned (R));
+         Long_Long_Unsigned (Q),
+         Long_Long_Unsigned (R));
       Second := Second_Number (R);
       X := Q;
       System.Long_Long_Integer_Types.Divide (
-         System.Long_Long_Integer_Types.Longest_Unsigned (X),
+         Long_Long_Unsigned (X),
          60, -- unit is 1-hour
-         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Types.Longest_Unsigned (R));
+         Long_Long_Unsigned (Q),
+         Long_Long_Unsigned (R));
       Minute := Second_Number (R);
       Hour := Integer (Q);
    end Split_Base;

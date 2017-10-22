@@ -1,6 +1,10 @@
-with System.Long_Long_Integer_Types;
 package body System.Formatting.Decimal is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
 
    procedure Image (
       Value : Long_Long_Integer;
@@ -38,21 +42,17 @@ package body System.Formatting.Decimal is
       end if;
       if Scale > 0 then
          declare
-            Rounded_Item : Formatting.Longest_Unsigned :=
-               Formatting.Longest_Unsigned'Mod (abs Value);
-            Sp : constant Formatting.Longest_Unsigned := 10 ** Scale;
-            Q : Formatting.Longest_Unsigned;
-            Aft : Formatting.Longest_Unsigned;
+            Rounded_Item : Long_Long_Unsigned :=
+               Long_Long_Unsigned'Mod (abs Value);
+            Sp : constant Long_Long_Unsigned := 10 ** Scale;
+            Q : Long_Long_Unsigned;
+            Aft : Long_Long_Unsigned;
             Error : Boolean;
          begin
             if Aft_Width < Scale then
                Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
             end if;
-            Long_Long_Integer_Types.Divide (
-               Long_Long_Integer_Types.Longest_Unsigned (Rounded_Item),
-               Long_Long_Integer_Types.Longest_Unsigned (Sp),
-               Long_Long_Integer_Types.Longest_Unsigned (Q),
-               Long_Long_Integer_Types.Longest_Unsigned (Aft));
+            Long_Long_Integer_Types.Divide (Rounded_Item, Sp, Q, Aft);
             Formatting.Image (
                Q,
                Item (Last + 1 .. Item'Last),
@@ -82,7 +82,7 @@ package body System.Formatting.Decimal is
       else
          if Value /= 0 then
             Formatting.Image (
-               Formatting.Longest_Unsigned (abs Value),
+               Long_Long_Unsigned (abs Value),
                Item (Last + 1 .. Item'Last),
                Last,
                Width => Fore_Width,

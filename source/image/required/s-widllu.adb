@@ -1,6 +1,11 @@
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 package body System.Wid_LLU is
    use type Unsigned_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
 
    function Width_Long_Long_Unsigned (
       Lo, Hi : Unsigned_Types.Long_Long_Unsigned)
@@ -9,7 +14,7 @@ package body System.Wid_LLU is
       if Lo > Hi then
          return 0;
       else
-         return 1 + Formatting.Width (Formatting.Longest_Unsigned (Hi));
+         return 1 + Formatting.Width (Long_Long_Unsigned (Hi));
       end if;
    end Width_Long_Long_Unsigned;
 
