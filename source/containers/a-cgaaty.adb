@@ -1,6 +1,8 @@
 with Ada.Containers.Array_Sorting;
-with System;
+with System.Long_Long_Integer_Types;
 package body Ada.Containers.Generic_Array_Access_Types is
+
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
 
    --  implementation
 
@@ -316,8 +318,8 @@ package body Ada.Containers.Generic_Array_Access_Types is
       end record;
       pragma Suppress_Initialization (Context_Type);
 
-      procedure Swap (I, J : Integer; Params : System.Address);
-      procedure Swap (I, J : Integer; Params : System.Address) is
+      procedure Swap (I, J : Word_Integer; Params : System.Address);
+      procedure Swap (I, J : Word_Integer; Params : System.Address) is
          Context : Context_Type;
          for Context'Address use Params;
       begin
@@ -393,9 +395,9 @@ package body Ada.Containers.Generic_Array_Access_Types is
       end record;
       pragma Suppress_Initialization (Context_Type);
 
-      function LT (Left, Right : Integer; Params : System.Address)
+      function LT (Left, Right : Word_Integer; Params : System.Address)
          return Boolean;
-      function LT (Left, Right : Integer; Params : System.Address)
+      function LT (Left, Right : Word_Integer; Params : System.Address)
          return Boolean
       is
          Context : Context_Type;
@@ -405,8 +407,8 @@ package body Ada.Containers.Generic_Array_Access_Types is
             Context.Container (Index_Type'Val (Right));
       end LT;
 
-      procedure Swap (I, J : Integer; Params : System.Address);
-      procedure Swap (I, J : Integer; Params : System.Address) is
+      procedure Swap (I, J : Word_Integer; Params : System.Address);
+      procedure Swap (I, J : Word_Integer; Params : System.Address) is
          Context : Context_Type;
          for Context'Address use Params;
       begin
