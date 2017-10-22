@@ -1,4 +1,4 @@
-package body System.Long_Long_Float_Divisions is
+package body System.Long_Long_Float_Types is
    pragma Suppress (All_Checks);
 
    function truncl (X : Long_Long_Float) return Long_Long_Float
@@ -18,4 +18,4 @@ package body System.Long_Long_Float_Divisions is
       Remainder := fmodl (Left, Right);
    end Divide;
 
-end System.Long_Long_Float_Divisions;
+end System.Long_Long_Float_Types;

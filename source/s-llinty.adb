@@ -1,4 +1,4 @@
-package body System.Long_Long_Integer_Divisions is
+package body System.Long_Long_Integer_Types is
    pragma Suppress (All_Checks);
 
    --  libgcc
@@ -28,4 +28,4 @@ package body System.Long_Long_Integer_Divisions is
       end if;
    end Divide;
 
-end System.Long_Long_Integer_Divisions;
+end System.Long_Long_Integer_Types;

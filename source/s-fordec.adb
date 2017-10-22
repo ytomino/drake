@@ -1,4 +1,4 @@
-with System.Long_Long_Integer_Divisions;
+with System.Long_Long_Integer_Types;
 package body System.Formatting.Decimal is
    pragma Suppress (All_Checks);
 
@@ -48,11 +48,11 @@ package body System.Formatting.Decimal is
             if Aft_Width < Scale then
                Rounded_Item := Rounded_Item + (10 ** (Scale - Aft_Width)) / 2;
             end if;
-            Long_Long_Integer_Divisions.Divide (
-               Long_Long_Integer_Divisions.Longest_Unsigned (Rounded_Item),
-               Long_Long_Integer_Divisions.Longest_Unsigned (Sp),
-               Long_Long_Integer_Divisions.Longest_Unsigned (Q),
-               Long_Long_Integer_Divisions.Longest_Unsigned (Aft));
+            Long_Long_Integer_Types.Divide (
+               Long_Long_Integer_Types.Longest_Unsigned (Rounded_Item),
+               Long_Long_Integer_Types.Longest_Unsigned (Sp),
+               Long_Long_Integer_Types.Longest_Unsigned (Q),
+               Long_Long_Integer_Types.Longest_Unsigned (Aft));
             Formatting.Image (
                Q,
                Item (Last + 1 .. Item'Last),

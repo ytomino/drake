@@ -2,7 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with System.C_Encoding;
 with System.Formatting;
-with System.Long_Long_Integer_Divisions;
+with System.Long_Long_Integer_Types;
 with C;
 package body Interfaces.COBOL is
    use Ada.Exception_Identification.From_Here;
@@ -443,14 +443,14 @@ package body Interfaces.COBOL is
       end if;
       return Result : Packed_Decimal (1 .. Length_To_Packed (Item)) do
          declare
-            X : System.Long_Long_Integer_Divisions.Longest_Unsigned :=
-               System.Long_Long_Integer_Divisions.Longest_Unsigned (Item);
+            X : System.Long_Long_Integer_Types.Longest_Unsigned :=
+               System.Long_Long_Integer_Types.Longest_Unsigned (Item);
          begin
             for I in reverse Result'First .. Result'Last - 1 loop
-               System.Long_Long_Integer_Divisions.Divide (X, 10,
+               System.Long_Long_Integer_Types.Divide (X, 10,
                   Quotient => X,
                   Remainder =>
-                     System.Long_Long_Integer_Divisions.Longest_Unsigned (
+                     System.Long_Long_Integer_Types.Longest_Unsigned (
                         Result (I)));
             end loop;
          end;

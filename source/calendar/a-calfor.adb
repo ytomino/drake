@@ -1,6 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
-with System.Long_Long_Integer_Divisions;
+with System.Long_Long_Integer_Types;
 with System.Native_Calendar;
 with System.Native_Time;
 package body Ada.Calendar.Formatting is
@@ -96,25 +96,25 @@ package body Ada.Calendar.Formatting is
          := System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
       Q, R : System.Native_Time.Nanosecond_Number;
    begin
-      System.Long_Long_Integer_Divisions.Divide (
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+      System.Long_Long_Integer_Types.Divide (
+         System.Long_Long_Integer_Types.Longest_Unsigned (X),
          1_000_000_000, -- unit is 1-second
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Types.Longest_Unsigned (R));
       Sub_Second := Duration'Fixed_Value (R);
       X := Q;
-      System.Long_Long_Integer_Divisions.Divide (
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+      System.Long_Long_Integer_Types.Divide (
+         System.Long_Long_Integer_Types.Longest_Unsigned (X),
          60, -- unit is 1-minute
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Types.Longest_Unsigned (R));
       Second := Second_Number (R);
       X := Q;
-      System.Long_Long_Integer_Divisions.Divide (
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (X),
+      System.Long_Long_Integer_Types.Divide (
+         System.Long_Long_Integer_Types.Longest_Unsigned (X),
          60, -- unit is 1-hour
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (Q),
-         System.Long_Long_Integer_Divisions.Longest_Unsigned (R));
+         System.Long_Long_Integer_Types.Longest_Unsigned (Q),
+         System.Long_Long_Integer_Types.Longest_Unsigned (R));
       Minute := Second_Number (R);
       Hour := Integer (Q);
    end Split_Base;

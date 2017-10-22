@@ -1,4 +1,4 @@
-with System.Long_Long_Integer_Divisions;
+with System.Long_Long_Integer_Types;
 with System.Unwind.Raising;
 pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Arith_64 is
@@ -107,11 +107,11 @@ package body System.Arith_64 is
    procedure Div (X : U64; Y : U64; Q : out U64; R : out U64);
    procedure Div (X : U64; Y : U64; Q : out U64; R : out U64) is
    begin
-      Long_Long_Integer_Divisions.Divide (
-         Long_Long_Integer_Divisions.Longest_Unsigned (X),
-         Long_Long_Integer_Divisions.Longest_Unsigned (Y),
-         Long_Long_Integer_Divisions.Longest_Unsigned (Q),
-         Long_Long_Integer_Divisions.Longest_Unsigned (R));
+      Long_Long_Integer_Types.Divide (
+         Long_Long_Integer_Types.Longest_Unsigned (X),
+         Long_Long_Integer_Types.Longest_Unsigned (Y),
+         Long_Long_Integer_Types.Longest_Unsigned (Q),
+         Long_Long_Integer_Types.Longest_Unsigned (R));
    end Div;
 
    type Unsigned is mod 2 ** Integer'Size;
