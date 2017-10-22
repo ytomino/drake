@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
 with C.sys.types;
@@ -12,6 +13,8 @@ package body System.Native_IO.Names is
    use type C.char_ptr;
    use type C.size_t;
    use type C.signed_long; -- ssize_t in 64bit Linux
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    package Name_Pointer_Conv is
       new Address_To_Named_Access_Conversions (Name_Character, Name_Pointer);
@@ -61,7 +64,7 @@ package body System.Native_IO.Names is
          Error : Boolean;
       begin
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Handle),
+            Word_Unsigned (Handle),
             Link_As_String (proc_self_fd'Length + 1 .. Link_As_String'Last),
             Last,
             Error => Error);

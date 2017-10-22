@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with C.sys.ioctl;
 with C.unistd;
 package body System.Native_Text_IO is
@@ -9,6 +10,8 @@ package body System.Native_Text_IO is
    use type C.unsigned_char; -- cc_t
    use type C.unsigned_int; -- tcflag_t in Linux or FreeBSD
    use type C.unsigned_long; -- tcflag_t in Darwin
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    procedure tcgetsetattr (
       Handle : Handle_Type;
@@ -79,12 +82,12 @@ package body System.Native_Text_IO is
       Item : String;
       Prefix : String;
       Postfix : Character;
-      X1, X2 : out Formatting.Word_Unsigned);
+      X1, X2 : out Word_Unsigned);
    procedure Parse_Escape_Sequence (
       Item : String;
       Prefix : String;
       Postfix : Character;
-      X1, X2 : out Formatting.Word_Unsigned)
+      X1, X2 : out Word_Unsigned)
    is
       P : Natural;
       Error : Boolean;
@@ -161,14 +164,14 @@ package body System.Native_Text_IO is
       Seq (4) := ';';
       Last := 4;
       Formatting.Image (
-         Formatting.Word_Unsigned (Page_Length),
+         Word_Unsigned (Page_Length),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
       Last := Last + 1;
       Seq (Last) := ';';
       Formatting.Image (
-         Formatting.Word_Unsigned (Line_Length),
+         Word_Unsigned (Line_Length),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
@@ -229,8 +232,8 @@ package body System.Native_Text_IO is
          Buffer (1 .. Last),
          Character'Val (16#1b#) & "[",
          'R',
-         Formatting.Word_Unsigned (Line),
-         Formatting.Word_Unsigned (Col));
+         Word_Unsigned (Line),
+         Word_Unsigned (Col));
    end Terminal_Position;
 
    procedure Set_Terminal_Position (
@@ -245,14 +248,14 @@ package body System.Native_Text_IO is
       Seq (2) := '[';
       Last := 2;
       Formatting.Image (
-         Formatting.Word_Unsigned (Line),
+         Word_Unsigned (Line),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
       Last := Last + 1;
       Seq (Last) := ';';
       Formatting.Image (
-         Formatting.Word_Unsigned (Col),
+         Word_Unsigned (Col),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);
@@ -273,7 +276,7 @@ package body System.Native_Text_IO is
       Seq (2) := '[';
       Last := 2;
       Formatting.Image (
-         Formatting.Word_Unsigned (To),
+         Word_Unsigned (To),
          Seq (Last + 1 .. Seq'Last),
          Last,
          Error => Error);

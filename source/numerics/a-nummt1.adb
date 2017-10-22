@@ -1,9 +1,12 @@
 with System.Random_Initiators;
 with System.Storage_Elements;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 package body Ada.Numerics.MT19937 is
    use type System.Storage_Elements.Storage_Count;
    use type Cardinal;
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
    MATRIX_A : constant Cardinal := 16#9908b0df#;
    UPPER_MASK : constant Cardinal := 2 ** (Cardinal'Size - 1);
@@ -168,7 +171,7 @@ package body Ada.Numerics.MT19937 is
             Standard'Word_Size < Cardinal'Size,
             "word size < 32");
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Value),
+            Word_Unsigned (Value),
             Result,
             Last,
             Base => 16,
@@ -202,7 +205,7 @@ package body Ada.Numerics.MT19937 is
          System.Formatting.Value (
             Item,
             Last,
-            System.Formatting.Word_Unsigned (Value),
+            Word_Unsigned (Value),
             Base => 16,
             Error => Error);
          if Error or else Last /= Item'Last then

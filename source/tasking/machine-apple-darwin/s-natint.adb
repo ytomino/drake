@@ -2,6 +2,7 @@ with Ada.Exceptions;
 with Ada.Interrupts.Names;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Unwind.Occurrences;
 with C.signal;
 package body System.Native_Interrupts is
@@ -9,6 +10,8 @@ package body System.Native_Interrupts is
    use type Ada.Interrupts.Parameterless_Handler;
    use type C.signed_int;
    use type C.unsigned_int;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    procedure Report (
       Interrupt : Interrupt_Id;
@@ -28,7 +31,7 @@ package body System.Native_Interrupts is
    begin
       Name (1 .. Name_Prefix'Length) := Name_Prefix;
       Formatting.Image (
-         Formatting.Word_Unsigned (Interrupt),
+         Word_Unsigned (Interrupt),
          Name (Name_Prefix'Length + 1 .. Name'Last),
          Name_Last,
          Error => Error);

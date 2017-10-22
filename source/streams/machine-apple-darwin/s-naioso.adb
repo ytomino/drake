@@ -1,6 +1,7 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Synchronous_Control;
 with C.errno;
 with C.netinet.in_h;
@@ -10,6 +11,8 @@ package body System.Native_IO.Sockets is
    use type C.size_t;
    use type C.netdb.struct_addrinfo_ptr;
    use type C.sys.socket.socklen_t;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    --  implementation
 
@@ -98,7 +101,7 @@ package body System.Native_IO.Sockets is
          Service_Last : Natural;
       begin
          Formatting.Image (
-            Formatting.Word_Unsigned (Port),
+            Word_Unsigned (Port),
             Service_As_String,
             Service_Last,
             Base => 10,
@@ -161,7 +164,7 @@ package body System.Native_IO.Sockets is
          Error : Boolean;
       begin
          Formatting.Image (
-            Formatting.Word_Unsigned (Port),
+            Word_Unsigned (Port),
             Service_As_String,
             Service_Last,
             Base => 10,

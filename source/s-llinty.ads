@@ -3,6 +3,20 @@ pragma License (Unrestricted);
 package System.Long_Long_Integer_Types is
    pragma Pure;
 
+   --  Word size types
+
+   type Word_Integer is range
+      -(2 ** (Standard'Word_Size - 1)) .. 2 ** (Standard'Word_Size - 1) - 1;
+   for Word_Integer'Size use Standard'Word_Size;
+
+   subtype Word_Natural is Word_Integer range 0 .. Word_Integer'Last;
+   subtype Word_Positive is Word_Integer range 1 .. Word_Integer'Last;
+
+   type Word_Unsigned is mod 2 ** Standard'Word_Size;
+   for Word_Unsigned'Size use Standard'Word_Size;
+
+   pragma Provide_Shift_Operators (Word_Unsigned);
+
    --  Largest types
 
    pragma Compile_Time_Error (

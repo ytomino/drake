@@ -2,6 +2,8 @@ with System.Long_Long_Float_Types;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
    function roundl (X : Long_Long_Float) return Long_Long_Float
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_roundl";

@@ -1,7 +1,12 @@
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Unsigned_Types;
 package body System.Img_Int is
    use type Unsigned_Types.Unsigned;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    procedure Image_Integer (
       V : Integer;
@@ -20,7 +25,7 @@ package body System.Img_Int is
          X := Unsigned_Types.Unsigned (V);
       end if;
       Formatting.Image (
-         Formatting.Word_Unsigned (X),
+         Word_Unsigned (X),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);

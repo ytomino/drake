@@ -6,9 +6,10 @@ with System.Native_Time;
 package body Ada.Calendar.Formatting is
    use Exception_Identification.From_Here;
    use type Time_Zones.Time_Offset;
-   use type System.Formatting.Word_Unsigned;
+   use type System.Long_Long_Integer_Types.Word_Unsigned;
    use type System.Native_Time.Nanosecond_Number;
 
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is
       System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
@@ -142,7 +143,7 @@ package body Ada.Calendar.Formatting is
       Error : Boolean;
    begin
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Hour),
+         Word_Unsigned (Hour),
          Item,
          Last,
          Width => 2,
@@ -151,7 +152,7 @@ package body Ada.Calendar.Formatting is
       Last := Last + 1;
       Item (Last) := ':';
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Minute),
+         Word_Unsigned (Minute),
          Item (Last + 1 .. Item'Last),
          Last,
          Width => 2,
@@ -160,7 +161,7 @@ package body Ada.Calendar.Formatting is
       Last := Last + 1;
       Item (Last) := ':';
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Second),
+         Word_Unsigned (Second),
          Item (Last + 1 .. Item'Last),
          Last,
          Width => 2,
@@ -170,7 +171,7 @@ package body Ada.Calendar.Formatting is
          Last := Last + 1;
          Item (Last) := '.';
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Sub_Second * 100.0),
+            Word_Unsigned (Sub_Second * 100.0),
             Item (Last + 1 .. Item'Last),
             Last,
             Width => 2,
@@ -457,7 +458,7 @@ package body Ada.Calendar.Formatting is
          Leap_Second => Leap_Second,
          Time_Zone => Time_Zone);
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Year),
+         Word_Unsigned (Year),
          Result,
          Last,
          Width => 4,
@@ -466,7 +467,7 @@ package body Ada.Calendar.Formatting is
       Last := Last + 1;
       Result (Last) := '-';
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Month),
+         Word_Unsigned (Month),
          Result (Last + 1 .. Result'Last),
          Last,
          Width => 2,
@@ -475,7 +476,7 @@ package body Ada.Calendar.Formatting is
       Last := Last + 1;
       Result (Last) := '-';
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (Day),
+         Word_Unsigned (Day),
          Result (Last + 1 .. Result'Last),
          Last,
          Width => 2,
@@ -500,9 +501,9 @@ package body Ada.Calendar.Formatting is
       return Time
    is
       Last : Natural;
-      Year : System.Formatting.Word_Unsigned;
-      Month : System.Formatting.Word_Unsigned;
-      Day : System.Formatting.Word_Unsigned;
+      Year : Word_Unsigned;
+      Month : Word_Unsigned;
+      Day : Word_Unsigned;
       Seconds : Duration;
       Error : Boolean;
    begin
@@ -513,8 +514,8 @@ package body Ada.Calendar.Formatting is
          Error => Error);
       if Error
          or else Year not in
-            System.Formatting.Word_Unsigned (Year_Number'First) ..
-            System.Formatting.Word_Unsigned (Year_Number'Last)
+            Word_Unsigned (Year_Number'First) ..
+            Word_Unsigned (Year_Number'Last)
          or else Last >= Date'Last
          or else Date (Last + 1) /= '-'
       then
@@ -528,8 +529,8 @@ package body Ada.Calendar.Formatting is
          Error => Error);
       if Error
          or else Month not in
-            System.Formatting.Word_Unsigned (Month_Number'First) ..
-            System.Formatting.Word_Unsigned (Month_Number'Last)
+            Word_Unsigned (Month_Number'First) ..
+            Word_Unsigned (Month_Number'Last)
          or else Last >= Date'Last
          or else Date (Last + 1) /= '-'
       then
@@ -543,8 +544,7 @@ package body Ada.Calendar.Formatting is
          Error => Error);
       if Error
          or else Day not in
-            System.Formatting.Word_Unsigned (Day_Number'First) ..
-            System.Formatting.Word_Unsigned (Day_Number'Last)
+            Word_Unsigned (Day_Number'First) .. Word_Unsigned (Day_Number'Last)
          or else Last >= Date'Last
          or else Date (Last + 1) /= ' '
       then
@@ -600,10 +600,10 @@ package body Ada.Calendar.Formatting is
       Last : Natural := Elapsed_Time'First - 1;
       P : Natural;
       Minus : Boolean := False;
-      Hour : System.Formatting.Word_Unsigned;
-      Minute : System.Formatting.Word_Unsigned;
-      Second : System.Formatting.Word_Unsigned;
-      Sub_Second_I : System.Formatting.Word_Unsigned;
+      Hour : Word_Unsigned;
+      Minute : Word_Unsigned;
+      Second : Word_Unsigned;
+      Sub_Second_I : Word_Unsigned;
       Sub_Second : Second_Duration;
       Error : Boolean;
       Result : Duration;
@@ -620,7 +620,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
-         or else Hour > System.Formatting.Word_Unsigned (Hour_Number'Last)
+         or else Hour > Word_Unsigned (Hour_Number'Last)
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -633,7 +633,7 @@ package body Ada.Calendar.Formatting is
          Minute,
          Error => Error);
       if Error
-         or else Minute > System.Formatting.Word_Unsigned (Minute_Number'Last)
+         or else Minute > Word_Unsigned (Minute_Number'Last)
          or else Last >= Elapsed_Time'Last
          or else Elapsed_Time (Last + 1) /= ':'
       then
@@ -645,9 +645,7 @@ package body Ada.Calendar.Formatting is
          Last,
          Second,
          Error => Error);
-      if Error
-         or else Second > System.Formatting.Word_Unsigned (Second_Number'Last)
-      then
+      if Error or else Second > Word_Unsigned (Second_Number'Last) then
          raise Constraint_Error;
       end if;
       if Last < Elapsed_Time'Last and then Elapsed_Time (Last + 1) = '.' then
@@ -692,7 +690,7 @@ package body Ada.Calendar.Formatting is
             Result (1) := '+';
          end if;
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Hour),
+            Word_Unsigned (Hour),
             Result (2 .. 3),
             Last,
             Width => 2,
@@ -700,7 +698,7 @@ package body Ada.Calendar.Formatting is
          pragma Assert (not Error and then Last = 3);
          Result (4) := ':';
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Minute),
+            Word_Unsigned (Minute),
             Result (5 .. 6),
             Last,
             Width => 2,
@@ -711,8 +709,8 @@ package body Ada.Calendar.Formatting is
 
    function Value (Time_Zone : String) return Time_Zones.Time_Offset is
       Minus : Boolean;
-      Hour : System.Formatting.Word_Unsigned;
-      Minute : System.Formatting.Word_Unsigned;
+      Hour : Word_Unsigned;
+      Minute : Word_Unsigned;
       Last : Natural;
       Error : Boolean;
       Result : Time_Zones.Time_Offset;
@@ -733,7 +731,7 @@ package body Ada.Calendar.Formatting is
          Hour,
          Error => Error);
       if Error
-         or else Hour > System.Formatting.Word_Unsigned (Hour_Number'Last)
+         or else Hour > Word_Unsigned (Hour_Number'Last)
          or else Last >= Time_Zone'Last
          or else Time_Zone (Last + 1) /= ':'
       then
@@ -746,7 +744,7 @@ package body Ada.Calendar.Formatting is
          Minute,
          Error => Error);
       if Error
-         or else Minute > System.Formatting.Word_Unsigned (Minute_Number'Last)
+         or else Minute > Word_Unsigned (Minute_Number'Last)
          or else Last /= Time_Zone'Last
       then
          raise Constraint_Error;

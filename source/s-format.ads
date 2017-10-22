@@ -7,12 +7,12 @@ package System.Formatting is
    subtype Number_Base is Integer range 2 .. 16; -- same as Text_IO.Number_Base
    subtype Digit is Integer range 0 .. 15;
 
-   type Word_Unsigned is mod 2 ** Standard'Word_Size;
-
    type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
    pragma Discard_Names (Type_Set);
 
-   function Width (Value : Word_Unsigned; Base : Number_Base := 10)
+   function Width (
+      Value : Long_Long_Integer_Types.Word_Unsigned;
+      Base : Number_Base := 10)
       return Positive;
    function Width (
       Value : Long_Long_Integer_Types.Long_Long_Unsigned;
@@ -25,7 +25,7 @@ package System.Formatting is
       Set : Type_Set := Upper_Case);
 
    procedure Image (
-      Value : Word_Unsigned;
+      Value : Long_Long_Integer_Types.Word_Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
@@ -52,7 +52,7 @@ package System.Formatting is
    procedure Value (
       Item : String;
       Last : out Natural;
-      Result : out Word_Unsigned;
+      Result : out Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean);

@@ -1,13 +1,18 @@
 with System.Formatting;
 with System.Img_WChar;
+with System.Long_Long_Integer_Types;
 with System.Val_Char;
 with System.Val_Enum;
 with System.Value_Errors;
 with System.UTF_Conversions;
 package body System.Val_WChar is
-   use type Formatting.Word_Unsigned;
+   use type Long_Long_Integer_Types.Word_Unsigned;
    use type UTF_Conversions.From_Status_Type;
    use type UTF_Conversions.To_Status_Type;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
       return Wide_Character
@@ -57,7 +62,7 @@ package body System.Val_WChar is
             if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Word_Unsigned;
+                  Result : Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (
@@ -133,7 +138,7 @@ package body System.Val_WChar is
             if L <= Last and then S (First .. L) = Val_Char.HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Word_Unsigned;
+                  Result : Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (

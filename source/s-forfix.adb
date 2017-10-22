@@ -3,6 +3,8 @@ with System.Long_Long_Float_Types;
 package body System.Formatting.Fixed is
    pragma Suppress (All_Checks);
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
    function signbitl (X : Long_Long_Float) return Integer
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_signbitl";

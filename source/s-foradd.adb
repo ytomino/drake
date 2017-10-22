@@ -1,6 +1,7 @@
 package body System.Formatting.Address is
    pragma Suppress (All_Checks);
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    --  implementation

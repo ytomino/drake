@@ -1,8 +1,10 @@
 with System.Storage_Elements;
 package body System.Formatting is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Word_Unsigned;
    use type Long_Long_Integer_Types.Long_Long_Unsigned;
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure memset (
@@ -257,7 +259,9 @@ package body System.Formatting is
 
    --  implementation
 
-   function Width (Value : Word_Unsigned; Base : Number_Base := 10)
+   function Width (
+      Value : Long_Long_Integer_Types.Word_Unsigned;
+      Base : Number_Base := 10)
       return Positive is
    begin
       return Width_Digits (Value, Base);
@@ -296,7 +300,7 @@ package body System.Formatting is
    end Image;
 
    procedure Image (
-      Value : Word_Unsigned;
+      Value : Long_Long_Integer_Types.Word_Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
@@ -394,7 +398,7 @@ package body System.Formatting is
    procedure Value (
       Item : String;
       Last : out Natural;
-      Result : out Word_Unsigned;
+      Result : out Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean)

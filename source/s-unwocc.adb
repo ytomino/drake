@@ -2,6 +2,7 @@ pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Storage_Elements;
 with System.Termination;
 package body System.Unwind.Occurrences is
@@ -9,6 +10,8 @@ package body System.Unwind.Occurrences is
    use type Storage_Elements.Storage_Offset;
    use type Representation.Machine_Occurrence_Access;
    use type Representation.Unwind_Exception_Class;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    --  package separated for depending on libgcc
    package Separated is
@@ -141,7 +144,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned (Line),
+                  Word_Unsigned (Line),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
@@ -156,7 +159,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned (Column),
+                  Word_Unsigned (Column),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);

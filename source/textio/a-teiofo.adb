@@ -4,10 +4,12 @@ with System.Formatting;
 with System.UTF_Conversions;
 package body Ada.Text_IO.Formatting is
    use Exception_Identification.From_Here;
-   use type System.Formatting.Word_Unsigned;
-   use type System.Formatting.Literals.Word_Integer;
+   use type System.Long_Long_Integer_Types.Word_Integer;
+   use type System.Long_Long_Integer_Types.Word_Unsigned;
    use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is
       System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
@@ -108,20 +110,20 @@ package body Ada.Text_IO.Formatting is
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
-      Item : System.Formatting.Literals.Word_Integer;
+      Item : System.Long_Long_Integer_Types.Word_Integer;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field)
    is
-      Unsigned_Item : System.Formatting.Word_Unsigned;
+      Unsigned_Item : Word_Unsigned;
    begin
       Last := To'First - 1;
       if Item < 0 then
          Last := Last + 1;
          To (Last) := '-';
-         Unsigned_Item := -System.Formatting.Word_Unsigned'Mod (Item);
+         Unsigned_Item := -Word_Unsigned'Mod (Item);
       else
-         Unsigned_Item := System.Formatting.Word_Unsigned (Item);
+         Unsigned_Item := Word_Unsigned (Item);
       end if;
       Modular_Image (
          To (Last + 1 .. To'Last),
@@ -166,7 +168,7 @@ package body Ada.Text_IO.Formatting is
          Integer_Image (
             To,
             Last,
-            System.Formatting.Literals.Word_Integer (Item),
+            Word_Integer (Item),
             Base,
             Padding,
             Padding_Width);
@@ -176,7 +178,7 @@ package body Ada.Text_IO.Formatting is
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
-      Item : System.Formatting.Word_Unsigned;
+      Item : System.Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base;
       Padding : Character;
       Padding_Width : Field)
@@ -192,7 +194,7 @@ package body Ada.Text_IO.Formatting is
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Base),
+            Word_Unsigned (Base),
             To (Last + 1 .. To'Last),
             Last,
             Error => Error);
@@ -250,7 +252,7 @@ package body Ada.Text_IO.Formatting is
             Last := To'First - 1;
             if Base /= 10 then
                System.Formatting.Image (
-                  System.Formatting.Word_Unsigned (Base),
+                  Word_Unsigned (Base),
                   To (Last + 1 .. To'Last),
                   Last,
                   Error => Error);
@@ -291,7 +293,7 @@ package body Ada.Text_IO.Formatting is
          Modular_Image (
             To,
             Last,
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             Base,
             Padding,
             Padding_Width);

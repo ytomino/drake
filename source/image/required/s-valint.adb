@@ -1,10 +1,15 @@
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 with System.Value_Errors;
 package body System.Val_Int is
 
+   subtype Word_Integer is Long_Long_Integer_Types.Word_Integer;
+
+   --  implementation
+
    function Value_Integer (Str : String) return Integer is
       Last : Natural;
-      Result : System.Formatting.Literals.Word_Integer;
+      Result : Word_Integer;
       Error : Boolean;
    begin
       Formatting.Literals.Get_Literal (Str, Last, Result, Error);
@@ -12,8 +17,7 @@ package body System.Val_Int is
          and then (
             Standard'Word_Size = Integer'Size
             or else Result in
-               System.Formatting.Literals.Word_Integer (Integer'First) ..
-               System.Formatting.Literals.Word_Integer (Integer'Last))
+               Word_Integer (Integer'First) .. Word_Integer (Integer'Last))
       then
          Formatting.Literals.Check_Last (Str, Last, Error);
          if not Error then

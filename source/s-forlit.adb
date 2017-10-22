@@ -1,7 +1,11 @@
 package body System.Formatting.Literals is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Word_Integer;
+   use type Long_Long_Integer_Types.Word_Unsigned;
    use type Long_Long_Integer_Types.Long_Long_Unsigned;
 
+   subtype Word_Integer is Long_Long_Integer_Types.Word_Integer;
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure Get (
@@ -201,7 +205,7 @@ package body System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Word_Integer;
+      Result : out Long_Long_Integer_Types.Word_Integer;
       Error : out Boolean)
    is
       Unsigned_Result : Word_Unsigned;
@@ -287,7 +291,7 @@ package body System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Word_Unsigned;
+      Result : out Long_Long_Integer_Types.Word_Unsigned;
       Error : out Boolean) is
    begin
       Last := Item'First - 1;

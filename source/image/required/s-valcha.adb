@@ -1,9 +1,14 @@
 with System.Formatting;
 with System.Img_Char;
+with System.Long_Long_Integer_Types;
 with System.Val_Enum;
 with System.Value_Errors;
 package body System.Val_Char is
-   use type Formatting.Word_Unsigned;
+   use type Long_Long_Integer_Types.Word_Unsigned;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    function Value_Character (Str : String) return Character is
       First : Positive;
@@ -24,7 +29,7 @@ package body System.Val_Char is
             if L <= Last and then S (First .. L) = HEX_Prefix then
                declare
                   Used_Last : Natural;
-                  Result : Formatting.Word_Unsigned;
+                  Result : Word_Unsigned;
                   Error : Boolean;
                begin
                   Formatting.Value (

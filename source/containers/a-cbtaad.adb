@@ -1,7 +1,10 @@
 with Ada.Unchecked_Conversion;
 with System.Formatting.Address;
+with System.Long_Long_Integer_Types;
 with System.Termination;
 package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
    type AA_Node_Access is access Node;
 
@@ -151,8 +154,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                   Error : Boolean;
                begin
                   System.Formatting.Image (
-                     System.Formatting.Word_Unsigned (
-                        Downcast (Position).Level),
+                     Word_Unsigned (Downcast (Position).Level),
                      Buffer (Last + 1 .. Buffer'Last),
                      Last,
                      Error => Error);

@@ -1,5 +1,10 @@
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 package body System.Version_Control is
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    function Get_Version_String (V : Unsigned_Types.Unsigned)
       return Version_String
@@ -9,7 +14,7 @@ package body System.Version_Control is
    begin
       return Result : Version_String do
          Formatting.Image (
-            Formatting.Word_Unsigned (V),
+            Word_Unsigned (V),
             Result,
             Last,
             Base => 16,

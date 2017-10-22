@@ -1,5 +1,6 @@
 with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Random_Initiators;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT is
@@ -8,6 +9,8 @@ package body Ada.Numerics.SFMT is
    use type Unsigned_64;
    use type System.Bit_Order;
    use type System.Storage_Elements.Storage_Count;
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
    package Impl is new Generating;
 
@@ -102,49 +105,49 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1 .. Last + 5) := "SFMT-";
       Last := Last + 5;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MEXP),
+         Word_Unsigned (MEXP),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (POS1),
+         Word_Unsigned (POS1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SL1),
+         Word_Unsigned (SL1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SL2),
+         Word_Unsigned (SL2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SR1),
+         Word_Unsigned (SR1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SR2),
+         Word_Unsigned (SR2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK1),
+         Word_Unsigned (MSK1),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -154,7 +157,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK2),
+         Word_Unsigned (MSK2),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -164,7 +167,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK3),
+         Word_Unsigned (MSK3),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -174,7 +177,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK4),
+         Word_Unsigned (MSK4),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -523,7 +526,7 @@ package body Ada.Numerics.SFMT is
       begin
          pragma Compile_Time_Error (Standard'Word_Size < 32, "word size < 32");
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             To,
             Last,
             Base => 16,
@@ -562,7 +565,7 @@ package body Ada.Numerics.SFMT is
          System.Formatting.Value (
             From,
             Last,
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             Base => 16,
             Error => Error);
          if Error or else Last /= From'Last then
