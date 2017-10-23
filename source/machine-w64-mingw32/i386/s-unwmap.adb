@@ -30,6 +30,11 @@ package body System.Unwind.Mapping is
          C.winnt.struct_EXCEPTION_REGISTRATION_RECORD,
          C.winnt.struct_EXCEPTION_REGISTRATION_RECORD_ptr);
 
+   function To_NT_TIB_ptr is
+      new Ada.Unchecked_Conversion (
+         C.winnt.struct_TEB_ptr,
+         C.winnt.NT_TIB_ptr);
+
    type SEH_Handler is access function (
       Exception_Record : C.winnt.struct_EXCEPTION_RECORD_ptr;
       Establisher_Frame : C.void_ptr;
@@ -215,14 +220,10 @@ package body System.Unwind.Mapping is
    --  implementation
 
    procedure Install_Exception_Handler (SEH : Address) is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            C.winnt.struct_TEB_ptr,
-            C.winnt.NT_TIB_ptr);
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
-      TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
+      TIB : constant C.winnt.NT_TIB_ptr := To_NT_TIB_ptr (TEB);
       SEH_All : SEH_Record;
       for SEH_All'Address use SEH;
    begin
@@ -245,15 +246,11 @@ package body System.Unwind.Mapping is
    end Install_Task_Exception_Handler;
 
    procedure Reinstall_Exception_Handler is
-      function Cast is
-         new Ada.Unchecked_Conversion (
-            C.winnt.struct_TEB_ptr,
-            C.winnt.NT_TIB_ptr);
       TLS : constant not null Runtime_Context.Task_Local_Storage_Access :=
          Runtime_Context.Get_Task_Local_Storage;
       SEH : constant Address := TLS.SEH;
       TEB : constant C.winnt.struct_TEB_ptr := C.winnt.NtCurrentTeb;
-      TIB : constant C.winnt.NT_TIB_ptr := Cast (TEB);
+      TIB : constant C.winnt.NT_TIB_ptr := To_NT_TIB_ptr (TEB);
    begin
       if TIB.ExceptionList /=
          EXCEPTION_REGISTRATION_RECORD_ptr_Conv.To_Pointer (SEH)
