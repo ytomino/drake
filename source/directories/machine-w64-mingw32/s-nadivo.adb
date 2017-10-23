@@ -46,7 +46,6 @@ package body System.Native_Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
-               pragma Suppress (Alignment_Check);
                NTFS : constant C.winnt.WCHAR_array (0 .. 4) := (
                   C.winnt.WCHAR'Val (Wide_Character'Pos ('N')),
                   C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
@@ -96,7 +95,6 @@ package body System.Native_Directories.Volumes is
       end if;
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       declare
-         pragma Suppress (Alignment_Check);
          Dest : constant Address :=
             Standard_Allocators.Allocate (
                (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)

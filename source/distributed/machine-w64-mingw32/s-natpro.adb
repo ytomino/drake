@@ -71,7 +71,6 @@ package body System.Native_Processes is
       Index : in out C.size_t;
       New_Item : not null C.winnt.LPWSTR)
    is
-      pragma Suppress (Alignment_Check);
       New_Item_Length : constant C.size_t := C.string.wcslen (New_Item);
       Command_All : C.winnt.WCHAR_array (
          0 .. Index + New_Item_Length + 3); -- ' ' & '"' & '"' & NUL

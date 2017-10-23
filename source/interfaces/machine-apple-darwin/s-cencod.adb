@@ -39,7 +39,6 @@ package body System.C_Encoding is
             raise Constraint_Error;
          end if;
          declare
-            pragma Suppress (Alignment_Check);
             Item_As_C : C.char_array (0 .. Count - 1);
             for Item_As_C'Address use Item'Address;
          begin
@@ -61,7 +60,6 @@ package body System.C_Encoding is
          raise Constraint_Error;
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Item_As_Ada : String (1 .. Count);
          for Item_As_Ada'Address use Item'Address;
       begin
@@ -102,7 +100,6 @@ package body System.C_Encoding is
       Count : out C.size_t;
       Substitute : C.wchar_t_array)
    is
-      pragma Suppress (Alignment_Check);
       Item_Index : Positive := Item'First;
    begin
       Count := 0;
@@ -172,7 +169,6 @@ package body System.C_Encoding is
       Count : out Natural;
       Substitute : Wide_String)
    is
-      pragma Suppress (Alignment_Check);
       Item_Index : C.size_t := Item'First;
    begin
       Count := 0;
@@ -277,7 +273,6 @@ package body System.C_Encoding is
             raise Constraint_Error;
          end if;
          declare
-            pragma Suppress (Alignment_Check);
             Item_As_C : C.wchar_t_array (0 .. Count - 1);
             for Item_As_C'Address use Item'Address;
          begin
@@ -299,7 +294,6 @@ package body System.C_Encoding is
          raise Constraint_Error;
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Item_As_Ada : Wide_Wide_String (1 .. Count);
          for Item_As_Ada'Address use Item'Address;
       begin

@@ -44,7 +44,6 @@ package body System.Native_IO is
             (Item'Length * Zero_Terminated_WStrings.Expanding + 2) -- '*' & NUL
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         pragma Suppress (Alignment_Check);
          Out_Item_All : Name_String (0 .. 1); -- at least
          for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin
@@ -97,7 +96,6 @@ package body System.Native_IO is
             (Storage_Elements.Storage_Offset (Out_Length) + 1) -- NUL
                * (C.winnt.WCHAR'Size / Standard'Storage_Unit)));
       declare
-         pragma Suppress (Alignment_Check);
          Out_Item_All : C.winnt.WCHAR_array (0 .. Out_Length); -- NUL
          for Out_Item_All'Address use Name_Pointer_Conv.To_Address (Out_Item);
       begin

@@ -15,7 +15,6 @@ package body Ada.Strings.UTF_Encoding.Conversions is
    function To_UTF_16_Wide_String (Item : System.Address; Length : Natural)
       return UTF_16_Wide_String
    is
-      pragma Suppress (Alignment_Check); -- Item'Alignment = 2
       pragma Assert (Length rem 2 = 0);
       pragma Assert (Item mod 2 = 0); -- stack may be aligned
       Item_All : UTF_16_Wide_String (1 .. Length / 2);
@@ -33,7 +32,6 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Length : Natural)
       return UTF_32_Wide_Wide_String
    is
-      pragma Suppress (Alignment_Check); -- Item'Alignment = 4
       pragma Assert (Length rem 4 = 0);
       pragma Assert (Item mod 4 = 0); -- stack may be aligned
       Item_All : UTF_32_Wide_Wide_String (1 .. Length / 4);
