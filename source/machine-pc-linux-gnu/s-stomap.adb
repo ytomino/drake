@@ -6,6 +6,15 @@ package body System.Storage_Map is
    use type C.signed_int;
    use type C.signed_long; -- 64bit ssize_t
 
+   --  the type of dlpi_phdr is different between 32bit and 64bit.
+   function To_Address (Value : access constant C.elf.Elf32_Phdr)
+      return Address
+      with Import, Convention => Intrinsic;
+   function To_Address (Value : access constant C.elf.Elf64_Phdr)
+      return Address
+      with Import, Convention => Intrinsic;
+   pragma Warnings (Off, To_Address);
+
    type Rec is record
       First_Load_Address : Address;
    end record;
@@ -37,7 +46,7 @@ package body System.Storage_Map is
                with Convention => C;
             dlpi_phdr : Elf32_Phdr_array (
                0 .. C.sys.types.ssize_t (Info.dlpi_phnum) - 1);
-            for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
+            for dlpi_phdr'Address use To_Address (Info.dlpi_phdr);
          begin
             for I in dlpi_phdr'Range loop
                if dlpi_phdr (I).p_type = C.elf.PT_LOAD then
@@ -58,7 +67,7 @@ package body System.Storage_Map is
                with Convention => C;
             dlpi_phdr : Elf64_Phdr_array (
                0 .. C.sys.types.ssize_t (Info.dlpi_phnum) - 1);
-            for dlpi_phdr'Address use Info.dlpi_phdr.all'Address;
+            for dlpi_phdr'Address use To_Address (Info.dlpi_phdr);
          begin
             for I in dlpi_phdr'Range loop
                if dlpi_phdr (I).p_type = C.elf.PT_LOAD then

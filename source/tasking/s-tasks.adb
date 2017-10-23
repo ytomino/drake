@@ -956,8 +956,9 @@ package body System.Tasks is
       Master : Master_Access := null;
       Entry_Last_Index : Task_Entry_Index := 0)
    is
+      type P is access procedure (Params : Address);
       function To_Process_Handler is
-         new Ada.Unchecked_Conversion (Address, Process_Handler);
+         new Ada.Unchecked_Conversion (P, Process_Handler);
       Name_Data : String_Access := null;
       Chain_Data : Activation_Chain := null;
       Level : Master_Level := Library_Task_Level;
@@ -1019,7 +1020,7 @@ package body System.Tasks is
          Master_Top => null,
          Dependents_Fallback_Handler => null,
          Params => Params,
-         Process => To_Process_Handler (Process.all'Address),
+         Process => To_Process_Handler (Process),
          Preferred_Free_Mode => Detach,
          Name => Name_Data,
          Activation_Chain => Chain_Data,
@@ -1740,8 +1741,9 @@ package body System.Tasks is
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address))
    is
+      type F is access procedure (Item : Address);
       function To_Finalize_Handler is
-         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
+         new Ada.Unchecked_Conversion (F, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1757,7 +1759,7 @@ package body System.Tasks is
             A.Finalize (A.Item);
          end if;
          A.Item := New_Item.all;
-         A.Finalize := To_Finalize_Handler (Finalize.all'Address);
+         A.Finalize := To_Finalize_Handler (Finalize);
          if A.Index /= Index'Unchecked_Access then
             A.Index := Index'Unchecked_Access;
             A.Previous := null;
@@ -1778,8 +1780,9 @@ package body System.Tasks is
       Finalize : not null access procedure (Item : Address);
       Result : out Address)
    is
+      type F is access procedure (Item : Address);
       function To_Finalize_Handler is
-         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
+         new Ada.Unchecked_Conversion (F, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1793,7 +1796,7 @@ package body System.Tasks is
       begin
          if A.Index /= Index'Unchecked_Access then
             A.Item := New_Item.all;
-            A.Finalize := To_Finalize_Handler (Finalize.all'Address);
+            A.Finalize := To_Finalize_Handler (Finalize);
             if A.Index /= Index'Unchecked_Access then
                A.Index := Index'Unchecked_Access;
                A.Previous := null;

@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -15,6 +16,9 @@ package body System.Unwind.Mapping is
    function strlen (s : not null access constant C.char) return C.size_t
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
+
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
@@ -80,7 +84,7 @@ package body System.Unwind.Mapping is
       end case;
       declare
          Message_All : String (1 .. Integer (Message_Length));
-         for Message_All'Address use Message.all'Address;
+         for Message_All'Address use char_ptr_Conv.To_Address (Message);
       begin
          Raising.Raise_From_Signal_Handler (
             Eexception_Id,

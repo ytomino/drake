@@ -143,7 +143,8 @@ package body System.Unwind.Mapping is
                Wide_Message_Last : constant Natural :=
                   Integer (Wide_Message_Length);
                Wide_Message_All : Wide_String (1 .. Wide_Message_Last);
-               for Wide_Message_All'Address use Wide_Message.all'Address;
+               for Wide_Message_All'Address use
+                  LPWSTR_Conv.To_Address (Wide_Message);
             begin
                if Wide_Message_All (
                         Wide_Message_Last - 2 .. Wide_Message_Last) =
