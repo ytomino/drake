@@ -10,44 +10,37 @@ package body System.Native_Directories.Volumes is
 
    --  implementation
 
-   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean is
+   function Is_Assigned (FS : File_System) return Boolean is
    begin
-      return FS.f_type /= 0;
+      return FS.Statistics.f_type /= 0;
    end Is_Assigned;
 
-   procedure Get (
-      Name : String;
-      FS : aliased out Non_Controlled_File_System)
-   is
+   procedure Get (Name : String; FS : aliased out File_System) is
       C_Name : C.char_array (
          0 ..
          Name'Length * Zero_Terminated_Strings.Expanding);
    begin
       Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
-      if C.sys.statfs.statfs (C_Name (0)'Access, FS'Access) < 0 then
+      if C.sys.statfs.statfs (C_Name (0)'Access, FS.Statistics'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Get;
 
-   function Size (FS : Non_Controlled_File_System) return File_Size is
+   function Size (FS : File_System) return File_Size is
    begin
-      return File_Size (FS.f_blocks) * File_Size (FS.f_bsize);
+      return File_Size (FS.Statistics.f_blocks)
+         * File_Size (FS.Statistics.f_bsize);
    end Size;
 
-   function Free_Space (FS : Non_Controlled_File_System) return File_Size is
+   function Free_Space (FS : File_System) return File_Size is
    begin
-      return File_Size (FS.f_bfree) * File_Size (FS.f_bsize);
+      return File_Size (FS.Statistics.f_bfree)
+         * File_Size (FS.Statistics.f_bsize);
    end Free_Space;
 
-   function Identity (FS : Non_Controlled_File_System) return File_System_Id is
+   function Identity (FS : File_System) return File_System_Id is
    begin
-      return FS.f_fsid;
+      return FS.Statistics.f_fsid;
    end Identity;
-
-   function Reference (Item : File_System)
-      return not null access Non_Controlled_File_System is
-   begin
-      return Item.Data'Unrestricted_Access;
-   end Reference;
 
 end System.Native_Directories.Volumes;
