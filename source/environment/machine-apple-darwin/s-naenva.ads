@@ -20,6 +20,8 @@ package System.Native_Environment_Variables is
    function Name (Position : Cursor) return String;
    function Value (Position : Cursor) return String;
 
+   Disable_Controlled : constant Boolean := True;
+
    function Get_Block return Address is (Null_Address);
    procedure Release_Block (Block : Address) is null;
 
