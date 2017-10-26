@@ -1,4 +1,5 @@
 pragma Check_Policy (Trace => Ignore);
+with System.Address_To_Constant_Access_Conversions;
 with System.Storage_Elements;
 with System.Synchronous_Control;
 with System.Unwind.Occurrences;
@@ -238,8 +239,11 @@ package body System.Unwind.Raising is
       E : not null Exception_Data_Access;
       Message : String)
    is
+      type Character_CA is access constant Character;
+      package Conv is
+         new Address_To_Constant_Access_Conversions (Character, Character_CA);
       File_All : String (1 .. Natural (strlen (File)));
-      for File_All'Address use File.all'Address;
+      for File_All'Address use Conv.To_Address (File);
    begin
       Raise_Exception (E, File_All, Line, Message => Message);
    end Raise_From_rcheck;
@@ -403,8 +407,11 @@ package body System.Unwind.Raising is
    end rcheck_22;
 
    procedure rcheck_23 (File : not null access Character; Line : Integer) is
+      type Character_CA is access constant Character;
+      package Conv is
+         new Address_To_Constant_Access_Conversions (Character, Character_CA);
       File_All : String (1 .. Natural (strlen (File)));
-      for File_All'Address use File.all'Address;
+      for File_All'Address use Conv.To_Address (File);
    begin
       Raise_Exception_No_Defer (
          Unwind.Standard.Program_Error'Access,

@@ -1,5 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Hierarchical_File_Names;
+with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdlib;
@@ -11,6 +12,9 @@ package body System.Native_Directories.Temporary is
    use type C.char_ptr;
    use type C.signed_int;
    use type C.size_t;
+
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    Temp_Variable : constant C.char_array := "TMPDIR" & C.char'Val (0);
    Temp_Template : constant C.char_array := "ADAXXXXXX" & C.char'Val (0);
@@ -29,7 +33,7 @@ package body System.Native_Directories.Temporary is
          Directory'Length * Zero_Terminated_Strings.Expanding
             + 1 -- '/'
             + Temp_Template'Length);
-      for Template_All'Address use Template.all'Address;
+      for Template_All'Address use char_ptr_Conv.To_Address (Template);
    begin
       if Directory'Length = 0
          or else Ada.Hierarchical_File_Names.Is_Current_Directory_Name (

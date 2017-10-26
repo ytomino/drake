@@ -1,19 +1,23 @@
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 with System.Value_Errors;
 package body System.Val_Uns is
-   use type System.Formatting.Word_Unsigned;
+   use type Long_Long_Integer_Types.Word_Unsigned;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    function Value_Unsigned (Str : String) return Unsigned_Types.Unsigned is
       Last : Natural;
-      Result : Formatting.Word_Unsigned;
+      Result : Word_Unsigned;
       Error : Boolean;
    begin
       Formatting.Literals.Get_Literal (Str, Last, Result, Error => Error);
       if not Error
          and then (
             Standard'Word_Size = Unsigned_Types.Unsigned'Size
-            or else Result <=
-               Formatting.Word_Unsigned (Unsigned_Types.Unsigned'Last))
+            or else Result <= Word_Unsigned (Unsigned_Types.Unsigned'Last))
       then
          Formatting.Literals.Check_Last (Str, Last, Error);
          if not Error then

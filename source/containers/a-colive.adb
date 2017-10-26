@@ -2,10 +2,14 @@ with Ada.Containers.Array_Sorting;
 --  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Long_Long_Integer_Types;
 package body Ada.Containers.Limited_Vectors is
    pragma Check_Policy (Validate => Ignore);
 --  diff
    use type System.Address;
+   use type System.Long_Long_Integer_Types.Word_Integer;
+
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
 
    package DA_Conv is
       new System.Address_To_Named_Access_Conversions (Data, Data_Access);
@@ -28,8 +32,8 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 
-   procedure Swap_Element (I, J : Integer; Params : System.Address);
-   procedure Swap_Element (I, J : Integer; Params : System.Address) is
+   procedure Swap_Element (I, J : Word_Integer; Params : System.Address);
+   procedure Swap_Element (I, J : Word_Integer; Params : System.Address) is
       Data : constant Data_Access := DA_Conv.To_Pointer (Params);
       Temp : constant Element_Access := Data.Items (Index_Type'Val (I));
    begin
@@ -1062,9 +1066,9 @@ package body Ada.Containers.Limited_Vectors is
 
    package body Generic_Sorting is
 
-      function LT (Left, Right : Integer; Params : System.Address)
+      function LT (Left, Right : Word_Integer; Params : System.Address)
          return Boolean;
-      function LT (Left, Right : Integer; Params : System.Address)
+      function LT (Left, Right : Word_Integer; Params : System.Address)
          return Boolean
       is
          Data : constant Data_Access := DA_Conv.To_Pointer (Params);
@@ -1127,7 +1131,8 @@ package body Ada.Containers.Limited_Vectors is
                   Source.Length := 0;
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Index_Type'First),
-                     Integer (Index_Type'First) + Integer (Old_Length),
+                     Word_Integer (Index_Type'First)
+                        + Word_Integer (Old_Length),
                      Index_Type'Pos (Last (Target)),
                      DA_Conv.To_Address (Target.Data),
                      LT => LT'Access,

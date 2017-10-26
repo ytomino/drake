@@ -4,6 +4,7 @@ with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
+with System.Long_Long_Integer_Types;
 with System.Native_Time;
 with System.Runtime_Context;
 with System.Shared_Locking;
@@ -17,10 +18,11 @@ with System.Unbounded_Stack_Allocators;
 with System.Unwind.Occurrences;
 package body System.Tasks is
    use Ada.Exception_Identification.From_Here;
+   use type Long_Long_Integer_Types.Word_Unsigned;
    use type Synchronous_Objects.Queue_Node_Access;
    use type Storage_Elements.Storage_Offset;
 
-   type Word is mod 2 ** Standard'Word_Size;
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    --  Use sequentially consistent model.
    Order : constant := Storage_Barriers.ATOMIC_SEQ_CST;
@@ -181,7 +183,7 @@ package body System.Tasks is
 
    Attribute_Indexes_Lock : Synchronous_Objects.Mutex; -- uninitialized
 
-   type Fixed_Attribute_Index_Set is array (Natural) of Word;
+   type Fixed_Attribute_Index_Set is array (Natural) of Word_Unsigned;
    pragma Suppress_Initialization (Fixed_Attribute_Index_Set);
    type Attribute_Index_Set_Access is access all Fixed_Attribute_Index_Set;
 
@@ -190,7 +192,7 @@ package body System.Tasks is
 
    package Attribute_Index_Sets is
       new Simple_Vectors (
-         Word,
+         Word_Unsigned,
          Fixed_Attribute_Index_Set,
          Attribute_Index_Set_Access);
 
@@ -954,8 +956,9 @@ package body System.Tasks is
       Master : Master_Access := null;
       Entry_Last_Index : Task_Entry_Index := 0)
    is
+      type P is access procedure (Params : Address);
       function To_Process_Handler is
-         new Ada.Unchecked_Conversion (Address, Process_Handler);
+         new Ada.Unchecked_Conversion (P, Process_Handler);
       Name_Data : String_Access := null;
       Chain_Data : Activation_Chain := null;
       Level : Master_Level := Library_Task_Level;
@@ -1017,7 +1020,7 @@ package body System.Tasks is
          Master_Top => null,
          Dependents_Fallback_Handler => null,
          Params => Params,
-         Process => To_Process_Handler (Process.all'Address),
+         Process => To_Process_Handler (Process),
          Preferred_Free_Mode => Detach,
          Name => Name_Data,
          Activation_Chain => Chain_Data,
@@ -1653,17 +1656,17 @@ package body System.Tasks is
       --  search unused index
       for I in 0 .. Attribute_Indexes_Length - 1 loop
          if Attribute_Indexes (I) /= not 0 then
-            for J in Integer range 0 .. Word'Size - 1 loop
+            for J in Integer range 0 .. Standard'Word_Size - 1 loop
                if (Attribute_Indexes (I) and (2 ** J)) = 0 then
                   Attribute_Indexes (I) := Attribute_Indexes (I) or (2 ** J);
-                  Index.Index := I * Word'Size + J;
+                  Index.Index := I * Standard'Word_Size + J;
                   goto Found;
                end if;
             end loop;
          end if;
       end loop;
       --  not found
-      Index.Index := Word'Size * Attribute_Indexes_Length;
+      Index.Index := Standard'Word_Size * Attribute_Indexes_Length;
       declare
          P : constant Natural := Attribute_Indexes_Length;
          B : constant Natural := 0;
@@ -1701,8 +1704,8 @@ package body System.Tasks is
       end loop;
       if Registered_State /= Unregistered then
          declare
-            P : constant Natural := Index.Index / Word'Size;
-            B : constant Natural := Index.Index mod Word'Size;
+            P : constant Natural := Index.Index / Standard'Word_Size;
+            B : constant Natural := Index.Index mod Standard'Word_Size;
          begin
             Attribute_Indexes (P) := Attribute_Indexes (P) and not (2 ** B);
          end;
@@ -1738,8 +1741,9 @@ package body System.Tasks is
       New_Item : not null access function return Address;
       Finalize : not null access procedure (Item : Address))
    is
+      type F is access procedure (Item : Address);
       function To_Finalize_Handler is
-         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
+         new Ada.Unchecked_Conversion (F, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1755,7 +1759,7 @@ package body System.Tasks is
             A.Finalize (A.Item);
          end if;
          A.Item := New_Item.all;
-         A.Finalize := To_Finalize_Handler (Finalize.all'Address);
+         A.Finalize := To_Finalize_Handler (Finalize);
          if A.Index /= Index'Unchecked_Access then
             A.Index := Index'Unchecked_Access;
             A.Previous := null;
@@ -1776,8 +1780,9 @@ package body System.Tasks is
       Finalize : not null access procedure (Item : Address);
       Result : out Address)
    is
+      type F is access procedure (Item : Address);
       function To_Finalize_Handler is
-         new Ada.Unchecked_Conversion (Address, Finalize_Handler);
+         new Ada.Unchecked_Conversion (F, Finalize_Handler);
    begin
       Synchronous_Objects.Enter (Index.Mutex);
       Attribute_Vectors.Expand (
@@ -1791,7 +1796,7 @@ package body System.Tasks is
       begin
          if A.Index /= Index'Unchecked_Access then
             A.Item := New_Item.all;
-            A.Finalize := To_Finalize_Handler (Finalize.all'Address);
+            A.Finalize := To_Finalize_Handler (Finalize);
             if A.Index /= Index'Unchecked_Access then
                A.Index := Index'Unchecked_Access;
                A.Previous := null;

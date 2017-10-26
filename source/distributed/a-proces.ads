@@ -115,7 +115,7 @@ package Ada.Processes is
       Status : out Ada.Command_Line.Exit_Status);
    procedure Shell (Command : Command_Type);
    procedure Shell (Command_Line : String);
-   pragma Inline (Shell); -- renamed, or for shorthand
+   pragma Inline (Shell); -- for shorthand
 
    --  Exceptions
 
@@ -162,10 +162,5 @@ private
 
    function Is_Open (Child : Process) return Boolean
       renames Do_Is_Open; -- inherited
-
-   procedure Shell (
-      Command_Line : String;
-      Status : out Ada.Command_Line.Exit_Status)
-      renames System.Native_Processes.Shell;
 
 end Ada.Processes;

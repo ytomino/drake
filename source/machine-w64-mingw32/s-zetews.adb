@@ -7,7 +7,7 @@ package body System.Zero_Terminated_WStrings is
    use type Storage_Elements.Storage_Offset;
 
    package LPSTR_Conv is
-      new Address_To_Named_Access_Conversions (C.winnt.C_CHAR, C.winnt.LPSTR);
+      new Address_To_Named_Access_Conversions (C.char, C.winnt.LPSTR);
 
    --  implementation
 

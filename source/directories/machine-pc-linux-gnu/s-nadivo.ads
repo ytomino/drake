@@ -7,45 +7,41 @@ package System.Native_Directories.Volumes is
 
    subtype File_Size is Ada.Streams.Stream_Element_Count;
 
-   subtype Non_Controlled_File_System is C.sys.statfs.struct_statfs;
+   type File_System is record
+      Statistics : aliased C.sys.statfs.struct_statfs :=
+         (f_type => 0, others => <>);
+   end record;
+   pragma Suppress_Initialization (File_System);
 
-   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean;
+   function Is_Assigned (FS : File_System) return Boolean;
    pragma Inline (Is_Assigned);
 
-   procedure Get (
-      Name : String;
-      FS : aliased out Non_Controlled_File_System);
+   Disable_Controlled : constant Boolean := False; -- [gcc-6] crashes if True
 
-   function Size (FS : Non_Controlled_File_System) return File_Size;
-   function Free_Space (FS : Non_Controlled_File_System) return File_Size;
+   procedure Get (Name : String; FS : aliased out File_System);
 
-   function Case_Preserving (FS : Non_Controlled_File_System) return Boolean is
-      (True);
-   function Case_Sensitive (FS : Non_Controlled_File_System) return Boolean is
-      (True);
+   procedure Finalize (FS : in out File_System) is null;
 
-   function Is_HFS (FS : Non_Controlled_File_System) return Boolean is (False);
+   function Size (FS : File_System) return File_Size;
+   function Free_Space (FS : File_System) return File_Size;
+
+   function Case_Preserving (FS : File_System) return Boolean is (True);
+   function Case_Sensitive (FS : File_System) return Boolean is (True);
+
+   function Is_HFS (FS : File_System) return Boolean is (False);
 
    subtype File_System_Id is C.sys.types.fsid_t;
 
-   function Identity (FS : Non_Controlled_File_System) return File_System_Id;
+   function Identity (FS : File_System) return File_System_Id;
 
    --  unimplemented
-   function Owner (FS : Non_Controlled_File_System) return String
+   function Owner (FS : File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Format_Name (FS : Non_Controlled_File_System) return String
+   function Format_Name (FS : File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Directory (FS : Non_Controlled_File_System) return String
+   function Directory (FS : File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Device (FS : Non_Controlled_File_System) return String
+   function Device (FS : File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
-
-   type File_System is record
-      Data : aliased Non_Controlled_File_System := (f_type => 0, others => <>);
-   end record;
-
-   function Reference (Item : File_System)
-      return not null access Non_Controlled_File_System;
-   pragma Inline (Reference);
 
 end System.Native_Directories.Volumes;

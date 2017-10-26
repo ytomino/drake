@@ -1,15 +1,20 @@
 --  reference:
 --  http://thomas.baudel.name/Visualisation/VisuTri/inplacestablesort.html
 package body Ada.Containers.Array_Sorting is
+   use type System.Long_Long_Integer_Types.Word_Integer;
 
-   function GCD (X, Y : Positive) return Positive;
-   function GCD (X, Y : Positive) return Positive is
-      X2 : Natural := X;
-      Y2 : Natural := Y;
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
+   subtype Word_Natural is System.Long_Long_Integer_Types.Word_Natural;
+   subtype Word_Positive is System.Long_Long_Integer_Types.Word_Positive;
+
+   function GCD (X, Y : Word_Positive) return Word_Positive;
+   function GCD (X, Y : Word_Positive) return Word_Positive is
+      X2 : Word_Natural := X;
+      Y2 : Word_Natural := Y;
    begin
       if X2 < Y2 then
          declare
-            T : constant Natural := X2;
+            T : constant Word_Natural := X2;
          begin
             X2 := Y2;
             Y2 := T;
@@ -18,7 +23,7 @@ package body Ada.Containers.Array_Sorting is
       while Y2 /= 0 loop
          pragma Assert (X2 >= Y2);
          declare
-            R : constant Natural := X2 rem Y2;
+            R : constant Word_Natural := X2 rem Y2;
          begin
             X2 := Y2;
             Y2 := R;
@@ -30,10 +35,10 @@ package body Ada.Containers.Array_Sorting is
    --  implementation
 
    function Is_Sorted (
-      First, Last : Integer;
+      First, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       LT : not null access function (
-         Left, Right : Integer;
+         Left, Right : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)
          return Boolean)
       return Boolean is
@@ -49,14 +54,14 @@ package body Ada.Containers.Array_Sorting is
    end Is_Sorted;
 
    procedure Insertion_Sort (
-      First, Last : Integer;
+      First, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       LT : not null access function (
-         Left, Right : Integer;
+         Left, Right : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)
          return Boolean;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)) is
    begin
       for I in First + 1 .. Last loop
@@ -68,19 +73,19 @@ package body Ada.Containers.Array_Sorting is
    end Insertion_Sort;
 
    procedure In_Place_Merge_Sort (
-      First, Last : Integer;
+      First, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       LT : not null access function (
-         Left, Right : Integer;
+         Left, Right : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)
          return Boolean;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)) is
    begin
       if First < Last then
          declare
-            Before : constant Integer := First + (Last - First) / 2 + 1;
+            Before : constant Word_Integer := First + (Last - First) / 2 + 1;
          begin
             In_Place_Merge_Sort (First, Before - 1, Params, LT, Swap);
             In_Place_Merge_Sort (Before, Last, Params, LT, Swap);
@@ -90,17 +95,17 @@ package body Ada.Containers.Array_Sorting is
    end In_Place_Merge_Sort;
 
    procedure In_Place_Merge (
-      First, Before, Last : Integer;
+      First, Before, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       LT : not null access function (
-         Left, Right : Integer;
+         Left, Right : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)
          return Boolean;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address))
    is
-      First_Cut, Second_Cut, New_Before, L, H, M : Integer;
+      First_Cut, Second_Cut, New_Before, L, H, M : Word_Integer;
    begin
       if First < Before and then Before <= Last then
          if First + 1 = Last then
@@ -162,14 +167,14 @@ package body Ada.Containers.Array_Sorting is
    end In_Place_Merge;
 
    procedure In_Place_Reverse (
-      First, Last : Integer;
+      First, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address))
    is
-      I : Integer := First;
-      J : Integer := Last;
+      I : Word_Integer := First;
+      J : Word_Integer := Last;
    begin
       while I < J loop
          Swap (I, J, Params);
@@ -179,10 +184,10 @@ package body Ada.Containers.Array_Sorting is
    end In_Place_Reverse;
 
    procedure Reverse_Rotate (
-      First, Before, Last : Integer;
+      First, Before, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address)) is
    begin
       if First < Before and then Before <= Last then
@@ -193,23 +198,23 @@ package body Ada.Containers.Array_Sorting is
    end Reverse_Rotate;
 
    procedure Juggling_Rotate (
-      First, Before, Last : Integer;
+      First, Before, Last : System.Long_Long_Integer_Types.Word_Integer;
       Params : System.Address;
       Swap : not null access procedure (
-         I, J : Integer;
+         I, J : System.Long_Long_Integer_Types.Word_Integer;
          Params : System.Address))
    is
-      Left_Length : constant Integer := Before - First;
-      Length : constant Integer := Last - First + 1;
+      Left_Length : constant Word_Integer := Before - First;
+      Length : constant Word_Integer := Last - First + 1;
    begin
       if Left_Length > 0 and then Length > Left_Length then
          declare
-            Cycles : constant Positive := GCD (Length, Left_Length);
-            P : Integer := First;
+            Cycles : constant Word_Positive := GCD (Length, Left_Length);
+            P : Word_Integer := First;
          begin
             loop
                declare
-                  Q : Integer;
+                  Q : Word_Integer;
                begin
                   if P > Last - Left_Length then
                      Q := P - (Length - Left_Length);

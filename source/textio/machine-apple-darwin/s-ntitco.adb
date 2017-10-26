@@ -1,5 +1,6 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Once;
 with C.stdlib;
 package body System.Native_Text_IO.Terminal_Colors is
@@ -7,6 +8,8 @@ package body System.Native_Text_IO.Terminal_Colors is
    use type C.char_ptr;
    use type C.signed_int;
    use type C.size_t;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    function strlen (s : not null access constant C.char) return C.size_t
       with Import,
@@ -207,8 +210,7 @@ package body System.Native_Text_IO.Terminal_Colors is
             Seq (Last) := ';';
          end if;
          declare
-            Color_Index : Formatting.Word_Unsigned :=
-               Formatting.Word_Unsigned (Foreground);
+            Color_Index : Word_Unsigned := Word_Unsigned (Foreground);
          begin
             if Foreground < 16#10# then
                --  system color
@@ -218,7 +220,7 @@ package body System.Native_Text_IO.Terminal_Colors is
                else
                   Last := Last + 1;
                   Seq (Last) := '9';
-                  Color_Index := Formatting.Word_Unsigned (Foreground and 7);
+                  Color_Index := Word_Unsigned (Foreground and 7);
                end if;
             else
                --  256 color
@@ -238,8 +240,7 @@ package body System.Native_Text_IO.Terminal_Colors is
             Seq (Last) := ';';
          end if;
          declare
-            Color_Index : Formatting.Word_Unsigned :=
-               Formatting.Word_Unsigned (Background);
+            Color_Index : Word_Unsigned := Word_Unsigned (Background);
          begin
             if Background < 16#10# then
                --  system color
@@ -251,7 +252,7 @@ package body System.Native_Text_IO.Terminal_Colors is
                   Seq (Last) := '1';
                   Last := Last + 1;
                   Seq (Last) := '0';
-                  Color_Index := Formatting.Word_Unsigned (Background and 7);
+                  Color_Index := Word_Unsigned (Background and 7);
                end if;
             else
                --  256 color

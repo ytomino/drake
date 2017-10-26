@@ -1,7 +1,12 @@
 --  This implementation violates some ACATS intentionally.
 --  Violated ACATS tests: C352001
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 package body System.Img_Char is
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    procedure Image_Character_05 (
       V : Character;
@@ -41,7 +46,7 @@ package body System.Img_Char is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned'(Character'Pos (V)),
+                  Word_Unsigned'(Character'Pos (V)),
                   S (P + 1 .. S'Last),
                   P,
                   Base => 16,

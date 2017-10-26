@@ -1,6 +1,11 @@
 with System.Storage_Elements;
 package body System.Formatting is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Word_Unsigned;
+   use type Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure memset (
       b : Address;
@@ -23,8 +28,8 @@ package body System.Formatting is
                else "__builtin_uaddll_overflow");
 
    function add_overflow (
-      a, b : Longest_Unsigned;
-      res : not null access Longest_Unsigned)
+      a, b : Long_Long_Unsigned;
+      res : not null access Long_Long_Unsigned)
       return Boolean
       with Import,
          Convention => Intrinsic,
@@ -44,8 +49,8 @@ package body System.Formatting is
                else "__builtin_umulll_overflow");
 
    function mul_overflow (
-      a, b : Longest_Unsigned;
-      res : not null access Longest_Unsigned)
+      a, b : Long_Long_Unsigned;
+      res : not null access Long_Long_Unsigned)
       return Boolean
       with Import,
          Convention => Intrinsic,
@@ -56,32 +61,32 @@ package body System.Formatting is
    function Width_Digits (Value : Word_Unsigned; Base : Number_Base)
       return Positive
    is
-      V : Word_Unsigned := Value;
+      P : aliased Word_Unsigned := Word_Unsigned (Base);
       Result : Positive := 1;
    begin
-      while V >= Word_Unsigned (Base) loop
-         V := V / Word_Unsigned (Base);
+      while P <= Value loop
          Result := Result + 1;
+         exit when mul_overflow (P, Word_Unsigned (Base), P'Access);
       end loop;
       return Result;
    end Width_Digits;
 
-   function Width_Digits (Value : Longest_Unsigned; Base : Number_Base)
+   function Width_Digits (Value : Long_Long_Unsigned; Base : Number_Base)
       return Positive;
-   function Width_Digits (Value : Longest_Unsigned; Base : Number_Base)
+   function Width_Digits (Value : Long_Long_Unsigned; Base : Number_Base)
       return Positive is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            V : Longest_Unsigned := Value;
-            Offset : Natural := 0;
+            P : aliased Long_Long_Unsigned := Long_Long_Unsigned (Base);
+            Result : Positive := 1;
          begin
-            while V > Longest_Unsigned (Word_Unsigned'Last) loop
-               V := V / Longest_Unsigned (Base);
-               Offset := Offset + 1;
+            while P <= Value loop
+               Result := Result + 1;
+               exit when mul_overflow (P, Long_Long_Unsigned (Base), P'Access);
             end loop;
-            return Offset + Width_Digits (Word_Unsigned (V), Base);
+            return Result;
          end;
       else
          --  optimized for 64bit
@@ -109,25 +114,25 @@ package body System.Formatting is
    end Fill_Digits;
 
    procedure Fill_Digits (
-      Value : Longest_Unsigned;
+      Value : Long_Long_Unsigned;
       Item : out String;
       Base : Number_Base;
       Set : Type_Set);
    procedure Fill_Digits (
-      Value : Longest_Unsigned;
+      Value : Long_Long_Unsigned;
       Item : out String;
       Base : Number_Base;
       Set : Type_Set) is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            V : Longest_Unsigned := Value;
+            V : Long_Long_Unsigned := Value;
             I : Positive := Item'Last;
          begin
-            while V > Longest_Unsigned (Word_Unsigned'Last) loop
-               Image (Digit (V rem Longest_Unsigned (Base)), Item (I), Set);
-               V := V / Longest_Unsigned (Base);
+            while V > Long_Long_Unsigned (Word_Unsigned'Last) loop
+               Image (Digit (V rem Long_Long_Unsigned (Base)), Item (I), Set);
+               V := V / Long_Long_Unsigned (Base);
                I := I - 1;
             end loop;
             Fill_Digits (Word_Unsigned (V), Item (Item'First .. I), Base, Set);
@@ -186,22 +191,22 @@ package body System.Formatting is
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Unsigned;
+      Result : out Long_Long_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean);
    procedure Take_Digits (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Unsigned;
+      Result : out Long_Long_Unsigned;
       Base : Number_Base;
       Skip_Underscore : Boolean;
       Overflow : out Boolean) is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            R : aliased Longest_Unsigned := 0;
+            R : aliased Long_Long_Unsigned := 0;
          begin
             Take_Digits (
                Item,
@@ -225,10 +230,10 @@ package body System.Formatting is
                      end if;
                      Value (Item (Next), X, Is_Invalid);
                      exit when Is_Invalid or else X >= Base;
-                     if mul_overflow (R, Longest_Unsigned (Base), R'Access)
+                     if mul_overflow (R, Long_Long_Unsigned (Base), R'Access)
                         or else add_overflow (
                            R,
-                           Longest_Unsigned (X),
+                           Long_Long_Unsigned (X),
                            R'Access)
                      then
                         Overflow := True;
@@ -254,16 +259,20 @@ package body System.Formatting is
 
    --  implementation
 
-   function Width (Value : Word_Unsigned; Base : Number_Base := 10)
+   function Width (
+      Value : Long_Long_Integer_Types.Word_Unsigned;
+      Base : Number_Base := 10)
       return Positive is
    begin
       return Width_Digits (Value, Base);
    end Width;
 
-   function Width (Value : Longest_Unsigned; Base : Number_Base := 10)
+   function Width (
+      Value : Long_Long_Integer_Types.Long_Long_Unsigned;
+      Base : Number_Base := 10)
       return Positive is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          return Width_Digits (Value, Base);
       else
@@ -291,7 +300,7 @@ package body System.Formatting is
    end Image;
 
    procedure Image (
-      Value : Word_Unsigned;
+      Value : Long_Long_Integer_Types.Word_Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
@@ -321,7 +330,7 @@ package body System.Formatting is
    end Image;
 
    procedure Image (
-      Value : Longest_Unsigned;
+      Value : Long_Long_Integer_Types.Long_Long_Unsigned;
       Item : out String;
       Last : out Natural;
       Base : Number_Base := 10;
@@ -330,7 +339,7 @@ package body System.Formatting is
       Padding : Character := '0';
       Error : out Boolean) is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
             W : constant Positive := Formatting.Width (Value, Base);
@@ -389,7 +398,7 @@ package body System.Formatting is
    procedure Value (
       Item : String;
       Last : out Natural;
-      Result : out Word_Unsigned;
+      Result : out Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean)
@@ -409,12 +418,12 @@ package body System.Formatting is
    procedure Value (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Unsigned;
+      Result : out Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base := 10;
       Skip_Underscore : Boolean := False;
       Error : out Boolean) is
    begin
-      if Standard'Word_Size < Longest_Unsigned'Size then
+      if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
             Overflow : Boolean;

@@ -1,7 +1,9 @@
 with System.Formatting.Float;
-with System.Long_Long_Float_Divisions;
+with System.Long_Long_Float_Types;
 package body System.Formatting.Fixed is
    pragma Suppress (All_Checks);
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    function signbitl (X : Long_Long_Float) return Integer
       with Import,
@@ -94,7 +96,7 @@ package body System.Formatting.Fixed is
             Q : Long_Long_Float;
             R : Long_Long_Float;
          begin
-            Long_Long_Float_Divisions.Divide (
+            Long_Long_Float_Types.Divide (
                Item_Fore,
                Long_Long_Float (Base),
                Q,

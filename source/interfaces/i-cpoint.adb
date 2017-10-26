@@ -41,7 +41,6 @@ package body Interfaces.C.Pointers is
          Last := Index'Base'Val (Index'Pos (Index'First) + Length - 1);
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Source : Element_Array (First .. Last);
          for Source'Address use To_Address (Ref);
       begin
@@ -213,7 +212,6 @@ package body Interfaces.C.Pointers is
    begin
       if Length > 0 then
          declare
-            pragma Suppress (Alignment_Check);
             subtype R is
                Index range
                   Index'First ..

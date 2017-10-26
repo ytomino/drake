@@ -120,7 +120,10 @@ private
       and Iterator_Interfaces.Forward_Iterator with
    record
       Block : System.Address := System.Null_Address;
-   end record;
+   end record
+      with
+         Disable_Controlled =>
+            System.Native_Environment_Variables.Disable_Controlled;
 
    overriding procedure Finalize (Object : in out Iterator);
 

@@ -7,7 +7,6 @@ package body System.Wid_Enum is
       return Natural
    is
       pragma Unreferenced (Names);
-      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 8;
       type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
       Indexes_All : Index_Array_Type;
@@ -29,7 +28,6 @@ package body System.Wid_Enum is
       return Natural
    is
       pragma Unreferenced (Names);
-      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 16;
       type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
       Indexes_All : Index_Array_Type;
@@ -51,7 +49,6 @@ package body System.Wid_Enum is
       return Natural
    is
       pragma Unreferenced (Names);
-      pragma Suppress (Alignment_Check);
       type Index_Type is mod 2 ** 32;
       type Index_Array_Type is array (0 .. Hi + 1) of Index_Type;
       Indexes_All : Index_Array_Type;

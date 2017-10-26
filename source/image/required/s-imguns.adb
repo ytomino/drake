@@ -1,5 +1,10 @@
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 package body System.Img_Uns is
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    procedure Image_Unsigned (
       V : Unsigned_Types.Unsigned;
@@ -11,7 +16,7 @@ package body System.Img_Uns is
       pragma Assert (S'Length >= 1);
       S (S'First) := ' ';
       Formatting.Image (
-         Formatting.Word_Unsigned (V),
+         Word_Unsigned (V),
          S (S'First + 1 .. S'Last),
          P,
          Error => Error);

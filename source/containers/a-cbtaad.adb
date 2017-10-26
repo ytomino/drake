@@ -1,7 +1,15 @@
 with Ada.Unchecked_Conversion;
 with System.Formatting.Address;
+with System.Long_Long_Integer_Types;
 with System.Termination;
 package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
+
+   function To_Address (Value : Node_Access) return System.Address
+      with Import, Convention => Intrinsic;
+      --  Address_To_Named_Access_Conversions could not be used because
+      --    Node_Access is not access "all" type.
 
    type AA_Node_Access is access Node;
 
@@ -140,7 +148,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                Put (Buffer, Last, Indent_S);
                Put (Buffer, Last, " 0x");
                System.Formatting.Address.Image (
-                  Position.all'Address,
+                  To_Address (Position),
                   Buffer (
                      Last + 1 ..
                      Last + System.Formatting.Address.Address_String'Length),
@@ -151,8 +159,7 @@ package body Ada.Containers.Binary_Trees.Arne_Andersson.Debug is
                   Error : Boolean;
                begin
                   System.Formatting.Image (
-                     System.Formatting.Word_Unsigned (
-                        Downcast (Position).Level),
+                     Word_Unsigned (Downcast (Position).Level),
                      Buffer (Last + 1 .. Buffer'Last),
                      Last,
                      Error => Error);

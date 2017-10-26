@@ -3,6 +3,7 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Debug;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Once;
 with System.Termination;
 with System.Zero_Terminated_WStrings;
@@ -15,6 +16,8 @@ package body System.Native_IO.Sockets is
    use type C.size_t;
    use type C.psdk_inc.qsocket_types.SOCKET;
    use type C.ws2tcpip.struct_addrinfoW_ptr;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    Flag : aliased Once.Flag := 0;
    Failed_To_Initialize : Boolean;
@@ -155,7 +158,7 @@ package body System.Native_IO.Sockets is
             Host_Name,
             W_Host_Name (0)'Access);
          Formatting.Image (
-            Formatting.Word_Unsigned (Port),
+            Word_Unsigned (Port),
             Service,
             Service_Last,
             Base => 10,
@@ -238,7 +241,7 @@ package body System.Native_IO.Sockets is
          Error : Boolean;
       begin
          Formatting.Image (
-            Formatting.Word_Unsigned (Port),
+            Word_Unsigned (Port),
             Service,
             Service_Last,
             Base => 10,

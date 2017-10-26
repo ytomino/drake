@@ -3,10 +3,6 @@ pragma License (Unrestricted);
 package System.Formatting.Literals is
    pragma Pure;
 
-   type Word_Integer is range
-      -(2 ** (Standard'Word_Size - 1)) ..
-      2 ** (Standard'Word_Size - 1) - 1;
-
    --  parsing Ada-form literals
 
    procedure Skip_Spaces (Item : String; Last : in out Natural);
@@ -25,7 +21,7 @@ package System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Word_Integer;
+      Result : out Long_Long_Integer_Types.Word_Integer;
       Error : out Boolean);
 
    procedure Get_Literal (
@@ -39,13 +35,13 @@ package System.Formatting.Literals is
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Word_Unsigned;
+      Result : out Long_Long_Integer_Types.Word_Unsigned;
       Error : out Boolean);
 
    procedure Get_Literal (
       Item : String;
       Last : out Natural;
-      Result : out Longest_Unsigned;
+      Result : out Long_Long_Integer_Types.Long_Long_Unsigned;
       Error : out Boolean);
 
 end System.Formatting.Literals;

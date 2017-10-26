@@ -1,6 +1,9 @@
 with Ada.Text_IO.Formatting;
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 package body Ada.Text_IO.Integer_IO is
+
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
 
    procedure Put_To_Field (
       To : out String;
@@ -29,7 +32,7 @@ package body Ada.Text_IO.Integer_IO is
          Formatting.Integer_Image (
             To,
             Last,
-            System.Formatting.Literals.Word_Integer (Item),
+            Word_Integer (Item),
             Base,
             Padding,
             Padding_Width);
@@ -65,7 +68,7 @@ package body Ada.Text_IO.Integer_IO is
          end;
       else
          declare
-            Base_Item : System.Formatting.Literals.Word_Integer;
+            Base_Item : Word_Integer;
             Error : Boolean;
          begin
             System.Formatting.Literals.Get_Literal (
@@ -75,8 +78,7 @@ package body Ada.Text_IO.Integer_IO is
                Error => Error);
             if Error
                or else Base_Item not in
-                  System.Formatting.Literals.Word_Integer (Num'First) ..
-                  System.Formatting.Literals.Word_Integer (Num'Last)
+                  Word_Integer (Num'First) .. Word_Integer (Num'Last)
             then
                raise Data_Error;
             end if;

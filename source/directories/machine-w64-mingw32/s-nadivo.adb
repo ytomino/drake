@@ -20,11 +20,11 @@ package body System.Native_Directories.Volumes is
       new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
 
    procedure GetVolumeInformation (
-      FS : aliased in out Non_Controlled_File_System;
+      FS : aliased in out File_System;
       FileSystemNameBuffer : C.winnt.LPWSTR;
       FileSystemNameSize : C.windef.DWORD);
    procedure GetVolumeInformation (
-      FS : aliased in out Non_Controlled_File_System;
+      FS : aliased in out File_System;
       FileSystemNameBuffer : C.winnt.LPWSTR;
       FileSystemNameSize : C.windef.DWORD) is
    begin
@@ -46,7 +46,6 @@ package body System.Native_Directories.Volumes is
          --  save NTFS or not
          if not FS.Is_NTFS_Valid and then FileSystemNameBuffer /= null then
             declare
-               pragma Suppress (Alignment_Check);
                NTFS : constant C.winnt.WCHAR_array (0 .. 4) := (
                   C.winnt.WCHAR'Val (Wide_Character'Pos ('N')),
                   C.winnt.WCHAR'Val (Wide_Character'Pos ('T')),
@@ -70,15 +69,12 @@ package body System.Native_Directories.Volumes is
 
    --  implementation
 
-   function Is_Assigned (FS : Non_Controlled_File_System) return Boolean is
+   function Is_Assigned (FS : File_System) return Boolean is
    begin
       return FS.Root_Path /= null;
    end Is_Assigned;
 
-   procedure Get (
-      Name : String;
-      FS : aliased out Non_Controlled_File_System)
-   is
+   procedure Get (Name : String; FS : aliased out File_System) is
       W_Name : aliased C.winnt.WCHAR_array (
          0 ..
          Name'Length * Zero_Terminated_WStrings.Expanding);
@@ -96,7 +92,6 @@ package body System.Native_Directories.Volumes is
       end if;
       Root_Path_Length := C.string.wcslen (Root_Path (0)'Access);
       declare
-         pragma Suppress (Alignment_Check);
          Dest : constant Address :=
             Standard_Allocators.Allocate (
                (Storage_Elements.Storage_Offset (Root_Path_Length) + 1)
@@ -112,7 +107,12 @@ package body System.Native_Directories.Volumes is
       FS.Is_NTFS_Valid := False;
    end Get;
 
-   function Size (FS : Non_Controlled_File_System) return File_Size is
+   procedure Finalize (FS : in out File_System) is
+   begin
+      Standard_Allocators.Free (LPWSTR_Conv.To_Address (FS.Root_Path));
+   end Finalize;
+
+   function Size (FS : File_System) return File_Size is
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
@@ -128,7 +128,7 @@ package body System.Native_Directories.Volumes is
       return File_Size (TotalNumberOfBytes.QuadPart);
    end Size;
 
-   function Free_Space (FS : Non_Controlled_File_System) return File_Size is
+   function Free_Space (FS : File_System) return File_Size is
       FreeBytesAvailable : aliased C.winnt.ULARGE_INTEGER;
       TotalNumberOfBytes : aliased C.winnt.ULARGE_INTEGER;
    begin
@@ -144,9 +144,7 @@ package body System.Native_Directories.Volumes is
       return File_Size (FreeBytesAvailable.QuadPart);
    end Free_Space;
 
-   function Format_Name (FS : aliased in out Non_Controlled_File_System)
-      return String
-   is
+   function Format_Name (FS : aliased in out File_System) return String is
       FileSystem : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       GetVolumeInformation (
@@ -156,14 +154,14 @@ package body System.Native_Directories.Volumes is
       return Zero_Terminated_WStrings.Value (FileSystem (0)'Access);
    end Format_Name;
 
-   function Directory (FS : Non_Controlled_File_System) return String is
+   function Directory (FS : File_System) return String is
    begin
       return Zero_Terminated_WStrings.Value (
          FS.Root_Path,
          FS.Root_Path_Length);
    end Directory;
 
-   function Device (FS : Non_Controlled_File_System) return String is
+   function Device (FS : File_System) return String is
       VolumeName : aliased C.winnt.WCHAR_array (0 .. C.windef.MAX_PATH - 1);
    begin
       if C.winbase.GetVolumeNameForVolumeMountPoint (
@@ -188,15 +186,13 @@ package body System.Native_Directories.Volumes is
       return Zero_Terminated_WStrings.Value (VolumeName (0)'Access);
    end Device;
 
-   function Case_Preserving (FS : aliased in out Non_Controlled_File_System)
-      return Boolean is
+   function Case_Preserving (FS : aliased in out File_System) return Boolean is
    begin
       GetVolumeInformation (FS, null, 0);
       return (FS.FileSystemFlags and C.winbase.FS_CASE_IS_PRESERVED) /= 0;
    end Case_Preserving;
 
-   function Case_Sensitive (FS : aliased in out Non_Controlled_File_System)
-      return Boolean is
+   function Case_Sensitive (FS : aliased in out File_System) return Boolean is
    begin
       if FS.Is_NTFS_Valid then
          --  GetVolumeInformation reports FS_CASE_SENSITIVE at NTFS
@@ -222,27 +218,10 @@ package body System.Native_Directories.Volumes is
       end if;
    end Case_Sensitive;
 
-   function Identity (FS : aliased in out Non_Controlled_File_System)
-      return File_System_Id is
+   function Identity (FS : aliased in out File_System) return File_System_Id is
    begin
       GetVolumeInformation (FS, null, 0);
       return FS.VolumeSerialNumber;
    end Identity;
-
-   package body Controlled is
-
-      function Reference (Object : Volumes.File_System)
-         return not null access Non_Controlled_File_System is
-      begin
-         return File_System (Object).Data'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out File_System) is
-      begin
-         Standard_Allocators.Free (
-            LPWSTR_Conv.To_Address (Object.Data.Root_Path));
-      end Finalize;
-
-   end Controlled;
 
 end System.Native_Directories.Volumes;

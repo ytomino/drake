@@ -1,6 +1,11 @@
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 with System.Value_Errors;
 package body System.Val_LLU is
+
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
 
    function Value_Long_Long_Unsigned (Str : String)
       return Unsigned_Types.Long_Long_Unsigned
@@ -12,7 +17,7 @@ package body System.Val_LLU is
       Formatting.Literals.Get_Literal (
          Str,
          Last,
-         Formatting.Longest_Unsigned (Result),
+         Long_Long_Unsigned (Result),
          Error => Error);
       if not Error then
          Formatting.Literals.Check_Last (Str, Last, Error);

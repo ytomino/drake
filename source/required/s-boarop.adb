@@ -1,9 +1,12 @@
+with System.Long_Long_Integer_Types;
 package body System.Boolean_Array_Operations is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Word_Unsigned;
    use type Storage_Elements.Storage_Element;
    use type Storage_Elements.Storage_Offset;
 
-   type Word is mod 2 ** Standard'Word_Size;
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
    Word_Unit : constant := Standard'Word_Size / Standard'Storage_Unit;
    Word_Mask : constant := Word_Unit - 1;
 
@@ -25,9 +28,9 @@ package body System.Boolean_Array_Operations is
          begin
             while Dest_Addr < Dest_End_Word loop
                declare
-                  Dest : Word;
+                  Dest : Word_Unsigned;
                   for Dest'Address use Dest_Addr;
-                  Right : Word;
+                  Right : Word_Unsigned;
                   for Right'Address use Right_Addr;
                begin
                   Dest :=
@@ -75,11 +78,11 @@ package body System.Boolean_Array_Operations is
          begin
             while Dest_Addr < Dest_End_Word loop
                declare
-                  Dest : Word;
+                  Dest : Word_Unsigned;
                   for Dest'Address use Dest_Addr;
-                  Left : Word;
+                  Left : Word_Unsigned;
                   for Left'Address use Left_Addr;
-                  Right : Word;
+                  Right : Word_Unsigned;
                   for Right'Address use Right_Addr;
                begin
                   Dest := Left and Right;
@@ -122,11 +125,11 @@ package body System.Boolean_Array_Operations is
          begin
             while Dest_Addr < Dest_End_Word loop
                declare
-                  Dest : Word;
+                  Dest : Word_Unsigned;
                   for Dest'Address use Dest_Addr;
-                  Left : Word;
+                  Left : Word_Unsigned;
                   for Left'Address use Left_Addr;
-                  Right : Word;
+                  Right : Word_Unsigned;
                   for Right'Address use Right_Addr;
                begin
                   Dest := Left or Right;
@@ -169,11 +172,11 @@ package body System.Boolean_Array_Operations is
          begin
             while Dest_Addr < Dest_End_Word loop
                declare
-                  Dest : Word;
+                  Dest : Word_Unsigned;
                   for Dest'Address use Dest_Addr;
-                  Left : Word;
+                  Left : Word_Unsigned;
                   for Left'Address use Left_Addr;
-                  Right : Word;
+                  Right : Word_Unsigned;
                   for Right'Address use Right_Addr;
                begin
                   Dest := Left xor Right;

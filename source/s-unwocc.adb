@@ -2,6 +2,7 @@ pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Storage_Elements;
 with System.Termination;
 package body System.Unwind.Occurrences is
@@ -9,6 +10,8 @@ package body System.Unwind.Occurrences is
    use type Storage_Elements.Storage_Offset;
    use type Representation.Machine_Occurrence_Access;
    use type Representation.Unwind_Exception_Class;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    --  package separated for depending on libgcc
    package Separated is
@@ -75,8 +78,11 @@ package body System.Unwind.Occurrences is
       Current : Exception_Occurrence) is
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));
-      --  in GNAT runtime, task termination handler will be unset
-      --  and Standard_Library.AdaFinal will be called here
+      --  Only flush Text_IO, similar to abort that flushes stdio and does not
+      --    finalize any others (atexit, __attribute__((destructor)), etc).
+      --  GNAT runtime calls System.Standard_Library.Adafinal to complete tasks
+      --    here, but drake does not it according with abort.
+      Flush_IO;
       Report (Current, "");
       Termination.Force_Abort;
    end Last_Chance_Handler;
@@ -138,7 +144,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned (Line),
+                  Word_Unsigned (Line),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
@@ -153,7 +159,7 @@ package body System.Unwind.Occurrences is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned (Column),
+                  Word_Unsigned (Column),
                   X.Msg (Last + 1 .. X.Msg'Last),
                   Last,
                   Error => Error);
@@ -297,6 +303,11 @@ package body System.Unwind.Occurrences is
             New_Line => New_Line);
       end if;
    end Exception_Information;
+
+   procedure Flush_IO is
+   begin
+      Flush_IO_Hook.all;
+   end Flush_IO;
 
    procedure Default_Report (X : Exception_Occurrence; Where : String) is
       subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);

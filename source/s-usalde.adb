@@ -1,9 +1,12 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting.Address;
+with System.Long_Long_Integer_Types;
 with System.Termination;
 package body System.Unbounded_Stack_Allocators.Debug is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
    package BA_Conv is
       new Address_To_Named_Access_Conversions (Block, Block_Access);
@@ -42,7 +45,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
             --  put block number
             Put (Buffer, Last, "#");
             Formatting.Image (
-               Formatting.Word_Unsigned (Block_Number),
+               Word_Unsigned (Block_Number),
                Buffer (Last + 1 .. Buffer'Last),
                Last,
                Width => 2,
@@ -85,7 +88,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
                   (Used * 100 + Space - 1) / Space;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned (Percentage),
+                  Word_Unsigned (Percentage),
                   Buffer (Last + 1 .. Buffer'Last),
                   Last,
                   Width => 3,

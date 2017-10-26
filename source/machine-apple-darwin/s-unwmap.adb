@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Constant_Access_Conversions;
+with System.Address_To_Named_Access_Conversions;
 with System.Stack;
 with System.Unwind.Raising;
 with System.Unwind.Standard;
@@ -9,13 +10,15 @@ package body System.Unwind.Mapping is
    pragma Suppress (All_Checks);
    use type C.signed_int;
    use type C.signed_long;
-   use type C.size_t;
    use type C.unsigned_int;
    use type C.unsigned_long;
 
    function strlen (s : not null access constant C.char) return C.size_t
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_strlen";
+
+   package char_ptr_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
 
    procedure sigaction_Handler (
       Signal_Number : C.signed_int;
@@ -42,6 +45,9 @@ package body System.Unwind.Mapping is
       pragma Inspection_Point (Signal_Number);
       pragma Inspection_Point (Info);
       pragma Inspection_Point (uap);
+      --  space for overflow detection, that is baseless and from experience
+      Stack_Overflow_Space : constant :=
+         (Standard'Address_Size / Standard'Storage_Unit) * 1024 * 1024;
       --  the components of the exception.
       Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       Message_Length : constant C.size_t := strlen (Message);
@@ -53,19 +59,32 @@ package body System.Unwind.Mapping is
             Eexception_Id := Standard.Constraint_Error'Access;
          when C.signal.SIGBUS | C.signal.SIGSEGV =>
             declare
-               Dummy : Address;
+               Top, Bottom : Address;
+               Fault : Address;
             begin
-               Stack.Get (Top => Stack_Guard, Bottom => Dummy);
+               Stack.Get (Top => Top, Bottom => Bottom);
+               Stack.Fake_Return_From_Signal_Handler;
+               if Info /= null then
+                  Fault := Stack.Fault_Address (Info.all);
+               else
+                  Fault := Null_Address;
+               end if;
+               if Fault /= Null_Address
+                  and then Fault >= Top - Stack_Overflow_Space
+                  and then Fault < Bottom
+               then -- stack overflow
+                  Stack_Guard := Top + C.signal.MINSIGSTKSZ;
+                  Eexception_Id := Standard.Storage_Error'Access;
+               else
+                  Eexception_Id := Standard.Program_Error'Access;
+               end if;
             end;
-            Stack_Guard := Stack_Guard + C.signal.MINSIGSTKSZ;
-            Stack.Fake_Return_From_Signal_Handler;
-            Eexception_Id := Standard.Storage_Error'Access;
          when others =>
             Eexception_Id := Standard.Program_Error'Access;
       end case;
       declare
          Message_All : String (1 .. Integer (Message_Length));
-         for Message_All'Address use Message.all'Address;
+         for Message_All'Address use char_ptr_Conv.To_Address (Message);
       begin
          Raising.Raise_From_Signal_Handler (
             Eexception_Id,

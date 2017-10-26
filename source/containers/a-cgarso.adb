@@ -1,22 +1,23 @@
 with Ada.Containers.Array_Sorting;
-with System;
+with System.Long_Long_Integer_Types;
 procedure Ada.Containers.Generic_Array_Sort (Container : in out Array_Type) is
+   subtype Word_Integer is System.Long_Long_Integer_Types.Word_Integer;
 begin
    if Index_Type'Pos (Index_Type'First) in
-         Long_Long_Integer (Integer'First) ..
-         Long_Long_Integer (Integer'Last)
+         Long_Long_Integer (Word_Integer'First) ..
+         Long_Long_Integer (Word_Integer'Last)
       and then Index_Type'Pos (Index_Type'Last) in
-         Long_Long_Integer (Integer'First) ..
-         Long_Long_Integer (Integer'Last)
+         Long_Long_Integer (Word_Integer'First) ..
+         Long_Long_Integer (Word_Integer'Last)
    then
       declare
          type Context_Type is limited record
             Container : not null access Array_Type;
          end record;
          pragma Suppress_Initialization (Context_Type);
-         function LT (Left, Right : Integer; Params : System.Address)
+         function LT (Left, Right : Word_Integer; Params : System.Address)
             return Boolean;
-         function LT (Left, Right : Integer; Params : System.Address)
+         function LT (Left, Right : Word_Integer; Params : System.Address)
             return Boolean
          is
             Context : Context_Type;
@@ -27,8 +28,13 @@ begin
             return Context.Container (Left_Index) <
                Context.Container (Right_Index);
          end LT;
-         procedure Swap (Left, Right : Integer; Params : System.Address);
-         procedure Swap (Left, Right : Integer; Params : System.Address) is
+         procedure Swap (
+            Left, Right : Word_Integer;
+            Params : System.Address);
+         procedure Swap (
+            Left, Right : Word_Integer;
+            Params : System.Address)
+         is
             Context : Context_Type;
             for Context'Address use Params;
             Left_Index : constant Index_Type := Index_Type'Val (Left);
@@ -55,9 +61,9 @@ begin
             Offset : Long_Long_Integer;
          end record;
          pragma Suppress_Initialization (Context_Type);
-         function LT (Left, Right : Integer; Params : System.Address)
+         function LT (Left, Right : Word_Integer; Params : System.Address)
             return Boolean;
-         function LT (Left, Right : Integer; Params : System.Address)
+         function LT (Left, Right : Word_Integer; Params : System.Address)
             return Boolean
          is
             Context : Context_Type;
@@ -70,8 +76,13 @@ begin
             return Context.Container (Left_Index) <
                Context.Container (Right_Index);
          end LT;
-         procedure Swap (Left, Right : Integer; Params : System.Address);
-         procedure Swap (Left, Right : Integer; Params : System.Address) is
+         procedure Swap (
+            Left, Right : Word_Integer;
+            Params : System.Address);
+         procedure Swap (
+            Left, Right : Word_Integer;
+            Params : System.Address)
+         is
             Context : Context_Type;
             for Context'Address use Params;
             Left_Index : constant Index_Type :=
@@ -89,7 +100,7 @@ begin
       begin
          Array_Sorting.In_Place_Merge_Sort (
             0,
-            Integer (Index_Type'Pos (Container'Last) - Offset),
+            Word_Integer (Index_Type'Pos (Container'Last) - Offset),
             Context'Address,
             LT => LT'Access,
             Swap => Swap'Access);

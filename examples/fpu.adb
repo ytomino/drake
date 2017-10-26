@@ -1,6 +1,5 @@
-with Ada;
+with Ada.Formatting;
 with Interfaces;
-with System.Formatting;
 with System.Machine_Code;
 procedure fpu is
 	use type Interfaces.Unsigned_16;
@@ -10,18 +9,15 @@ begin
 		Inputs => System.Address'Asm_Input ("r", CW'Address),
 		Volatile => True);
 	declare
-		S : String (1 .. 4);
-		Last : Natural;
-		Error : Boolean;
+		function Image is
+			new Ada.Formatting.Modular_Image (
+				Interfaces.Unsigned_16,
+				Form => Ada.Formatting.Simple,
+				Signs => Ada.Formatting.Triming_Unsign_Marks,
+				Base => 16,
+				Width => 4);
 	begin
-		System.Formatting.Image (
-			System.Formatting.Word_Unsigned (CW),
-			S,
-			Last,
-			16,
-			Width => 4,
-			Error => Error);
-		Ada.Debug.Put (S);
+		Ada.Debug.Put (Image (CW));
 	end;
 	-- 0 : IM (Invalid-op Mask), 1 as masking exceptions
 	-- 1 : DM (Denormal Mask)

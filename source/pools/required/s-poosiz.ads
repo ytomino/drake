@@ -86,7 +86,8 @@ package System.Pool_Size is
             Fixed : aliased
                Bounded_Fixed_Allocator (Pool_Size, Elmt_Size, Alignment);
       end case;
-   end record;
+   end record
+      with Disable_Controlled => True;
    pragma Finalize_Storage_Only (Stack_Bounded_Pool);
 
    overriding procedure Allocate (

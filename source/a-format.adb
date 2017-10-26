@@ -1,18 +1,23 @@
 with System.Formatting.Decimal;
 with System.Formatting.Fixed;
 with System.Formatting.Float;
+with System.Long_Long_Integer_Types;
 package body Ada.Formatting is
    pragma Suppress (All_Checks);
-   use type System.Formatting.Word_Unsigned;
-   use type System.Formatting.Longest_Unsigned;
+   use type System.Long_Long_Integer_Types.Word_Unsigned;
+   use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
    pragma Compile_Time_Error (
       No_Sign /= System.Formatting.No_Sign,
       "No_Sign mismatch");
 
    function Integer_Image (Item : T) return String is
-      Longest_Abs_Item : System.Formatting.Longest_Unsigned;
-      Word_Abs_Item : System.Formatting.Word_Unsigned;
+      Longest_Abs_Item : Long_Long_Unsigned;
+      Word_Abs_Item : Word_Unsigned;
       Result : String (
          1 ..
          4 + Long_Long_Integer'Width + Width); -- "16##"
@@ -20,9 +25,9 @@ package body Ada.Formatting is
       Error : Boolean;
    begin
       if T'Size > Standard'Word_Size then
-         Longest_Abs_Item := System.Formatting.Longest_Unsigned'Mod (Item);
+         Longest_Abs_Item := Long_Long_Unsigned'Mod (Item);
       else
-         Word_Abs_Item := System.Formatting.Word_Unsigned'Mod (Item);
+         Word_Abs_Item := Word_Unsigned'Mod (Item);
       end if;
       if Item < 0 then
          if T'Size > Standard'Word_Size then
@@ -47,7 +52,7 @@ package body Ada.Formatting is
       end if;
       if Form = Ada and then Base /= 10 then
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Base),
+            Word_Unsigned (Base),
             Result (Last + 1 .. Result'Last),
             Last,
             Error => Error);
@@ -85,9 +90,7 @@ package body Ada.Formatting is
    end Integer_Image;
 
    function Modular_Image (Item : T) return String is
-      Result : String (
-         1 ..
-         4 + System.Formatting.Longest_Unsigned'Width + Width); -- "16##"
+      Result : String (1 .. 4 + Long_Long_Unsigned'Width + Width); -- "16##"
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
@@ -104,7 +107,7 @@ package body Ada.Formatting is
       end if;
       if Form = Ada and then Base /= 10 then
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Base),
+            Word_Unsigned (Base),
             Result (Last + 1 .. Result'Last),
             Last,
             Error => Error);
@@ -113,7 +116,7 @@ package body Ada.Formatting is
       end if;
       if T'Size > Standard'Word_Size then
          System.Formatting.Image (
-            System.Formatting.Longest_Unsigned (Item),
+            Long_Long_Unsigned (Item),
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,
@@ -124,7 +127,7 @@ package body Ada.Formatting is
             Error => Error);
       else
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             Result (Last + 1 .. Result'Last),
             Last,
             Base => Base,

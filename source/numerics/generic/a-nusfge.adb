@@ -132,7 +132,6 @@ package body Ada.Numerics.SFMT.Generating is
       Item : aliased in out w128_t;
       size : Integer)
    is
-      pragma Suppress (Alignment_Check);
       the_array : w128_t_Array (0 .. size - 1);
       for the_array'Address use Item'Address;
       i, j : Integer;

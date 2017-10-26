@@ -1,4 +1,6 @@
+with Ada.Streams.Naked_Stream_IO;
 with Ada.Streams.Stream_IO.Naked;
+with System.Unwind.Occurrences;
 package body Ada.Processes is
 
    --  implementation
@@ -59,17 +61,31 @@ package body Ada.Processes is
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
    is
       pragma Check (Pre, not Is_Open (Child) or else raise Status_Error);
-      Native_Command : System.Native_Processes.Command_Type
-         renames Controlled_Commands.Reference (Command).all;
+      Naked_Output : constant
+            not null access Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
+         Streams.Stream_IO.Naked.Non_Controlled (Output);
+      Naked_Error : constant
+            not null access Streams.Naked_Stream_IO.Non_Controlled_File_Type :=
+         Streams.Stream_IO.Naked.Non_Controlled (Error);
    begin
-      Create (
-         Child,
-         Native_Command,
-         Directory,
-         Search_Path,
-         Streams.Stream_IO.Naked.Non_Controlled (Input).all,
-         Streams.Stream_IO.Naked.Non_Controlled (Output).all,
-         Streams.Stream_IO.Naked.Non_Controlled (Error).all);
+      if Streams.Naked_Stream_IO.Is_Standard (Naked_Output.all)
+         or else Streams.Naked_Stream_IO.Is_Standard (Naked_Error.all)
+      then
+         System.Unwind.Occurrences.Flush_IO;
+      end if;
+      declare
+         Native_Command : System.Native_Processes.Command_Type
+            renames Controlled_Commands.Reference (Command).all;
+      begin
+         Create (
+            Child,
+            Native_Command,
+            Directory,
+            Search_Path,
+            Streams.Stream_IO.Naked.Non_Controlled (Input).all,
+            Naked_Output.all,
+            Naked_Error.all);
+      end;
    end Create;
 
    procedure Create (
@@ -198,12 +214,23 @@ package body Ada.Processes is
 
    procedure Shell (
       Command : Command_Type;
-      Status : out Ada.Command_Line.Exit_Status)
-   is
-      Native_Command : System.Native_Processes.Command_Type
-         renames Controlled_Commands.Reference (Command).all;
+      Status : out Ada.Command_Line.Exit_Status) is
    begin
-      System.Native_Processes.Shell (Native_Command, Status);
+      System.Unwind.Occurrences.Flush_IO;
+      declare
+         Native_Command : System.Native_Processes.Command_Type
+            renames Controlled_Commands.Reference (Command).all;
+      begin
+         System.Native_Processes.Shell (Native_Command, Status);
+      end;
+   end Shell;
+
+   procedure Shell (
+      Command_Line : String;
+      Status : out Ada.Command_Line.Exit_Status) is
+   begin
+      System.Unwind.Occurrences.Flush_IO;
+      System.Native_Processes.Shell (Command_Line, Status);
    end Shell;
 
    procedure Shell (Command : Command_Type) is

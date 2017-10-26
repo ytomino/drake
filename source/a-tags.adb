@@ -396,17 +396,15 @@ package body Ada.Tags is
             if Is_Descendant_Primary_Only (Base_Tag, T) then
                return Base_Object;
             else
-               if Get_Delegation /= null then
-                  declare
-                     Aggregated : constant System.Address :=
-                        Get_Delegation (Base_Object, T);
-                  begin
-                     if Aggregated /= System.Null_Address then
-                        pragma Check (Trace, Debug.Put ("delegating"));
-                        return Aggregated;
-                     end if;
-                  end;
-               end if;
+               declare
+                  Aggregated : constant System.Address :=
+                     Get_Delegation (Base_Object, T);
+               begin
+                  if Aggregated /= System.Null_Address then
+                     pragma Check (Trace, Debug.Put ("delegating"));
+                     return Aggregated;
+                  end if;
+               end;
                raise Constraint_Error; -- invalid interface conversion
             end if;
          end;
@@ -467,17 +465,15 @@ package body Ada.Tags is
       if Is_Descendant (Base_Tag, T) then
          return True;
       else
-         if Get_Delegation /= null then
-            declare
-               Aggregated : constant System.Address :=
-                  Get_Delegation (Base_Object, T);
-            begin
-               if Aggregated /= System.Null_Address then
-                  pragma Check (Trace, Debug.Put ("delegating"));
-                  return True;
-               end if;
-            end;
-         end if;
+         declare
+            Aggregated : constant System.Address :=
+               Get_Delegation (Base_Object, T);
+         begin
+            if Aggregated /= System.Null_Address then
+               pragma Check (Trace, Debug.Put ("delegating"));
+               return True;
+            end if;
+         end;
          return False;
       end if;
    end IW_Membership;

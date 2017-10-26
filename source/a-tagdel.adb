@@ -26,13 +26,11 @@ package body Ada.Tags.Delegating is
    procedure I_Insert (
       Node : aliased in out I_Node_Access;
       Interface_Tag : Tag;
-      Get : not null access function (Object : System.Address)
-         return System.Address);
+      Get : not null Delegate);
    procedure I_Insert (
       Node : aliased in out I_Node_Access;
       Interface_Tag : Tag;
-      Get : not null access function (Object : System.Address)
-         return System.Address)
+      Get : not null Delegate)
    is
       function "+" (X : Tag) return System.Address
          renames Tag_Conv.To_Address;
@@ -144,8 +142,8 @@ package body Ada.Tags.Delegating is
 
    Delegating_Map : aliased D_Node_Access := null;
 
-   --  implementation
-
+   function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
+      return System.Address;
    function Get_Delegation (Object : System.Address; Interface_Tag : Tag)
       return System.Address
    is
@@ -177,8 +175,11 @@ package body Ada.Tags.Delegating is
    procedure Register_Delegation (
       T : Tag;
       Interface_Tag : Tag;
-      Get : not null access function (Object : System.Address)
-         return System.Address)
+      Get : not null Delegate);
+   procedure Register_Delegation (
+      T : Tag;
+      Interface_Tag : Tag;
+      Get : not null Delegate)
    is
       D : D_Node_Access;
    begin
@@ -188,11 +189,10 @@ package body Ada.Tags.Delegating is
       System.Shared_Locking.Leave;
    end Register_Delegation;
 
-   type Get_Access is
-      access function (Object : System.Address) return System.Address;
+   --  implementation
 
    procedure Implements is
-      function Cast is new Unchecked_Conversion (System.Address, Get_Access);
+      function Cast is new Unchecked_Conversion (System.Address, Delegate);
    begin
       Tags.Get_Delegation := Get_Delegation'Access;
       Register_Delegation (T'Tag, I'Tag, Cast (Get'Code_Address));

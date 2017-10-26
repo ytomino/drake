@@ -1,5 +1,6 @@
 with Ada.Numerics.SFMT.Generating;
 with System.Formatting;
+with System.Long_Long_Integer_Types;
 with System.Random_Initiators;
 with System.Storage_Elements;
 package body Ada.Numerics.SFMT is
@@ -8,6 +9,8 @@ package body Ada.Numerics.SFMT is
    use type Unsigned_64;
    use type System.Bit_Order;
    use type System.Storage_Elements.Storage_Count;
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
    package Impl is new Generating;
 
@@ -102,49 +105,49 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1 .. Last + 5) := "SFMT-";
       Last := Last + 5;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MEXP),
+         Word_Unsigned (MEXP),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (POS1),
+         Word_Unsigned (POS1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SL1),
+         Word_Unsigned (SL1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SL2),
+         Word_Unsigned (SL2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SR1),
+         Word_Unsigned (SR1),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (SR2),
+         Word_Unsigned (SR2),
          Result (Last + 1 .. Result'Last),
          Last,
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK1),
+         Word_Unsigned (MSK1),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -154,7 +157,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK2),
+         Word_Unsigned (MSK2),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -164,7 +167,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK3),
+         Word_Unsigned (MSK3),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -174,7 +177,7 @@ package body Ada.Numerics.SFMT is
       Result (Last + 1) := '-';
       Last := Last + 1;
       System.Formatting.Image (
-         System.Formatting.Word_Unsigned (MSK4),
+         Word_Unsigned (MSK4),
          Result (Last + 1 .. Result'Last),
          Last,
          Base => 16,
@@ -189,7 +192,6 @@ package body Ada.Numerics.SFMT is
    function Random_32 (Gen : aliased in out Generator)
       return Unsigned_32
    is
-      pragma Suppress (Alignment_Check);
       pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
@@ -212,7 +214,6 @@ package body Ada.Numerics.SFMT is
    function Random_64 (Gen : aliased in out Generator)
       return Unsigned_64
    is
-      pragma Suppress (Alignment_Check);
       pragma Suppress (Index_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Gen.sfmt.state'Address;
@@ -269,7 +270,6 @@ package body Ada.Numerics.SFMT is
          end loop;
       else
          declare
-            pragma Suppress (Alignment_Check);
             the_array : w128_t_Array (0 .. 0); -- size / 2 - 1
             for the_array'Address use Item'Address;
          begin
@@ -297,7 +297,6 @@ package body Ada.Numerics.SFMT is
          end loop;
       else
          declare
-            pragma Suppress (Alignment_Check);
             the_array : w128_t_Array (0 .. size / 2 - 1);
             for the_array'Address use Item'Address;
          begin
@@ -362,7 +361,6 @@ package body Ada.Numerics.SFMT is
    begin
       return Result : State := (state => <>, idx => N32) do
          declare
-            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin
@@ -406,7 +404,6 @@ package body Ada.Numerics.SFMT is
          (state => (others => (others => 16#8b8b8b8b#)), idx => N32)
       do
          declare
-            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin
@@ -523,7 +520,7 @@ package body Ada.Numerics.SFMT is
       begin
          pragma Compile_Time_Error (Standard'Word_Size < 32, "word size < 32");
          System.Formatting.Image (
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             To,
             Last,
             Base => 16,
@@ -531,7 +528,6 @@ package body Ada.Numerics.SFMT is
             Error => Error);
          pragma Check (Validate, not Error and then Last = To'Last);
       end Hex_Put;
-      pragma Suppress (Alignment_Check);
       psfmt32 : Unsigned_32_Array_N32;
       for psfmt32'Address use Of_State.state'Address;
       Last : Natural := 0;
@@ -562,7 +558,7 @@ package body Ada.Numerics.SFMT is
          System.Formatting.Value (
             From,
             Last,
-            System.Formatting.Word_Unsigned (Item),
+            Word_Unsigned (Item),
             Base => 16,
             Error => Error);
          if Error or else Last /= From'Last then
@@ -577,7 +573,6 @@ package body Ada.Numerics.SFMT is
       end if;
       return Result : State do
          declare
-            pragma Suppress (Alignment_Check);
             psfmt32 : Unsigned_32_Array_N32;
             for psfmt32'Address use Result.state'Address;
          begin

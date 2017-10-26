@@ -1,7 +1,9 @@
-with System.Long_Long_Float_Divisions;
-with System.Long_Long_Integer_Divisions;
+with System.Long_Long_Float_Types;
+with System.Long_Long_Integer_Types;
 package body Ada.Fixed is
-   use type System.Long_Long_Integer_Divisions.Longest_Unsigned;
+
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
    pragma Compile_Time_Error (
       Long_Long_Float'Size < 96,
@@ -20,14 +22,14 @@ package body Ada.Fixed is
       end if;
       if Dividend_Type'Small = Divisor_Type'Small then
          declare
-            subtype LLU is System.Long_Long_Integer_Divisions.Longest_Unsigned;
+            subtype LLU is Long_Long_Unsigned;
             N : constant LLU :=
                LLU'Integer_Value (Dividend_Type'(abs Dividend));
             D : constant LLU := LLU'Integer_Value (Divisor_Type'(abs Divisor));
             Q : LLU;
             R : LLU;
          begin
-            System.Long_Long_Integer_Divisions.Divide (N, D, Q, R);
+            System.Long_Long_Integer_Types.Divide (N, D, Q, R);
             Quotient := Quotient_Type (Q);
             Remainder := Remainder_Type (Dividend_Type'Fixed_Value (R));
          end;
@@ -39,7 +41,7 @@ package body Ada.Fixed is
             Q : LLF;
             R : LLF;
          begin
-            System.Long_Long_Float_Divisions.Divide (N, D, Q, R);
+            System.Long_Long_Float_Types.Divide (N, D, Q, R);
             Quotient := Quotient_Type (Q);
             Remainder := Remainder_Type (R);
          end;
@@ -61,7 +63,7 @@ package body Ada.Fixed is
             Q : LLF;
             R : LLF;
          begin
-            System.Long_Long_Float_Divisions.Divide (N, D, Q, R);
+            System.Long_Long_Float_Types.Divide (N, D, Q, R);
             Quotient := Quotient_Type (Q);
             Remainder := Remainder_Type (ND_Smallest * R);
          end;

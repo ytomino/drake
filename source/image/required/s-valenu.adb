@@ -14,7 +14,6 @@ package body System.Val_Enum is
       Trim (Str, First, Last);
       if First <= Last then
          declare
-            pragma Suppress (Alignment_Check);
             type Index_Type is mod 2 ** 8;
             type Index_Array_Type is array (0 .. Num + 1) of Index_Type;
             Indexes_All : Index_Array_Type;
@@ -59,7 +58,6 @@ package body System.Val_Enum is
       Trim (Str, First, Last);
       if First <= Last then
          declare
-            pragma Suppress (Alignment_Check);
             type Index_Type is mod 2 ** 16;
             type Index_Array_Type is array (0 .. Num + 1) of Index_Type;
             Indexes_All : Index_Array_Type;
@@ -104,7 +102,6 @@ package body System.Val_Enum is
       Trim (Str, First, Last);
       if First <= Last then
          declare
-            pragma Suppress (Alignment_Check);
             type Index_Type is mod 2 ** 32;
             type Index_Array_Type is array (0 .. Num + 1) of Index_Type;
             Indexes_All : Index_Array_Type;

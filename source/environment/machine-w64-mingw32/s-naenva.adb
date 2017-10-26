@@ -199,7 +199,6 @@ package body System.Native_Environment_Variables is
                      Name : aliased C.winnt.WCHAR_array (0 .. Name_Length);
                   begin
                      declare
-                        pragma Suppress (Alignment_Check);
                         Item_All : C.winnt.WCHAR_array (0 .. Name_Length - 1);
                         for Item_All'Address use LPCWCH_Conv.To_Address (Item);
                      begin

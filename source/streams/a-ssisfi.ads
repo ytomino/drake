@@ -8,6 +8,9 @@ package Ada.Streams.Stream_IO.Standard_Files is
    function Standard_Output return not null access constant File_Type;
    function Standard_Error return not null access constant File_Type;
 
+   pragma Pure_Function (Standard_Input);
+   pragma Pure_Function (Standard_Output);
+   pragma Pure_Function (Standard_Error);
    pragma Inline (Standard_Input);
    pragma Inline (Standard_Output);
    pragma Inline (Standard_Error);

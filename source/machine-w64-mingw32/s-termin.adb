@@ -9,7 +9,7 @@ package body System.Termination is
    use type C.signed_int;
 
    package LPSTR_Conv is
-      new Address_To_Named_Access_Conversions (C.winnt.C_CHAR, C.winnt.LPSTR);
+      new Address_To_Named_Access_Conversions (C.char, C.winnt.LPSTR);
    package LPWSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
 

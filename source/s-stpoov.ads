@@ -4,8 +4,9 @@ private with Ada.Tags;
 package System.Storage_Pools.Overlaps is
    pragma Preelaborate;
 
-   type Overlay_Pool is limited new Root_Storage_Pool with
-      null record; -- Actually, an allocation address is stored in TLS.
+   type Overlay_Pool is limited new Root_Storage_Pool with null record
+      with Disable_Controlled => True;
+      --  Actually, an allocation address is stored in TLS.
    pragma Finalize_Storage_Only (Overlay_Pool);
 
    procedure Set_Address (Storage_Address : Address);

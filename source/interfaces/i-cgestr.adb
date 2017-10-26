@@ -227,7 +227,6 @@ package body Interfaces.C.Generic_Strings is
             Standard."/=" (Item, null) -- operator for anonymous access
             or else Length = 0
             or else raise Dereference_Error); -- CXB3010
-      pragma Suppress (Alignment_Check);
       Actual_Length : size_t;
    begin
       if not Append_Nul and then Length = 0 then
@@ -275,7 +274,6 @@ package body Interfaces.C.Generic_Strings is
          Last := Actual_Length - 1;
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Source : Element_Array (First .. Last);
          for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       begin
@@ -306,7 +304,6 @@ package body Interfaces.C.Generic_Strings is
          Last := Actual_Length - 1;
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Source : Element_Array (First .. Last);
          for Source'Address use const_chars_ptr_Conv.To_Address (Item);
       begin

@@ -1,10 +1,13 @@
+with System.Address_To_Named_Access_Conversions;
 with System.UTF_Conversions;
 with C.winnls;
 with C.winnt;
 package body System.C_Encoding is
-   use type C.char_array;
    use type C.signed_int;
    use type C.size_t;
+
+   package LPSTR_Conv is
+      new Address_To_Named_Access_Conversions (C.char, C.winnt.LPSTR);
 
    --  implementation of Character (UTF-8) from/to char (MBCS)
 
@@ -42,9 +45,6 @@ package body System.C_Encoding is
          Count := 0;
       else
          declare
-            function To_Pointer (Value : Address)
-               return C.winnt.LPSTR
-               with Import, Convention => Intrinsic;
             Item_Length : constant Natural := Item'Length;
             W_Item : C.winnt.WCHAR_array (0 .. C.size_t (Item_Length - 1));
             W_Length : C.signed_int;
@@ -57,7 +57,7 @@ package body System.C_Encoding is
             W_Length := C.winnls.MultiByteToWideChar (
                C.winnls.CP_UTF8,
                0,
-               To_Pointer (Item'Address),
+               LPSTR_Conv.To_Pointer (Item'Address),
                C.signed_int (Item_Length),
                W_Item (0)'Access,
                W_Item'Length);
@@ -69,7 +69,7 @@ package body System.C_Encoding is
                0,
                W_Item (0)'Access,
                W_Length,
-               To_Pointer (Target'Address),
+               LPSTR_Conv.To_Pointer (Target'Address),
                Target'Length,
                Z_Substitute (0)'Access,
                null);
@@ -93,9 +93,6 @@ package body System.C_Encoding is
          Count := 0;
       else
          declare
-            function To_Pointer (Value : Address)
-               return C.winnt.LPSTR
-               with Import, Convention => Intrinsic;
             Item_Length : constant C.size_t := Item'Length;
             W_Item : C.winnt.WCHAR_array (0 .. Item_Length - 1);
             W_Length : C.signed_int;
@@ -104,7 +101,7 @@ package body System.C_Encoding is
             W_Length := C.winnls.MultiByteToWideChar (
                C.winnls.CP_ACP,
                0,
-               To_Pointer (Item'Address),
+               LPSTR_Conv.To_Pointer (Item'Address),
                C.signed_int (Item_Length),
                W_Item (0)'Access,
                W_Item'Length);
@@ -116,7 +113,7 @@ package body System.C_Encoding is
                0,
                W_Item (0)'Access,
                W_Length,
-               To_Pointer (Target'Address),
+               LPSTR_Conv.To_Pointer (Target'Address),
                Target'Length,
                null,
                null);
@@ -164,7 +161,6 @@ package body System.C_Encoding is
             raise Constraint_Error;
          end if;
          declare
-            pragma Suppress (Alignment_Check);
             Item_As_C : C.wchar_t_array (0 .. Count - 1);
             for Item_As_C'Address use Item'Address;
          begin
@@ -186,7 +182,6 @@ package body System.C_Encoding is
          raise Constraint_Error;
       end if;
       declare
-         pragma Suppress (Alignment_Check);
          Item_As_Ada : Wide_String (1 .. Count);
          for Item_As_Ada'Address use Item'Address;
       begin
@@ -227,7 +222,6 @@ package body System.C_Encoding is
       Count : out C.size_t;
       Substitute : C.wchar_t_array)
    is
-      pragma Suppress (Alignment_Check);
       Item_Index : Positive := Item'First;
    begin
       Count := 0;
@@ -298,7 +292,6 @@ package body System.C_Encoding is
       Count : out Natural;
       Substitute : Wide_Wide_String)
    is
-      pragma Suppress (Alignment_Check);
       Item_Index : C.size_t := Item'First;
    begin
       Count := 0;

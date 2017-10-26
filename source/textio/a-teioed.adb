@@ -3,9 +3,12 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Text_IO.Formatting;
 with System.Formatting.Decimal;
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 package body Ada.Text_IO.Editing is
    use Exception_Identification.From_Here;
-   use type System.Formatting.Word_Unsigned;
+   use type System.Long_Long_Integer_Types.Word_Unsigned;
+
+   subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
    procedure To_Picture (
       Pic_String : String;
@@ -61,7 +64,7 @@ package body Ada.Text_IO.Editing is
                      Pic_String (I + 1 .. Pic_String'Last),
                      First => Count_First);
                   declare
-                     Count_U : System.Formatting.Word_Unsigned;
+                     Count_U : Word_Unsigned;
                   begin
                      System.Formatting.Literals.Get_Literal (
                         Pic_String (Count_First .. Pic_String'Last),
@@ -69,8 +72,7 @@ package body Ada.Text_IO.Editing is
                         Count_U,
                         Error => Error);
                      if Error
-                        or else Count_U >
-                           System.Formatting.Word_Unsigned (Natural'Last)
+                        or else Count_U > Word_Unsigned (Natural'Last)
                      then
                         return; -- Picture_Error
                      end if;

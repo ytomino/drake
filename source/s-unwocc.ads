@@ -81,6 +81,17 @@ package System.Unwind.Occurrences is
       Put : not null access procedure (S : String; Params : Address);
       New_Line : not null access procedure (Params : Address));
 
+   --  finalization of I/O
+
+   procedure Nop is null;
+
+   type Flush_IO_Handler is access procedure;
+   pragma Favor_Top_Level (Flush_IO_Handler);
+
+   Flush_IO_Hook : not null Flush_IO_Handler := Nop'Access;
+
+   procedure Flush_IO;
+
    --  output the information of unhandled exception
 
    procedure Default_Report (X : Exception_Occurrence; Where : String);

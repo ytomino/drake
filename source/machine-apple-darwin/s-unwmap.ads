@@ -28,9 +28,13 @@ package System.Unwind.Mapping is
          External_Name => "__drake_reinstall_exception_handler";
 
 private
+   use type C.size_t;
 
    Signal_Stack_Storage_Count : constant :=
-      C.size_t'Max (C.signal.MINSIGSTKSZ, 16#1000#); -- 4096
+      C.size_t'Max (
+         C.signal.MINSIGSTKSZ,
+         (Standard'Address_Size / Standard'Storage_Unit) * 1024);
+            --  this value is baseless and from experience
 
    type Signal_Stack_Type is
       array (1 .. Signal_Stack_Storage_Count) of aliased C.char;

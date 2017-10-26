@@ -1,7 +1,13 @@
+with System.Long_Long_Integer_Types;
 with System.Unwind.Raising;
 pragma Warnings (Off, System.Unwind.Raising); -- break "pure" rule
 package body System.Exponentiations is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   --  implementation
 
    function Generic_Exp_Integer (Left : Integer_Type; Right : Natural)
       return Integer_Type is
@@ -193,7 +199,6 @@ package body System.Exponentiations is
          return Shift_Left (1, Right) mod Modulus;
       else
          declare
-            type Long_Long_Unsigned is mod 2 ** Long_Long_Integer'Size;
             Result : Unsigned_Type := 1;
             Factor : Unsigned_Type := Left;
             Exponent : Natural := Right;

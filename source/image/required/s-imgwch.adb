@@ -1,6 +1,11 @@
 with System.Formatting;
 with System.Img_Char;
+with System.Long_Long_Integer_Types;
 package body System.Img_WChar is
+
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
+
+   --  implementation
 
    procedure Image_Wide_Character (
       V : Wide_Character;
@@ -28,7 +33,7 @@ package body System.Img_WChar is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned'(Wide_Character'Pos (V)),
+                  Word_Unsigned'(Wide_Character'Pos (V)),
                   S (S'First + Img_Char.Hex_Prefix'Length .. S'Last),
                   P,
                   Base => 16,
@@ -66,7 +71,7 @@ package body System.Img_WChar is
                Error : Boolean;
             begin
                Formatting.Image (
-                  Formatting.Word_Unsigned'(Wide_Wide_Character'Pos (V)),
+                  Word_Unsigned'(Wide_Wide_Character'Pos (V)),
                   S (S'First + Img_Char.Hex_Prefix'Length .. S'Last),
                   P,
                   Base => 16,

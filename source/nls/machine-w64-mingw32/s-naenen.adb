@@ -13,10 +13,8 @@ package body System.Native_Environment_Encoding is
    use type UTF_Conversions.To_Status_Type;
    use type C.signed_int; -- C.windef.WINBOOL
 
-   package char_Conv is
-      new Address_To_Constant_Access_Conversions (
-         C.char,
-         C.char_const_ptr);
+   package LPCSTR_Conv is
+      new Address_To_Constant_Access_Conversions (C.char, C.winnt.LPCSTR);
 
    procedure Default_Substitute (
       Encoding : Encoding_Id;
@@ -612,13 +610,13 @@ package body System.Native_Environment_Encoding is
                Out_Item_As_C : aliased C.char_array (0 .. 0); -- at least
                for Out_Item_As_C'Address use Out_Item'Address;
                Out_Length : C.signed_int;
-               Substitute_P : C.char_const_ptr;
+               Substitute_P : C.winnt.LPCSTR;
             begin
                if Object.Substitute_Length < 0 or else Object.To = UTF_8 then
                   Substitute_P := null;
                else
                   Substitute_P :=
-                     char_Conv.To_Pointer (Object.Substitute (1)'Address);
+                     LPCSTR_Conv.To_Pointer (Object.Substitute (1)'Address);
                end if;
                Out_Length := C.winnls.WideCharToMultiByte (
                   C.windef.UINT (Object.To),
