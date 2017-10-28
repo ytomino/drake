@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
 with Ada.Streams;
+private with Ada.Finalization;
 private with System.Native_Environment_Encoding;
 package Ada.Environment_Encoding is
    --  Platform-depended text encoding.
@@ -68,7 +69,7 @@ package Ada.Environment_Encoding is
 --       Predicate_Failure => raise Status_Error;
 
    function Is_Open (Object : Converter) return Boolean;
-   pragma Inline (Is_Open); -- renamed
+   pragma Inline (Is_Open);
 
    function Min_Size_In_From_Stream_Elements (
       Object : Converter) -- Open_Converter
@@ -172,9 +173,32 @@ private
 
    --  converter
 
-   type Converter is new System.Native_Environment_Encoding.Converter;
+   package Controlled is
 
-   function Is_Open (Object : Converter) return Boolean
-      renames Get_Is_Open;
+      type Converter is limited private;
+
+      function Reference (Object : Environment_Encoding.Converter)
+         return not null access System.Native_Environment_Encoding.Converter;
+
+      function Open (From, To : Encoding_Id)
+         return Environment_Encoding.Converter;
+         --  [gcc-7] strange error if this function is placed outside of
+         --    the package Controlled, and Disable_Controlled => True
+
+   private
+
+      type Converter is limited new Finalization.Limited_Controlled with record
+         Data : aliased System.Native_Environment_Encoding.Converter :=
+            (others => <>);
+      end record
+         with
+            Disable_Controlled =>
+               System.Native_Environment_Encoding.Disable_Controlled;
+
+      overriding procedure Finalize (Object : in out Converter);
+
+   end Controlled;
+
+   type Converter is new Controlled.Converter;
 
 end Ada.Environment_Encoding;

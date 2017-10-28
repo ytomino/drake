@@ -135,10 +135,10 @@ package body System.Native_Environment_Encoding is
       Object.Substitute_Length := -1;
    end Open;
 
-   function Get_Is_Open (Object : Converter) return Boolean is
+   function Is_Open (Object : Converter) return Boolean is
    begin
       return Object.From /= Invalid_Encoding_Id;
-   end Get_Is_Open;
+   end Is_Open;
 
    function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Offset is

@@ -57,6 +57,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : Converter;
       Context : in out Reading_Context_Type)
    is
+      N_Object : Native.Converter
+         renames Controlled.Reference (Object).all;
       I : Stream_Element_Offset := Item'First;
    begin
       if I > Item'Last then
@@ -92,8 +94,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                   Taken : Stream_Element_Offset;
                   Status : Native.Subsequence_Status_Type;
                begin
-                  Convert_No_Check (
-                     Object,
+                  Native.Convert_No_Check (
+                     N_Object,
                      Context.Buffer (Context.First .. Context.Last),
                      Taken,
                      Context.Converted_Buffer (
@@ -128,8 +130,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                         declare
                            Is_Overflow : Boolean;
                         begin
-                           Put_Substitute (
-                              Object,
+                           Native.Put_Substitute (
+                              N_Object,
                               Context.Converted_Buffer (
                                  Context.Converted_Last + 1 ..
                                  Buffer_Type'Last),
@@ -208,6 +210,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : in out Converter;
       Substitute : Streams.Stream_Element_Array)
    is
+      N_Object : Native.Converter
+         renames Controlled.Reference (Object).all;
       Substitute_Last : Stream_Element_Offset := Substitute'First - 1;
       S2 : Streams.Stream_Element_Array (1 .. Max_Substitute_Length);
       S2_Last : Stream_Element_Offset := S2'First - 1;
@@ -217,8 +221,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          declare
             Status : Native.Substituting_Status_Type;
          begin
-            Convert_No_Check (
-               Object,
+            Native.Convert_No_Check (
+               N_Object,
                Substitute (Substitute_Last + 1 .. Substitute'Last),
                Substitute_Last,
                S2 (S2_Last + 1 .. S2'Last),
@@ -251,6 +255,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : Converter;
       Context : in out Writing_Context_Type)
    is
+      N_Object : Native.Converter
+         renames Controlled.Reference (Object).all;
       I : Stream_Element_Offset := Item'First;
       End_Of_Item : Boolean := I > Item'Last;
    begin
@@ -288,8 +294,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
             Out_Last : Stream_Element_Offset;
             Status : Native.Continuing_Status_Type;
          begin
-            Convert_No_Check (
-               Object,
+            Native.Convert_No_Check (
+               N_Object,
                Context.Buffer (Context.First .. Context.Last),
                Taken,
                Out_Buffer,
@@ -310,8 +316,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                   declare
                      Is_Overflow : Boolean;
                   begin
-                     Put_Substitute (
-                        Object,
+                     Native.Put_Substitute (
+                        N_Object,
                         Out_Buffer,
                         Out_Last,
                         Is_Overflow);
@@ -345,6 +351,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       Object : Converter;
       Context : in out Writing_Context_Type)
    is
+      N_Object : Native.Converter
+         renames Controlled.Reference (Object).all;
       Out_Buffer : Streams.Stream_Element_Array (0 .. 63);
       Out_Last : Stream_Element_Offset := -1;
       Status : Native.Finishing_Status_Type;
@@ -354,8 +362,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          declare
             Is_Overflow : Boolean; -- ignore
          begin
-            Put_Substitute (
-               Object,
+            Native.Put_Substitute (
+               N_Object,
                Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
                Out_Last,
                Is_Overflow);
@@ -364,8 +372,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
       end if;
       --  finish
       loop
-         Convert_No_Check (
-            Object,
+         Native.Convert_No_Check (
+            N_Object,
             Out_Buffer (Out_Last + 1 .. Out_Buffer'Last),
             Out_Last,
             Finish => True,
@@ -606,8 +614,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object.Reading_Converter) then
-         Open (
-            Object.Reading_Converter,
+         Native.Open (
+            Controlled.Reference (Object.Reading_Converter).all,
             From => Native.Encoding_Id (Object.External),
             To => Native.Encoding_Id (Object.Internal));
          if Object.Substitute_Length >= 0 then
@@ -633,8 +641,8 @@ package body Ada.Environment_Encoding.Encoding_Streams is
          with Import, Convention => Intrinsic;
    begin
       if not Is_Open (Object.Writing_Converter) then
-         Open (
-            Object.Writing_Converter,
+         Native.Open (
+            Controlled.Reference (Object.Writing_Converter).all,
             From => Native.Encoding_Id (Object.Internal),
             To => Native.Encoding_Id (Object.External));
          if Object.Substitute_Length >= 0 then

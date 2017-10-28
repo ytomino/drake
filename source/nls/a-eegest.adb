@@ -1,4 +1,5 @@
 with Ada.Exceptions.Finally;
+with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 package body Ada.Environment_Encoding.Generic_Strings is
    pragma Check_Policy (Validate => Ignore);
@@ -74,13 +75,13 @@ package body Ada.Environment_Encoding.Generic_Strings is
    --  implementation of decoder
 
    function From (Id : Encoding_Id) return Decoder is
+      --  [gcc-7] strange error if extended return is placed outside of
+      --    the package Controlled, and Disable_Controlled => True
+      type T1 is access function (From, To : Encoding_Id) return Converter;
+      type T2 is access function (From, To : Encoding_Id) return Decoder;
+      function Cast is new Unchecked_Conversion (T1, T2);
    begin
-      return Result : Decoder do
-         Open (
-            Converter (Result),
-            From => System.Native_Environment_Encoding.Encoding_Id (Id),
-            To => System.Native_Environment_Encoding.Encoding_Id (Current_Id));
-      end return;
+      return Cast (Controlled.Open'Access) (From => Id, To => Current_Id);
    end From;
 
    procedure Decode (
@@ -259,14 +260,13 @@ package body Ada.Environment_Encoding.Generic_Strings is
    --  implementation of encoder
 
    function To (Id : Encoding_Id) return Encoder is
+      --  [gcc-7] strange error if extended return is placed outside of
+      --    the package Controlled, and Disable_Controlled => True
+      type T1 is access function (From, To : Encoding_Id) return Converter;
+      type T2 is access function (From, To : Encoding_Id) return Encoder;
+      function Cast is new Unchecked_Conversion (T1, T2);
    begin
-      return Result : Encoder do
-         Open (
-            Converter (Result),
-            From =>
-               System.Native_Environment_Encoding.Encoding_Id (Current_Id),
-            To => System.Native_Environment_Encoding.Encoding_Id (Id));
-      end return;
+      return Cast (Controlled.Open'Access) (From => Current_Id, To => Id);
    end To;
 
    procedure Encode (
