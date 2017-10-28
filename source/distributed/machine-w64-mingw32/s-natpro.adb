@@ -244,33 +244,6 @@ package body System.Native_Processes is
       end if;
    end Append_Argument;
 
-   --  implementation of child process type
-
-   package body Controlled is
-
-      function Reference (Object : Native_Processes.Process)
-         return not null access C.winnt.HANDLE is
-      begin
-         return Process (Object).Handle'Unrestricted_Access;
-      end Reference;
-
-      overriding procedure Finalize (Object : in out Process) is
-      begin
-         if Object.Handle /= C.winbase.INVALID_HANDLE_VALUE then
-            declare
-               Success : C.windef.WINBOOL;
-            begin
-               Success := C.winbase.CloseHandle (Object.Handle);
-               pragma Check (Debug,
-                  Check =>
-                     Success /= C.windef.FALSE
-                     or else Debug.Runtime_Error ("CloseHandle failed"));
-            end;
-         end if;
-      end Finalize;
-
-   end Controlled;
-
    --  child process management
 
    procedure Wait (
@@ -282,12 +255,9 @@ package body System.Native_Processes is
       Child : in out Process;
       Milliseconds : C.windef.DWORD;
       Terminated : out Boolean;
-      Status : out Ada.Command_Line.Exit_Status)
-   is
-      Handle : C.winnt.HANDLE
-         renames Controlled.Reference (Child).all;
+      Status : out Ada.Command_Line.Exit_Status) is
    begin
-      case C.winbase.WaitForSingleObject (Handle, Milliseconds) is
+      case C.winbase.WaitForSingleObject (Child.Handle, Milliseconds) is
          when C.winbase.WAIT_OBJECT_0 =>
             declare
                Max : constant := C.windef.DWORD'Modulus / 2; -- 2 ** 31
@@ -295,13 +265,15 @@ package body System.Native_Processes is
                Success : C.windef.WINBOOL;
             begin
                Success :=
-                  C.winbase.GetExitCodeProcess (Handle, Exit_Code'Access);
-               if C.winbase.CloseHandle (Handle) = C.windef.FALSE
+                  C.winbase.GetExitCodeProcess (
+                     Child.Handle,
+                     Exit_Code'Access);
+               if C.winbase.CloseHandle (Child.Handle) = C.windef.FALSE
                   or else Success = C.windef.FALSE
                then
                   Raise_Exception (Use_Error'Identity);
                end if;
-               Handle := C.winbase.INVALID_HANDLE_VALUE;
+               Child.Handle := C.winbase.INVALID_HANDLE_VALUE;
                --  status code
                if Exit_Code < Max then
                   Status := Ada.Command_Line.Exit_Status (Exit_Code);
@@ -320,12 +292,10 @@ package body System.Native_Processes is
 
    --  implementation of child process management
 
-   function Do_Is_Open (Child : Process) return Boolean is
-      Handle : C.winnt.HANDLE
-         renames Controlled.Reference (Child).all;
+   function Is_Open (Child : Process) return Boolean is
    begin
-      return Handle /= C.winbase.INVALID_HANDLE_VALUE;
-   end Do_Is_Open;
+      return Child.Handle /= C.winbase.INVALID_HANDLE_VALUE;
+   end Is_Open;
 
    procedure Create (
       Child : in out Process;
@@ -427,12 +397,7 @@ package body System.Native_Processes is
          if C.winbase.CloseHandle (Process_Info.hThread) = C.windef.FALSE then
             Raise_Exception (Use_Error'Identity);
          end if;
-         declare
-            Handle : C.winnt.HANDLE
-               renames Controlled.Reference (Child).all;
-         begin
-            Handle := Process_Info.hProcess;
-         end;
+         Child.Handle := Process_Info.hProcess;
       end if;
    end Create;
 
@@ -460,7 +425,22 @@ package body System.Native_Processes is
          Error);
    end Create;
 
-   procedure Do_Wait (
+   procedure Close (Child : in out Process) is
+   begin
+      if Child.Handle /= C.winbase.INVALID_HANDLE_VALUE then
+         declare
+            Success : C.windef.WINBOOL;
+         begin
+            Success := C.winbase.CloseHandle (Child.Handle);
+            pragma Check (Debug,
+               Check =>
+                  Success /= C.windef.FALSE
+                  or else Debug.Runtime_Error ("CloseHandle failed"));
+         end;
+      end if;
+   end Close;
+
+   procedure Wait (
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
@@ -473,22 +453,20 @@ package body System.Native_Processes is
             exit when Terminated;
          end;
       end loop;
-   end Do_Wait;
+   end Wait;
 
-   procedure Do_Wait_Immediate (
+   procedure Wait_Immediate (
       Child : in out Process;
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
       Wait (Child, 0, Terminated => Terminated, Status => Status);
-   end Do_Wait_Immediate;
+   end Wait_Immediate;
 
-   procedure Do_Forced_Abort_Process (Child : in out Process) is
+   procedure Forced_Abort_Process (Child : in out Process) is
       Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
-      Handle : C.winnt.HANDLE
-         renames Controlled.Reference (Child).all;
    begin
-      if C.winbase.TerminateProcess (Handle, Code) = C.windef.FALSE then
+      if C.winbase.TerminateProcess (Child.Handle, Code) = C.windef.FALSE then
          declare
             Exit_Code : aliased C.windef.DWORD;
          begin
@@ -496,7 +474,7 @@ package body System.Native_Processes is
             if not (
                C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
                and then C.winbase.GetExitCodeProcess (
-                     Handle,
+                     Child.Handle,
                      Exit_Code'Access) /=
                   C.windef.FALSE
                and then Exit_Code /= C.winbase.STILL_ACTIVE)
@@ -505,7 +483,7 @@ package body System.Native_Processes is
             end if;
          end;
       end if;
-   end Do_Forced_Abort_Process;
+   end Forced_Abort_Process;
 
    --  implementation of pass a command to the shell
 
@@ -514,14 +492,17 @@ package body System.Native_Processes is
       Status : out Ada.Command_Line.Exit_Status)
    is
       --  unimplemented, should use ShellExecute
-      P : Process;
+      package Holder is
+         new Ada.Exceptions.Finally.Scoped_Holder (Process, Close);
+      P : aliased Process := (others => <>);
    begin
+      Holder.Assign (P);
       Create (P, Command,
          Search_Path => True,
          Input => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
          Output => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
          Error => Ada.Streams.Naked_Stream_IO.Standard_Files.Standard_Error);
-      Do_Wait (P, Status);
+      Wait (P, Status);
    end Shell;
 
    procedure Shell (

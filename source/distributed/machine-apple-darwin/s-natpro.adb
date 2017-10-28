@@ -512,10 +512,10 @@ package body System.Native_Processes is
 
    --  implementation of child process management
 
-   function Do_Is_Open (Child : Process) return Boolean is
+   function Is_Open (Child : Process) return Boolean is
    begin
       return Child.Id /= -1;
-   end Do_Is_Open;
+   end Is_Open;
 
    procedure Create (
       Child : in out Process;
@@ -561,7 +561,7 @@ package body System.Native_Processes is
          Ada.Streams.Naked_Stream_IO.Handle (Error));
    end Create;
 
-   procedure Do_Wait (
+   procedure Wait (
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
@@ -573,26 +573,26 @@ package body System.Native_Processes is
             exit when Terminated;
          end;
       end loop;
-   end Do_Wait;
+   end Wait;
 
-   procedure Do_Wait_Immediate (
+   procedure Wait_Immediate (
       Child : in out Process;
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
       Wait (Child, C.sys.wait.WNOHANG,
          Terminated => Terminated, Status => Status);
-   end Do_Wait_Immediate;
+   end Wait_Immediate;
 
-   procedure Do_Abort_Process (Child : in out Process) is
+   procedure Abort_Process (Child : in out Process) is
    begin
       Kill (Child, C.signal.SIGTERM);
-   end Do_Abort_Process;
+   end Abort_Process;
 
-   procedure Do_Forced_Abort_Process (Child : in out Process) is
+   procedure Forced_Abort_Process (Child : in out Process) is
    begin
       Kill (Child, C.signal.SIGKILL);
-   end Do_Forced_Abort_Process;
+   end Forced_Abort_Process;
 
    --  pass a command to the shell
 

@@ -32,14 +32,17 @@ package System.Native_Processes is
 
    --  Child process type
 
-   type Process is limited record
+   type Process is record
       Id : C.sys.types.pid_t := -1;
    end record;
+   pragma Suppress_Initialization (Process);
 
    --  Child process management
 
-   function Do_Is_Open (Child : Process) return Boolean;
-   pragma Inline (Do_Is_Open);
+   function Is_Open (Child : Process) return Boolean;
+   pragma Inline (Is_Open);
+
+   Process_Disable_Controlled : constant Boolean := True;
 
    procedure Create (
       Child : in out Process;
@@ -58,17 +61,20 @@ package System.Native_Processes is
       Output : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type);
 
-   procedure Do_Wait (
+   procedure Close (Child : in out Process) is null;
+   pragma Inline (Close); -- [gcc-7] can not skip calling null procedure
+
+   procedure Wait (
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Do_Wait_Immediate (
+   procedure Wait_Immediate (
       Child : in out Process;
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Do_Abort_Process (Child : in out Process);
-   procedure Do_Forced_Abort_Process (Child : in out Process);
+   procedure Abort_Process (Child : in out Process);
+   procedure Forced_Abort_Process (Child : in out Process);
 
    --  Pass a command to the shell
 
