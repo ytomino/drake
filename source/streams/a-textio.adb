@@ -36,8 +36,12 @@ package body Ada.Text_IO is
    procedure Flush_IO;
    procedure Flush_IO is
    begin
-      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Output);
-      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Error);
+      Streams.Naked_Stream_IO.Flush_Writing_Buffer (
+         Naked_Text_IO.Stream_IO (Naked_Text_IO.Standard_Output).all,
+         Raise_On_Error => False);
+      Streams.Naked_Stream_IO.Flush_Writing_Buffer (
+         Naked_Text_IO.Stream_IO (Naked_Text_IO.Standard_Error).all,
+         Raise_On_Error => False);
    end Flush_IO;
 
    procedure Reallocate is

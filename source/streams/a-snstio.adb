@@ -380,40 +380,6 @@ package body Ada.Streams.Naked_Stream_IO is
       File.Reading_Index := File.Buffer_Index;
    end Ready_Writing_Buffer;
 
-   procedure Flush_Writing_Buffer (
-      File : not null Non_Controlled_File_Type;
-      Raise_On_Error : Boolean := True);
-   procedure Flush_Writing_Buffer (
-      File : not null Non_Controlled_File_Type;
-      Raise_On_Error : Boolean := True) is
-   begin
-      if File.Writing_Index > File.Buffer_Index then
-         declare
-            Error : Boolean := False;
-            Written_Length : Stream_Element_Offset;
-         begin
-            System.Native_IO.Write (
-               File.Handle,
-               File.Buffer
-                  + System.Storage_Elements.Storage_Offset (File.Buffer_Index),
-               File.Writing_Index - File.Buffer_Index,
-               Written_Length);
-            if Written_Length < 0 then
-               if Raise_On_Error then
-                  Raise_Exception (Device_Error'Identity);
-               end if;
-               Error := True;
-            end if;
-            if not Error then
-               File.Buffer_Index := File.Writing_Index
-                  rem Stream_Element_Positive_Count'(File.Buffer_Length);
-               File.Writing_Index := File.Buffer_Index;
-               File.Reading_Index := File.Buffer_Index;
-            end if;
-         end;
-      end if;
-   end Flush_Writing_Buffer;
-
    function Offset_Of_Buffer (File : not null Non_Controlled_File_Type)
       return Stream_Element_Offset;
    function Offset_Of_Buffer (File : not null Non_Controlled_File_Type)
@@ -1008,6 +974,37 @@ package body Ada.Streams.Naked_Stream_IO is
       Flush_Writing_Buffer (File);
       System.Native_IO.Flush (File.Handle);
    end Flush;
+
+   procedure Flush_Writing_Buffer (
+      File : not null Non_Controlled_File_Type;
+      Raise_On_Error : Boolean := True) is
+   begin
+      if File.Writing_Index > File.Buffer_Index then
+         declare
+            Error : Boolean := False;
+            Written_Length : Stream_Element_Offset;
+         begin
+            System.Native_IO.Write (
+               File.Handle,
+               File.Buffer
+                  + System.Storage_Elements.Storage_Offset (File.Buffer_Index),
+               File.Writing_Index - File.Buffer_Index,
+               Written_Length);
+            if Written_Length < 0 then
+               if Raise_On_Error then
+                  Raise_Exception (Device_Error'Identity);
+               end if;
+               Error := True;
+            end if;
+            if not Error then
+               File.Buffer_Index := File.Writing_Index
+                  rem Stream_Element_Positive_Count'(File.Buffer_Length);
+               File.Writing_Index := File.Buffer_Index;
+               File.Reading_Index := File.Buffer_Index;
+            end if;
+         end;
+      end if;
+   end Flush_Writing_Buffer;
 
    --  implementation of handle for non-controlled
 

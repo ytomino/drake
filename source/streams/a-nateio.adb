@@ -927,7 +927,7 @@ package body Ada.Naked_Text_IO is
       if Streams.Naked_Stream_IO.Is_Open (File.File)
          and then File.External /= IO_Modes.Terminal -- console can not flush
       then
-         Streams.Naked_Stream_IO.Flush (File.File);
+         Streams.Naked_Stream_IO.Flush_Writing_Buffer (File.File);
       end if;
    end Flush;
 
