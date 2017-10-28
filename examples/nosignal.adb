@@ -1,4 +1,4 @@
--- please link with -lnosig.o
+-- Link with -lnosig.o
 with Ada.Formatting;
 with Interfaces;
 with System.Machine_Code;

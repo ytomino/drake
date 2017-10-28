@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit, please see AI05-0001-1
+--  extended unit, see AI05-0001-1
 private with System.Storage_Elements;
 generic
 --  type Object is limited private;

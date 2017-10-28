@@ -10,7 +10,7 @@ Drake is a runtime library written completely in Ada to replace the GNAT runtime
 A primary project goal is re-implementing the `Predefined Language Environment`_ in Annex A,
 for real world applications.
 
-Please, read the wiki_ for more information.
+Read the wiki_ for more information.
 
 Environment
 -----------
@@ -37,7 +37,7 @@ Clone this repository. ::
  $ git clone git://github.com/ytomino/drake.git
 
 The *master* branch is targeted for gcc 7.
-Please checkout a branch corresponds to the version of your gcc. ::
+Checkout a branch corresponds to the version of your gcc. ::
 
  $ git checkout gcc-6 # for example
 

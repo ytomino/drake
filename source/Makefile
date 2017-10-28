@@ -676,5 +676,5 @@ ifneq ($(DESTDIR),)
 	-rm $(DESTDIR)/$(TARGET).tar.bz2 2> /dev/null
 	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c-*.ad[sb] c.ads
 else
-	@echo please tell DESTDIR=[DIRECTORY]
+	@echo tell DESTDIR=[DIRECTORY]
 endif

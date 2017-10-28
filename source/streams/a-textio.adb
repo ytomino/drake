@@ -11,7 +11,7 @@
 --
 --  With the same reason, CHECK_FILE fails at CHECK_END_OF_PAGE.
 --
---  Please, look discussions on comp.lang.ada.
+--  Look discussions on comp.lang.ada.
 --  http://groups.google.com/group/comp.lang.ada/browse_frm/thread/
 --     5afe598156615c8b/f690474efabf7a93#f690474efabf7a93
 --  http://groups.google.com/group/comp.lang.ada/browse_frm/thread/
