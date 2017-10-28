@@ -36,7 +36,7 @@ package Ada.Processes is
    --  Child process management
 
    function Is_Open (Child : Process) return Boolean;
-   pragma Inline (Is_Open); -- renamed
+   pragma Inline (Is_Open);
 
    procedure Create (
       Child : in out Process;
@@ -82,6 +82,7 @@ package Ada.Processes is
       Error : Streams.Stream_IO.File_Type :=
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
       return Process;
+   pragma Inline (Create); -- renamed
 
    procedure Wait (
       Child : in out Process; -- Open_Process
@@ -158,9 +159,77 @@ private
       Argument : String)
       renames System.Native_Processes.Append_Argument;
 
-   type Process is new System.Native_Processes.Process;
+   package Controlled_Processes is
 
-   function Is_Open (Child : Process) return Boolean
-      renames Do_Is_Open; -- inherited
+      type Process is limited private;
+
+      function Reference (Object : Processes.Process)
+         return not null access System.Native_Processes.Process;
+      pragma Inline (Reference);
+
+      function Create (
+         Command : Command_Type;
+         Directory : String := "";
+         Search_Path : Boolean := False;
+         Input : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Input.all;
+         Output : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Output.all;
+         Error : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Error.all)
+         return Processes.Process;
+      function Create (
+         Command_Line : String;
+         Directory : String := "";
+         Search_Path : Boolean := False;
+         Input : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Input.all;
+         Output : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Output.all;
+         Error : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Error.all)
+         return Processes.Process;
+         --  [gcc-7] strange error if this function is placed outside of
+         --    the package Controlled, and Disable_Controlled => True
+
+   private
+
+      type Process is limited new Finalization.Limited_Controlled with record
+         Data : aliased System.Native_Processes.Process := (others => <>);
+      end record
+         with
+            Disable_Controlled =>
+               System.Native_Processes.Process_Disable_Controlled;
+
+      overriding procedure Finalize (Object : in out Process);
+
+   end Controlled_Processes;
+
+   type Process is new Controlled_Processes.Process;
+
+   function Create (
+      Command : Command_Type;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
+      return Process
+      renames Controlled_Processes.Create;
+   function Create (
+      Command_Line : String;
+      Directory : String := "";
+      Search_Path : Boolean := False;
+      Input : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Input.all;
+      Output : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Output.all;
+      Error : Streams.Stream_IO.File_Type :=
+         Streams.Stream_IO.Standard_Files.Standard_Error.all)
+      return Process
+      renames Controlled_Processes.Create;
 
 end Ada.Processes;

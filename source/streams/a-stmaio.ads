@@ -72,7 +72,7 @@ package Ada.Storage_Mapped_IO is
 
 private
 
-   type Non_Controlled_Mapping is limited record
+   type Non_Controlled_Mapping is record
       Mapping : System.Native_IO.Mapping_Type;
       File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
    end record;

@@ -48,6 +48,13 @@ package body Ada.Processes is
       end if;
    end Append;
 
+   function Is_Open (Child : Process) return Boolean is
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
+   begin
+      return System.Native_Processes.Is_Open (N_Child);
+   end Is_Open;
+
    procedure Create (
       Child : in out Process;
       Command : Command_Type;
@@ -74,11 +81,13 @@ package body Ada.Processes is
          System.Unwind.Occurrences.Flush_IO;
       end if;
       declare
+         N_Child : System.Native_Processes.Process
+            renames Controlled_Processes.Reference (Child).all;
          Native_Command : System.Native_Processes.Command_Type
             renames Controlled_Commands.Reference (Command).all;
       begin
-         Create (
-            Child,
+         System.Native_Processes.Create (
+            N_Child,
             Native_Command,
             Directory,
             Search_Path,
@@ -101,9 +110,11 @@ package body Ada.Processes is
          Streams.Stream_IO.Standard_Files.Standard_Error.all)
    is
       pragma Check (Pre, not Is_Open (Child) or else raise Status_Error);
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
    begin
-      Create (
-         Child,
+      System.Native_Processes.Create (
+         N_Child,
          Command_Line,
          Directory,
          Search_Path,
@@ -112,62 +123,16 @@ package body Ada.Processes is
          Streams.Stream_IO.Naked.Non_Controlled (Error).all);
    end Create;
 
-   function Create (
-      Command : Command_Type;
-      Directory : String := "";
-      Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all)
-      return Process is
-   begin
-      return Result : Process do
-         Create (
-            Result,
-            Command,
-            Directory,
-            Search_Path,
-            Input,
-            Output,
-            Error);
-      end return;
-   end Create;
-
-   function Create (
-      Command_Line : String;
-      Directory : String := "";
-      Search_Path : Boolean := False;
-      Input : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Input.all;
-      Output : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Output.all;
-      Error : Streams.Stream_IO.File_Type :=
-         Streams.Stream_IO.Standard_Files.Standard_Error.all)
-      return Process is
-   begin
-      return Result : Process do
-         Create (
-            Result,
-            Command_Line,
-            Directory,
-            Search_Path,
-            Input,
-            Output,
-            Error);
-      end return;
-   end Create;
-
    procedure Wait (
       Child : in out Process;
       Status : out Ada.Command_Line.Exit_Status)
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Child) or else raise Status_Error);
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
    begin
-      Do_Wait (Child, Status);
+      System.Native_Processes.Wait (N_Child, Status);
    end Wait;
 
    procedure Wait (
@@ -185,8 +150,10 @@ package body Ada.Processes is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Child) or else raise Status_Error);
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
    begin
-      Do_Wait_Immediate (Child, Terminated, Status);
+      System.Native_Processes.Wait_Immediate (N_Child, Terminated, Status);
    end Wait_Immediate;
 
    procedure Wait_Immediate (
@@ -201,15 +168,19 @@ package body Ada.Processes is
    procedure Abort_Process (Child : in out Process) is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Child) or else raise Status_Error);
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
    begin
-      Do_Abort_Process (Child);
+      System.Native_Processes.Abort_Process (N_Child);
    end Abort_Process;
 
    procedure Forced_Abort_Process (Child : in out Process) is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (Child) or else raise Status_Error);
+      N_Child : System.Native_Processes.Process
+         renames Controlled_Processes.Reference (Child).all;
    begin
-      Do_Forced_Abort_Process (Child);
+      System.Native_Processes.Forced_Abort_Process (N_Child);
    end Forced_Abort_Process;
 
    procedure Shell (
@@ -259,5 +230,68 @@ package body Ada.Processes is
       end Finalize;
 
    end Controlled_Commands;
+
+   package body Controlled_Processes is
+
+      function Reference (Object : Processes.Process)
+         return not null access System.Native_Processes.Process is
+      begin
+         return Process (Object).Data'Unrestricted_Access;
+      end Reference;
+
+      function Create (
+         Command : Command_Type;
+         Directory : String := "";
+         Search_Path : Boolean := False;
+         Input : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Input.all;
+         Output : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Output.all;
+         Error : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Error.all)
+         return Processes.Process is
+      begin
+         return Result : Processes.Process do
+            Create (
+               Result,
+               Command,
+               Directory,
+               Search_Path,
+               Input,
+               Output,
+               Error);
+         end return;
+      end Create;
+
+      function Create (
+         Command_Line : String;
+         Directory : String := "";
+         Search_Path : Boolean := False;
+         Input : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Input.all;
+         Output : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Output.all;
+         Error : Streams.Stream_IO.File_Type :=
+            Streams.Stream_IO.Standard_Files.Standard_Error.all)
+         return Processes.Process is
+      begin
+         return Result : Processes.Process do
+            Create (
+               Result,
+               Command_Line,
+               Directory,
+               Search_Path,
+               Input,
+               Output,
+               Error);
+         end return;
+      end Create;
+
+      overriding procedure Finalize (Object : in out Process) is
+      begin
+         System.Native_Processes.Close (Object.Data);
+      end Finalize;
+
+   end Controlled_Processes;
 
 end Ada.Processes;
