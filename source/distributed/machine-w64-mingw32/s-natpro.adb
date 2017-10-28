@@ -118,7 +118,7 @@ package body System.Native_Processes is
 
    function Image (Command : Command_Type) return String is
    begin
-      return System.Zero_Terminated_WStrings.Value (Command);
+      return Zero_Terminated_WStrings.Value (Command);
    end Image;
 
    procedure Value (

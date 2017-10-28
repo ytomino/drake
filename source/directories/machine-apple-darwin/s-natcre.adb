@@ -80,9 +80,9 @@ package body System.Native_Credentials is
                exit when Length >= 0;
                Capacity := Capacity * 2;
                Groups := Conv.To_Pointer (
-                  System.Standard_Allocators.Reallocate (
+                  Standard_Allocators.Reallocate (
                      Conv.To_Address (Groups),
-                     System.Storage_Elements.Storage_Offset (Capacity)
+                     Storage_Elements.Storage_Offset (Capacity)
                         * (C.sys.types.gid_t'Size / Standard'Storage_Unit)));
             end loop;
             for I in 0 .. Length - 1 loop
