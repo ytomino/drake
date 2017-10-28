@@ -3,7 +3,6 @@ pragma License (Unrestricted);
 with Ada.IO_Exceptions;
 with Ada.Streams;
 with C.icucore;
-private with Ada.Finalization;
 package System.Native_Environment_Encoding is
    --  Platform-depended text encoding.
    pragma Preelaborate;
@@ -91,51 +90,30 @@ package System.Native_Environment_Encoding is
    subtype Buffer_Type is
       C.icucore.UChar_array (0 .. 2 * Half_Buffer_Length - 1);
 
-   type Non_Controlled_Converter is record
+   type Converter is record
       --  about "From"
-      From_uconv : C.icucore.UConverter_ptr;
+      From_uconv : C.icucore.UConverter_ptr := null;
       --  intermediate
       Buffer : Buffer_Type;
       Buffer_First : aliased C.icucore.UChar_const_ptr;
       Buffer_Limit : aliased C.icucore.UChar_ptr; -- Last + 1
       --  about "To"
-      To_uconv : C.icucore.UConverter_ptr;
+      To_uconv : C.icucore.UConverter_ptr := null;
       Substitute_Length : Ada.Streams.Stream_Element_Offset;
       Substitute : Ada.Streams.Stream_Element_Array (
          1 ..
          Max_Substitute_Length);
    end record;
-   pragma Suppress_Initialization (Non_Controlled_Converter);
+   pragma Suppress_Initialization (Converter);
 
-   type Converter;
-
-   package Controlled is
-
-      type Converter is limited private;
-
-      function Reference (Object : Native_Environment_Encoding.Converter)
-         return not null access Non_Controlled_Converter;
-      pragma Inline (Reference);
-
-   private
-
-      type Converter is
-         limited new Ada.Finalization.Limited_Controlled with
-      record
-         Data : aliased Non_Controlled_Converter :=
-            (From_uconv => null, To_uconv => null, others => <>);
-      end record;
-
-      overriding procedure Finalize (Object : in out Converter);
-
-   end Controlled;
-
-   type Converter is new Controlled.Converter;
+   Disable_Controlled : constant Boolean := False;
 
    procedure Open (Object : in out Converter; From, To : Encoding_Id);
 
-   function Get_Is_Open (Object : Converter) return Boolean;
-   pragma Inline (Get_Is_Open);
+   procedure Close (Object : in out Converter);
+
+   function Is_Open (Object : Converter) return Boolean;
+   pragma Inline (Is_Open);
 
    function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Offset;

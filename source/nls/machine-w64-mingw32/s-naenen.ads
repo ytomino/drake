@@ -73,11 +73,17 @@ package System.Native_Environment_Encoding is
          1 ..
          Max_Substitute_Length + 1); -- zero terminated
    end record;
+   pragma Suppress_Initialization (Converter);
+
+   Disable_Controlled : constant Boolean := True;
 
    procedure Open (Object : out Converter; From, To : Encoding_Id);
 
-   function Get_Is_Open (Object : Converter) return Boolean;
-   pragma Inline (Get_Is_Open);
+   procedure Close (Object : in out Converter) is null;
+   pragma Inline (Close); -- [gcc-7] can not skip calling null procedure
+
+   function Is_Open (Object : Converter) return Boolean;
+   pragma Inline (Is_Open);
 
    function Min_Size_In_From_Stream_Elements_No_Check (Object : Converter)
       return Ada.Streams.Stream_Element_Offset;
