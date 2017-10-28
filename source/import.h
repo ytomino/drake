@@ -278,7 +278,6 @@
 #pragma for Ada "unistd.h" include "sys/types.h" /* lseek */
 #pragma for Ada "unistd.h" include "sys/unistd.h"
 #if __FreeBSD__ >= 9
-#pragma for Ada "stdint.h" include "machine/_types.h"
 #pragma for Ada "stdint.h" include "sys/_stdint.h"
 #pragma for Ada "termios.h" include "sys/_termios.h"
 #endif
