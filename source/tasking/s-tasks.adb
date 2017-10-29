@@ -1235,8 +1235,7 @@ package body System.Tasks is
                   & Natural'Image (T.Abort_Locking - 1)));
          pragma Assert (T.Abort_Locking > 0);
          T.Abort_Locking := T.Abort_Locking - 1;
-         if T.Kind = Sub then
-            pragma Assert (T.Abort_Locking = 0);
+         if T.Kind = Sub and then T.Abort_Locking = 0 then
             Native_Tasks.Unblock_Abort_Signal;
          end if;
       end if;
@@ -1254,8 +1253,7 @@ package body System.Tasks is
                   & Natural'Image (T.Abort_Locking)
                   & " =>"
                   & Natural'Image (T.Abort_Locking + 1)));
-         if T.Kind = Sub then
-            pragma Assert (T.Abort_Locking = 0);
+         if T.Kind = Sub and then T.Abort_Locking = 0 then
             Native_Tasks.Block_Abort_Signal (T.Abort_Event);
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
