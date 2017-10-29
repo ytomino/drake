@@ -12,4 +12,14 @@ package Ada.Calendar.Naked is
    pragma Inline (To_Native_Time);
    pragma Inline (To_Time);
 
+   function Seconds_From_2150 (T : Time) return Duration;
+   pragma Pure_Function (Seconds_From_2150);
+   pragma Inline (Seconds_From_2150);
+
+   --  Note: "2150-01-01 00:00:00" is Time'(0.0)
+
+   --  for delay until
+
+   procedure Delay_Until (T : Time);
+
 end Ada.Calendar.Naked;
