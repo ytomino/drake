@@ -49,6 +49,22 @@ package System.Tasking.Rendezvous is
    --        }
    --    }
 
+   --  required for selective wait by compiler (s-tasren.ads)
+   procedure Selective_Wait (
+      Open_Accepts : not null access Accept_List;
+      Select_Mode : Select_Modes;
+      Uninterpreted_Data : out Address;
+      Index : out Select_Index);
+
+   --  required for timed selective wait by compiler (s-tasren.ads)
+   procedure Timed_Selective_Wait (
+      Open_Accepts : not null access Accept_List;
+      Select_Mode : Select_Modes;
+      Uninterpreted_Data : out System.Address;
+      Timeout : Duration;
+      Mode : Integer; -- Delay_Modes
+      Index : out Select_Index);
+
    --  required for synchronized interface by compiler (s-tasren.ads)
    procedure Task_Entry_Call (
       Acceptor : Task_Id;
@@ -107,9 +123,5 @@ package System.Tasking.Rendezvous is
 
    --  required for 'Count by compiler (s-tasren.ads)
    function Task_Count (E : Task_Entry_Index) return Natural;
-
-   --  unimplemented subprograms required by compiler
-   --  Selective_Wait
-   --  Timed_Selective_Wait
 
 end System.Tasking.Rendezvous;

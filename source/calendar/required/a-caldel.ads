@@ -10,7 +10,9 @@ private package Ada.Calendar.Delays is
    --  required for delay until statement by compiler (a-caldel.ads)
    procedure Delay_Until (T : Time);
 
-   --  required for select or delay by compiler (a-caldel.ads)
+   --  required by compiler (a-caldel.ads)
+   --  for select or delay expanded to Timed_Task_Entry_Call,
+   --    Timed_Protected_Entry_Call, or Timed_Selective_Wait (exp_ch9.adb)
    function To_Duration (T : Time) return Duration;
    pragma Inline (To_Duration);
 
