@@ -1,8 +1,8 @@
+with Ada.Calendar.Naked;
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
-with System.Native_Calendar;
 with System.Native_Credentials;
 with System.Standard_Allocators;
 with System.Storage_Elements;
@@ -122,19 +122,17 @@ package body Ada.Directories.Information is
    --  implementation
 
    function Last_Access_Time (Name : String) return Calendar.Time is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Directory_Entry_Information_Type;
    begin
       System.Native_Directories.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (Information.st_atim));
+      return Calendar.Naked.To_Time (Information.st_atim);
    end Last_Access_Time;
 
    function Last_Status_Change_Time (Name : String) return Calendar.Time is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Directory_Entry_Information_Type;
    begin
       System.Native_Directories.Get_Information (Name, Information);
-      return Cast (System.Native_Calendar.To_Time (Information.st_ctim));
+      return Calendar.Naked.To_Time (Information.st_ctim);
    end Last_Status_Change_Time;
 
    function Permission_Set (Name : String) return Permission_Set_Type is
@@ -199,14 +197,12 @@ package body Ada.Directories.Information is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled_Entries.Reference (Directory_Entry).all;
    begin
       Fill (NC_Directory_Entry);
-      return Cast (
-         System.Native_Calendar.To_Time (
-            NC_Directory_Entry.Additional.Information.st_atim));
+      return Calendar.Naked.To_Time (
+         NC_Directory_Entry.Additional.Information.st_atim);
    end Last_Access_Time;
 
    function Last_Status_Change_Time (
@@ -215,14 +211,12 @@ package body Ada.Directories.Information is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled_Entries.Reference (Directory_Entry).all;
    begin
       Fill (NC_Directory_Entry);
-      return Cast (
-         System.Native_Calendar.To_Time (
-            NC_Directory_Entry.Additional.Information.st_ctim));
+      return Calendar.Naked.To_Time (
+         NC_Directory_Entry.Additional.Information.st_ctim);
    end Last_Status_Change_Time;
 
    function Permission_Set (
