@@ -428,13 +428,10 @@ package body Ada.Streams.Unbounded_Storage_IO is
             Size : Stream_Element_Offset;
          begin
             Stream_Element_Offset'Read (Stream, Size);
-            --  clear
-            Clear (Item.Data); -- keep Item.Data.Stream
-            Item.Data.Data := Empty_Data'Unrestricted_Access;
             Item.Data.Last := 0;
             Item.Data.Index := 1;
+            Set_Size (Item.Data, Size);
             if Size > 0 then
-               Set_Size (Unbounded_Storage_IO.Buffer_Type (Item), Size);
                declare
                   Stream_Storage_All : Stream_Element_Array (
                      1 .. Item.Data.Last);
