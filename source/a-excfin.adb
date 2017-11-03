@@ -4,11 +4,9 @@ package body Ada.Exceptions.Finally is
    pragma Suppress (All_Checks);
    use type System.Address;
 
-   type Handler_Type is access procedure (Params : System.Address);
-
    type Finalizer is limited new Finalization.Limited_Controlled with record
       Params : System.Address;
-      Handler : Handler_Type;
+      Handler : not null access procedure (Params : System.Address);
    end record;
    pragma Discard_Names (Finalizer);
 
@@ -34,9 +32,7 @@ package body Ada.Exceptions.Finally is
 
       Object : Finalizer :=
          (Finalization.Limited_Controlled
-            with
-               Params => System.Null_Address,
-               Handler => Finally'Unrestricted_Access);
+            with Params => System.Null_Address, Handler => Finally'Access);
       pragma Unreferenced (Object);
 
       procedure Assign (Params : aliased in out Parameters) is
