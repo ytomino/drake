@@ -937,23 +937,23 @@ package body Ada.Strings.Generic_Functions is
          return Result;
       end Last_Of_Index_Backward;
 
+      type Character_Mapping_Function is access function (
+         From : Wide_Wide_Character;
+         Params : System.Address)
+         return Wide_Wide_Character;
+      pragma Favor_Top_Level (Character_Mapping_Function);
+
       function Index_Forward (
          Source : String_Type;
          Pattern : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character)
+         Mapping : not null Character_Mapping_Function)
          return Natural;
       function Index_Forward (
          Source : String_Type;
          Pattern : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character)
+         Mapping : not null Character_Mapping_Function)
          return Natural is
       begin
          if Pattern'Length = 0 then
@@ -1025,19 +1025,13 @@ package body Ada.Strings.Generic_Functions is
          Source : String_Type;
          Pattern : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character)
+         Mapping : not null Character_Mapping_Function)
          return Natural;
       function Index_Backward (
          Source : String_Type;
          Pattern : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character)
+         Mapping : not null Character_Mapping_Function)
          return Natural is
       begin
          if Pattern'Length = 0 then
@@ -1108,19 +1102,13 @@ package body Ada.Strings.Generic_Functions is
       procedure Translate (
          Source : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character;
+         Mapping : not null Character_Mapping_Function;
          Target : out String_Type;
          Target_Last : out Natural);
       procedure Translate (
          Source : String_Type;
          Params : System.Address;
-         Mapping : not null access function (
-            From : Wide_Wide_Character;
-            Params : System.Address)
-            return Wide_Wide_Character;
+         Mapping : not null Character_Mapping_Function;
          Target : out String_Type;
          Target_Last : out Natural)
       is
