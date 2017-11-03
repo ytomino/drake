@@ -432,19 +432,21 @@ package body Ada.Strings.Generic_Unbounded.Generic_Functions is
       pragma Suppress (Access_Check);
    begin
       if Count /= Source.Length then
-         declare
-            Old_Length : constant Natural := Source.Length;
-            Dummy_Last : Natural;
-         begin
-            Unique_And_Set_Length (Source, Integer'Max (Count, Old_Length));
-            Fixed_Functions.Tail (
-               Source.Data.Items (1 .. Old_Length),
-               Count,
-               Pad,
-               Target => Source.Data.Items.all, -- copying
-               Target_Last => Dummy_Last);
-            Set_Length (Source, Count);
-         end;
+         if Count > 0 then
+            declare
+               Old_Length : constant Natural := Source.Length;
+               Dummy_Last : Natural;
+            begin
+               Unique_And_Set_Length (Source, Integer'Max (Count, Old_Length));
+               Fixed_Functions.Tail (
+                  Source.Data.Items (1 .. Old_Length),
+                  Count,
+                  Pad,
+                  Target => Source.Data.Items.all, -- copying
+                  Target_Last => Dummy_Last);
+            end;
+         end if;
+         Set_Length (Source, Count);
       end if;
    end Tail;
 
