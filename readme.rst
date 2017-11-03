@@ -24,7 +24,7 @@ Required tools and libraries
 ----------------------------
 
 gcc
- Use of gcc_ instead of the *GNAT GPL Edition* is required.
+ Use the official versions of gcc_. [#not-gnatgpl]_
 translated headers
  Install headmaster_ to convert the headers on your system,
  or download them from `pre-translated headers page`_.
@@ -96,3 +96,6 @@ See `incompatibility features page`_.
 .. _`incompatibility features page`: https://github.com/ytomino/drake/wiki/Incompatibility
 .. [#experimental] 64bit Windows support is under construction,
                    limited and experimental.
+.. [#not-gnatgpl] `GNAT Community Edition`_ is not supported.
+                  That was previously called GNAT GPL Edition.
+.. _`GNAT Community Edition`: https://www.adacore.com/download
