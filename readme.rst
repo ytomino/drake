@@ -10,7 +10,7 @@ Drake is a runtime library written completely in Ada to replace the GNAT runtime
 A primary project goal is re-implementing the `Predefined Language Environment`_ in Annex A,
 for real world applications.
 
-Please, read the wiki_ for more information.
+Read the wiki_ for more information.
 
 Environment
 -----------
@@ -24,7 +24,7 @@ Required tools and libraries
 ----------------------------
 
 gcc
- Use of gcc_ instead of the *GNAT GPL Edition* is required.
+ Use the official versions of gcc_. [#not-gnatgpl]_
 translated headers
  Install headmaster_ to convert the headers on your system,
  or download them from `pre-translated headers page`_.
@@ -37,7 +37,7 @@ Clone this repository. ::
  $ git clone git://github.com/ytomino/drake.git
 
 The *master* branch is targeted for gcc 7.
-Please checkout a branch corresponds to the version of your gcc. ::
+Checkout a branch corresponds to the version of your gcc. ::
 
  $ git checkout gcc-6 # for example
 
@@ -96,3 +96,6 @@ See `incompatibility features page`_.
 .. _`incompatibility features page`: https://github.com/ytomino/drake/wiki/Incompatibility
 .. [#experimental] 64bit Windows support is under construction,
                    limited and experimental.
+.. [#not-gnatgpl] `GNAT Community Edition`_ is not supported.
+                  That was previously called GNAT GPL Edition.
+.. _`GNAT Community Edition`: https://www.adacore.com/download

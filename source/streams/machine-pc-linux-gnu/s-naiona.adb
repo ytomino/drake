@@ -63,7 +63,7 @@ package body System.Native_IO.Names is
          Last : Natural;
          Error : Boolean;
       begin
-         System.Formatting.Image (
+         Formatting.Image (
             Word_Unsigned (Handle),
             Link_As_String (proc_self_fd'Length + 1 .. Link_As_String'Last),
             Last,

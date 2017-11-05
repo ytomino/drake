@@ -1,7 +1,7 @@
+with Ada.Calendar.Naked;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Form_Parameters;
-with System.Native_Calendar;
 with System.Storage_Elements;
 package body Ada.Directories is
    use type System.Native_Directories.File_Kind;
@@ -239,21 +239,18 @@ package body Ada.Directories is
    end Size;
 
    function Modification_Time (Name : String) return Calendar.Time is
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       Information : aliased Directory_Entry_Information_Type;
    begin
       System.Native_Directories.Get_Information (Name, Information);
-      return Cast (
-         System.Native_Calendar.To_Time (
-            System.Native_Directories.Modification_Time (Information)));
+      return Calendar.Naked.To_Time (
+         System.Native_Directories.Modification_Time (Information));
    end Modification_Time;
 
    procedure Set_Modification_Time (Name : String; Time : Calendar.Time) is
-      function Cast is new Unchecked_Conversion (Calendar.Time, Duration);
    begin
       System.Native_Directories.Set_Modification_Time (
          Name,
-         System.Native_Calendar.To_Native_Time (Cast (Time)));
+         Calendar.Naked.To_Native_Time (Time));
    end Set_Modification_Time;
 
    --  directory searching
@@ -661,16 +658,14 @@ package body Ada.Directories is
    is
       pragma Check (Dynamic_Predicate,
          Check => Is_Assigned (Directory_Entry) or else raise Status_Error);
-      function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled_Entries.Reference (Directory_Entry).all;
    begin
-      return Cast (
-         System.Native_Calendar.To_Time (
-            System.Native_Directories.Searching.Modification_Time (
-               NC_Directory_Entry.Path.all,
-               NC_Directory_Entry.Directory_Entry,
-               NC_Directory_Entry.Additional)));
+      return Calendar.Naked.To_Time (
+         System.Native_Directories.Searching.Modification_Time (
+            NC_Directory_Entry.Path.all,
+            NC_Directory_Entry.Directory_Entry,
+            NC_Directory_Entry.Additional));
    end Modification_Time;
 
 end Ada.Directories;

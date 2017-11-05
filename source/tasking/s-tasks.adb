@@ -532,26 +532,29 @@ package body System.Tasks is
          procedure On_Exception (T : not null Task_Id) is
             Aborted : Boolean; -- ignored
          begin
-            pragma Check (Trace, Ada.Debug.Put ("enter"));
             if T.Activation_State < AS_Active then
-               pragma Check (Trace, Ada.Debug.Put ("unactivated"));
+               pragma Check (Trace,
+                  Check =>
+                     Ada.Debug.Put (Name (T).all & " has not been activated"));
                pragma Assert (T.Abort_Locking = 1);
                --  an exception was raised until calling Accept_Activation
                T.Activation_Chain.Error := Any_Exception;
                Accept_Activation (Aborted => Aborted);
             end if;
-            pragma Check (Trace, Ada.Debug.Put ("leave"));
          end On_Exception;
       begin
          if T.Activation_Chain /= null then
             --  Abort_Undefer will be called on activation
             T.Abort_Locking := T.Abort_Locking + 1;
          end if;
+         pragma Check (Trace, Ada.Debug.Put (Name (T).all & " begin"));
          T.Process (T.Params);
+         pragma Check (Trace, Ada.Debug.Put (Name (T).all & " end"));
          Cause := Normal;
       exception
          when Standard'Abort_Signal =>
-            pragma Check (Trace, Ada.Debug.Put ("Abort_Signal"));
+            pragma Check (Trace,
+               Check => Ada.Debug.Put (Name (T).all & " Abort_Signal"));
             --  Abort_Undefer will not be called by compiler
             if not ZCX_By_Default then
                T.Abort_Locking := T.Abort_Locking - 1;
@@ -559,6 +562,7 @@ package body System.Tasks is
             On_Exception (T);
             Cause := Abnormal;
          when E : others =>
+            pragma Check (Trace, Ada.Debug.Put (Name (T).all & " exception"));
             On_Exception (T);
             declare
                Handled : Boolean;
@@ -782,7 +786,7 @@ package body System.Tasks is
    procedure Set_Active (T : not null Task_Id; State : Activation_State) is
    begin
       if not Elaborated (T) then
-         pragma Check (Trace, Ada.Debug.Put ("elab error in " & Name (T).all));
+         pragma Check (Trace, Ada.Debug.Put (Name (T).all & " elab error"));
          T.Activation_Chain.Error := Elaboration_Error;
       end if;
       T.Activation_State := State;
@@ -1231,8 +1235,7 @@ package body System.Tasks is
                   & Natural'Image (T.Abort_Locking - 1)));
          pragma Assert (T.Abort_Locking > 0);
          T.Abort_Locking := T.Abort_Locking - 1;
-         if T.Kind = Sub then
-            pragma Assert (T.Abort_Locking = 0);
+         if T.Kind = Sub and then T.Abort_Locking = 0 then
             Native_Tasks.Unblock_Abort_Signal;
          end if;
       end if;
@@ -1250,8 +1253,7 @@ package body System.Tasks is
                   & Natural'Image (T.Abort_Locking)
                   & " =>"
                   & Natural'Image (T.Abort_Locking + 1)));
-         if T.Kind = Sub then
-            pragma Assert (T.Abort_Locking = 0);
+         if T.Kind = Sub and then T.Abort_Locking = 0 then
             Native_Tasks.Block_Abort_Signal (T.Abort_Event);
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
@@ -1331,7 +1333,9 @@ package body System.Tasks is
       --  cleanup
       Release (C);
       pragma Check (Trace,
-         Check => Ada.Debug.Put ("aborted = " & Boolean'Image (Aborted)));
+         Check =>
+            Ada.Debug.Put (
+               Name (T).all & " aborted = " & Boolean'Image (Aborted)));
    end Accept_Activation;
 
    procedure Activate (
@@ -1440,7 +1444,7 @@ package body System.Tasks is
    procedure Enter_Master is
       T : constant Task_Id := Current_Task_Id; -- and register
    begin
-      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T).all));
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all & " enter"));
       declare
          New_Master : constant Master_Access :=
             new Master_Record'(
@@ -1454,12 +1458,12 @@ package body System.Tasks is
          Synchronous_Objects.Initialize (New_Master.Mutex);
          T.Master_Top := New_Master;
       end;
-      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T).all));
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all & " leave"));
    end Enter_Master;
 
    procedure Leave_Master is
       T : constant Task_Id := TLS_Current_Task_Id;
-      pragma Check (Trace, Ada.Debug.Put ("enter in " & Name (T).all));
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all & " enter"));
       M : Master_Access := T.Master_Top;
       Free_List : Task_Id := null;
    begin
@@ -1524,7 +1528,7 @@ package body System.Tasks is
          Free (M);
          T.Master_Top := Previous;
       end;
-      pragma Check (Trace, Ada.Debug.Put ("leave in " & Name (T).all));
+      pragma Check (Trace, Ada.Debug.Put (Name (T).all & " leave"));
    end Leave_Master;
 
    procedure Leave_All_Masters is
@@ -1558,7 +1562,6 @@ package body System.Tasks is
             pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);
             Parent.Master_Top.Within := Library_Task_Level;
          end if;
-         pragma Assert (Parent.Master_Top.Within = Library_Task_Level);
          Result := Parent.Master_Top;
       end if;
       return Result;

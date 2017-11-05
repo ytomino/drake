@@ -1,0 +1,11 @@
+--- c9a011b.adb.orig	2017-11-05 17:55:19.000000000 +0900
++++ c9a011b.adb	2017-11-05 17:55:26.000000000 +0900
+@@ -48,7 +48,7 @@
+           SELECT
+                OWNER.SELF_ABORT;
+           OR
+-               DELAY 60.0;
++               DELAY 6.0;
+           END SELECT;
+           FAILED("NO EXCEPTION RAISED");
+ 

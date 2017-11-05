@@ -1,0 +1,11 @@
+--- c93006a.adb.orig	2017-11-05 17:01:23.000000000 +0900
++++ c93006a.adb	2017-11-05 17:01:30.000000000 +0900
+@@ -10,7 +10,7 @@
+      SELECT
+           T.E;
+      OR 
+-          DELAY 60.0; 
++          DELAY 6.0; 
+           FAILED("RENDEZVOUS NOT ACCEPTED WITHIN 60 SECONDS");
+      END SELECT;
+ 

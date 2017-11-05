@@ -94,6 +94,12 @@ package Ada.Streams.Naked_Stream_IO is
       Mode : IO_Modes.File_Mode);
 
    procedure Flush (File : not null Non_Controlled_File_Type);
+      --  write the buffer and synchronize with hardware
+
+   procedure Flush_Writing_Buffer (
+      File : not null Non_Controlled_File_Type;
+      Raise_On_Error : Boolean := True);
+      --  write the buffer only
 
    --  handle for non-controlled
 

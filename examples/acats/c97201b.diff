@@ -1,0 +1,20 @@
+--- c97201b.adb.orig	2017-11-05 17:39:08.000000000 +0900
++++ c97201b.adb	2017-11-05 17:39:23.000000000 +0900
+@@ -69,7 +69,7 @@
+                          END IF;
+                     END DONE;
+                OR
+-                    DELAY 1000.0;
++                    DELAY 100.0;
+                     FAILED ("DELAY EXPIRED; E'COUNT =" &
+                             NATURAL'IMAGE(E'COUNT) );
+                END SELECT;
+@@ -90,7 +90,7 @@
+ 
+           T.SYNCH;
+ 
+-          DELAY 10.0;
++          DELAY 1.0;
+ 
+           SELECT
+                T.E;

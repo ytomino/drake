@@ -1,3 +1,4 @@
+with Ada.Characters.Handling;
 with Ada.Command_Line;
 with Ada.Containers.Indefinite_Ordered_Sets;
 with Ada.Containers.Indefinite_Ordered_Maps;
@@ -288,27 +289,7 @@ procedure run_acats is
 			Ada.Directories.Copy_File (Source, Destination);
 		end Copy;
 	begin
-		if Ada.Strings.Equal_Case_Insensitive (Name, "c94001a") then
-			Shell_Execute ("patch -i ../c94001a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001b") then
-			Shell_Execute ("patch -i ../c94001b.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94001c") then
-			Shell_Execute ("patch -i ../c94001c.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94002a") then
-			Shell_Execute ("patch -i ../c94002a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004a") then
-			Shell_Execute ("patch -i ../c94004a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94004b") then
-			Shell_Execute ("patch -i ../c94004b.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94005b") then
-			Shell_Execute ("patch -i ../c94005b.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c94010a") then
-			Shell_Execute ("patch -i ../c94010a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95012a") then
-			Shell_Execute ("patch -i ../c95012a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "c95021a") then
-			Shell_Execute ("patch -i ../c95021a.diff");
-		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
+		if Ada.Strings.Equal_Case_Insensitive (Name, "ca1020e") then
 			Delete ("ca1020e_func1.adb");
 			Delete ("ca1020e_func2.adb");
 			Delete ("ca1020e_proc1.adb");
@@ -325,6 +306,18 @@ procedure run_acats is
 		elsif Ada.Strings.Equal_Case_Insensitive (Name, "ce3112d") then
 			Copy ("../X3112C", "X3112C");
 		end if;
+		-- patch
+		declare
+			Patch_Name : constant String :=
+				Ada.Directories.Compose (
+					Containing_Directory => "..",
+					Name => Ada.Characters.Handling.To_Lower (Name),
+					Extension => "diff");
+		begin
+			if Ada.Directories.Exists (Patch_Name) then
+				Shell_Execute ("patch -bi " & Patch_Name);
+			end if;
+		end;
 	end Adjust_After_Extract;
 	
 	procedure Invoke (

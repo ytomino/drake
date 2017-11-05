@@ -1,0 +1,11 @@
+--- c9a007a.adb.orig	2017-11-05 17:53:48.000000000 +0900
++++ c9a007a.adb	2017-11-05 17:53:56.000000000 +0900
+@@ -178,7 +178,7 @@
+ 
+                     FOR  I  IN  1..5  LOOP
+                          EXIT WHEN  BIRTHS_AND_DEATHS'COUNT = 2; 
+-                         DELAY 10.0; 
++                         DELAY 1.0; 
+                     END LOOP;
+ 
+                     OLD_COUNT := BIRTHS_AND_DEATHS'COUNT; 

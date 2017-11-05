@@ -125,6 +125,26 @@ package body System.Tasking.Rendezvous is
       Complete_Rendezvous;
    end Accept_Trivial;
 
+   procedure Selective_Wait (
+      Open_Accepts : not null access Accept_List;
+      Select_Mode : Select_Modes;
+      Uninterpreted_Data : out Address;
+      Index : out Select_Index) is
+   begin
+      raise Program_Error;
+   end Selective_Wait;
+
+   procedure Timed_Selective_Wait (
+      Open_Accepts : not null access Accept_List;
+      Select_Mode : Select_Modes;
+      Uninterpreted_Data : out System.Address;
+      Timeout : Duration;
+      Mode : Integer;
+      Index : out Select_Index) is
+   begin
+      raise Program_Error;
+   end Timed_Selective_Wait;
+
    procedure Task_Entry_Call (
       Acceptor : Task_Id;
       E : Task_Entry_Index;

@@ -1,5 +1,5 @@
 -- Demonstration of the extended units: Ada.Command_Line.Generic_Parsing
--- Please use Ada.Command_Line.Parsing for actual command line.
+-- Use Ada.Command_Line.Parsing for actual command line.
 with Ada.Command_Line.Generic_Parsing;
 with Ada.Containers.Indefinite_Doubly_Linked_Lists;
 with Ada.Strings.Unbounded;

@@ -1,5 +1,5 @@
 pragma License (Unrestricted);
---  extended unit, please see AI05-0002-1
+--  extended unit, see AI05-0002-1
 generic
    type Object (<>) is limited private;
    type Object_Pointer is access all Object;

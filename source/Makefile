@@ -592,7 +592,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 # do not apply -ffast-math
-$(NOFASTMATH_OBJS): CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
+$(NOFASTMATH_OBJS): override CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
 
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
@@ -676,5 +676,5 @@ ifneq ($(DESTDIR),)
 	-rm $(DESTDIR)/$(TARGET).tar.bz2 2> /dev/null
 	cd $(IMPORTDIR) && tar -cjf $(abspath $(DESTDIR)/$(TARGET).tar.bz2) c-*.ad[sb] c.ads
 else
-	@echo please tell DESTDIR=[DIRECTORY]
+	@echo tell DESTDIR=[DIRECTORY]
 endif

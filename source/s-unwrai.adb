@@ -397,6 +397,16 @@ package body System.Unwind.Raising is
          Message);
    end rcheck_15;
 
+   procedure rcheck_18 (File : not null access Character; Line : Integer) is
+      Message : constant String := "all guards closed";
+   begin
+      Raise_From_rcheck (
+         File,
+         Line,
+         Unwind.Standard.Program_Error'Access,
+         Message);
+   end rcheck_18;
+
    procedure rcheck_22 (File : not null access Character; Line : Integer) is
    begin
       Raise_From_rcheck (

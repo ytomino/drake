@@ -1,0 +1,56 @@
+--- c95008a.adb.orig	2017-11-05 17:21:36.000000000 +0900
++++ c95008a.adb	2017-11-05 17:22:13.000000000 +0900
+@@ -83,7 +83,7 @@
+           SELECT
+                T.E (0);
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (A)");
+@@ -143,7 +143,7 @@
+           SELECT
+                T.E (IDENT_CHAR('Z'));
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (B)");
+@@ -203,7 +203,7 @@
+           SELECT
+                T.E (TRUE);
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (C)");
+@@ -266,7 +266,7 @@
+           SELECT
+                T.E (E0) (0);
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (D)");
+@@ -329,7 +329,7 @@
+           SELECT
+                T.E (D_I(2)) (0);
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (E)");
+@@ -392,7 +392,7 @@
+           SELECT
+                T.E (D_ET'(E2)) (0);
+           OR
+-               DELAY 15.0;
++               DELAY 1.5;
+           END SELECT;
+           FAILED ("CONSTRAINT_ERROR NOT RAISED IN " &
+                   "ENTRY_CALL - (F)");

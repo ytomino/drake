@@ -1,0 +1,20 @@
+--- c97305d.adb.orig	2017-11-05 17:51:50.000000000 +0900
++++ c97305d.adb	2017-11-05 17:52:03.000000000 +0900
+@@ -54,7 +54,7 @@
+ 
+           TASK BODY T IS
+           BEGIN
+-               DELAY 10.0;
++               DELAY 1.0;
+ 
+                SELECT
+                     ACCEPT E (2) (B : IN OUT BOOLEAN) DO
+@@ -72,7 +72,7 @@
+                T.E (2) (RENDEZVOUS_OCCURRED);
+                STATEMENTS_AFTER_CALL_EXECUTED := IDENT_BOOL (TRUE);
+           OR
+-               DELAY DELAY_IN_MINUTES * 60.0;
++               DELAY DELAY_IN_MINUTES * 6.0;
+                FAILED ("TIMED ENTRY CALL NOT ACCEPTED AFTER" &
+                        POSITIVE'IMAGE(DELAY_IN_MINUTES) &
+                        " MINUTES ELAPSED");

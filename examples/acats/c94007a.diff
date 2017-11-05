@@ -1,0 +1,20 @@
+--- c94007a.adb.orig	2017-11-05 16:49:35.000000000 +0900
++++ c94007a.adb	2017-11-05 16:49:52.000000000 +0900
+@@ -61,7 +61,7 @@
+           SELECT
+                ACCEPT OUTER;
+           OR
+-               DELAY 120.0;
++               DELAY 12.0;
+                FAILED ("PROBABLY BLOCKED - (" & ID_C & ')');
+           END SELECT;
+           ACCEPT INNER;
+@@ -242,7 +242,7 @@
+ 
+                     TASK BODY T1 IS
+                     BEGIN
+-                         DELAY 120.0;
++                         DELAY 12.0;
+                          GLOBAL := IDENT_INT(1);
+                     END T1;
+ 

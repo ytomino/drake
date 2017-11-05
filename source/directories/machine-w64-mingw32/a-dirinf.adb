@@ -1,6 +1,5 @@
+with Ada.Calendar.Naked;
 with Ada.Exception_Identification.From_Here;
-with Ada.Unchecked_Conversion;
-with System.Native_Calendar;
 with System.Zero_Terminated_WStrings;
 with C.winbase;
 with C.winnt;
@@ -22,8 +21,6 @@ package body Ada.Directories.Information is
    function Named_IO_Exception_Id (errno : C.windef.DWORD)
       return Exception_Identification.Exception_Id
       renames System.Native_Directories.Named_IO_Exception_Id;
-
-   function Cast is new Unchecked_Conversion (Duration, Calendar.Time);
 
    function Is_Executable (Name : String) return Boolean;
    function Is_Executable (Name : String) return Boolean is
@@ -58,16 +55,14 @@ package body Ada.Directories.Information is
       Information : aliased Directory_Entry_Information_Type;
    begin
       System.Native_Directories.Get_Information (Name, Information);
-      return Cast (
-         System.Native_Calendar.To_Time (Information.ftCreationTime));
+      return Calendar.Naked.To_Time (Information.ftCreationTime);
    end Creation_Time;
 
    function Last_Access_Time (Name : String) return Calendar.Time is
       Information : aliased Directory_Entry_Information_Type;
    begin
       System.Native_Directories.Get_Information (Name, Information);
-      return Cast (
-         System.Native_Calendar.To_Time (Information.ftLastAccessTime));
+      return Calendar.Naked.To_Time (Information.ftLastAccessTime);
    end Last_Access_Time;
 
    function Is_Read_Only (Name : String) return Boolean is
@@ -159,9 +154,8 @@ package body Ada.Directories.Information is
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled_Entries.Reference (Directory_Entry).all;
    begin
-      return Cast (
-         System.Native_Calendar.To_Time (
-            NC_Directory_Entry.Directory_Entry.ftLastWriteTime));
+      return Calendar.Naked.To_Time (
+         NC_Directory_Entry.Directory_Entry.ftLastWriteTime);
    end Creation_Time;
 
    function Last_Access_Time (
@@ -173,9 +167,8 @@ package body Ada.Directories.Information is
       NC_Directory_Entry : Non_Controlled_Directory_Entry_Type
          renames Controlled_Entries.Reference (Directory_Entry).all;
    begin
-      return Cast (
-         System.Native_Calendar.To_Time (
-            NC_Directory_Entry.Directory_Entry.ftLastAccessTime));
+      return Calendar.Naked.To_Time (
+         NC_Directory_Entry.Directory_Entry.ftLastAccessTime);
    end Last_Access_Time;
 
    function Is_Read_Only (

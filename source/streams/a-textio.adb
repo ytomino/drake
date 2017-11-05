@@ -11,7 +11,7 @@
 --
 --  With the same reason, CHECK_FILE fails at CHECK_END_OF_PAGE.
 --
---  Please, look discussions on comp.lang.ada.
+--  Look discussions on comp.lang.ada.
 --  http://groups.google.com/group/comp.lang.ada/browse_frm/thread/
 --     5afe598156615c8b/f690474efabf7a93#f690474efabf7a93
 --  http://groups.google.com/group/comp.lang.ada/browse_frm/thread/
@@ -36,8 +36,12 @@ package body Ada.Text_IO is
    procedure Flush_IO;
    procedure Flush_IO is
    begin
-      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Output);
-      Naked_Text_IO.Flush (Naked_Text_IO.Standard_Error);
+      Streams.Naked_Stream_IO.Flush_Writing_Buffer (
+         Naked_Text_IO.Stream_IO (Naked_Text_IO.Standard_Output).all,
+         Raise_On_Error => False);
+      Streams.Naked_Stream_IO.Flush_Writing_Buffer (
+         Naked_Text_IO.Stream_IO (Naked_Text_IO.Standard_Error).all,
+         Raise_On_Error => False);
    end Flush_IO;
 
    procedure Reallocate is

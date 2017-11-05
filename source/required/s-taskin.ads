@@ -55,6 +55,26 @@ package System.Tasking is
 --    Timed_Call); -- 3
    pragma Discard_Names (Call_Modes);
 
+   --  required for slective accept by compiler (s-taskin.ads)
+   type Select_Modes is (Simple_Mode, Else_Mode, Terminate_Mode, Delay_Mode);
+   pragma Discard_Names (Select_Modes);
+
+   --  required for slective accept by compiler (s-taskin.ads)
+   No_Rendezvous : constant := 0;
+
+   --  required for slective accept by compiler (s-taskin.ads)
+   subtype Select_Index is Natural;
+
+   type Accept_Alternative is record
+      Null_Body : Boolean;
+      S : Task_Entry_Index;
+   end record;
+   pragma Suppress_Initialization (Accept_Alternative);
+
+   --  required for slective accept by compiler (s-taskin.ads)
+   type Accept_List is array (Positive range <>) of Accept_Alternative;
+   pragma Suppress_Initialization (Accept_List);
+
    --  required for abort statement by compiler (s-taskin.ads)
    type Task_List is array (Positive range <>) of Task_Id;
    pragma Suppress_Initialization (Task_List);

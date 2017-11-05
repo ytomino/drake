@@ -93,9 +93,9 @@ procedure ext_doc is
 						then
 							Kind := Standard_Unit;
 							exit;
-						elsif Start_With (Line, "--  extended unit, please see ") then
+						elsif Start_With (Line, "--  extended unit, see ") then
 							Kind := Extended_Unit;
-							Reference := +Line (Line'First + 30 .. Line'Last);
+							Reference := +Line (Line'First + 23 .. Line'Last);
 							exit;
 						elsif Start_With (Line, "--  extended ") then
 							Kind := Extended_Unit;
