@@ -9,8 +9,8 @@ private package Ada.Calendar.Delays is
    pragma Inline (Delay_For); -- renamed
 
    --  required for delay until statement by compiler (a-caldel.ads)
-   procedure Delay_Until (T : Time)
-      renames Calendar.Naked.Delay_Until;
+   procedure Delay_Until (T : Time);
+   pragma Inline (Delay_Until); -- renamed
 
    --  required by compiler (a-caldel.ads)
    --  for select or delay expanded to Timed_Task_Entry_Call,
@@ -24,5 +24,8 @@ private
 
    procedure Delay_For (D : Duration)
       renames System.Native_Time.Delay_For;
+
+   procedure Delay_Until (T : Time)
+      renames Calendar.Naked.Delay_Until;
 
 end Ada.Calendar.Delays;
