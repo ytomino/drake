@@ -592,7 +592,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 # do not apply -ffast-math
-$(NOFASTMATH_OBJS): CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
+$(NOFASTMATH_OBJS): override CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
 
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
