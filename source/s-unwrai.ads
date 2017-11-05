@@ -162,6 +162,12 @@ package System.Unwind.Raising is
          External_Name => "__gnat_rcheck_PE_Accessibility_Check";
    pragma No_Return (rcheck_15);
 
+   procedure rcheck_18 (File : not null access Character; Line : Integer)
+      with Export,
+         Convention => C,
+         External_Name => "__gnat_rcheck_PE_All_Guards_Closed";
+   pragma No_Return (rcheck_18);
+
    procedure rcheck_22 (File : not null access Character; Line : Integer)
       with Export,
          Convention => C, External_Name => "__gnat_rcheck_PE_Explicit_Raise";
