@@ -1562,7 +1562,6 @@ package body System.Tasks is
             pragma Assert (Parent.Master_Top.Within = Library_Task_Level + 1);
             Parent.Master_Top.Within := Library_Task_Level;
          end if;
-         pragma Assert (Parent.Master_Top.Within = Library_Task_Level);
          Result := Parent.Master_Top;
       end if;
       return Result;
