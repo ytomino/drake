@@ -1,0 +1,14 @@
+--- c97120a.adb.orig	2017-11-05 22:11:49.000000000 +0900
++++ c97120a.adb	2017-11-05 22:12:38.000000000 +0900
+@@ -56,9 +56,9 @@
+                     ACCEPT NO_GO;
+                     FAILED ("ACCEPTED NONEXISTENT ENTRY CALL");
+                OR
+-                    DELAY 10.0;
++                    DELAY 1.0;
+                     AFTER := CLOCK;
+-                    IF AFTER - BEFORE < 10.0 THEN
++                    IF AFTER - BEFORE < 1.0 THEN
+                          FAILED ("INSUFFICIENT DELAY");
+                     END IF;
+                END SELECT;

@@ -1,0 +1,15 @@
+--- c94008d.adb.orig	2017-11-05 17:16:39.000000000 +0900
++++ c94008d.adb	2017-11-05 17:16:48.000000000 +0900
+@@ -38,10 +38,10 @@
+ 
+                     TASK BODY T2 IS
+                     BEGIN
+-                         DELAY 10.0;
++                         DELAY 1.0;
+ 
+                          IF TERMINATE_COUNT.GET /= 1 THEN
+-                              DELAY 20.0;
++                              DELAY 2.0;
+                          END IF;
+ 
+                          IF TERMINATE_COUNT.GET /= 1 THEN

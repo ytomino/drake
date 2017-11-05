@@ -1,0 +1,38 @@
+--- c97112a.adb.orig	2017-11-05 21:53:29.000000000 +0900
++++ c97112a.adb	2017-11-05 21:54:32.000000000 +0900
+@@ -56,9 +56,9 @@
+                     ACCEPT E;
+                     ACCEPT_ALTERNATIVE_TAKEN := TRUE;
+                     BEFORE := CLOCK;
+-                    DELAY 10.0;
++                    DELAY 1.0;
+                     AFTER  := CLOCK;
+-                    IF AFTER - BEFORE < 10.0 THEN
++                    IF AFTER - BEFORE < 1.0 THEN
+                          FAILED ("INSUFFICIENT DELAY (A)");
+                     END IF;
+                OR
+@@ -95,9 +95,9 @@
+                SELECT
+                     ACCEPT E;
+                     BEFORE := CLOCK;
+-                    DELAY 10.0;
++                    DELAY 1.0;
+                     AFTER  := CLOCK;
+-                    IF AFTER - BEFORE < 10.0 THEN
++                    IF AFTER - BEFORE < 1.0 THEN
+                          FAILED ("INSUFFICIENT DELAY (B-1)");
+                     END IF;
+                ELSE
+@@ -109,9 +109,9 @@
+                     FAILED ("ACCEPT STATEMENT EXECUTED (B-2)");
+                ELSE
+                     BEFORE := CLOCK;
+-                    DELAY 10.0;
++                    DELAY 1.0;
+                     AFTER  := CLOCK;
+-                    IF AFTER - BEFORE < 10.0 THEN
++                    IF AFTER - BEFORE < 1.0 THEN
+                          FAILED ("INSUFFICIENT DELAY (B-2)");
+                     END IF;
+                END SELECT;

@@ -1,0 +1,11 @@
+--- c97204a.adb.orig	2017-11-05 17:44:00.000000000 +0900
++++ c97204a.adb	2017-11-05 17:44:11.000000000 +0900
+@@ -78,7 +78,7 @@
+ 
+           FOR  I  IN  1..5  LOOP
+                EXIT WHEN  T_OBJECT1'TERMINATED ;
+-               DELAY 10.0 ;
++               DELAY 1.0 ;
+           END LOOP;
+ 
+ 
