@@ -1,131 +1,131 @@
-a87b59a C unimplemented tasking features (select)
-a97106a C unimplemented tasking features (select)
-ac3207a C unimplemented tasking features (select)
+a87b59a A unimplemented tasking features (select accept)
+a97106a P unexpected passed, unimplemented tasking features (select accept)
+ac3207a A unimplemented tasking features (select accept)
 c250002 C on GNAT, it can not use non-ASCII source filename
-c34007j C unimplemented tasking features (select)
-c34008a C unimplemented tasking features (select)
+c34007j A unimplemented tasking features (select accept)
+c34008a A unimplemented tasking features (select accept)
 c352001 F unicode incompatibility of Character'Image, @testsuite
-c380004 C unimplemented tasking features (select)
-c3a1002 C unimplemented tasking features (select)
+c380004 F unimplemented tasking features (select accept)
+c3a1002 A unimplemented tasking features (select accept)
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
-c59002c C unimplemented tasking features (select)
-c650002 C unimplemented tasking features (select)
-c74401k C unimplemented tasking features (select)
-c761007 C unimplemented tasking features (select)
-c85005a C unimplemented tasking features
-c85005b C unimplemented tasking features
-c85005c C unimplemented tasking features
-c85005d C unimplemented tasking features
-c85005e C unimplemented tasking features
-c85006a C unimplemented tasking features
-c85006b C unimplemented tasking features
-c85006c C unimplemented tasking features
-c85006d C unimplemented tasking features
-c85006e C unimplemented tasking features
-c85014a C unimplemented tasking features
-c85014b C unimplemented tasking features (select)
-c85018a C unimplemented tasking features
-c85018b C unimplemented tasking features
+c59002c A unimplemented tasking features (select accept)
+c650002 A unimplemented tasking features (select accept)
+c74401k U deadlock, unimplemented tasking features (select accept)
+c761007 U deadlock, unimplemented tasking features (select accept/asynchronous)
+c85005a U deadlock, unimplemented tasking features (select accept)
+c85005b A unimplemented tasking features (select accept)
+c85005c A unimplemented tasking features (select accept)
+c85005d A unimplemented tasking features (select accept)
+c85005e A unimplemented tasking features (select accept)
+c85006a U deadlock, unimplemented tasking features (select accept)
+c85006b A unimplemented tasking features (select accept)
+c85006c A unimplemented tasking features (select accept)
+c85006d A unimplemented tasking features (select accept)
+c85006e A unimplemented tasking features (select accept)
+c85014a A unimplemented tasking features (select accept)
+c85014b A unimplemented tasking features (select accept)
+c85018a A unimplemented tasking features (select accept)
+c85018b F unimplemented tasking features (select accept)
 c91004c U deadlock, unimplemented tasking features (select)
-c92003a C unimplemented tasking features
-c930001 C unimplemented tasking features
-c93005a C unimplemented tasking features
-c93005b C unimplemented tasking features
-c93005c C unimplemented tasking features
-c93005d C unimplemented tasking features
-c93005e C unimplemented tasking features
-c93005f C unimplemented tasking features
-c93005g C unimplemented tasking features
-c93005h C unimplemented tasking features
+c92003a A unimplemented tasking features (select accept)
+c930001 P unexpected passed, unimplemented tasking features (select accept)
+c93005a F unimplemented tasking features (select accept)
+c93005b F unimplemented tasking features (select accept)
+c93005c F unimplemented tasking features (select accept)
+c93005d F unimplemented tasking features (select accept)
+c93005e F unimplemented tasking features (select accept)
+c93005f F unimplemented tasking features (select accept)
+c93005g F unimplemented tasking features (select accept)
+c93005h F unimplemented tasking features (select accept)
 c93006a A unimplemented tasking features (select)
-c93008a C unimplemented tasking features
-c940004 C unimplemented tasking features (select)
-c940013 C unimplemented tasking features
-c940014 A unimplemented tasking features (requeue)
-c94001g C unimplemented tasking features
-c94004c C unimplemented tasking features
-c94006a C unimplemented tasking features
-c94007a C unimplemented tasking features
-c94007b C unimplemented tasking features
-c94008a C unimplemented tasking features
-c94008b C unimplemented tasking features
-c94008c C unimplemented tasking features
-c94008d C unimplemented tasking features
-c94020a C unimplemented tasking features
-c940a03 C unimplemented tasking features (select)
-c95008a C unimplemented tasking features (select)
-c95065a C unimplemented tasking features
-c95065b C unimplemented tasking features
-c95065c C unimplemented tasking features
-c95065d C unimplemented tasking features
-c95065e C unimplemented tasking features
-c95065f C unimplemented tasking features
-c95067a C unimplemented tasking features
-c95082g C unimplemented tasking features
-c95085a C unimplemented tasking features
-c95085b C unimplemented tasking features
-c95085c C unimplemented tasking features
-c95085d C unimplemented tasking features
-c95085e C unimplemented tasking features
-c95085f C unimplemented tasking features
-c95085g C unimplemented tasking features
-c95085h C unimplemented tasking features
-c95085i C unimplemented tasking features
-c95085j C unimplemented tasking features
-c95085k C unimplemented tasking features
-c95085l C unimplemented tasking features
-c95085m C unimplemented tasking features
-c95085n C unimplemented tasking features
-c95085o C unimplemented tasking features
-c95086a C unimplemented tasking features
-c95089a C unimplemented tasking features
-c95095a C unimplemented tasking features
-c95095b C unimplemented tasking features
-c95095c C unimplemented tasking features
-c954010 C unimplemented tasking features
-c954011 C unimplemented tasking features
-c954012 C unimplemented tasking features
-c954013 C unimplemented tasking features
-c954014 C unimplemented tasking features
-c954015 C unimplemented tasking features
+c93008a A unimplemented tasking features (select accept)
+c940004 A unimplemented tasking features (select accept)
+c940013 U deadlock, unimplemented tasking features (select accept)
+c940014 P unexpected passed, unimplemented tasking features (requeue)
+c94001g A unimplemented tasking features (select accept)
+c94004c P unexpected passed, unimplemented tasking features (select accept)
+c94006a A unimplemented tasking features (select accept)
+c94007a P unexpected passed, unimplemented tasking features (select accept)
+c94007b P unexpected passed, unimplemented tasking features (select accept)
+c94008a P unexpected passed, unimplemented tasking features (select accept)
+c94008b F unimplemented tasking features (select accept)
+c94008c A unimplemented tasking features (select accept)
+c94008d A unimplemented tasking features (select accept)
+c94020a P unexpected passed, unimplemented tasking features (select accept)
+c940a03 A unimplemented tasking features (select accept)
+c95008a P unexpected passed, unimplemented tasking features (select accept/ti.)
+c95065a F unimplemented tasking features (select accept)
+c95065b F unimplemented tasking features (select accept)
+c95065c F unimplemented tasking features (select accept)
+c95065d F unimplemented tasking features (select accept)
+c95065e F unimplemented tasking features (select accept)
+c95065f F unimplemented tasking features (select accept)
+c95067a A unimplemented tasking features (select accept)
+c95082g A unimplemented tasking features (select accept)
+c95085a U deadlock, unimplemented tasking features (select accept)
+c95085b U deadlock, unimplemented tasking features (select accept)
+c95085c F unimplemented tasking features (select accept)
+c95085d F unimplemented tasking features (select accept)
+c95085e F unimplemented tasking features (select accept)
+c95085f F unimplemented tasking features (select accept)
+c95085g F unimplemented tasking features (select accept)
+c95085h F unimplemented tasking features (select accept)
+c95085i F unimplemented tasking features (select accept)
+c95085j F unimplemented tasking features (select accept)
+c95085k F unimplemented tasking features (select accept)
+c95085l F unimplemented tasking features (select accept)
+c95085m F unimplemented tasking features (select accept)
+c95085n F unimplemented tasking features (select accept)
+c95085o F unimplemented tasking features (select accept)
+c95086a U deadlock, unimplemented tasking features (select accept)
+c95089a A unimplemented tasking features (select accept)
+c95095a A unimplemented tasking features (select accept)
+c95095b A unimplemented tasking features (select accept)
+c95095c A unimplemented tasking features (select accept)
+c954010 A unimplemented tasking features (select accept/requeue)
+c954011 U deadlock, unimplemented tasking features (select accept/requeue)
+c954012 U deadlock, unimplemented tasking features (select accept/requeue)
+c954013 U deadlock, unimplemented tasking features (select accept/requeue)
+c954014 U deadlock, unimplemented tasking features (select accept/requeue)
+c954015 U deadlock, unimplemented tasking features (select accept/requeue)
 c954016 U deadlock, unimplemented tasking features (requeue)
 c954017 U deadlock, unimplemented tasking features (requeue)
-c954018 C unimplemented tasking features
-c954019 C unimplemented tasking features
-c954020 C unimplemented tasking features
-c954021 C unimplemented tasking features
+c954018 A unimplemented tasking features (select accept/requeue)
+c954019 U deadlock, unimplemented tasking features (select accept/requeue)
+c954020 U deadlock, unimplemented tasking features (select accept/requeue)
+c954021 U deadlock, unimplemented tasking features (select accept/requeue)
 c954022 U deadlock, unimplemented tasking features (requeue)
-c954023 C unimplemented tasking features
-c954024 C unimplemented tasking features
-c954025 C unimplemented tasking features
-c954026 C unimplemented tasking features
-c954a01 C unimplemented tasking features
-c954a02 C unimplemented tasking features
-c954a03 C unimplemented tasking features
-c960004 C unimplemented tasking features (select)
+c954023 U deadlock, unimplemented tasking features (select accept/requeue)
+c954024 F unimplemented tasking features (select accept/requeue)
+c954025 A unimplemented tasking features (select accept/requeue)
+c954026 F unimplemented tasking features (select accept/requeue)
+c954a01 A unimplemented tasking features (select accept/conditional/requeue)
+c954a02 A unimplemented tasking features (select accept/conditional/requeue)
+c954a03 A unimplemented tasking features (select accept/timed/cond./requeue)
+c960004 F unimplemented tasking features (select accept/asynchronous)
 c96005b N Duration'Base equals Duration
 c96007a F calendar (exception not raised on feburary 30th)
-c97112a C unimplemented tasking features (select)
-c97113a C unimplemented tasking features (select)
-c97114a C unimplemented tasking features
-c97115a C unimplemented tasking features
-c97116a C unimplemented tasking features
-c97117a C unimplemented tasking features
-c97117b C unimplemented tasking features
-c97117c C unimplemented tasking features
-c97118a C unimplemented tasking features
-c97120a C unimplemented tasking features
-c97120b C unimplemented tasking features
+c97112a A unimplemented tasking features (select accept)
+c97113a A unimplemented tasking features (select accept)
+c97114a A unimplemented tasking features (select accept)
+c97115a A unimplemented tasking features (select accept)
+c97116a F unimplemented tasking features (select accept)
+c97117a P unexpected passed, unimplemented tasking features (select accept)
+c97117b A unimplemented tasking features (select accept)
+c97117c A unimplemented tasking features (select accept)
+c97118a A unimplemented tasking features (select accept)
+c97120a A unimplemented tasking features (select accept)
+c97120b A unimplemented tasking features (select accept/timed)
 c97201a A unimplemented tasking features (select)
-c97201b C unimplemented tasking features
+c97201b A unimplemented tasking features (select accept/conditional)
 c97201c U deadlock, unimplemented tasking features (select)
 c97201d U deadlock, unimplemented tasking features (select)
 c97201e U deadlock, unimplemented tasking features (select)
-c97201g C unimplemented tasking features
-c97201h C unimplemented tasking features
-c97201x C unimplemented tasking features
+c97201g A unimplemented tasking features (select accept/conditional)
+c97201h A unimplemented tasking features (select accept/conditional)
+c97201x A unimplemented tasking features (select accept/conditional)
 c97202a U deadlock, unimplemented tasking features (select)
 c97203a A unimplemented tasking features (select)
 c97203b A unimplemented tasking features (select)
@@ -133,7 +133,7 @@ c97203c U deadlock, unimplemented tasking features (select)
 c97204a F unimplemented tasking features (select)
 c97204b F unimplemented tasking features (select)
 c97205a U deadlock, unimplemented tasking features (select)
-c97205b C unimplemented tasking features
+c97205b A unimplemented tasking features (select accept/conditional)
 c97301a A unimplemented tasking features (select)
 c97301b P unexpected passed, unimplemented tasking features (select)
 c97301c U deadlock, unimplemented tasking features (select)
@@ -146,44 +146,44 @@ c97303c U deadlock, unimplemented tasking features (select)
 c97304a F unimplemented tasking features (select)
 c97304b F unimplemented tasking features (select)
 c97305a U deadlock, unimplemented tasking features (select)
-c97305b C unimplemented tasking features
+c97305b A unimplemented tasking features (select accept/timed)
 c97305c U deadlock, unimplemented tasking features (select)
-c97305d C unimplemented tasking features
-c97307a C unimplemented tasking features
-c974001 C unimplemented tasking features
-c974002 C unimplemented tasking features
-c974003 C unimplemented tasking features
-c974004 C unimplemented tasking features
-c974005 C unimplemented tasking features
+c97305d A unimplemented tasking features (select accept/timed)
+c97307a U deadlock, unimplemented tasking features (select accept/timed)
+c974001 A unimplemented tasking features (select accept/asynchronous)
+c974002 A unimplemented tasking features (select accept/asynchronous)
+c974003 A unimplemented tasking features (select accept/asynchronous)
+c974004 A unimplemented tasking features (select accept/asynchronous)
+c974005 A unimplemented tasking features (select accept/asynchronous)
 c974006 A unimplemented tasking features (select)
 c974007 A unimplemented tasking features (select)
 c974008 U deadlock, unimplemented tasking features (select)
 c974009 U deadlock, unimplemented tasking features (select)
 c974010 A unimplemented tasking features (select)
-c974011 C unimplemented tasking features
+c974011 A unimplemented tasking features (select accept/asynchronous)
 c974012 A unimplemented tasking features (select)
-c974013 C unimplemented tasking features
+c974013 A unimplemented tasking features (select accept/asynchronous)
 c974014 A unimplemented tasking features (select)
 c980001 F unimplemented tasking features (select)
 c980002 F unimplemented tasking features (select)
 c980003 A unimplemented tasking features (select)
-c99005a C unimplemented tasking features
-c9a009a C unimplemented tasking features
-c9a009f C unimplemented tasking features
-c9a009g C unimplemented tasking features
+c99005a P unexpected passed, unimplemented tasking features
+c9a009a A unimplemented tasking features (select accept)
+c9a009f A unimplemented tasking features (select accept)
+c9a009g A unimplemented tasking features (select accept)
 c9a011b U deadlock, unimplemented tasking features (select)
 ca14028 F on GNAT, it can not use specialized body with generic package spec
 ca5004a A unimplemented tasking features (select)
 cb10002 N enough memory exists
-cb20001 C unimplemented tasking features (select)
-cc1225a C unimplemented tasking features
-cc3019c C unimplemented tasking features
-cc3120b C unimplemented tasking features
-cc3207b C unimplemented tasking features (select)
-cc3602a C unimplemented tasking features (select)
+cb20001 F unimplemented tasking features (select accept)
+cc1225a A unimplemented tasking features (select accept)
+cc3019c A unimplemented tasking features (select accept)
+cc3120b A unimplemented tasking features (select accept)
+cc3207b A unimplemented tasking features (select accept)
+cc3602a A unimplemented tasking features (select accept)
 cc51007 A calendar (out of UNIX time)
-cd2a91c C unimplemented tasking features (select)
-cd72a02 C unimplemented tasking features (select)
+cd2a91c A unimplemented tasking features (select accept)
+cd72a02 A unimplemented tasking features (select accept/conditional)
 ce2102d N In_File is supported in Sequencial_IO
 ce2102e N Out_File is supported in Sequencial_IO
 ce2102f N Inout_File is supported in Direct_IO
@@ -237,8 +237,8 @@ cxac003 F strict End_Of_Line
 cxac004 C unicode incompatibility of Latin_1.Yen_Sign, @testsuite
 cxb4005 C Ada_To_COBOL and COBOL_To_Ada are not variables
 cxb4009 C it requites COBOL compiler
-cxc7001 C unimplemented tasking features (select)
-cxc7004 C unimplemented tasking features
+cxc7001 A unimplemented tasking features (select accept)
+cxc7004 A unimplemented tasking features (select accept/timed)
 cxd1001 C unimplemented tasking features
 cxd1002 C unimplemented tasking features
 cxd1003 F unimplemented tasking features (priority)
@@ -246,14 +246,14 @@ cxd1004 C unimplemented tasking features
 cxd1005 C unimplemented tasking features
 cxd1006 C unimplemented tasking features
 cxd1007 C unimplemented tasking features
-cxd1008 C unimplemented tasking features
+cxd1008 U deadlock, unimplemented tasking features (select accept/conditional)
 cxd2001 C unimplemented tasking features
 cxd2002 F unimplemented tasking features (priority)
 cxd2003 F unimplemented tasking features (priority)
 cxd2004 F unimplemented tasking features (priority)
-cxd2006 C unimplemented tasking features
+cxd2006 U deadlock, unimplemented tasking features (select accept)
 cxd2007 C unimplemented tasking features
-cxd2008 C unimplemented tasking features (select)
+cxd2008 U deadlock, unimplemented tasking features (select accept)
 cxd3001 F unimplemented tasking features (priority)
 cxd3002 F unimplemented tasking features (priority)
 cxd4001 C unimplemented tasking features
@@ -263,16 +263,16 @@ cxd4004 C unimplemented tasking features
 cxd4005 C unimplemented tasking features
 cxd4006 C unimplemented tasking features
 cxd4007 F unimplemented tasking features (priority)
-cxd4008 C unimplemented tasking features
+cxd4008 A unimplemented tasking features (select accept)
 cxd4009 C unimplemented tasking features
-cxd4010 C unimplemented tasking features
+cxd4010 A unimplemented tasking features (select accept)
 cxd5001 C unimplemented tasking features
-cxd6001 C unimplemented tasking features
-cxd6002 C unimplemented tasking features (select)
+cxd6001 A unimplemented tasking features (select accept)
+cxd6002 A unimplemented tasking features (select accept/asynchronous/requeue)
 cxd6003 A unimplemented tasking features (select)
 cxd8003 C Ada.Real_Time.Split/Time_Of are unimplemented
 cxd9001 U deadlock, unimplemented tasking features (select)
-cxda003 C unimplemented tasking features (select)
+cxda003 F unimplemented tasking features (select accept)
 cxdb001 C unimplemented tasking features (Ada.Asynchronous_Task_Control)
 cxdb002 C unimplemented tasking features (Ada.Dynamic_Priorities)
 cxdb003 C unimplemented tasking features (Ada.Asynchronous_Task_Control)
@@ -289,8 +289,8 @@ cxe4006 U Annex E is not supported
 cxe5001 C unimplemented System.RPC
 cxe5002 U Annex E is not supported
 cxe5003 U Annex E is not supported
-cxh3002 C unimplemented tasking features (select)
+cxh3002 A unimplemented tasking features (select accept)
 cxh1001 C all sources should be recompilation with pragma Normalize_Scalars
 cz00004 F z should not equal Z Expecting: z Got: Z. (???)
 ee3402b F strict End_Of_Line
-la14027 C unimplemented tasking features (select)
+la14027 A unimplemented tasking features (select accept)
