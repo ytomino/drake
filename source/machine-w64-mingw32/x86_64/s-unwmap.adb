@@ -36,6 +36,10 @@ package body System.Unwind.Mapping is
          new Ada.Unchecked_Conversion (
             C.basetsd.ULONG_PTR_ptr,
             C.vadefs.va_list_ptr);
+      --  space for overflow detection, decided for CB1010C
+      Stack_Overflow_Space : constant :=
+         (Standard'Address_Size / Standard'Storage_Unit) * 8 * 1024 * 1024;
+      --  the components of the exception
       Code : constant C.windef.DWORD := Exception_Record.ExceptionCode;
       Eexception_Id : Exception_Data_Access;
       Stack_Guard : Address := Null_Address;
@@ -51,7 +55,7 @@ package body System.Unwind.Mapping is
                      Exception_Record.ExceptionInformation (1));
             begin
                Stack.Get (Top => Stack_Top, Bottom => Stack_Bottom);
-               if AV_Address >= Stack_Top - 4096
+               if AV_Address >= Stack_Top - Stack_Overflow_Space
                   and then AV_Address < Stack_Bottom
                then -- stack overflow
                   Stack_Guard := Stack_Top + 4096;

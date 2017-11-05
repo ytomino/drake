@@ -45,9 +45,9 @@ package body System.Unwind.Mapping is
       pragma Inspection_Point (Signal_Number);
       pragma Inspection_Point (Info);
       pragma Inspection_Point (uap);
-      --  space for overflow detection, that is baseless and from experience
+      --  space for overflow detection, decided for CB1010C
       Stack_Overflow_Space : constant :=
-         (Standard'Address_Size / Standard'Storage_Unit) * 1024 * 1024;
+         (Standard'Address_Size / Standard'Storage_Unit) * 8 * 1024 * 1024;
       --  the components of the exception.
       Message : constant C.char_ptr := C.string.strsignal (Signal_Number);
       Message_Length : constant C.size_t := strlen (Message);
