@@ -9,6 +9,10 @@ package System.System_Allocators is
    function Allocate (
       Size : Storage_Elements.Storage_Count)
       return Address; -- Null_Address if it failed
+   function Allocate (
+      Size : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count)
+      return Address;
 
    procedure Free (Storage_Address : Address);
 

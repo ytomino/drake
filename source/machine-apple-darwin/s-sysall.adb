@@ -19,6 +19,27 @@ package body System.System_Allocators is
             C.size_t (Storage_Elements.Storage_Count'Max (1, Size))));
    end Allocate;
 
+   function Allocate (
+      Size : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count)
+      return Address
+   is
+      Result : aliased C.void_ptr;
+   begin
+      if C.stdlib.posix_memalign (
+         Result'Access,
+         C.size_t (
+            Storage_Elements.Storage_Count'Max (
+               Minimum_System_Allocator_Alignment,
+               Alignment)),
+         C.size_t (Storage_Elements.Storage_Count'Max (1, Size))) /= 0
+      then
+         return Null_Address;
+      else
+         return Address (Result);
+      end if;
+   end Allocate;
+
    procedure Free (Storage_Address : Address) is
    begin
       C.stdlib.free (C.void_ptr (Storage_Address));

@@ -20,4 +20,9 @@ package System.Standard_Allocators is
       return Address
       with Export, Convention => C, External_Name => "__gnat_realloc";
 
+   --  raise Storage_Error with "heap exhausted"
+
+   procedure Raise_Heap_Exhausted;
+   pragma No_Return (Raise_Heap_Exhausted);
+
 end System.Standard_Allocators;
