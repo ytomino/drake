@@ -202,7 +202,7 @@ package body Ada.Streams.Naked_Stream_IO is
       end if;
       if X.File /= null then
          Free (X.File);
-      elsif X.Name /= null then
+      else
          System.Native_IO.Free (X.Name);
       end if;
    end Finally;
@@ -464,23 +464,20 @@ package body Ada.Streams.Naked_Stream_IO is
       Scoped : aliased Scoped_Handle_And_File_And_Name :=
          (System.Native_IO.Invalid_Handle, null, null, File.Closer);
       Freeing_File : constant Non_Controlled_File_Type := File;
-      Kind : constant Stream_Kind := File.all.Kind;
    begin
       Holder.Assign (Scoped);
-      case Kind is
-         when Ordinary | Temporary | External | External_No_Close =>
-            Scoped.File := Freeing_File;
-         when Standard_Handle =>
-            null; -- statically allocated
-      end case;
       File := null;
-      case Kind is
-         when Ordinary | Temporary | External =>
-            Scoped.Handle := Freeing_File.Handle;
+      declare
+         Kind : constant Stream_Kind := Freeing_File.Kind;
+      begin
+         if Kind /= Standard_Handle then
+            if Kind /= External_No_Close then
+               Scoped.Handle := Freeing_File.Handle;
+            end if;
+            Scoped.File := Freeing_File;
             Scoped.Name := Freeing_File.Name;
-         when External_No_Close =>
-            Scoped.Name := Freeing_File.Name;
-         when Standard_Handle =>
+         else
+            --  The standard files are statically allocated.
             if Freeing_File.Has_Full_Name then
                Scoped.Name := Freeing_File.Name;
                --  The standard files may be double-finalized
@@ -488,12 +485,13 @@ package body Ada.Streams.Naked_Stream_IO is
                Freeing_File.Name := null;
                Freeing_File.Has_Full_Name := False;
             end if;
-      end case;
-      if Kind /= Temporary then
-         Flush_Writing_Buffer (
-            Freeing_File,
-            Raise_On_Error => Raise_On_Error);
-      end if;
+         end if;
+         if Kind /= Temporary then
+            Flush_Writing_Buffer (
+               Freeing_File,
+               Raise_On_Error => Raise_On_Error);
+         end if;
+      end;
       if Scoped.Handle /= System.Native_IO.Invalid_Handle then
          --  close explicitly in below
          Scoped.Handle := System.Native_IO.Invalid_Handle;
