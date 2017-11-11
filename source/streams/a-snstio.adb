@@ -24,6 +24,18 @@ package body Ada.Streams.Naked_Stream_IO is
       return access Root_Stream_Type'Class
       with Import, Convention => Intrinsic;
 
+   To_Mode : constant
+         array (IO_Modes.Inout_File_Mode) of IO_Modes.File_Mode := (
+      IO_Modes.In_File => IO_Modes.In_File,
+      IO_Modes.Inout_File => IO_Modes.Append_File,
+      IO_Modes.Out_File => IO_Modes.Out_File);
+
+   To_Inout_Mode : constant
+         array (IO_Modes.File_Mode) of IO_Modes.Inout_File_Mode := (
+      IO_Modes.In_File => IO_Modes.In_File,
+      IO_Modes.Out_File => IO_Modes.Out_File,
+      IO_Modes.Append_File => IO_Modes.Inout_File);
+
    --  the parameter Form
 
    procedure Set (
@@ -521,6 +533,16 @@ package body Ada.Streams.Naked_Stream_IO is
          Form => Form);
    end Create;
 
+   procedure Create (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode := IO_Modes.Out_File;
+      Name : String := "";
+      Form : System.Native_IO.Packed_Form := Default_Form) is
+   begin
+      Create (File, To_Mode (Mode), Name => Name, Form => Form);
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
+   end Create;
+
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
@@ -536,6 +558,16 @@ package body Ada.Streams.Naked_Stream_IO is
          Mode => Mode,
          Name => Name,
          Form => Form);
+   end Open;
+
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode;
+      Name : String;
+      Form : System.Native_IO.Packed_Form := Default_Form) is
+   begin
+      Open (File, To_Mode (Mode), Name => Name, Form => Form);
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
    end Open;
 
    procedure Close (
@@ -628,10 +660,24 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Reset;
 
+   procedure Reset (
+      File : aliased in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode) is
+   begin
+      Reset (File, To_Mode (Mode));
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
+   end Reset;
+
    function Mode (File : not null Non_Controlled_File_Type)
       return IO_Modes.File_Mode is
    begin
       return File.Mode;
+   end Mode;
+
+   function Mode (File : not null Non_Controlled_File_Type)
+      return IO_Modes.Inout_File_Mode is
+   begin
+      return To_Inout_Mode (File.Mode);
    end Mode;
 
    function Name (File : not null Non_Controlled_File_Type) return String is

@@ -147,7 +147,7 @@ package body Ada.Streams.Stream_IO is
       NC_File : Naked_Stream_IO.Non_Controlled_File_Type
          renames Controlled.Reference (File).all;
    begin
-      return File_Mode (Naked_Stream_IO.Mode (NC_File));
+      return File_Mode (IO_Modes.File_Mode'(Naked_Stream_IO.Mode (NC_File)));
    end Mode;
 
    function Name (

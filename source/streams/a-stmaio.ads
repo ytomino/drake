@@ -1,6 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 with Ada.IO_Exceptions;
+with Ada.IO_Modes;
 with Ada.Streams.Stream_IO;
 with System.Storage_Elements;
 private with Ada.Finalization;
@@ -9,13 +10,7 @@ private with System.Native_IO;
 package Ada.Storage_Mapped_IO is
    --  This package provides memory-mapped I/O.
 
-   subtype File_Mode is Streams.Stream_IO.File_Mode;
-   function In_File return File_Mode
-      renames Streams.Stream_IO.In_File;
-   function Inout_File return File_Mode
-      renames Streams.Stream_IO.Append_File;
-   function "=" (Left, Right : File_Mode) return Boolean
-      renames Streams.Stream_IO."=";
+   type File_Mode is new IO_Modes.Inout_File_Mode;
 
    type Storage_Type is limited private;
 
