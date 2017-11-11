@@ -6,9 +6,16 @@ package System.System_Allocators is
 
    --  heap
 
+   Minimum_System_Allocator_Alignment : constant :=
+      Standard'Address_Size / Standard'Storage_Unit;
+
    function Allocate (
       Size : Storage_Elements.Storage_Count)
       return Address; -- Null_Address if it failed
+   function Allocate (
+      Size : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count)
+      return Address;
 
    procedure Free (Storage_Address : Address);
 

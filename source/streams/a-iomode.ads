@@ -6,6 +6,7 @@ package Ada.IO_Modes is
    pragma Pure;
 
    type File_Mode is (In_File, Out_File, Append_File);
+   type Inout_File_Mode is (In_File, Inout_File, Out_File); -- Direct_IO
 
    --  the types for the parameters Form of Stream_IO
 

@@ -1,6 +1,27 @@
 package body System.Native_Time is
    use type C.signed_int;
-   use type C.signed_long;
+
+   pragma Warnings (Off, "is not referenced");
+
+   function To_tv_nsec (X : Nanosecond_Number) return C.signed_long
+      with Convention => Intrinsic;
+      --  Darwin, FreeBSD, or Linux (32/64bit)
+   function To_tv_nsec (X : Nanosecond_Number) return C.signed_long_long
+      with Convention => Intrinsic;
+      --  Linux (x32)
+   pragma Inline_Always (To_tv_nsec);
+
+   pragma Warnings (On, "is not referenced");
+
+   function To_tv_nsec (X : Nanosecond_Number) return C.signed_long is
+   begin
+      return C.signed_long (X);
+   end To_tv_nsec;
+
+   function To_tv_nsec (X : Nanosecond_Number) return C.signed_long_long is
+   begin
+      return C.signed_long_long (X);
+   end To_tv_nsec;
 
    --  implementation
 
@@ -9,7 +30,7 @@ package body System.Native_Time is
    begin
       return (
          tv_sec => D.tv_sec,
-         tv_nsec => C.signed_long (D.tv_usec) * 1_000);
+         tv_nsec => To_tv_nsec (Nanosecond_Number (D.tv_usec) * 1_000));
    end To_timespec;
 
    function To_timespec (D : Duration) return C.time.struct_timespec is
@@ -20,7 +41,7 @@ package body System.Native_Time is
       return (
          tv_sec =>
             C.sys.types.time_t ((Nanosecond - Sub_Second) / 1_000_000_000),
-         tv_nsec => C.signed_long (Sub_Second));
+         tv_nsec => To_tv_nsec (Sub_Second));
    end To_timespec;
 
    function To_Duration (D : C.time.struct_timespec) return Duration is

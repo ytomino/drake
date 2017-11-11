@@ -66,24 +66,18 @@ package body Separated is
       end if;
       Result.Header.exception_class := Representation.GNAT_Exception_Class;
       --  fill 0 to private area
-      pragma Compile_Time_Error (
-         C.unwind.Unwind_Exception_Class'Size rem Standard'Word_Size /= 0,
-         "unaligned Unwind_Exception_Class'Size");
-      pragma Compile_Time_Error (
-         C.unwind.Unwind_Exception_Cleanup_Fn'Size rem Standard'Word_Size /= 0,
-         "unaligned Unwind_Exception_Cleanup_Fn'Size");
-      memset (
-         Result.Header.exception_cleanup'Address
-            + Storage_Elements.Storage_Offset'(
-               C.unwind.Unwind_Exception_Cleanup_Fn'Size
-                  / Standard'Storage_Unit),
-         0,
-         C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
-            - Storage_Elements.Storage_Offset'(
-               C.unwind.Unwind_Exception_Class'Size
-                  / Standard'Storage_Unit
-               + C.unwind.Unwind_Exception_Cleanup_Fn'Size
-                  / Standard'Storage_Unit));
+      declare
+         Offset_Of_Private : constant Storage_Elements.Storage_Offset :=
+            Result.Header.exception_cleanup'Position
+            + C.unwind.Unwind_Exception_Cleanup_Fn'Size
+               / Standard'Storage_Unit;
+      begin
+         memset (
+            Result.Header.exception_cleanup'Address + Offset_Of_Private,
+            0,
+            C.unwind.struct_Unwind_Exception'Size / Standard'Storage_Unit
+               - Offset_Of_Private);
+      end;
       return Result;
    end New_Machine_Occurrence;
 

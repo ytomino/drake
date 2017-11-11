@@ -5,6 +5,7 @@ with C.windef;
 with C.winnt;
 package body System.System_Allocators is
    pragma Suppress (All_Checks);
+   use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
 --  use type C.basetsd.SIZE_T;
 --  use type C.windef.DWORD;
@@ -35,6 +36,21 @@ package body System.System_Allocators is
             C.winbase.GetProcessHeap,
             0,
             Round_Up (C.basetsd.SIZE_T (Size))));
+   end Allocate;
+
+   function Allocate (
+      Size : Storage_Elements.Storage_Count;
+      Alignment : Storage_Elements.Storage_Count)
+      return Address
+   is
+      Result : Address := Allocate (Size);
+   begin
+      if Result mod Alignment /= 0 then
+         Free (Result);
+         Result := Null_Address;
+      end if;
+      --  Should it use aligned_malloc/aligned_free?
+      return Result;
    end Allocate;
 
    procedure Free (Storage_Address : Address) is

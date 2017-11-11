@@ -44,7 +44,9 @@
 #include <sys/vm.h> /* before sys/sysctl.h */
 #include <sys/attr.h> /* before unistd.h */
 #endif
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #include <sys/sysctl.h>
+#endif
 #include <sys/mman.h>
 #include <unistd.h>
 #include <stdlib.h>

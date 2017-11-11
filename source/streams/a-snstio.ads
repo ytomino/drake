@@ -38,10 +38,20 @@ package Ada.Streams.Naked_Stream_IO is
       Mode : IO_Modes.File_Mode := IO_Modes.Out_File;
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form);
+   procedure Create (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode := IO_Modes.Out_File;
+      Name : String := "";
+      Form : System.Native_IO.Packed_Form := Default_Form);
 
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
+      Name : String;
+      Form : System.Native_IO.Packed_Form := Default_Form);
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode;
       Name : String;
       Form : System.Native_IO.Packed_Form := Default_Form);
 
@@ -52,9 +62,14 @@ package Ada.Streams.Naked_Stream_IO is
    procedure Reset (
       File : aliased in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode);
+   procedure Reset (
+      File : aliased in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode);
 
    function Mode (File : not null Non_Controlled_File_Type)
       return IO_Modes.File_Mode;
+   function Mode (File : not null Non_Controlled_File_Type)
+      return IO_Modes.Inout_File_Mode;
    function Name (File : not null Non_Controlled_File_Type) return String;
    function Form (File : Non_Controlled_File_Type)
       return System.Native_IO.Packed_Form;
@@ -213,10 +228,10 @@ private
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
-      Buffer_Inline : aliased Stream_Element;
       Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
+      Buffer_Inline : aliased Stream_Element;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;
       Buffer_Index : Stream_Element_Offset; -- Index (File) mod Buffer_Length

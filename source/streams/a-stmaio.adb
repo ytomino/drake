@@ -1,7 +1,7 @@
-with Ada.IO_Modes;
 with Ada.Streams.Stream_IO.Naked;
 package body Ada.Storage_Mapped_IO is
    use type Streams.Stream_Element_Offset;
+   use type Streams.Stream_IO.File_Mode;
    use type System.Address;
 
    procedure Map (
@@ -77,7 +77,8 @@ package body Ada.Storage_Mapped_IO is
          Streams.Stream_IO.Naked.Non_Controlled (File).all,
          Offset,
          Size,
-         Writable => Streams.Stream_IO.Mode (File) /= In_File);
+         Writable =>
+            Streams.Stream_IO.Mode (File) /= Streams.Stream_IO.In_File);
    end Map;
 
    function Map (
@@ -108,7 +109,7 @@ package body Ada.Storage_Mapped_IO is
       --  this file will be closed in Finalize even if any exception is raised
       Streams.Naked_Stream_IO.Open (
          NC_Object.File,
-         IO_Modes.File_Mode (Mode),
+         IO_Modes.Inout_File_Mode (Mode),
          Name,
          Streams.Naked_Stream_IO.Pack (Form));
       --  map

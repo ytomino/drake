@@ -1,5 +1,5 @@
+with System.System_Allocators;
 package body System.Storage_Pools.Unbounded is
-   use type Storage_Elements.Storage_Offset;
 
    overriding procedure Initialize (Object : in out Unbounded_Pool) is
    begin
@@ -18,17 +18,14 @@ package body System.Storage_Pools.Unbounded is
       Alignment : Storage_Elements.Storage_Count) is
    begin
       Storage_Address := Address (
-         C.malloc.malloc.malloc_zone_malloc (
+         C.malloc.malloc.malloc_zone_memalign (
             Pool.Zone,
+            C.size_t (
+               Storage_Elements.Storage_Count'Max (
+                  System_Allocators.Minimum_System_Allocator_Alignment,
+                  Alignment)),
             C.size_t (Size_In_Storage_Elements)));
       if Storage_Address = Null_Address then
-         raise Storage_Error;
-      elsif Storage_Address mod Alignment /= 0 then
-         Deallocate (
-            Pool,
-            Storage_Address,
-            Size_In_Storage_Elements,
-            Alignment);
          raise Storage_Error;
       end if;
    end Allocate;

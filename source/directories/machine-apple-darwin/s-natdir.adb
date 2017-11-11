@@ -3,6 +3,7 @@ with Ada.Exceptions.Finally;
 with Ada.Hierarchical_File_Names;
 with System.Address_To_Named_Access_Conversions;
 with System.Native_Directories.Copying;
+with System.Native_Time;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.stdio; -- rename(2)
@@ -12,8 +13,8 @@ with C.time;
 with C.unistd;
 package body System.Native_Directories is
    use Ada.Exception_Identification.From_Here;
+   use type Native_Time.Nanosecond_Number;
    use type C.signed_int;
-   use type C.signed_long;
    use type C.size_t;
    use type C.sys.types.mode_t;
 
@@ -245,7 +246,9 @@ package body System.Native_Directories is
       begin
          return (
             tv_sec => X.tv_sec,
-            tv_usec => C.sys.types.suseconds_t (X.tv_nsec / 1_000));
+            tv_usec =>
+               C.sys.types.suseconds_t (
+                  Native_Time.Nanosecond_Number (X.tv_nsec) / 1_000));
       end To_timeval;
       C_Name : C.char_array (
          0 ..

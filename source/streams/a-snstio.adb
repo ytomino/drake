@@ -24,6 +24,18 @@ package body Ada.Streams.Naked_Stream_IO is
       return access Root_Stream_Type'Class
       with Import, Convention => Intrinsic;
 
+   To_Mode : constant
+         array (IO_Modes.Inout_File_Mode) of IO_Modes.File_Mode := (
+      IO_Modes.In_File => IO_Modes.In_File,
+      IO_Modes.Inout_File => IO_Modes.Append_File,
+      IO_Modes.Out_File => IO_Modes.Out_File);
+
+   To_Inout_Mode : constant
+         array (IO_Modes.File_Mode) of IO_Modes.Inout_File_Mode := (
+      IO_Modes.In_File => IO_Modes.In_File,
+      IO_Modes.Out_File => IO_Modes.Out_File,
+      IO_Modes.Append_File => IO_Modes.Inout_File);
+
    --  the parameter Form
 
    procedure Set (
@@ -155,10 +167,10 @@ package body Ada.Streams.Naked_Stream_IO is
          Handle => Handle,
          Mode => Mode,
          Kind => Kind,
-         Buffer_Inline => <>,
          Has_Full_Name => Has_Full_Name,
          Name => Name,
          Form => Form,
+         Buffer_Inline => <>,
          Buffer => System.Null_Address,
          Buffer_Length => Uninitialized_Buffer,
          Buffer_Index => 0,
@@ -202,7 +214,7 @@ package body Ada.Streams.Naked_Stream_IO is
       end if;
       if X.File /= null then
          Free (X.File);
-      elsif X.Name /= null then
+      else
          System.Native_IO.Free (X.Name);
       end if;
    end Finally;
@@ -464,23 +476,20 @@ package body Ada.Streams.Naked_Stream_IO is
       Scoped : aliased Scoped_Handle_And_File_And_Name :=
          (System.Native_IO.Invalid_Handle, null, null, File.Closer);
       Freeing_File : constant Non_Controlled_File_Type := File;
-      Kind : constant Stream_Kind := File.all.Kind;
    begin
       Holder.Assign (Scoped);
-      case Kind is
-         when Ordinary | Temporary | External | External_No_Close =>
-            Scoped.File := Freeing_File;
-         when Standard_Handle =>
-            null; -- statically allocated
-      end case;
       File := null;
-      case Kind is
-         when Ordinary | Temporary | External =>
-            Scoped.Handle := Freeing_File.Handle;
+      declare
+         Kind : constant Stream_Kind := Freeing_File.Kind;
+      begin
+         if Kind /= Standard_Handle then
+            if Kind /= External_No_Close then
+               Scoped.Handle := Freeing_File.Handle;
+            end if;
+            Scoped.File := Freeing_File;
             Scoped.Name := Freeing_File.Name;
-         when External_No_Close =>
-            Scoped.Name := Freeing_File.Name;
-         when Standard_Handle =>
+         else
+            --  The standard files are statically allocated.
             if Freeing_File.Has_Full_Name then
                Scoped.Name := Freeing_File.Name;
                --  The standard files may be double-finalized
@@ -488,12 +497,13 @@ package body Ada.Streams.Naked_Stream_IO is
                Freeing_File.Name := null;
                Freeing_File.Has_Full_Name := False;
             end if;
-      end case;
-      if Kind /= Temporary then
-         Flush_Writing_Buffer (
-            Freeing_File,
-            Raise_On_Error => Raise_On_Error);
-      end if;
+         end if;
+         if Kind /= Temporary then
+            Flush_Writing_Buffer (
+               Freeing_File,
+               Raise_On_Error => Raise_On_Error);
+         end if;
+      end;
       if Scoped.Handle /= System.Native_IO.Invalid_Handle then
          --  close explicitly in below
          Scoped.Handle := System.Native_IO.Invalid_Handle;
@@ -523,6 +533,16 @@ package body Ada.Streams.Naked_Stream_IO is
          Form => Form);
    end Create;
 
+   procedure Create (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode := IO_Modes.Out_File;
+      Name : String := "";
+      Form : System.Native_IO.Packed_Form := Default_Form) is
+   begin
+      Create (File, To_Mode (Mode), Name => Name, Form => Form);
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
+   end Create;
+
    procedure Open (
       File : in out Non_Controlled_File_Type;
       Mode : IO_Modes.File_Mode;
@@ -538,6 +558,16 @@ package body Ada.Streams.Naked_Stream_IO is
          Mode => Mode,
          Name => Name,
          Form => Form);
+   end Open;
+
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode;
+      Name : String;
+      Form : System.Native_IO.Packed_Form := Default_Form) is
+   begin
+      Open (File, To_Mode (Mode), Name => Name, Form => Form);
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
    end Open;
 
    procedure Close (
@@ -630,10 +660,24 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Reset;
 
+   procedure Reset (
+      File : aliased in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode) is
+   begin
+      Reset (File, To_Mode (Mode));
+      Set_Index (File, 1); -- because Inout_File is mapped to Append_File
+   end Reset;
+
    function Mode (File : not null Non_Controlled_File_Type)
       return IO_Modes.File_Mode is
    begin
       return File.Mode;
+   end Mode;
+
+   function Mode (File : not null Non_Controlled_File_Type)
+      return IO_Modes.Inout_File_Mode is
+   begin
+      return To_Inout_Mode (File.Mode);
    end Mode;
 
    function Name (File : not null Non_Controlled_File_Type) return String is

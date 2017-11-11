@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 with Ada.IO_Exceptions;
+with Ada.IO_Modes;
 with Ada.Streams;
 private with Ada.Streams.Stream_IO;
 generic
@@ -26,7 +27,7 @@ package Ada.Direct_IO is
 --         raise Mode_Error with
 --            "Cannot write file: " & Name (Output_File_Type);
 
-   type File_Mode is (In_File, Inout_File, Out_File);
+   type File_Mode is new IO_Modes.Inout_File_Mode;
    type Count is
       range 0 .. Streams.Stream_Element_Count'Last; -- implementation-defined
    subtype Positive_Count is Count range 1 .. Count'Last;

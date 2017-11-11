@@ -1,8 +1,8 @@
 with System.Native_Time;
 with C.sys.time;
 package body System.Native_Calendar is
-   use type C.signed_int; -- time_t is signed int or signed long
-   use type C.signed_long;
+--  use type C.signed_int;
+--  use type C.sys.types.time_t;
 
    Diff : constant := 5680281600.0;
       --  seconds from 1970-01-01 (0 of POSIX time)
@@ -26,6 +26,7 @@ package body System.Native_Calendar is
    end To_Time;
 
    function Clock return Native_Time is
+      use type C.signed_int;
       Result : aliased C.sys.time.struct_timeval;
       R : C.signed_int;
    begin
@@ -50,6 +51,7 @@ package body System.Native_Calendar is
       Time_Zone : Time_Offset;
       Error : out Boolean)
    is
+      use type C.sys.types.time_t;
       timespec : aliased C.time.struct_timespec := To_Native_Time (Date);
       Buffer : aliased C.time.struct_tm := (others => <>); -- uninitialized
       tm : access C.time.struct_tm;
@@ -82,6 +84,7 @@ package body System.Native_Calendar is
       Error : out Boolean)
    is
       pragma Unreferenced (Leap_Second);
+      use type C.sys.types.time_t;
       tm : aliased C.time.struct_tm := (
          tm_sec => 0,
          tm_min => 0,

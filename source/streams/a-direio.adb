@@ -1,48 +1,42 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Streams.Naked_Stream_IO;
+with Ada.Streams.Stream_IO.Naked;
 package body Ada.Direct_IO is
    use Exception_Identification.From_Here;
    use type Streams.Stream_Element_Offset;
-
-   To_Mode : constant array (File_Mode) of Streams.Stream_IO.File_Mode := (
-      In_File => Streams.Stream_IO.In_File,
-      Inout_File => Streams.Stream_IO.Append_File,
-      Out_File => Streams.Stream_IO.Out_File);
-
-   From_Mode : constant array (Streams.Stream_IO.File_Mode) of File_Mode := (
-      Streams.Stream_IO.In_File => In_File,
-      Streams.Stream_IO.Out_File => Out_File,
-      Streams.Stream_IO.Append_File => Inout_File);
-
-   --  implementation
 
    procedure Create (
       File : in out File_Type;
       Mode : File_Mode := Inout_File;
       Name : String := "";
-      Form : String := "") is
+      Form : String := "")
+   is
+      NC_File : Streams.Naked_Stream_IO.Non_Controlled_File_Type
+         renames Streams.Stream_IO.Naked.Non_Controlled (
+            Streams.Stream_IO.File_Type (File)).all;
    begin
-      Streams.Stream_IO.Create (
-         Streams.Stream_IO.File_Type (File),
-         To_Mode (Mode),
-         Name,
-         Form);
+      Streams.Naked_Stream_IO.Create (
+         NC_File,
+         IO_Modes.Inout_File_Mode (Mode),
+         Name => Name,
+         Form => Streams.Naked_Stream_IO.Pack (Form));
    end Create;
 
    procedure Open (
       File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "") is
+      Form : String := "")
+   is
+      NC_File : Streams.Naked_Stream_IO.Non_Controlled_File_Type
+         renames Streams.Stream_IO.Naked.Non_Controlled (
+            Streams.Stream_IO.File_Type (File)).all;
    begin
-      Streams.Stream_IO.Open (
-         Streams.Stream_IO.File_Type (File),
-         To_Mode (Mode),
-         Name,
-         Form);
-      --  move to first, because Inout_File is mapped to Append_File
-      Streams.Stream_IO.Set_Index (
-         Streams.Stream_IO.File_Type (File),
-         1);
+      Streams.Naked_Stream_IO.Open (
+         NC_File,
+         IO_Modes.Inout_File_Mode (Mode),
+         Name => Name,
+         Form => Streams.Naked_Stream_IO.Pack (Form));
    end Open;
 
    procedure Close (File : in out File_Type) is
@@ -56,26 +50,30 @@ package body Ada.Direct_IO is
    end Delete;
 
    procedure Reset (File : in out File_Type; Mode : File_Mode) is
+      NC_File : Streams.Naked_Stream_IO.Non_Controlled_File_Type
+         renames Streams.Stream_IO.Naked.Non_Controlled (
+            Streams.Stream_IO.File_Type (File)).all;
    begin
-      Streams.Stream_IO.Reset (
-         Streams.Stream_IO.File_Type (File),
-         To_Mode (Mode));
-      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
+      Streams.Naked_Stream_IO.Reset (NC_File, IO_Modes.Inout_File_Mode (Mode));
    end Reset;
 
    procedure Reset (File : in out File_Type) is
    begin
-      Streams.Stream_IO.Reset (Streams.Stream_IO.File_Type (File));
-      Streams.Stream_IO.Set_Index (Streams.Stream_IO.File_Type (File), 1);
+      Reset (File, File_Mode'(Mode (File)));
    end Reset;
 
    function Mode (
       File : File_Type)
-      return File_Mode is
+      return File_Mode
+   is
+      pragma Check (Dynamic_Predicate,
+         Check => Is_Open (File) or else raise Status_Error);
+      NC_File : Streams.Naked_Stream_IO.Non_Controlled_File_Type
+         renames Streams.Stream_IO.Naked.Non_Controlled (
+            Streams.Stream_IO.File_Type (File)).all;
    begin
-      return From_Mode (
-         Streams.Stream_IO.Mode (
-            Streams.Stream_IO.File_Type (File))); -- checking the predicate
+      return File_Mode (
+         IO_Modes.Inout_File_Mode'(Streams.Naked_Stream_IO.Mode (NC_File)));
    end Mode;
 
    function Name (

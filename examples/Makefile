@@ -118,7 +118,7 @@ BFLAGS_ALL:=$(strip $(BFLAGS_ALL) $(BFLAGS))
 LFLAGS_ALL:=$(strip $(LFLAGS_ALL) $(LFLAGS))
 FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
-.PHONY: all tree cleanup-rts clean xfind xfindall
+.PHONY: all tree cleanup-rts clean cleanall xfind xfindall
 
 all: $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a $(EXAMPLES)
 
@@ -169,6 +169,10 @@ $(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
 clean:
+	-rm -rf $(BINLN) $(BUILDDIR)/adalib
+	-find $(BUILDDIR) -depth 1 -not -name adainclude | xargs rm -r
+
+cleanall:
 	-rm -rf $(BINLN) *.build
 
 xfind:
