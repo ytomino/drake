@@ -220,8 +220,8 @@ private
          System.Null_Address;
       File : aliased Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Name : System.Native_IO.Name_Pointer; -- used when File is not assigned
-      Page : Natural := 1;
       Line : Natural := 1;
+      Page : Natural := 1;
       Col : Natural := 1;
       Line_Length : Natural := 0;
       Page_Length : Natural := 0;
@@ -243,8 +243,8 @@ private
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Input,
       Name => null,
-      Page => 1,
       Line => 1,
+      Page => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
@@ -264,8 +264,8 @@ private
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Output,
       Name => null,
-      Page => 1,
       Line => 1,
+      Page => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,
@@ -285,8 +285,8 @@ private
       Stream => System.Null_Address, -- be overwritten
       File => Streams.Naked_Stream_IO.Standard_Files.Standard_Error,
       Name => null,
-      Page => 1,
       Line => 1,
+      Page => 1,
       Col => 1,
       Line_Length => 0,
       Page_Length => 0,

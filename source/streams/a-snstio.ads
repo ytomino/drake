@@ -231,10 +231,10 @@ private
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter
       Mode : IO_Modes.File_Mode;
       Kind : Stream_Kind;
-      Buffer_Inline : aliased Stream_Element;
       Has_Full_Name : Boolean;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
+      Buffer_Inline : aliased Stream_Element;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;
       Buffer_Index : Stream_Element_Offset; -- Index (File) mod Buffer_Length

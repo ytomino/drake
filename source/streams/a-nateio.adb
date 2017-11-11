@@ -384,8 +384,8 @@ package body Ada.Naked_Text_IO is
    begin
       Take_Buffer (File);
       File.Virtual_Mark := EOP;
-      File.Page := File.Page + 1;
       File.Line := 1;
+      File.Page := File.Page + 1;
       File.Col := 1;
    end Take_Page;
 
@@ -630,8 +630,8 @@ package body Ada.Naked_Text_IO is
             Streams.Write (Stream (File).all, Code);
          end;
       end if;
-      File.Page := File.Page + 1;
       File.Line := 1;
+      File.Page := File.Page + 1;
       File.Col := 1;
    end Raw_New_Page;
 
@@ -852,8 +852,8 @@ package body Ada.Naked_Text_IO is
          File.Stream := To_Address (
             Streams.Naked_Stream_IO.Stream (File.File));
       end;
-      File.Page := 1;
       File.Line := 1;
+      File.Page := 1;
       File.Col := 1;
       File.Line_Length := 0;
       File.Page_Length := 0;
@@ -1056,8 +1056,8 @@ package body Ada.Naked_Text_IO is
             else
                Take_Buffer (File);
             end if;
-            File.Page := File.Page + 1;
             File.Line := 1;
+            File.Page := File.Page + 1;
             File.Col := 1;
       end case;
    end Skip_Page;
@@ -1524,8 +1524,8 @@ package body Ada.Naked_Text_IO is
          --  Skip_Ahead can be used instead of Skip_Line
          if File.Virtual_Mark <= EOP then
             File.Virtual_Mark := EOP_EOF;
-            File.Page := File.Page + 1;
             File.Line := 1;
+            File.Page := File.Page + 1;
             File.Col := 1;
          else
             Raise_Exception (End_Error'Identity);
