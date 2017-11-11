@@ -156,6 +156,8 @@ private
       end record;
       pragma Suppress_Initialization (Root_Dispatcher);
       for Root_Dispatcher'Size use Standard'Address_Size * 2; -- [gcc-7] ?
+      for Root_Dispatcher'Alignment use
+         Standard'Address_Size / Standard'Storage_Unit; -- [gcc-7] ? in x32
 
       overriding procedure Read (
          Stream : in out Root_Dispatcher;
@@ -171,6 +173,8 @@ private
       end record;
       pragma Suppress_Initialization (Seekable_Dispatcher);
       for Seekable_Dispatcher'Size use Standard'Address_Size * 2; -- [gcc-7] ?
+      for Seekable_Dispatcher'Alignment use
+         Standard'Address_Size / Standard'Storage_Unit; -- [gcc-7] ? in x32
 
       overriding procedure Read (
          Stream : in out Seekable_Dispatcher;

@@ -7,9 +7,9 @@ package Ada.Containers.Binary_Trees.Arne_Andersson is
 
    Node_Size : constant :=
       Standard'Address_Size * 3
-      + (Level_Type'Size + Standard'Word_Size - 1)
-         / Standard'Word_Size
-         * Standard'Word_Size;
+      + (Level_Type'Size + Standard'Address_Size - 1)
+         / Standard'Address_Size
+         * Standard'Address_Size;
 
    type Node is limited record
       Super : aliased Binary_Trees.Node;

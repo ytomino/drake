@@ -6,6 +6,7 @@ package body System.Native_Directories.Volumes is
    use type File_Size;
    use type C.signed_int;
    use type C.signed_long; -- f_type in 64bit
+   use type C.signed_long_long; -- f_type in x32
    use type C.size_t;
 
    --  implementation
