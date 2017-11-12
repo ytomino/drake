@@ -201,7 +201,7 @@ package body Ada.Naked_Text_IO is
       Form : System.Native_Text_IO.Packed_Form)
    is
       New_File : aliased Non_Controlled_File_Type := new Text_Type'(
-         Stream => <>,
+         Stream => System.Null_Address,
          Name => null,
          Mode => Mode,
          External => <>,
@@ -217,14 +217,6 @@ package body Ada.Naked_Text_IO is
          Mode => Mode,
          Name => Name,
          Form => Form.Stream_Form);
-      declare
-         function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address
-            with Import, Convention => Intrinsic;
-      begin
-         New_File.Stream := To_Address (
-            Streams.Naked_Stream_IO.Stream (New_File.File));
-      end;
       --  select encoding
       if System.Native_IO.Is_Terminal (
          Streams.Naked_Stream_IO.Handle (New_File.File))
@@ -244,6 +236,23 @@ package body Ada.Naked_Text_IO is
    --  * Read_Buffer sets (or keeps) Ahead_Col.
    --  * Get adds Ahead_Col to current Col.
    --  * Take_Buffer clears Ahead_Col.
+
+   procedure Read (
+      File : not null Non_Controlled_File_Type;
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset);
+   procedure Read (
+      File : not null Non_Controlled_File_Type;
+      Item : out Streams.Stream_Element_Array;
+      Last : out Streams.Stream_Element_Offset) is
+   begin
+      if not Streams.Naked_Stream_IO.Is_Open (File.File) then
+         --  external stream mode
+         Streams.Read (To_Pointer (File.Stream).all, Item, Last);
+      else
+         Streams.Naked_Stream_IO.Read (File.File, Item, Last);
+      end if;
+   end Read;
 
    procedure Read_Buffer (
       File : Non_Controlled_File_Type;
@@ -298,7 +307,7 @@ package body Ada.Naked_Text_IO is
                for Buffer'Address use File.Buffer (Old_Last + 1)'Address;
                Last : Streams.Stream_Element_Offset;
             begin
-               Streams.Read (Stream (File).all, Buffer, Last);
+               Read (File, Buffer, Last);
                File.Last := Natural'Base (Last);
                if Wait and then File.Last = Old_Last then
                   File.End_Of_File := True;
@@ -608,6 +617,21 @@ package body Ada.Naked_Text_IO is
    --  * Write_Buffer sets Ahead_Col to written width.
    --  * Put adds Ahead_Col to current Col.
 
+   procedure Write (
+      File : not null Non_Controlled_File_Type;
+      Item : Streams.Stream_Element_Array);
+   procedure Write (
+      File : not null Non_Controlled_File_Type;
+      Item : Streams.Stream_Element_Array) is
+   begin
+      if not Streams.Naked_Stream_IO.Is_Open (File.File) then
+         --  external stream mode
+         Streams.Write (To_Pointer (File.Stream).all, Item);
+      else
+         Streams.Naked_Stream_IO.Write (File.File, Item);
+      end if;
+   end Write;
+
    procedure Raw_New_Page (File : Non_Controlled_File_Type);
    procedure Raw_New_Line (File : Non_Controlled_File_Type);
    procedure Raw_New_Line (
@@ -627,7 +651,7 @@ package body Ada.Naked_Text_IO is
          declare
             Code : constant Streams.Stream_Element_Array := (1 => 16#0c#);
          begin
-            Streams.Write (Stream (File).all, Code);
+            Write (File, Code);
          end;
       end if;
       File.Line := 1;
@@ -647,7 +671,7 @@ package body Ada.Naked_Text_IO is
          begin
             First := Boolean'Pos (File.New_Line = IO_Modes.LF);
             Last := Boolean'Pos (File.New_Line /= IO_Modes.CR);
-            Streams.Write (Stream (File).all, Line_Mark (First .. Last));
+            Write (File, Line_Mark (First .. Last));
          end;
          File.Line := File.Line + 1;
          File.Col := 1;
@@ -718,7 +742,7 @@ package body Ada.Naked_Text_IO is
                   Streams.Stream_Element_Offset (DBCS_Last));
                for DBCS_Buffer_As_SEA'Address use DBCS_Buffer'Address;
             begin
-               Streams.Write (Stream (File).all, DBCS_Buffer_As_SEA);
+               Write (File, DBCS_Buffer_As_SEA);
             end;
             File.Ahead_Col := DBCS_Last;
          end;
@@ -734,7 +758,7 @@ package body Ada.Naked_Text_IO is
                Streams.Stream_Element_Offset (Sequence_Length));
             for Buffer'Address use File.Buffer'Address;
          begin
-            Streams.Write (Stream (File).all, Buffer);
+            Write (File, Buffer);
          end;
          File.Ahead_Col := Sequence_Length;
       end if;
@@ -844,14 +868,7 @@ package body Ada.Naked_Text_IO is
          Streams.Naked_Stream_IO.Reset (File.File, Mode);
          Holder.Clear;
       end;
-      declare
-         function To_Address (Value : access Streams.Root_Stream_Type'Class)
-            return System.Address
-            with Import, Convention => Intrinsic;
-      begin
-         File.Stream := To_Address (
-            Streams.Naked_Stream_IO.Stream (File.File));
-      end;
+      File.Stream := System.Null_Address;
       File.Line := 1;
       File.Page := 1;
       File.Col := 1;
@@ -1631,8 +1648,16 @@ package body Ada.Naked_Text_IO is
    end Open;
 
    function Stream (File : not null Non_Controlled_File_Type)
-      return not null access Streams.Root_Stream_Type'Class is
+      return not null access Streams.Root_Stream_Type'Class
+   is
+      function To_Address (Value : access Streams.Root_Stream_Type'Class)
+         return System.Address
+         with Import, Convention => Intrinsic;
    begin
+      if To_Pointer (File.Stream) = null then
+         File.Stream :=
+            To_Address (Streams.Naked_Stream_IO.Stream (File.File));
+      end if;
       return To_Pointer (File.Stream);
    end Stream;
 
@@ -1666,11 +1691,7 @@ package body Ada.Naked_Text_IO is
 
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type);
    procedure Init_Standard_File (File : not null Non_Controlled_File_Type) is
-      function To_Address (Value : access Streams.Root_Stream_Type'Class)
-         return System.Address
-         with Import, Convention => Intrinsic;
    begin
-      File.Stream := To_Address (Streams.Naked_Stream_IO.Stream (File.File));
       if System.Native_IO.Is_Terminal (
          Streams.Naked_Stream_IO.Handle (File.File))
       then
