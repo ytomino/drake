@@ -11,6 +11,7 @@ package body System.Native_IO is
    use type Ada.IO_Modes.File_Shared;
    use type Ada.IO_Modes.File_Shared_Spec;
    use type Ada.Streams.Stream_Element_Offset;
+   use type System.Storage_Elements.Storage_Offset;
    use type C.char; -- Name_Character
    use type C.char_array; -- Name_String
    use type C.char_ptr; -- Name_Pointer
@@ -488,22 +489,30 @@ package body System.Native_IO is
       Size : Ada.Streams.Stream_Element_Count;
       Writable : Boolean)
    is
-      Protects : constant array (Boolean) of C.signed_int :=
-         (C.sys.mman.PROT_READ, C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
-      Mapped_Offset : constant C.sys.types.off_t :=
-         C.sys.types.off_t (Offset) - 1;
-      Mapped_Size : constant C.size_t := C.size_t (Size);
       Mapped_Address : C.void_ptr;
    begin
-      Mapped_Address := C.sys.mman.mmap (
-         C.void_ptr (Null_Address),
-         Mapped_Size,
-         Protects (Writable),
-         C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
-         Handle,
-         Mapped_Offset);
-      if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
-         Raise_Exception (Use_Error'Identity);
+      if Size = 0 then
+         Mapped_Address := C.void_ptr (System'To_Address (1)); -- dummy value
+      else
+         declare
+            Protects : constant array (Boolean) of C.signed_int := (
+               C.sys.mman.PROT_READ,
+               C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+            Mapped_Offset : constant C.sys.types.off_t :=
+               C.sys.types.off_t (Offset) - 1;
+            Mapped_Size : constant C.size_t := C.size_t (Size);
+         begin
+            Mapped_Address := C.sys.mman.mmap (
+               C.void_ptr (Null_Address),
+               Mapped_Size,
+               Protects (Writable),
+               C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+               Handle,
+               Mapped_Offset);
+            if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+         end;
       end if;
       Mapping.Storage_Address := Address (Mapped_Address);
       Mapping.Storage_Size := Storage_Elements.Storage_Offset (Size);
@@ -513,12 +522,14 @@ package body System.Native_IO is
       Mapping : in out Mapping_Type;
       Raise_On_Error : Boolean) is
    begin
-      if C.sys.mman.munmap (
-         C.void_ptr (Mapping.Storage_Address),
-         C.size_t (Mapping.Storage_Size)) /= 0
-      then
-         if Raise_On_Error then
-            Raise_Exception (Use_Error'Identity);
+      if Mapping.Storage_Size > 0 then
+         if C.sys.mman.munmap (
+            C.void_ptr (Mapping.Storage_Address),
+            C.size_t (Mapping.Storage_Size)) /= 0
+         then
+            if Raise_On_Error then
+               Raise_Exception (Use_Error'Identity);
+            end if;
          end if;
       end if;
       Mapping.Storage_Address := Null_Address;
