@@ -1,7 +1,6 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with C.errno;
-with C.fcntl;
 with C.stdlib;
 with C.sys.file;
 with C.sys.mman;
@@ -142,65 +141,53 @@ package body System.Native_IO is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : not null Name_Pointer;
       Form : Packed_Form)
    is
+      Masked_Mode : constant File_Mode := Mode and Read_Write_Mask;
       Flags : C.unsigned_int;
       Modes : constant := 8#644#;
       Shared : Ada.IO_Modes.File_Shared;
       errno : C.signed_int;
    begin
-      --  Flags, Append_File always has read and write access for Inout_File
+      --  modes
       if Form.Shared /= Ada.IO_Modes.By_Mode then
          Shared := Ada.IO_Modes.File_Shared (Form.Shared);
       else
-         case Mode is
-            when Ada.IO_Modes.In_File =>
-               Shared := Ada.IO_Modes.Read_Only;
-            when Ada.IO_Modes.Out_File | Ada.IO_Modes.Append_File =>
-               Shared := Ada.IO_Modes.Deny;
-         end case;
+         if Masked_Mode = Read_Only_Mode then
+            Shared := Ada.IO_Modes.Read_Only;
+         else
+            Shared := Ada.IO_Modes.Deny;
+         end if;
       end if;
+      Flags := Masked_Mode;
       case Method is
          when Create =>
-            declare
-               use Ada.IO_Modes;
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDWR or O_CREAT or O_TRUNC,
-                  Out_File => O_WRONLY or O_CREAT or O_TRUNC,
-                  Append_File => O_RDWR or O_CREAT); -- no truncation
-            begin
-               Flags := Table (Mode);
-               Shared := Deny;
-               if not Form.Overwrite then
-                  Flags := Flags or O_EXCL;
-               end if;
-            end;
+            Shared := Ada.IO_Modes.Deny;
+            if Mode = Read_Only_Mode then
+               --  In_File
+               Flags := C.fcntl.O_RDWR;
+            end if;
+            Flags := Flags or C.fcntl.O_CREAT;
+            if Mode = Write_Only_Mode then
+               --  Out_File
+               Flags := Flags or C.fcntl.O_TRUNC;
+            end if;
+            if not Form.Overwrite then
+               Flags := Flags or C.fcntl.O_EXCL;
+            end if;
          when Open =>
-            declare
-               use Ada.IO_Modes;
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY or O_TRUNC,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
-            begin
-               Flags := Table (Mode);
-            end;
+            if Mode = Write_Only_Mode then
+               --  Out_File
+               Flags := Flags or C.fcntl.O_TRUNC;
+            end if;
          when Reset =>
-            declare
-               use Ada.IO_Modes;
-               use C.fcntl;
-               Table : constant array (File_Mode) of C.unsigned_int := (
-                  In_File => O_RDONLY,
-                  Out_File => O_WRONLY,
-                  Append_File => O_RDWR); -- O_APPEND ignores lseek
-            begin
-               Flags := Table (Mode);
-            end;
+            null; -- no truncation
       end case;
+      if (Mode and Append_Mode) /= 0 then
+         Flags := Flags or C.fcntl.O_APPEND;
+      end if;
       if Shared /= Ada.IO_Modes.Allow then
          if Form.Wait then
             declare
@@ -321,6 +308,27 @@ package body System.Native_IO is
          Raise_Exception (Use_Error'Identity);
       end if;
    end Set_Close_On_Exec;
+
+   procedure Unset_Append (Handle : Handle_Type) is
+      Flags, New_Flags : C.signed_int;
+   begin
+      Flags := C.fcntl.fcntl (Handle, C.fcntl.F_GETFL);
+      if Flags < 0 then
+         Raise_Exception (Use_Error'Identity);
+      end if;
+      New_Flags :=
+         C.signed_int (C.unsigned_int (Flags) and not C.fcntl.O_APPEND);
+      if New_Flags /= Flags then
+         declare
+            Error : Boolean;
+         begin
+            Error := C.fcntl.fcntl (Handle, C.fcntl.F_SETFL, New_Flags) < 0;
+            if Error then
+               Raise_Exception (Use_Error'Identity);
+            end if;
+         end;
+      end if;
+   end Unset_Append;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
    begin

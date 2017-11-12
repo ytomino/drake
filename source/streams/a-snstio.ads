@@ -70,6 +70,8 @@ package Ada.Streams.Naked_Stream_IO is
       return IO_Modes.File_Mode;
    function Mode (File : not null Non_Controlled_File_Type)
       return IO_Modes.Inout_File_Mode;
+   function Mode (File : not null Non_Controlled_File_Type)
+      return System.Native_IO.File_Mode;
    function Name (File : not null Non_Controlled_File_Type) return String;
    function Form (File : Non_Controlled_File_Type)
       return System.Native_IO.Packed_Form;
@@ -233,11 +235,11 @@ private
 
    type Stream_Type is record -- "limited" prevents No_Elaboration_Code
       Handle : aliased System.Native_IO.Handle_Type; -- file descripter
-      Mode : IO_Modes.File_Mode;
-      Kind : Stream_Kind;
-      Has_Full_Name : Boolean;
+      Mode : System.Native_IO.File_Mode;
       Name : System.Native_IO.Name_Pointer;
       Form : System.Native_IO.Packed_Form;
+      Kind : Stream_Kind;
+      Has_Full_Name : Boolean;
       Buffer_Inline : aliased Stream_Element;
       Buffer : System.Address;
       Buffer_Length : Stream_Element_Offset;

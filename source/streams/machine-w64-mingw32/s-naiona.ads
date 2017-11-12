@@ -6,7 +6,7 @@ package System.Native_IO.Names is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : String;
       Out_Name : aliased out Name_Pointer; -- null
       Form : Packed_Form);

@@ -12,7 +12,6 @@ package body System.Native_IO.Names is
    use type Storage_Elements.Storage_Offset;
    use type C.char_array;
    use type C.size_t;
-   use type C.windef.DWORD;
    use type C.winternl.NTSTATUS;
    use type C.winnt.LPWSTR; -- Name_Pointer
    use type C.winnt.WCHAR; -- Name_Character
@@ -62,7 +61,7 @@ package body System.Native_IO.Names is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : String;
       Out_Name : aliased out Name_Pointer;
       Form : Packed_Form)

@@ -20,11 +20,11 @@ private
 
    Standard_Input_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Input,
-      Mode => IO_Modes.In_File,
-      Kind => Standard_Handle,
-      Has_Full_Name => False,
+      Mode => System.Native_IO.Read_Only_Mode,
       Name => Standard_Input_Name (0)'Access,
       Form => Default_Form,
+      Kind => Standard_Handle,
+      Has_Full_Name => False,
       Buffer_Inline => 0,
       Buffer => System.Null_Address,
       Buffer_Length => Uninitialized_Buffer,
@@ -46,11 +46,11 @@ private
 
    Standard_Output_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Output,
-      Mode => IO_Modes.Out_File,
-      Kind => Standard_Handle,
-      Has_Full_Name => False,
+      Mode => System.Native_IO.Write_Only_Mode,
       Name => Standard_Output_Name (0)'Access,
       Form => Default_Form,
+      Kind => Standard_Handle,
+      Has_Full_Name => False,
       Buffer_Inline => 0,
       Buffer => System.Null_Address,
       Buffer_Length => Uninitialized_Buffer,
@@ -72,11 +72,11 @@ private
 
    Standard_Error_Stream : aliased Stream_Type := (
       Handle => System.Native_IO.Uninitialized_Standard_Error,
-      Mode => IO_Modes.Out_File,
-      Kind => Standard_Handle,
-      Has_Full_Name => False,
+      Mode => System.Native_IO.Write_Only_Mode,
       Name => Standard_Error_Name (0)'Access,
       Form => Default_Form,
+      Kind => Standard_Handle,
+      Has_Full_Name => False,
       Buffer_Inline => 0,
       Buffer => System.Null_Address,
       Buffer_Length => Uninitialized_Buffer,

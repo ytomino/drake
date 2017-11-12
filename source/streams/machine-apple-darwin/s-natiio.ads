@@ -6,6 +6,7 @@ with Ada.Exception_Identification;
 with Ada.Streams;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
+with C.fcntl;
 with C.unistd;
 package System.Native_IO is
    pragma Preelaborate;
@@ -18,6 +19,16 @@ package System.Native_IO is
    subtype Handle_Type is C.signed_int;
 
    Invalid_Handle : constant Handle_Type := -1;
+
+   --  mode
+
+   subtype File_Mode is C.unsigned_int;
+
+   Read_Only_Mode : constant File_Mode := C.fcntl.O_RDONLY;
+   Write_Only_Mode : constant File_Mode := C.fcntl.O_WRONLY;
+   Read_Write_Mode : constant File_Mode := C.fcntl.O_RDWR;
+   Read_Write_Mask : constant File_Mode := C.fcntl.O_ACCMODE;
+   Append_Mode : constant File_Mode := C.fcntl.O_APPEND;
 
    --  name
 
@@ -51,7 +62,7 @@ package System.Native_IO is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : not null Name_Pointer;
       Form : Packed_Form);
 
@@ -72,6 +83,7 @@ package System.Native_IO is
       renames Delete_Ordinary;
 
    procedure Set_Close_On_Exec (Handle : Handle_Type);
+   procedure Unset_Append (Handle : Handle_Type);
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;
