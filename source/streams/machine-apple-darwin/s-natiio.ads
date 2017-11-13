@@ -165,9 +165,9 @@ package System.Native_IO is
    procedure Map (
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
+      Mode : File_Mode; -- masked by Read_Write_Mask
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
-      Size : Ada.Streams.Stream_Element_Count;
-      Writable : Boolean);
+      Size : Ada.Streams.Stream_Element_Count);
 
    procedure Unmap (
       Mapping : in out Mapping_Type;

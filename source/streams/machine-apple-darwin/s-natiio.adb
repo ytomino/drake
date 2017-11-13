@@ -485,9 +485,9 @@ package body System.Native_IO is
    procedure Map (
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
+      Mode : File_Mode;
       Offset : Ada.Streams.Stream_Element_Offset;
-      Size : Ada.Streams.Stream_Element_Count;
-      Writable : Boolean)
+      Size : Ada.Streams.Stream_Element_Count)
    is
       Mapped_Address : C.void_ptr;
    begin
@@ -495,17 +495,22 @@ package body System.Native_IO is
          Mapped_Address := C.void_ptr (System'To_Address (1)); -- dummy value
       else
          declare
-            Protects : constant array (Boolean) of C.signed_int := (
-               C.sys.mman.PROT_READ,
-               C.sys.mman.PROT_READ + C.sys.mman.PROT_WRITE);
+            Prot : C.unsigned_int;
             Mapped_Offset : constant C.sys.types.off_t :=
                C.sys.types.off_t (Offset) - 1;
             Mapped_Size : constant C.size_t := C.size_t (Size);
          begin
+            if Mode = Read_Only_Mode then
+               Prot := C.sys.mman.PROT_READ;
+            elsif Mode = Write_Only_Mode then
+               Prot := C.sys.mman.PROT_WRITE; -- may fail in mostly platforms
+            else -- Read_Write_Mode
+               Prot := C.sys.mman.PROT_READ or C.sys.mman.PROT_WRITE;
+            end if;
             Mapped_Address := C.sys.mman.mmap (
                C.void_ptr (Null_Address),
                Mapped_Size,
-               Protects (Writable),
+               C.signed_int (Prot),
                C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
                Handle,
                Mapped_Offset);

@@ -460,26 +460,31 @@ package body System.Native_IO is
    procedure Map (
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
+      Mode : File_Mode;
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
-      Size : Ada.Streams.Stream_Element_Count;
-      Writable : Boolean)
+      Size : Ada.Streams.Stream_Element_Count)
    is
       use type C.winnt.HANDLE;
-      Protects : constant array (Boolean) of C.windef.DWORD :=
-         (C.winnt.PAGE_READONLY, C.winnt.PAGE_READWRITE);
-      Accesses : constant array (Boolean) of C.windef.DWORD :=
-         (C.winbase.FILE_MAP_READ, C.winbase.FILE_MAP_WRITE);
+      Protect : C.windef.DWORD;
+      Desired_Access : C.windef.DWORD;
       Mapped_Offset : C.winnt.ULARGE_INTEGER;
       Mapped_Size : C.winnt.ULARGE_INTEGER;
       Mapped_Address : C.windef.LPVOID;
       File_Mapping : C.winnt.HANDLE;
    begin
+      if Mode = Read_Only_Mode then
+         Protect := C.winnt.PAGE_READONLY;
+         Desired_Access := C.winbase.FILE_MAP_READ;
+      else -- Write_Only_Mode or Read_Write_Mode
+         Protect := C.winnt.PAGE_READWRITE;
+         Desired_Access := C.winbase.FILE_MAP_WRITE;
+      end if;
       Mapped_Offset.QuadPart := C.winnt.ULONGLONG (Offset) - 1;
       Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
       File_Mapping := C.winbase.CreateFileMapping (
          Handle,
          null,
-         Protects (Writable),
+         Protect,
          Mapped_Size.HighPart,
          Mapped_Size.LowPart,
          null);
@@ -488,7 +493,7 @@ package body System.Native_IO is
       end if;
       Mapped_Address := C.winbase.MapViewOfFileEx (
          File_Mapping,
-         Accesses (Writable),
+         Desired_Access,
          Mapped_Offset.HighPart,
          Mapped_Offset.LowPart,
          C.basetsd.SIZE_T (Mapped_Size.QuadPart),
