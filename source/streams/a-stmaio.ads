@@ -8,7 +8,7 @@ private with Ada.Finalization;
 private with Ada.Streams.Naked_Stream_IO;
 private with System.Native_IO;
 package Ada.Storage_Mapped_IO is
-   --  This package provides memory-mapped I/O.
+   --  Memory-mapped I/O.
 
    type File_Mode is new IO_Modes.Inout_File_Mode;
 

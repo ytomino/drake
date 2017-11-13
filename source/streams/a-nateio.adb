@@ -562,7 +562,7 @@ package body Ada.Naked_Text_IO is
             End_Of_Line : Boolean;
          begin
             if Character'Pos (C) < 16#80# then
-               --  Get_Immediate returns CR, LF and FF.
+               --  Get_Immediate returns CR, LF, and FF.
                Item := Wide_Character'Val (Character'Pos (C));
             else
                --  Waiting is OK for trailing bytes.
@@ -600,7 +600,7 @@ package body Ada.Naked_Text_IO is
             End_Of_Line : Boolean;
          begin
             if Character'Pos (C) < 16#80# then
-               --  Get_Immediate returns CR, LF and FF.
+               --  Get_Immediate returns CR, LF, and FF.
                Item := Wide_Wide_Character'Val (Character'Pos (C));
             else
                --  Waiting is OK for trailing bytes.

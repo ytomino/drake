@@ -6,8 +6,8 @@ package System.Native_Text_IO.Terminal_Colors is
 
    type Color is mod 16;
 
-   --  Note: Color represents
-   --    a combination of BLUE(1), GREEN(2), RED(4) or INTENSITY(8).
+   --  Note: Color represents a combination of BLUE(1), GREEN(2), RED(4),
+   --    and INTENSITY(8).
 
    function RGB_To_Color (Item : Ada.Colors.RGB) return Color;
 

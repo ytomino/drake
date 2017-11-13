@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 pragma Style_Checks (Off, Standard.Ascii);
 --  package ASCII is "ASCII" in standard, but "Ascii" in GNAT style...
 package Ada.Characters.ASCII is
-   --  This is an alternative package of Standard.ASCII.
+   --  Alternative version of Standard.ASCII.
    pragma Pure;
 
    NUL : Character

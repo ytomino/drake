@@ -80,7 +80,7 @@ package body System.Unwind.Raising is
             renames Machine_Occurrence.Occurrence;
       begin
          Occurrences.Backtrace (X);
-         Debug_Raise_Exception (X.Id, X.Msg (1 .. X.Msg_Length)); -- for gdb
+         Debug_Raise_Exception (X.Id, X.Msg (1 .. X.Msg_Length)); -- for GDB
       end;
       Separated.Propagate_Machine_Occurrence (Machine_Occurrence);
    end Propagate_Machine_Occurrence;

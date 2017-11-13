@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with Ada.Strings.Composites;
 package Ada.Strings.Normalization is
-   --  This package provides unicode normalization.
+   --  Unicode normalization.
    pragma Preelaborate;
 
    procedure Iterate (

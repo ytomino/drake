@@ -354,7 +354,7 @@ package Ada.Containers.Vectors is
       return Vector_Iterator_Interfaces.Reversible_Iterator'Class;
 
    --  extended from here
-   --  These functions provides a convenient way to directly access.
+   --  Convenient way to direct access.
 
    type Element_Array is array (Index_Type range <>) of aliased Element_Type;
 

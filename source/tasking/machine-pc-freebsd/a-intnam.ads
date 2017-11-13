@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  specialized for FreeBSD
 private with C.signal;
 package Ada.Interrupts.Names is
+   --  This package is system-specific.
 
    SIGHUP : constant Interrupt_Id;
    SIGINT : constant Interrupt_Id;

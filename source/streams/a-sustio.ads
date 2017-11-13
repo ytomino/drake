@@ -5,7 +5,7 @@ with System.Storage_Elements;
 private with Ada.Finalization;
 private with System.Reference_Counting;
 package Ada.Streams.Unbounded_Storage_IO is
-   --  This package provides temporary stream on memory.
+   --  Temporary stream on memory.
    pragma Preelaborate;
 
    type Buffer_Type is private;

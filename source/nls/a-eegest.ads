@@ -4,8 +4,8 @@ generic
    type Character_Type is (<>);
    type String_Type is array (Positive range <>) of Character_Type;
 package Ada.Environment_Encoding.Generic_Strings is
-   --  Subprograms encode/decode text between string types
-   --    and Ada.Streams.Stream_Element_Array.
+   --  Encoding/decoding between strings and character sequences in
+   --    Ada.Streams.Stream_Element_Array.
    pragma Preelaborate;
 
    --  decoder

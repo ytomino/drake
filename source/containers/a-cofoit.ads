@@ -13,8 +13,8 @@ generic
    type Element_Type (<>) is limited private;
    with function Element (Position : Input_Cursor) return Element_Type is <>;
 package Ada.Containers.Forward_Iterators is
-   --  This package makes a normal forward iterator
-   --    from a non-rollbackable forward iterator (input iterator).
+   --  Making a normal forward iterator from a non-rollbackable forward
+   --    iterator (input iterator).
    pragma Preelaborate;
 
    type Cursor is private;

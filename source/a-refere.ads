@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.References is
-   --  There are helpers for returning sliced pointer of array from a function.
+   --  Returning access values to sliced arrays from functions.
    pragma Pure;
 
    --  magic to carry out ARRAY (F .. L)'Access to out of subprogram

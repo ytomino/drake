@@ -1,7 +1,7 @@
 --  reference: Netgen's Eigensystem routine.
 package body Ada.Numerics.Generic_Arrays is
 
-   --  vector selection, conversion and composition operations
+   --  vector selection, conversion, and composition operations
 
    procedure Apply_Vector (X : in out Vector; Param : Parameter_Vector) is
       Length : constant Integer := X'Length;
@@ -111,7 +111,7 @@ package body Ada.Numerics.Generic_Arrays is
       end return;
    end Unit_Vector;
 
-   --  matrix selection, conversion and composition operations
+   --  matrix selection, conversion, and composition operations
 
    procedure Apply_Matrix (X : in out Matrix; Param : Parameter_Matrix) is
       Length_1 : constant Integer := X'Length (1);

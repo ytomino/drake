@@ -158,8 +158,8 @@ package Ada.Strings.Bounded is
 
       function "=" (Left, Right : Bounded_String) return Boolean
          renames Bounded_Strings."=";
-      --  In CXA4028, conflicted by "use" and "use types"
-      --  but CXA5011 requires this.
+         --  In CXA4028, "=" is conflicted with itself by "use" and "use type",
+         --    but CXA5011 requires that "=" should be primitive.
       function "=" (Left : Bounded_String; Right : String) return Boolean
          renames Bounded_Strings."=";
 

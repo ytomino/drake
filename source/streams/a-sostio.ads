@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 with System.Storage_Elements;
 package Ada.Streams.Overlaps_Storage_IO is
-   --  This package provides overlapping stream to access existing memory.
+   --  Overlapping stream access to existing memory.
    pragma Preelaborate;
 
    pragma Compile_Time_Error (

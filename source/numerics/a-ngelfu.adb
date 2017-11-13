@@ -123,7 +123,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
                raise Argument_Error; -- RM A.5.1(23), CXA5A09
             end if;
          end if;
-         --  CXG2012 requires high precision
+         --  CXG2012 requires high precision.
          declare
             RT : constant Float_Type'Base := Float_Type'Truncation (Right);
          begin
@@ -204,8 +204,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20)
          end if;
-         --  CXA5A01 requires just result that is 0.0, 1.0 or -1.0
-         --  CXG2004 requires just result that is 0.5
+         --  CXA5A01 requires just 0.0, 1.0, and -1.0.
+         --  CXG2004 requires just 0.5.
          declare
             procedure Modulo_Divide_By_1 is
                new Ada.Float.Modulo_Divide_By_1 (
@@ -273,8 +273,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20)
          end if;
-         --  CXA5A02 requires just result that is 0.0, 1.0 or -1.0
-         --  CXG2004 requires just result that is 0.5
+         --  CXA5A02 requires just 0.0, 1.0, and -1.0.
+         --  CXG2004 requires just 0.5.
          declare
             procedure Modulo_Divide_By_1 is
                new Ada.Float.Modulo_Divide_By_1 (
@@ -342,7 +342,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20), CXA5A01
          end if;
-         --  CXG2013 requires just result that is 0.0
+         --  CXG2013 requires just 0.0.
          declare
             procedure Modulo_Divide_By_1 is
                new Ada.Float.Modulo_Divide_By_1 (
@@ -376,7 +376,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20), CXA5A04
          end if;
-         --  CXG2013 requires just result that is 0.0
+         --  CXG2013 requires just 0.0.
          declare
             procedure Modulo_Divide_By_1 is
                new Ada.Float.Modulo_Divide_By_1 (
@@ -437,7 +437,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20), CXA5A05
          end if;
-         --  CXG2015 requires
+         --  CXG2015 requires.
          if abs X = 1.0 then
             return Float_Type'Base'Copy_Sign (Cycle / 4.0, X);
          end if;
@@ -483,7 +483,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          if not (Cycle > 0.0) then
             raise Argument_Error; -- RM A.5.1(20), CXA5A06
          end if;
-         --  CXG2015 requires
+         --  CXG2015 requires.
          if X = -1.0 then
             return Cycle / 2.0;
          end if;
@@ -535,7 +535,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          raise Argument_Error; -- RM A.5.1(20), CXA5A07
       end if;
       if not Standard'Fast_Math and then Y = 0.0 then
-         --  CXG2016 requires
+         --  CXG2016 requires.
          if X < 0.0 then
             return Cycle / 2.0 * Float_Type'Copy_Sign (1.0, Y);
          else
@@ -569,7 +569,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          Float_Type'Base (Float_Type'Base'Model_Mantissa - 1) * Log_Two;
    begin
       if not Standard'Fast_Math and then abs X > Log_Inverse_Epsilon then
-         --  CXG2014 requires high precision
+         --  CXG2014 requires high precision.
          declare
             Y : constant Float_Type'Base := Exp (abs X - Lnv);
             Z : constant Float_Type'Base := Y + V2minus1 * Y;
@@ -608,8 +608,8 @@ package body Ada.Numerics.Generic_Elementary_Functions is
          Float_Type'Base (Float_Type'Base'Model_Mantissa - 1) * Log_Two;
    begin
       if not Standard'Fast_Math and then abs X > Log_Inverse_Epsilon then
-         --  CXG2014 requires high precision
-         --  graph of Cosh draws catenary line (Cosh (X) = abs Sinh (X))
+         --  CXG2014 requires high precision.
+         --  The graph of Cosh draws catenary line (Cosh (X) = abs Sinh (X)).
          declare
             Y : constant Float_Type'Base := Exp (abs X - Lnv);
             Z : constant Float_Type'Base := Y + V2minus1 * Y;

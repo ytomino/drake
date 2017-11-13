@@ -2,8 +2,8 @@ pragma License (Unrestricted);
 --  extended unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 with Ada.IO_Exceptions;
 package Ada.Hierarchical_File_Names is
-   --  This package is "Pure" version of
-   --    Ada.Directories.Hierarchical_File_Names.
+   --  "Pure" and detailed version of Ada.Directories.Hierarchical_File_Names.
+   --  This package is system-specific.
    pragma Pure;
 
    --  path delimiter

@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit specialized for FreeBSD (or Linux)
 package System.Storage_Pools.Unbounded is
-   --  This package provides a separated storage pool for local scope.
+   --  Separated storage pool for local scope.
    pragma Preelaborate;
 
    type Unbounded_Pool is limited new Root_Storage_Pool with private;

@@ -121,7 +121,7 @@ package System.Tasking.Stages is
    --      }
    --  }
 
-   --  gdb knows, but it could not be provided
+   --  GDB knows, but hard to implement.
 --  procedure Task_Wrapper (Self_ID : Task_Id);
 
 end System.Tasking.Stages;

@@ -6,7 +6,7 @@ with Ada.Streams.Stream_IO.Standard_Files;
 private with Ada.Finalization;
 private with System.Native_Processes;
 package Ada.Processes is
-   --  This package provides the way to execute new child process.
+   --  Spawning child processes.
 
    type Command_Type is limited private;
 

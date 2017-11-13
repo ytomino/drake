@@ -162,7 +162,7 @@ package Ada.Strings.Wide_Bounded is
 
       function "=" (Left, Right : Bounded_Wide_String) return Boolean
          renames Bounded_Wide_Strings."=";
-      --  In CXA4029, conflicted by "use" and "use types"
+         --  In CXA4029, "=" is conflicted with itself by "use" and "use type".
       function "=" (Left : Bounded_Wide_String; Right : Wide_String)
          return Boolean
          renames Bounded_Wide_Strings."=";

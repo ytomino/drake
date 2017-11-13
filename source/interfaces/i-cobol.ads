@@ -152,7 +152,7 @@ package Interfaces.COBOL is
    --  Note: This implementation assumes to interface with OpenCOBOL.
    --  Nonseparated negative '0' .. '9' are encoded as 'p' .. 'y' in
    --    the display formats Leading_Nonseparate and Trailing_Nonseparate.
-   --  'C', 'A', 'E' and 'F' are positive, 'B' and 'D' are negative in
+   --  'C', 'A', 'E', and 'F' are positive, 'B' and 'D' are negative in
    --    the packed format Packed_Signed.
 
 private

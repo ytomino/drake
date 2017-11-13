@@ -1,9 +1,8 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Formatting is
-   --  There are generic formatting functions more powerful than
-   --    Ada.Text_IO.*_IO.
-   --  This package also provides the root type of Type_Set.
+   --  Generic formatting functions more powerful than Ada.Text_IO.*_IO.
+   --  Also, the root type of Type_Set is declared in here.
    pragma Pure;
 
    type Form_Type is (Simple, Ada);

@@ -106,8 +106,6 @@ package Ada.Strings.Unbounded is
 
    function "=" (Left, Right : Unbounded_String) return Boolean
       renames Unbounded_Strings."=";
-      --  In CXA4030(error since Unicode), conflicted by "use" and "use types",
-      --  but CXA4031(PASSED) requires this.
 
    function "=" (Left : Unbounded_String; Right : String) return Boolean
       renames Unbounded_Strings."=";
