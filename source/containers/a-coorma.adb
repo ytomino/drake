@@ -221,7 +221,7 @@ package body Ada.Containers.Ordered_Maps is
          return Binary_Trees.Equivalent (
             Downcast (Left.Super.Data).Root,
             Downcast (Right.Super.Data).Root,
-            Equivalent'Access);
+            Equivalent => Equivalent'Access);
       end if;
    end "=";
 

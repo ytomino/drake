@@ -189,7 +189,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return Linked_Lists.Equivalent (
             Downcast (Left.Super.Data).Last,
             Downcast (Right.Super.Data).Last,
-            Equivalent'Access);
+            Equivalent => Equivalent'Access);
       end if;
    end "=";
 
@@ -792,7 +792,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
             Unique (Container'Unrestricted_Access.all, False); -- private
             return Linked_Lists.Is_Sorted (
                Downcast (Container.Super.Data).Last,
-               LT'Access);
+               LT => LT'Access);
          end if;
       end Is_Sorted;
 

@@ -790,7 +790,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --  diff
 --  diff
 --  diff
-         return Linked_Lists.Is_Sorted (Container.Last, LT'Access);
+         return Linked_Lists.Is_Sorted (Container.Last, LT => LT'Access);
 --  diff
 --  diff
 --  diff
@@ -882,7 +882,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
             and then Linked_Lists.Equivalent (
                Left.Last,
                Right.Last,
-               Equivalent'Access);
+               Equivalent => Equivalent'Access);
       end "=";
 
       function Find (Container : List; Item : Element_Type)
