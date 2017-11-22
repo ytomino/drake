@@ -2,6 +2,7 @@ pragma License (Unrestricted);
 --  specialized for Windows
 private with C.signal;
 package Ada.Interrupts.Names is
+   --  This package is system-specific.
 
    SIGINT : constant Interrupt_Id;
    SIGILL : constant Interrupt_Id;

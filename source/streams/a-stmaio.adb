@@ -3,19 +3,18 @@ package body Ada.Storage_Mapped_IO is
    use type Streams.Stream_Element_Offset;
    use type Streams.Stream_IO.File_Mode;
    use type System.Address;
+   use type System.Native_IO.File_Mode;
 
    procedure Map (
       Object : in out Non_Controlled_Mapping;
       File : Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Offset : Streams.Stream_IO.Positive_Count;
-      Size : Streams.Stream_IO.Count;
-      Writable : Boolean);
+      Size : Streams.Stream_IO.Count);
    procedure Map (
       Object : in out Non_Controlled_Mapping;
       File : Streams.Naked_Stream_IO.Non_Controlled_File_Type;
       Offset : Streams.Stream_IO.Positive_Count;
-      Size : Streams.Stream_IO.Count;
-      Writable : Boolean)
+      Size : Streams.Stream_IO.Count)
    is
       Mapped_Size : Streams.Stream_IO.Count;
    begin
@@ -27,9 +26,10 @@ package body Ada.Storage_Mapped_IO is
       System.Native_IO.Map (
          Object.Mapping,
          Streams.Naked_Stream_IO.Handle (File),
+         Streams.Naked_Stream_IO.Mode (File)
+            and System.Native_IO.Read_Write_Mask,
          Offset,
-         Mapped_Size,
-         Writable);
+         Mapped_Size);
    end Map;
 
    procedure Unmap (
@@ -76,9 +76,7 @@ package body Ada.Storage_Mapped_IO is
          NC_Object,
          Streams.Stream_IO.Naked.Non_Controlled (File).all,
          Offset,
-         Size,
-         Writable =>
-            Streams.Stream_IO.Mode (File) /= Streams.Stream_IO.In_File);
+         Size);
    end Map;
 
    function Map (
@@ -113,12 +111,7 @@ package body Ada.Storage_Mapped_IO is
          Name,
          Streams.Naked_Stream_IO.Pack (Form));
       --  map
-      Map (
-         NC_Object,
-         NC_Object.File,
-         Offset,
-         Size,
-         Writable => Mode /= In_File);
+      Map (NC_Object, NC_Object.File, Offset, Size);
    end Map;
 
    function Map (

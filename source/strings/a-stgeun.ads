@@ -156,7 +156,7 @@ package Ada.Strings.Generic_Unbounded is
       Source : in out Unbounded_String);
 
    --  extended
-   --  These functions provides a convenient way to directly access.
+   --  Convenient way to direct access.
    function Constant_Reference (
       Source : aliased Unbounded_String)
       return Slicing.Constant_Reference_Type;

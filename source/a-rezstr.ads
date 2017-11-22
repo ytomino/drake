@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.References.Wide_Wide_Strings is
-   --  There are helpers for returning sliced wide wide string from a function.
+   --  Returning access values to sliced Wide_Wide_String from functions.
    pragma Pure;
 
    type Constant_Reference_Type (

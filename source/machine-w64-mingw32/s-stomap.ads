@@ -6,7 +6,7 @@ package System.Storage_Map is
 
    function Load_Address return Address;
 
-   --  helper
+   --  module handle of "NTDLL.DLL"
    function NTDLL return C.windef.HMODULE;
 
 end System.Storage_Map;

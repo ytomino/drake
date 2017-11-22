@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit specialized for POSIX (Darwin, FreeBSD, or Linux)
 package Ada.Text_IO.Terminal.Colors.Names is
-   --  Constants for platform-depended system colors.
+   --  Constants for system-specific system colors.
 
    Black : constant Color; -- (R => 0.0, G => 0.0, B => 0.0)
    Dark_Red : constant Color; -- (R => 0.75, G => 0.0, B => 0.0)

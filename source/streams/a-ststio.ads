@@ -19,7 +19,7 @@ package Ada.Streams.Stream_IO is
 --       Predicate_Failure => raise Status_Error with "File not open";
 --  subtype Input_File_Type is Open_File_Type
 --    with
---       Dynamic_Predicate => Mode (Input_File_Type) /= Out_File,
+--       Dynamic_Predicate => Is_Readable (Input_File_Type),
 --       Predicate_Failure =>
 --          raise Mode_Error with
 --             "Cannot read file: " & Name (Input_File_Type);
@@ -174,6 +174,11 @@ package Ada.Streams.Stream_IO is
       renames IO_Exceptions.Data_Error;
 
 private
+
+   --  "Dynamic_Predicate => Mode (File) = In_File" is unsuitable for
+   --    Input_File_Type, because Mode (File) returns Append_File for that
+   --    opened as Inout_File by Direct_IO or Storage_Mapped_IO.
+   function Is_Readable (File : File_Type) return Boolean;
 
    package Controlled is
 

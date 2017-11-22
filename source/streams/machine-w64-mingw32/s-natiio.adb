@@ -13,7 +13,6 @@ package body System.Native_IO is
    use type Ada.Streams.Stream_Element_Offset;
    use type Storage_Elements.Storage_Offset;
    use type C.size_t;
-   use type C.windef.DWORD;
    use type C.windef.UINT;
    use type C.windef.WINBOOL;
    use type C.winnt.ULONGLONG;
@@ -106,78 +105,54 @@ package body System.Native_IO is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : not null Name_Pointer;
       Form : Packed_Form)
    is
       use type C.winnt.HANDLE;
+      Masked_Mode : constant File_Mode := Mode and Read_Write_Mask;
       DesiredAccess : C.windef.DWORD;
       ShareMode : C.windef.DWORD;
       CreationDisposition : C.windef.DWORD;
       Shared : Ada.IO_Modes.File_Shared;
       Error : C.windef.DWORD;
    begin
-      --  Flags, Append_File always has read and write access for Inout_File
+      --  modes
       if Form.Shared /= Ada.IO_Modes.By_Mode then
          Shared := Ada.IO_Modes.File_Shared (Form.Shared);
       else
-         case Mode is
-            when Ada.IO_Modes.In_File =>
-               Shared := Ada.IO_Modes.Read_Only;
-            when Ada.IO_Modes.Out_File | Ada.IO_Modes.Append_File =>
-               Shared := Ada.IO_Modes.Deny;
-         end case;
+         if Masked_Mode = Read_Only_Mode then
+            Shared := Ada.IO_Modes.Read_Only;
+         else
+            Shared := Ada.IO_Modes.Deny;
+         end if;
       end if;
+      DesiredAccess := Masked_Mode;
       case Method is
          when Create =>
-            declare
-               use Ada.IO_Modes;
-               use C.winbase, C.winnt;
-               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => GENERIC_READ or GENERIC_WRITE,
-                  Out_File => GENERIC_WRITE,
-                  Append_File => GENERIC_READ or GENERIC_WRITE);
-               Creations : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => CREATE_ALWAYS,
-                  Out_File => CREATE_ALWAYS,
-                  Append_File => OPEN_ALWAYS); -- no truncation
-            begin
-               DesiredAccess := Access_Modes (Mode);
-               Shared := Ada.IO_Modes.Deny;
-               if Form.Overwrite then
-                  CreationDisposition := Creations (Mode);
+            Shared := Ada.IO_Modes.Deny;
+            DesiredAccess := DesiredAccess or C.winnt.GENERIC_WRITE;
+            if Form.Overwrite then
+               if Mode = Write_Only_Mode then
+                  --  Out_File
+                  CreationDisposition := C.winbase.CREATE_ALWAYS;
                else
-                  CreationDisposition := CREATE_NEW;
+                  --  In_File, Inout_File, or Append_File
+                  CreationDisposition := C.winbase.OPEN_ALWAYS;
                end if;
-            end;
+            else
+               CreationDisposition := C.winbase.CREATE_NEW;
+            end if;
          when Open =>
-            declare
-               use Ada.IO_Modes;
-               use C.winbase, C.winnt;
-               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => GENERIC_READ,
-                  Out_File => GENERIC_WRITE,
-                  Append_File => GENERIC_READ or GENERIC_WRITE);
-               Creations : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => OPEN_EXISTING,
-                  Out_File => TRUNCATE_EXISTING,
-                  Append_File => OPEN_EXISTING);
-            begin
-               DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := Creations (Mode);
-            end;
+            if Mode = Write_Only_Mode then
+               --  Out_File
+               CreationDisposition := C.winbase.TRUNCATE_EXISTING;
+            else
+               --  In_File, Inout_File, or Append_File
+               CreationDisposition := C.winbase.OPEN_EXISTING;
+            end if;
          when Reset =>
-            declare
-               use Ada.IO_Modes;
-               use C.winbase, C.winnt;
-               Access_Modes : constant array (File_Mode) of C.windef.DWORD := (
-                  In_File => GENERIC_READ,
-                  Out_File => GENERIC_WRITE,
-                  Append_File => GENERIC_READ or GENERIC_WRITE);
-            begin
-               DesiredAccess := Access_Modes (Mode);
-               CreationDisposition := OPEN_EXISTING; -- no truncation
-            end;
+            CreationDisposition := C.winbase.OPEN_EXISTING; -- no truncation
       end case;
       if Shared /= Ada.IO_Modes.Allow then
          if Form.Wait then
@@ -485,26 +460,31 @@ package body System.Native_IO is
    procedure Map (
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
+      Mode : File_Mode;
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
-      Size : Ada.Streams.Stream_Element_Count;
-      Writable : Boolean)
+      Size : Ada.Streams.Stream_Element_Count)
    is
       use type C.winnt.HANDLE;
-      Protects : constant array (Boolean) of C.windef.DWORD :=
-         (C.winnt.PAGE_READONLY, C.winnt.PAGE_READWRITE);
-      Accesses : constant array (Boolean) of C.windef.DWORD :=
-         (C.winbase.FILE_MAP_READ, C.winbase.FILE_MAP_WRITE);
+      Protect : C.windef.DWORD;
+      Desired_Access : C.windef.DWORD;
       Mapped_Offset : C.winnt.ULARGE_INTEGER;
       Mapped_Size : C.winnt.ULARGE_INTEGER;
       Mapped_Address : C.windef.LPVOID;
       File_Mapping : C.winnt.HANDLE;
    begin
+      if Mode = Read_Only_Mode then
+         Protect := C.winnt.PAGE_READONLY;
+         Desired_Access := C.winbase.FILE_MAP_READ;
+      else -- Write_Only_Mode or Read_Write_Mode
+         Protect := C.winnt.PAGE_READWRITE;
+         Desired_Access := C.winbase.FILE_MAP_WRITE;
+      end if;
       Mapped_Offset.QuadPart := C.winnt.ULONGLONG (Offset) - 1;
       Mapped_Size.QuadPart := C.winnt.ULONGLONG (Size);
       File_Mapping := C.winbase.CreateFileMapping (
          Handle,
          null,
-         Protects (Writable),
+         Protect,
          Mapped_Size.HighPart,
          Mapped_Size.LowPart,
          null);
@@ -513,7 +493,7 @@ package body System.Native_IO is
       end if;
       Mapped_Address := C.winbase.MapViewOfFileEx (
          File_Mapping,
-         Accesses (Writable),
+         Desired_Access,
          Mapped_Offset.HighPart,
          Mapped_Offset.LowPart,
          C.basetsd.SIZE_T (Mapped_Size.QuadPart),

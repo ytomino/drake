@@ -11,6 +11,7 @@ with C.windef;
 with C.winnt;
 package System.Native_IO is
    pragma Preelaborate;
+   use type C.windef.DWORD;
 
    subtype Name_Character is C.winnt.WCHAR;
    subtype Name_String is C.winnt.WCHAR_array;
@@ -19,6 +20,20 @@ package System.Native_IO is
    subtype Handle_Type is C.winnt.HANDLE;
 
    Invalid_Handle : constant Handle_Type := C.winbase.INVALID_HANDLE_VALUE;
+
+   --  modes
+
+   subtype File_Mode is C.windef.DWORD;
+
+   Read_Only_Mode : constant File_Mode := C.winnt.GENERIC_READ; -- 0x80000000
+   Write_Only_Mode : constant File_Mode := C.winnt.GENERIC_WRITE; -- 0x40000000
+   Read_Write_Mode : constant File_Mode := Read_Only_Mode or Write_Only_Mode;
+   Read_Write_Mask : constant File_Mode := Read_Write_Mode;
+   Append_Mode : constant File_Mode := 1;
+
+   pragma Compile_Time_Error (
+      (Append_Mode and Read_Write_Mask) /= 0,
+      "Append_Mode is overlapped with Read_Write_Mask");
 
    --  name
 
@@ -52,7 +67,7 @@ package System.Native_IO is
    procedure Open_Ordinary (
       Method : Open_Method;
       Handle : aliased out Handle_Type;
-      Mode : Ada.IO_Modes.File_Mode;
+      Mode : File_Mode;
       Name : not null Name_Pointer;
       Form : Packed_Form);
 
@@ -73,6 +88,7 @@ package System.Native_IO is
       renames Close_Ordinary;
 
 --  procedure Set_Close_On_Exec (Handle : Handle_Type);
+   procedure Unset (Handle : Handle_Type; Mask : File_Mode) is null;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;
@@ -154,9 +170,9 @@ package System.Native_IO is
    procedure Map (
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
+      Mode : File_Mode; -- masked by Read_Write_Mask
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
-      Size : Ada.Streams.Stream_Element_Count;
-      Writable : Boolean);
+      Size : Ada.Streams.Stream_Element_Count);
 
    procedure Unmap (
       Mapping : in out Mapping_Type;

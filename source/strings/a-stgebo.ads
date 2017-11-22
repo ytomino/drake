@@ -90,7 +90,7 @@ package Ada.Strings.Generic_Bounded is
    pragma Inline (">=");
 
    --  extended
-   --  These functions provides a convenient way to directly access.
+   --  Convenient way to direct access.
    function Constant_Reference (
       Source : aliased Bounded_String)
       return Slicing.Constant_Reference_Type;

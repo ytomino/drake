@@ -1099,7 +1099,7 @@ package body Ada.Containers.Limited_Ordered_Sets is
             and then Binary_Trees.Equivalent (
                Left.Root,
                Right.Root,
-               Equivalent'Access);
+               Equivalent => Equivalent'Access);
       end "=";
 
    end Equivalents;

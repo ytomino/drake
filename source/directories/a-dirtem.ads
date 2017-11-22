@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 private with System.Native_Directories.Temporary;
 package Ada.Directories.Temporary is
-   --  There are subprograms to create temporary file or directory.
+   --  Creating temporary files and directories.
 
    --  settings
 

@@ -7,7 +7,7 @@ generic
    type Array_Access is access Array_Type;
    with procedure Free (X : in out Array_Access) is <>;
 package Ada.Containers.Generic_Array_Access_Types is
-   --  There are utilities like Vectors for access-to-array types.
+   --  Ada.Containers.Vectors-like utilities for access-to-array types.
    pragma Preelaborate;
 
    subtype Extended_Index is

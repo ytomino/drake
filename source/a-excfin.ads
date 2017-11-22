@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Exceptions.Finally is
-   --  This package provides scope guard.
+   --  Scope guard.
    pragma Preelaborate;
 
    generic

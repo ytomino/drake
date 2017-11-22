@@ -8,7 +8,7 @@ package System.Assertions is
    Assert_Failure : exception
       renames Ada.Assertions.Assertion_Error;
 
-   --  required for pragma Assert by compiler, and gdb knows (s-assert.ads)
+   --  required for pragma Assert by compiler, and GDB knows (s-assert.ads)
    procedure Raise_Assert_Failure (Msg : String)
       renames Ada.Assertions.Raise_Assertion_Error;
 

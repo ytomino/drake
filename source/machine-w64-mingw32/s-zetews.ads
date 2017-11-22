@@ -6,7 +6,7 @@ package System.Zero_Terminated_WStrings is
    --  This package targets at not Wide_String in Ada, not wchar_t in C
    --    but LPWSTR in Windows.
 
-   --  convert to UTF-8 from a first address of zero-terminated wide string
+   --  convert from zero-terminated LPWSTR to UTF-8 String
    function Value (Item : not null access constant C.winnt.WCHAR)
       return String;
    function Value (
@@ -14,7 +14,7 @@ package System.Zero_Terminated_WStrings is
       Length : C.size_t)
       return String;
 
-   --  convert to zero-terminated wide string from UTF-8
+   --  convert from UTF-8 String to zero-terminated LPWSTR
    procedure To_C (Source : String; Result : not null access C.winnt.WCHAR);
    procedure To_C (
       Source : String;

@@ -103,7 +103,7 @@ package System.Tasking is
    pragma Suppress_Initialization (Dispatching_Domain);
    type Dispatching_Domain_Access is access Dispatching_Domain;
 
-   --  gdb knows below names, but those could not be provided
+   --  GDB knows below names, but hard to implement.
 --  type Ada_Task_Control_Block;
 --  type Common_ATCB;
 --  type Entry_Call_Record;

@@ -265,9 +265,10 @@ package System.Unwind.Raising is
    function AAA return Address;
    function ZZZ return Address;
 
-   --  gdb knows some names for "catch exception" command.
-   --  but, it works incompletely with not GNAT-GPL but official gcc.
-   --  in drake, only the simple form of "catch exception" is supported.
+   --  GDB knows some names for "catch exception" command.
+   --  However, it works incompletely with official gcc (works fine with GNAT
+   --    Community/GPL Edition).
+   --  In drake, only the simple form of "catch exception" is supported.
 
    --  (s-excdeb.ads)
    procedure Debug_Raise_Exception (

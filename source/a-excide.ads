@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  extended unit
 private with System.Unwind;
 package Ada.Exception_Identification is
-   --  This package is the "Pure" version of Ada.Exceptions.
+   --  "Pure" version of Ada.Exceptions.
    pragma Pure;
 
    type Exception_Id is private;

@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with Ada.Interrupts;
 package System.Interrupt_Handlers is
 
-   --  CXC3001 requires pragma Interrupt_Handler to Attach_Handler
+   --  pragma Interrupt_Handler is required to Attach_Handler, CXC3001.
 
    procedure Register_Interrupt_Handler (
       Code_Address : Address);

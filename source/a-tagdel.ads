@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  extended unit
 package Ada.Tags.Delegating is
-   --  This package provides Delphi-like interface delegation.
+   --  Delphi-like interface delegation.
    pragma Preelaborate;
 
    generic

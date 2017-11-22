@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 private package Ada.Numerics.Generic_Arrays is
    pragma Pure;
 
-   --  vector selection, conversion and composition operations
+   --  vector selection, conversion, and composition operations
 
    generic
       type Number is private;
@@ -94,7 +94,7 @@ private package Ada.Numerics.Generic_Arrays is
       First : Integer := 1)
       return Vector;
 
-   --  matrix selection, conversion and composition operations
+   --  matrix selection, conversion, and composition operations
 
    generic
       type Number is private;

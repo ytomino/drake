@@ -1,4 +1,6 @@
+with System.Native_IO;
 package body Ada.Streams.Stream_IO is
+   use type System.Native_IO.File_Mode;
 
    procedure Create (
       File : in out File_Type;
@@ -217,7 +219,7 @@ package body Ada.Streams.Stream_IO is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
-         Check => Mode (File) /= Out_File or else raise Mode_Error);
+         Check => Is_Readable (File) or else raise Mode_Error);
    begin
       Set_Index (File, From);
       Read (File, Item, Last);
@@ -231,7 +233,7 @@ package body Ada.Streams.Stream_IO is
       pragma Check (Dynamic_Predicate,
          Check => Is_Open (File) or else raise Status_Error);
       pragma Check (Dynamic_Predicate,
-         Check => Mode (File) /= Out_File or else raise Mode_Error);
+         Check => Is_Readable (File) or else raise Mode_Error);
       NC_File : Naked_Stream_IO.Non_Controlled_File_Type
          renames Controlled.Reference (File).all;
    begin
@@ -321,6 +323,15 @@ package body Ada.Streams.Stream_IO is
    begin
       Naked_Stream_IO.Flush (NC_File);
    end Flush;
+
+   function Is_Readable (File : File_Type) return Boolean is
+      NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+         renames Controlled.Reference (File).all;
+   begin
+      return (Naked_Stream_IO.Mode (NC_File)
+            and System.Native_IO.Read_Write_Mask) /=
+         System.Native_IO.Write_Only_Mode;
+   end Is_Readable;
 
    package body Controlled is
 

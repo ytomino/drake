@@ -7,7 +7,7 @@ generic
 --  diff (Array_Access)
 --  diff (Free)
 package Ada.Containers.Generic_Array_Types is
-   --  There are utilities like Vectors for array types.
+   --  Ada.Containers.Vectors-like utilities for array types.
    pragma Preelaborate;
 
    subtype Extended_Index is

@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 package Ada.Fixed is
-   --  There is a helper subprogram Divide for ordinary fixed types.
+   --  Ada.Decimal-like utilities for ordinary fixed types.
    pragma Pure;
 
    generic
