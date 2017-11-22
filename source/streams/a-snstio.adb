@@ -982,7 +982,9 @@ package body Ada.Streams.Naked_Stream_IO is
    begin
       Flush_Writing_Buffer (File);
       if (File.Mode and System.Native_IO.Append_Mode) /= 0 then
-         System.Native_IO.Unset_Append (File.Handle);
+         System.Native_IO.Unset (
+            File.Handle,
+            Mask => not System.Native_IO.Append_Mode);
       end if;
       System.Native_IO.Set_Relative_Index (
          File.Handle,

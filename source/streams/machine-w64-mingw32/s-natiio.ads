@@ -88,9 +88,9 @@ package System.Native_IO is
       renames Close_Ordinary;
 
 --  procedure Set_Close_On_Exec (Handle : Handle_Type);
-   procedure Unset_Append (Handle : Handle_Type) is null;
+   procedure Unset (Handle : Handle_Type; Mask : File_Mode) is null;
 
-   pragma Inline (Unset_Append); -- [gcc-7] can not skip calling null procedure
+   pragma Inline (Unset); -- [gcc-7] can not skip calling null procedure
 
    function Is_Terminal (Handle : Handle_Type) return Boolean;
    function Is_Seekable (Handle : Handle_Type) return Boolean;

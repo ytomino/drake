@@ -146,6 +146,7 @@ package body System.Native_IO is
       Name : not null Name_Pointer;
       Form : Packed_Form)
    is
+      O_EXLOCK_Is_Missing : constant Boolean := C.fcntl.O_EXLOCK = 0;
       Masked_Mode : constant File_Mode := Mode and Read_Write_Mask;
       Flags : C.unsigned_int;
       Modes : constant := 8#644#;
@@ -190,7 +191,7 @@ package body System.Native_IO is
          Flags := Flags or C.fcntl.O_APPEND;
       end if;
       if Shared /= Ada.IO_Modes.Allow then
-         if Form.Wait then
+         if not O_EXLOCK_Is_Missing then
             declare
                Lock_Flags : constant
                      array (
@@ -202,11 +203,14 @@ package body System.Native_IO is
             begin
                Flags := Flags or Lock_Flags (Shared);
             end;
+            if not Form.Wait then
+               --  O_NONBLOCK makes open to return immediately and EWOULDBLOCK
+               --    instead of waiting, when a file is already locked.
+               Flags := Flags or C.fcntl.O_NONBLOCK;
+            end if;
          else
             null; -- use flock
          end if;
-      else
-         null; -- use flock
       end if;
       Flags := Flags or C.fcntl.O_CLOEXEC;
       --  open
@@ -220,6 +224,8 @@ package body System.Native_IO is
                | C.errno.EEXIST -- O_EXCL
                | C.errno.EISDIR =>
                Raise_Exception (Name_Error'Identity);
+            when C.errno.EWOULDBLOCK =>
+               Raise_Exception (Tasking_Error'Identity); -- Is it suitable?
             when others =>
                Raise_Exception (IO_Exception_Id (errno));
          end case;
@@ -234,38 +240,41 @@ package body System.Native_IO is
             Set_Close_On_Exec (Handle);
          end if;
       end;
-      declare
-         O_EXLOCK_Is_Missing : constant Boolean := C.fcntl.O_EXLOCK = 0;
-         pragma Warnings (Off, O_EXLOCK_Is_Missing);
-         Race_Is_Raising : constant Boolean := not Form.Wait;
-         Operation_Table : constant
-               array (
-                     Ada.IO_Modes.File_Shared range
-                        Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
-                  C.unsigned_int := (
-            Ada.IO_Modes.Read_Only => C.sys.file.LOCK_SH,
-            Ada.IO_Modes.Deny => C.sys.file.LOCK_EX);
-         operation : C.unsigned_int;
-      begin
-         if Shared /= Ada.IO_Modes.Allow
-            and then (O_EXLOCK_Is_Missing or else Race_Is_Raising)
-         then
-            operation := Operation_Table (Shared);
-            if Race_Is_Raising then
-               operation := operation or C.sys.file.LOCK_NB;
+      if Shared /= Ada.IO_Modes.Allow then
+         if not O_EXLOCK_Is_Missing then
+            if not Form.Wait then
+               --  Unset O_NONBLOCK for normal use.
+               Unset (Handle, Mask => not C.fcntl.O_NONBLOCK);
             end if;
-            if C.sys.file.flock (Handle, C.signed_int (operation)) < 0 then
-               errno := C.errno.errno;
-               case errno is
-                  when C.errno.EWOULDBLOCK =>
-                     Raise_Exception (Tasking_Error'Identity);
-                     --  Is Tasking_Error suitable?
-                  when others =>
-                     Raise_Exception (Use_Error'Identity);
-               end case;
-            end if;
+         else
+            declare
+               Race_Is_Raising : constant Boolean := not Form.Wait;
+               Operation_Table : constant
+                     array (
+                           Ada.IO_Modes.File_Shared range
+                              Ada.IO_Modes.Read_Only .. Ada.IO_Modes.Deny) of
+                        C.unsigned_int := (
+                  Ada.IO_Modes.Read_Only => C.sys.file.LOCK_SH,
+                  Ada.IO_Modes.Deny => C.sys.file.LOCK_EX);
+               operation : C.unsigned_int;
+            begin
+               operation := Operation_Table (Shared);
+               if Race_Is_Raising then
+                  operation := operation or C.sys.file.LOCK_NB;
+               end if;
+               if C.sys.file.flock (Handle, C.signed_int (operation)) < 0 then
+                  errno := C.errno.errno;
+                  case errno is
+                     when C.errno.EWOULDBLOCK =>
+                        Raise_Exception (Tasking_Error'Identity);
+                        --  Is Tasking_Error suitable?
+                     when others =>
+                        Raise_Exception (Use_Error'Identity);
+                  end case;
+               end if;
+            end;
          end if;
-      end;
+      end if;
    end Open_Ordinary;
 
    procedure Close_Ordinary (
@@ -310,15 +319,14 @@ package body System.Native_IO is
       end if;
    end Set_Close_On_Exec;
 
-   procedure Unset_Append (Handle : Handle_Type) is
+   procedure Unset (Handle : Handle_Type; Mask : File_Mode) is
       Flags, New_Flags : C.signed_int;
    begin
       Flags := C.fcntl.fcntl (Handle, C.fcntl.F_GETFL);
       if Flags < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
-      New_Flags :=
-         C.signed_int (C.unsigned_int (Flags) and not C.fcntl.O_APPEND);
+      New_Flags := C.signed_int (C.unsigned_int (Flags) and Mask);
       if New_Flags /= Flags then
          declare
             Error : Boolean;
@@ -329,7 +337,7 @@ package body System.Native_IO is
             end if;
          end;
       end if;
-   end Unset_Append;
+   end Unset;
 
    function Is_Terminal (Handle : Handle_Type) return Boolean is
    begin
