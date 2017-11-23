@@ -302,10 +302,12 @@
 #pragma for Ada "poll.h" include "sys/poll.h"
 #pragma for Ada "pthread.h" include "bits/pthreadtypes.h"
 #pragma for Ada "pthread.h" include "bits/sigthread.h"
-#pragma for Ada "signal.h" include "bits/siginfo.h"
 #pragma for Ada "signal.h" include "bits/sigstack.h" /* MINSIGSTKSZ */
 #pragma for Ada "signal.h" monolithic_include "bits/sigaction.h"
 #pragma for Ada "signal.h" monolithic_include "bits/signum.h"
+#if !__GLIBC_PREREQ(2, 26)
+#pragma for Ada "signal.h" include "bits/siginfo.h"
+#endif
 #pragma for Ada "sys/file.h" include "bits/fcntl-linux.h"
 #pragma for Ada "sys/ioctl.h" include "asm-generic/ioctls.h"
 #pragma for Ada "sys/ioctl.h" include "bits/ioctl-types.h"
@@ -317,13 +319,29 @@
 #pragma for Ada "sys/stat.h" include "bits/stat.h"
 #pragma for Ada "sys/statfs.h" include "bits/statfs.h"
 #pragma for Ada "sys/syscall.h" include "bits/syscall.h"
+#if !__GLIBC_PREREQ(2, 26)
 #pragma for Ada "sys/time.h" include "bits/time.h" /* timeval */
 #pragma for Ada "sys/types.h" include "bits/types.h" /* __time_t */
 #pragma for Ada "sys/uio.h" include "bits/uio.h" /* struct iovec */
+#endif
 #pragma for Ada "sys/wait.h" include "bits/waitflags.h" /* WNOHANG */
 #pragma for Ada "termios.h" include "bits/termios.h"
 #pragma for Ada "time.h" include "bits/time.h" /* CLOCK_MONOTONIC */
 #pragma for Ada "unistd.h" include "bits/confname.h" /* _SC_NPROCESSORS_ONLN */
+#if __GLIBC_PREREQ(2, 26)
+#pragma for Ada "signal.h" monolithic_include "bits/signum-generic.h"
+#pragma for Ada "signal.h" include "bits/types/siginfo_t.h"
+#pragma for Ada "signal.h" include "bits/types/sigset_t.h"
+#pragma for Ada "signal.h" include "bits/types/stack_t.h"
+#pragma for Ada "stdint.h" include "bits/stdint-intn.h"
+#pragma for Ada "stdint.h" include "bits/stdint-uintn.h"
+#pragma for Ada "sys/resource.h" include "bits/types/struct_rusage.h"
+#pragma for Ada "sys/time.h" include "bits/types/struct_timeval.h"
+#pragma for Ada "sys/types.h" include "bits/types/time_t.h"
+#pragma for Ada "sys/uio.h" include "bits/types/struct_iovec.h"
+#pragma for Ada "time.h" include "bits/types/struct_timespec.h"
+#pragma for Ada "time.h" include "bits/types/struct_tm.h"
+#endif
 #endif
 
 #if defined(__WINNT__)
