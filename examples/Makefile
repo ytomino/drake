@@ -60,6 +60,12 @@ export INSTALL=ln -s
 export WITHA=0
 export DEBUG=2
 
+ifneq ($(findstring linux,$(TARGET)),)
+LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+else
+LIBGNAT=libgnat$(GCCSUFFIX).a
+endif
+
 GFLAGS=
 GFLAGS_ALL=--RTS=$(abspath $(BUILDDIR))
 CFLAGS=
@@ -81,8 +87,6 @@ ifneq ($(findstring darwin,$(TARGET)),)
 LFLAGS_ALL+=-licucore
 else ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
-else ifneq ($(findstring linux-gnu,$(TARGET)),)
-LFLAGS_ALL+=-lm -lpthread -ldl -lrt
 endif
 
 GCC=
@@ -120,7 +124,7 @@ FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
 .PHONY: all tree cleanup-rts clean cleanall xfind xfindall
 
-all: $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a $(EXAMPLES)
+all: $(BUILDDIR)/adalib/$(LIBGNAT) $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
@@ -145,19 +149,19 @@ cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libg
 		echo rm c.\* ; \
 		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.* ; \
 	fi ; \
-	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a ]] ; then \
-		echo rm libgnat$(GCCSUFFIX).a ; \
-		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a ; \
+	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/$(LIBGNAT) ]] ; then \
+		echo rm $(LIBGNAT) ; \
+		rm $(BUILDDIR)/adalib/$(LIBGNAT) ; \
 	fi'
 
 $(BINLN):
 	ln -s $(BUILDDIR) $(BINLN)
 
-$(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a: $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildcard ../source/obj/*.ad?)
+$(BUILDDIR)/adalib/$(LIBGNAT): $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildcard ../source/obj/*.ad?)
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 
-$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).a
+$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/$(LIBGNAT)
 	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
 	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
 	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)

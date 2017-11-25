@@ -75,16 +75,21 @@ EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
 ARGLIMIT=
+LDSCRIPT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
 ARGLIMIT=
+LDSCRIPT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
 ARGLIMIT=
+LDSCRIPT=libgnat$(GCCSUFFIX).so
+LDFLAGS=-ldl -lm -lpthread -lrt
+# -lrt is necessary in old Linux
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
@@ -94,11 +99,13 @@ endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
 ARGLIMIT=500
+LDSCRIPT=
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
 ARGLIMIT=
+LDSCRIPT=
 endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
@@ -312,19 +319,32 @@ TREE= \
 	$(LIBRARY_SRCS) \
 	$(IMPORT_HEADERS)
 
+ifneq ($(LDSCRIPT),)
+LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+LIBS=$(RTSDIR)/adalib/$(LIBGNAT) $(RTSDIR)/adalib/$(LDSCRIPT)
+else
+LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBS=$(RTSDIR)/adalib/$(LIBGNAT)
+endif
+
 .PHONY: all tree import_objs c-archive
 
-all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a $(ALL_ALI)
+all: $(EXTRA_OBJS) $(LIBS) $(ALL_ALI)
 
 tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/$(LIBGNAT): $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
 ifneq ($(ARGLIMIT),)
 	find $(LIBGNAT_BUILDDIR) -name "*.o" | xargs -L $(ARGLIMIT) $(AR) -qS $@
 	$(AR) -s $@
 else
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+endif
+
+ifneq ($(LDSCRIPT),)
+$(RTSDIR)/adalib/$(LDSCRIPT):
+	echo "GROUP($(LIBGNAT) AS_NEEDED($(LDFLAGS)))" > $@
 endif
 
 $(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
