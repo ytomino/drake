@@ -19,7 +19,9 @@
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
 #   CFLAGS=     additional options for gcc (default:empty)
-#               -ffast-math -flto -save-temps=obj
+#               -ffast-math -flto -save-temps=obj are specially handled
+#               if any -O is given, it suppresses default optimization flags
+#               if any -g or -ggdb is given, it suppresses default debug flags
 
 export MAKEFLAGS+=r
 
@@ -252,6 +254,7 @@ SPEED_OBJS+=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	a-nusf19.o \
 	a-nusf21.o)
 
+ifeq ($(filter -g -g0 -g1 -g2 -ggdb -ggdb0 -ggdb1 -ggdb2,$(CFLAGS)),)
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
 OPTIMIZE=1
@@ -262,15 +265,14 @@ OPTIMIZE=1
 else
 CFLAGS_DEBUG=-ggdb -gnata
 OPTIMIZE=0
-ifeq ($(EH),sjlj)
-CFLAGS_DEBUG+=-fno-omit-frame-pointer
-endif
 endif
 ifeq ($(OBJFMT),ELF)
 CFLAGS_DEBUG+=-Wa,--compress-debug-sections
 endif
 endif
+endif
 
+ifeq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),)
 ifeq ($(OPTIMIZE),0)
 CFLAGS_OPTIMIZE=-Og
 else
@@ -278,6 +280,12 @@ ifeq ($(OBJFMT),ELF)
 CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp -ffunction-sections -fdata-sections
 else
 CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp
+endif
+endif
+ifneq ($(filter -g -g1 -g2 -ggdb -ggdb1 -ggdb2,$(CFLAGS_DEBUG) $(CFLAGS)),)
+ifeq ($(EH),sjlj)
+CFLAGS_OPTIMIZE+=-fno-omit-frame-pointer
+endif
 endif
 endif
 
