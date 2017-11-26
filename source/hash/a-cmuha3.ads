@@ -1,4 +1,4 @@
-pragma License (Unrestricted);
+pragma License (Unrestricted); -- public domain
 --  translated unit from MurmurHash3
 --
 --  MurmurHash3 was written by Austin Appleby, and is placed in the public
