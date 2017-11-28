@@ -55,20 +55,20 @@ ifeq ($(DEBUG),)
 ifeq ($(filter -g -g0 -g1 -g2 -ggdb -ggdb0 -ggdb1 -ggdb2,$(CFLAGS)),)
 ifeq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),) # unspecified
 ifeq ($(TARGET),$(HOST))
-DEBUG=2
+override DEBUG=2
 else
-DEBUG=1
+override DEBUG=1
 endif
 else # some -O is specified, but -g is none
-DEBUG=0
+override DEBUG=0
 endif
 else # some -g is specified
 ifneq ($(filter -g0 -ggdb0,$(CFLAGS)),)
-DEBUG=0
+override DEBUG=0
 else ifneq ($(filter -g1 -ggdb1,$(CFLAGS)),)
-DEBUG=1
+override DEBUG=1
 else
-DEBUG=2
+override DEBUG=2
 endif
 endif
 endif
