@@ -25,6 +25,15 @@ package Interfaces.Fortran is
    function i return Imaginary renames Single_Precision_Complex_Types.i;
    function j return Imaginary renames Single_Precision_Complex_Types.j;
 
+   --  AI12-0058-1, Double_Precision_Complex_Types
+
+   package Double_Precision_Complex_Types is
+      new Ada.Numerics.Generic_Complex_Types (Double_Precision);
+
+   type Double_Complex is new Double_Precision_Complex_Types.Complex;
+
+   subtype Double_Imaginary is Double_Precision_Complex_Types.Imaginary;
+
    --  Note: character(kind=ascii) is treated as Latin-1
    --    and character(kind=ucs4) is treated as UTF-32 in gfortran.
 
@@ -135,10 +144,6 @@ package Interfaces.Fortran is
 --  subtype Logical_Star_16 is Logical_Kind_16;
 
    --  Complex_Star_n and Complex_Kind_n
-
-   package Double_Precision_Complex_Types is
-      new Ada.Numerics.Generic_Complex_Types (Double_Precision);
-      --  AARM B.5(21.a)
 
    package Complex_Types_Kind_4 renames Single_Precision_Complex_Types;
    subtype Complex_Kind_4 is Complex_Types_Kind_4.Complex;
