@@ -83,9 +83,17 @@ package body System.Native_Interrupts.Vector is
    begin
       Old_Handler := Item.Installed_Handler;
       if Old_Handler = null and then New_Handler /= null then
-         Item.Saved := C.signal.signal (
-            C.signed_int (Interrupt),
-            Handler'Access);
+         declare
+            Old_Action : C.signal.p_sig_fn_t;
+         begin
+            Old_Action := C.signal.signal (
+               C.signed_int (Interrupt),
+               Handler'Access);
+            if Old_Action = C.signal.SIG_ERR then
+               raise Program_Error;
+            end if;
+            Old_Action := Item.Saved;
+         end;
       elsif Old_Handler /= null and then New_Handler = null then
          declare
             Old_Action : C.signal.p_sig_fn_t;

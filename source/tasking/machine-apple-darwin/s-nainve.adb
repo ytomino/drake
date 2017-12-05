@@ -95,12 +95,11 @@ package body System.Native_Interrupts.Vector is
             Action : aliased C.signal.struct_sigaction := (
                (Unchecked_Tag => 1, sa_sigaction => Handler'Access),
                others => <>); -- uninitialized
+            Dummy : C.signed_int;
          begin
             Action.sa_flags := C.signed_int (
                C.unsigned_int'(C.signal.SA_SIGINFO or C.signal.SA_RESTART));
-            if C.signal.sigemptyset (Action.sa_mask'Access) < 0 then
-               raise Program_Error;
-            end if;
+            Dummy := C.signal.sigemptyset (Action.sa_mask'Access);
             if C.signal.sigaction (
                Interrupt,
                Action'Access,
@@ -110,18 +109,9 @@ package body System.Native_Interrupts.Vector is
             end if;
          end;
       elsif Old_Handler /= null and then New_Handler = null then
-         declare
-            Old_Action : aliased C.signal.struct_sigaction :=
-               (others => <>); -- uninitialized
-         begin
-            if C.signal.sigaction (
-               Interrupt,
-               Item.Saved'Access,
-               Old_Action'Access) < 0
-            then
-               raise Program_Error;
-            end if;
-         end;
+         if C.signal.sigaction (Interrupt, Item.Saved'Access, null) < 0 then
+            raise Program_Error;
+         end if;
       end if;
       Item.Installed_Handler := New_Handler;
    end Exchange_Handler;
