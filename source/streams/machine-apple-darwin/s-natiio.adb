@@ -11,7 +11,7 @@ package body System.Native_IO is
    use type Ada.IO_Modes.File_Shared;
    use type Ada.IO_Modes.File_Shared_Spec;
    use type Ada.Streams.Stream_Element_Offset;
-   use type System.Storage_Elements.Storage_Offset;
+   use type Storage_Elements.Storage_Offset;
    use type C.char; -- Name_Character
    use type C.char_array; -- Name_String
    use type C.char_ptr; -- Name_Pointer

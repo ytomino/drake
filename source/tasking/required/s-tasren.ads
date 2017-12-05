@@ -60,7 +60,7 @@ package System.Tasking.Rendezvous is
    procedure Timed_Selective_Wait (
       Open_Accepts : not null access Accept_List;
       Select_Mode : Select_Modes;
-      Uninterpreted_Data : out System.Address;
+      Uninterpreted_Data : out Address;
       Timeout : Duration;
       Mode : Integer; -- Delay_Modes
       Index : out Select_Index);
