@@ -1,4 +1,4 @@
-pragma License (Unrestricted); -- MIT License
+pragma License (Unrestricted); -- ICU License
 --  translated unit from icu4c of http://site.icu-project.org/
 --
 --  **********************************************************************

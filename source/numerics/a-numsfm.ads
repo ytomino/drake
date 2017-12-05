@@ -1,4 +1,4 @@
-pragma License (Unrestricted);
+pragma License (Unrestricted); -- BSD 3-Clause
 --  translated unit from SFMT
 --
 --  Copyright (c) 2006,2007 Mutsuo Saito, Makoto Matsumoto and Hiroshima

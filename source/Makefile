@@ -19,7 +19,8 @@
 #   WITHC=      if 0, no including translated headers to libgnat.a (default:1)
 #   DEBUG=      debug level (default:if TARGET=HOST then 2 else 1)
 #   CFLAGS=     additional options for gcc (default:empty)
-#               -ffast-math -flto -save-temps=obj
+#               -ffast-math -flto -save-temps=obj are specially handled
+#               debug level and lacking flags are inferred from CFLAGS
 
 export MAKEFLAGS+=r
 
@@ -51,10 +52,45 @@ endif
 
 # if DEBUG>0, debug info
 ifeq ($(DEBUG),)
+ifeq ($(filter -g -g0 -g1 -g2 -ggdb -ggdb0 -ggdb1 -ggdb2,$(CFLAGS)),)
+ifeq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),) # unspecified
 ifeq ($(TARGET),$(HOST))
-DEBUG=2
+override DEBUG=2
 else
-DEBUG=1
+override DEBUG=1
+endif
+else # some -O is specified, but -g is none
+override DEBUG=0
+endif
+else # some -g is specified
+ifneq ($(filter -g0 -ggdb0,$(CFLAGS)),)
+override DEBUG=0
+else ifneq ($(filter -g1 -ggdb1,$(CFLAGS)),)
+override DEBUG=1
+else
+override DEBUG=2
+endif
+endif
+endif
+
+# optimization level
+ifeq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),) # unspecified
+ifeq ($(DEBUG),0)
+OPTIMIZE=2
+else ifeq ($(DEBUG),1)
+OPTIMIZE=2
+else
+OPTIMIZE=1
+endif
+else # some -O is specified
+ifneq ($(filter -O0,$(CFLAGS)),)
+OPTIMIZE=0
+else ifneq ($(filter -O -O1 -Og,$(CFLAGS)),)
+OPTIMIZE=1
+else ifneq ($(filter -O2 -Os,$(CFLAGS)),)
+OPTIMIZE=2
+else
+OPTIMIZE=3
 endif
 endif
 
@@ -75,16 +111,21 @@ EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
 ARGLIMIT=
+LDSCRIPT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
 ARGLIMIT=
+LDSCRIPT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
 ARGLIMIT=
+LDSCRIPT=libgnat$(GCCSUFFIX).so
+LDFLAGS=-ldl -lm -lpthread -lrt
+# -lrt is necessary in old Linux
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
 ifneq ($(findstring x86_64,$(TARGET)),)
 EH=machine-w64-mingw32/x86_64/seh
@@ -94,11 +135,13 @@ endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
 ARGLIMIT=500
+LDSCRIPT=
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
 ARGLIMIT=
+LDSCRIPT=
 endif
 
 ifneq ($(findstring x86_64,$(TARGET))$(findstring amd64,$(TARGET)),) # x86_64-*-*
@@ -245,37 +288,73 @@ SPEED_OBJS+=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	a-nusf19.o \
 	a-nusf21.o)
 
+# debug flags
+ifeq ($(filter -g -g0 -g1 -g2 -ggdb -ggdb0 -ggdb1 -ggdb2,$(CFLAGS)),) # unspecified
 ifeq ($(DEBUG),0)
 CFLAGS_DEBUG=
-OPTIMIZE=1
 else
 ifeq ($(DEBUG),1)
 CFLAGS_DEBUG=-ggdb1
-OPTIMIZE=1
 else
-CFLAGS_DEBUG=-ggdb -gnata
-OPTIMIZE=0
-ifeq ($(EH),sjlj)
-CFLAGS_DEBUG+=-fno-omit-frame-pointer
-endif
+CFLAGS_DEBUG=-ggdb
 endif
 ifeq ($(OBJFMT),ELF)
 CFLAGS_DEBUG+=-Wa,--compress-debug-sections
 endif
 endif
+else # some -g is specified
+CFLAGS_DEBUG=
+endif
 
+# optimization flags
+ifeq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),) # unspecified
 ifeq ($(OPTIMIZE),0)
+CFLAGS_OPTIMIZE=
+else ifeq ($(OPTIMIZE),1)
 CFLAGS_OPTIMIZE=-Og
 else
+CFLAGS_OPTIMIZE=-Os
 ifeq ($(OBJFMT),ELF)
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp -ffunction-sections -fdata-sections
+CFLAGS_OPTIMIZE+=-ffunction-sections -fdata-sections
+endif
+endif
+ifneq ($(DEBUG),0)
+ifeq ($(EH),sjlj)
+CFLAGS_OPTIMIZE+=-fno-omit-frame-pointer
+endif
+endif
+GNATCFLAGS_NEEDED=1
+else # some -O is specified
+CFLAGS_OPTIMIZE=
+ifeq ($(filter -gnat%,$(CFLAGS)),) # unspecified
+GNATCFLAGS_NEEDED=1
 else
-CFLAGS_OPTIMIZE=-Os -gnatB -gnatVn -gnatn2 -gnatp
+GNATCFLAGS_NEEDED=0
+endif
+endif
+
+# GNAT optimization flags
+
+ifneq ($(GNATCFLAGS_NEEDED),0)
+ifeq ($(OPTIMIZE),0)
+CFLAGS_OPTIMIZE+=-gnata
+else ifeq ($(OPTIMIZE),1)
+CFLAGS_OPTIMIZE+=-gnata
+else ifeq ($(OPTIMIZE),2)
+CFLAGS_OPTIMIZE+=-gnatB -gnatVn -gnatn2 -gnatp
+ifneq ($(filter -O -O0 -O1 -O2 -O3 -Os -Ofast -Og,$(CFLAGS)),) # some -O is specified
+ifeq ($(filter -ffast-math,$(CFLAGS)),)
+# inferred as system CFLAGS may be used and no will to strong optimization
+CFLAGS_OPTIMIZE+=-gnata
+endif
+endif
+else
+CFLAGS_OPTIMIZE+=-gnatB -gnatVn -gnatn2 -gnatp
 endif
 endif
 
 ADC=$(wildcard $(RTSDIR)/adainclude/*.adc)
-ifneq ($(filter -ffast-math,$(CFLAGS)),)
+ifneq ($(filter -ffast-math -Ofast,$(CFLAGS)),)
 ADC+=fastmath.adc
 endif
 
@@ -312,19 +391,32 @@ TREE= \
 	$(LIBRARY_SRCS) \
 	$(IMPORT_HEADERS)
 
+ifneq ($(LDSCRIPT),)
+LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+LIBS=$(RTSDIR)/adalib/$(LIBGNAT) $(RTSDIR)/adalib/$(LDSCRIPT)
+else
+LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBS=$(RTSDIR)/adalib/$(LIBGNAT)
+endif
+
 .PHONY: all tree import_objs c-archive
 
-all: $(EXTRA_OBJS) $(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a $(ALL_ALI)
+all: $(EXTRA_OBJS) $(LIBS) $(ALL_ALI)
 
 tree: $(TREE)
 
-$(RTSDIR)/adalib/libgnat$(GCCSUFFIX).a: $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/$(LIBGNAT): $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
 	-rm $@ 2> /dev/null
 ifneq ($(ARGLIMIT),)
 	find $(LIBGNAT_BUILDDIR) -name "*.o" | xargs -L $(ARGLIMIT) $(AR) -qS $@
 	$(AR) -s $@
 else
 	$(AR) -q $@ $(LIBGNAT_BUILDDIR)/*.o
+endif
+
+ifneq ($(LDSCRIPT),)
+$(RTSDIR)/adalib/$(LDSCRIPT):
+	echo "GROUP($(LIBGNAT) AS_NEEDED($(LDFLAGS)))" > $@
 endif
 
 $(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
@@ -592,7 +684,7 @@ $(RTSDIR)/adainclude/%.adb: $(EH)/%.adb
 	$(INSTALL) $(abspath $<) $@
 
 # do not apply -ffast-math
-$(NOFASTMATH_OBJS): override CFLAGS:=$(filter-out -ffast-math,$(CFLAGS))
+$(NOFASTMATH_OBJS): override CFLAGS:=$(filter-out -ffast-math,$(subst -Ofast,-O3,$(CFLAGS)))
 
 # optimize for speed instead of size
 $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
@@ -601,7 +693,7 @@ $(SPEED_OBJS): CFLAGS_OPTIMIZE:=$(subst -Os,-O2,$(CFLAGS_OPTIMIZE))
 $(LIBGNAT_BUILDDIR)/s-unwrai.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 
 ifneq ($(findstring darwin,$(TARGET)),)
-ifneq ($(filter -g,$(CFLAGS_DEBUG))$(filter -ggdb,$(CFLAGS_DEBUG)),)
+ifneq ($(DEBUG),0)
 # Apple ld64 can't add line info to anonymous symbol .lsda from following .o
 $(LIBGNAT_BUILDDIR)/a-excfin.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder
 $(LIBGNAT_BUILDDIR)/a-finali.o: CFLAGS_OPTIMIZE+=-fno-toplevel-reorder

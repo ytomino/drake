@@ -1,4 +1,4 @@
-pragma License (Unrestricted);
+pragma License (Unrestricted); -- BSD 3-Clause
 --  translated unit from MT19937
 --
 --  A C-program for MT19937, with initialization improved 2002/1/26.

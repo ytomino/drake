@@ -1,20 +1,19 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
-with Ada.Interrupts;
+with C;
 package System.Native_Interrupts is
+   pragma Preelaborate;
 
-   subtype Interrupt_Id is Ada.Interrupts.Interrupt_Id;
-   subtype Parameterless_Handler is Ada.Interrupts.Parameterless_Handler;
+   subtype Interrupt_Id is C.signed_int;
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
 
-   function Current_Handler (Interrupt : Interrupt_Id)
-      return Parameterless_Handler;
+   function Is_Blocked (Interrupt : Interrupt_Id) return Boolean is (False);
 
-   procedure Exchange_Handler (
-      Old_Handler : out Parameterless_Handler;
-      New_Handler : Parameterless_Handler;
-      Interrupt : Interrupt_Id);
+   procedure Block (Interrupt : Interrupt_Id)
+      with Import, Convention => Ada, External_Name => "__drake_program_error";
+      --  signal mask is not available in mingw-w64
+   procedure Unblock (Interrupt : Interrupt_Id) is null;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id);
 

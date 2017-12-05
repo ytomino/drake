@@ -1,9 +1,30 @@
 with System.Interrupt_Handlers;
-with System.Native_Interrupts;
+with System.Native_Interrupts.Vector;
 package body Ada.Interrupts is
 
-   function Is_Reserved (Interrupt : Interrupt_Id) return Boolean
-      renames System.Native_Interrupts.Is_Reserved;
+   function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
+   begin
+      return System.Native_Interrupts.Is_Reserved (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Is_Reserved;
+
+   function Is_Blocked (Interrupt : Interrupt_Id) return Boolean is
+   begin
+      return System.Native_Interrupts.Is_Blocked (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Is_Blocked;
+
+   procedure Block (Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Block (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Block;
+
+   procedure Unblock (Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Unblock (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Unblock;
 
    function Is_Attached (Interrupt : Interrupt_Id) return Boolean is
    begin
@@ -16,7 +37,8 @@ package body Ada.Interrupts is
       if Is_Reserved (Interrupt) then
          raise Program_Error;
       end if;
-      return System.Native_Interrupts.Current_Handler (Interrupt);
+      return System.Native_Interrupts.Vector.Current_Handler (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
    end Current_Handler;
 
    procedure Attach_Handler (
@@ -43,10 +65,7 @@ package body Ada.Interrupts is
       then
          raise Program_Error;
       end if;
-      System.Native_Interrupts.Exchange_Handler (
-         Old_Handler,
-         New_Handler,
-         Interrupt);
+      Unchecked_Exchange_Handler (Old_Handler, New_Handler, Interrupt);
    end Exchange_Handler;
 
    procedure Detach_Handler (Interrupt : Interrupt_Id) is
@@ -69,10 +88,18 @@ package body Ada.Interrupts is
    procedure Unchecked_Exchange_Handler (
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
-      Interrupt : Interrupt_Id)
-      renames System.Native_Interrupts.Exchange_Handler;
+      Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Vector.Exchange_Handler (
+         Old_Handler,
+         New_Handler,
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Unchecked_Exchange_Handler;
 
-   procedure Raise_Interrupt (Interrupt : Interrupt_Id)
-      renames System.Native_Interrupts.Raise_Interrupt;
+   procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Raise_Interrupt (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Raise_Interrupt;
 
 end Ada.Interrupts;

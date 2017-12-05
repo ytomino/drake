@@ -1,4 +1,4 @@
-pragma License (Unrestricted);
+pragma License (Unrestricted); -- BSD 3-Clause
 --  translated unit from SFMT (SFMT-params19937.h)
 with Ada.Numerics.SFMT;
 package Ada.Numerics.SFMT_19937 is

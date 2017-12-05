@@ -1,4 +1,4 @@
-pragma License (Unrestricted);
+pragma License (Unrestricted); -- BSD 3-Clause
 --  translated unit from SFMT (SFMT-common.h)
 private generic
 package Ada.Numerics.SFMT.Generating is
