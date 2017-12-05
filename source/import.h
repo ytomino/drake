@@ -189,6 +189,8 @@
 #if defined(__unix__) || defined(__APPLE__)
 #include "fix-fcntl.h"
 #pragma for Ada "fcntl.h" monolithic_include "fix-fcntl.h"
+#include "fix-signal.h"
+#pragma for Ada "signal.h" monolithic_include "fix-signal.h"
 #include "fix-wchar.h"
 #pragma for Ada "wchar.h" monolithic_include "fix-wchar.h"
 #pragma instance pthread_rwlock_t "PTHREAD_RWLOCK_INITIALIZER"

@@ -7,7 +7,7 @@ package Ada.Interrupts is
    type Parameterless_Handler is access protected procedure;
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
-   pragma Inline (Is_Reserved); -- renamed
+   pragma Inline (Is_Reserved);
 
    function Is_Attached (Interrupt : Interrupt_Id) return Boolean;
    pragma Inline (Is_Attached);
@@ -41,7 +41,7 @@ package Ada.Interrupts is
       Old_Handler : out Parameterless_Handler;
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id);
-   pragma Inline (Unchecked_Exchange_Handler); -- renamed
+   pragma Inline (Unchecked_Exchange_Handler);
 
 --  function Reference (Interrupt : Interrupt_Id) return System.Address;
 
@@ -51,6 +51,6 @@ package Ada.Interrupts is
    --  extended
    --  Raise a interrupt from/to itself.
    procedure Raise_Interrupt (Interrupt : Interrupt_Id);
-   pragma Inline (Raise_Interrupt); -- renamed
+   pragma Inline (Raise_Interrupt);
 
 end Ada.Interrupts;
