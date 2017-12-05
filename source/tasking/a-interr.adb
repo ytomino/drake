@@ -96,6 +96,13 @@ package body Ada.Interrupts is
          System.Native_Interrupts.Interrupt_Id (Interrupt));
    end Unchecked_Exchange_Handler;
 
+   procedure Unchecked_Detach_Handler (Interrupt : Interrupt_Id) is
+      Old_Handler : Parameterless_Handler;
+      pragma Unreferenced (Old_Handler);
+   begin
+      Unchecked_Exchange_Handler (Old_Handler, null, Interrupt);
+   end Unchecked_Detach_Handler;
+
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
    begin
       System.Native_Interrupts.Raise_Interrupt (
