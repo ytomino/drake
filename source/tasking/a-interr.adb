@@ -8,6 +8,24 @@ package body Ada.Interrupts is
          System.Native_Interrupts.Interrupt_Id (Interrupt));
    end Is_Reserved;
 
+   function Is_Blocked (Interrupt : Interrupt_Id) return Boolean is
+   begin
+      return System.Native_Interrupts.Is_Blocked (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Is_Blocked;
+
+   procedure Block (Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Block (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Block;
+
+   procedure Unblock (Interrupt : Interrupt_Id) is
+   begin
+      System.Native_Interrupts.Unblock (
+         System.Native_Interrupts.Interrupt_Id (Interrupt));
+   end Unblock;
+
    function Is_Attached (Interrupt : Interrupt_Id) return Boolean is
    begin
       return Current_Handler (Interrupt) /= null;

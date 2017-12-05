@@ -8,6 +8,11 @@ package System.Native_Interrupts is
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
 
+   function Is_Blocked (Interrupt : Interrupt_Id) return Boolean;
+
+   procedure Block (Interrupt : Interrupt_Id);
+   procedure Unblock (Interrupt : Interrupt_Id);
+
    procedure Raise_Interrupt (Interrupt : Interrupt_Id);
 
 end System.Native_Interrupts;

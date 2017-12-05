@@ -9,6 +9,21 @@ package Ada.Interrupts is
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean;
    pragma Inline (Is_Reserved);
 
+   --  extended
+   --  Check the interrupt mask of current process.
+   function Is_Blocked (Interrupt : Interrupt_Id) return Boolean;
+   pragma Inline (Is_Blocked);
+
+   --  extended
+   --  Set the interrupt mask of current process.
+   procedure Block (Interrupt : Interrupt_Id);
+   --  extended
+   --  Unset the interrupt mask of current process.
+   procedure Unblock (Interrupt : Interrupt_Id);
+
+   pragma Inline (Block);
+   pragma Inline (Unblock);
+
    function Is_Attached (Interrupt : Interrupt_Id) return Boolean;
    pragma Inline (Is_Attached);
 
