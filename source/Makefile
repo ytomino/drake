@@ -95,6 +95,12 @@ OPTIMIZE=3
 endif
 endif
 
+ifneq ($(findstring mingw,$(HOST)),) # *-w64-mingw32
+ARGLIMIT=500
+else
+ARGLIMIT=
+endif
+
 PHASE=
 
 RTSDIR=.
@@ -111,19 +117,16 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
-ARGLIMIT=
 LDSCRIPT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
-ARGLIMIT=
 LDSCRIPT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
-ARGLIMIT=
 LDSCRIPT=libgnat$(GCCSUFFIX).so
 LDFLAGS=-ldl -lm -lpthread -lrt
 # -lrt is necessary in old Linux
@@ -135,13 +138,11 @@ EH=sjlj
 endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
-ARGLIMIT=500
 LDSCRIPT=
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
-ARGLIMIT=
 LDSCRIPT=
 endif
 
