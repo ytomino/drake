@@ -15,8 +15,7 @@ package body System.Unwind.Backtrace is
          Item : aliased out Tracebacks_Array;
          Last : out Natural;
          Exclude_Min : Address;
-         Exclude_Max : Address;
-         Skip_Frames : Natural);
+         Exclude_Max : Address);
 
    end Separated;
 
@@ -69,8 +68,7 @@ package body System.Unwind.Backtrace is
             Current.Tracebacks,
             Current.Num_Tracebacks, -- Tracebacks_Array'First = 1
             Raising.AAA,
-            Raising.ZZZ,
-            3); -- Occurrences.Backtrace, Call_Chain and Separated.Backtrace
+            Raising.ZZZ);
          pragma Check (Trace, Ada.Debug.Put ("Call_Chain"));
          pragma Check (Trace, Report);
       end if;
