@@ -122,12 +122,15 @@ BFLAGS_ALL:=$(strip $(BFLAGS_ALL) $(BFLAGS))
 LFLAGS_ALL:=$(strip $(LFLAGS_ALL) $(LFLAGS))
 FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
-.PHONY: all tree cleanup-rts clean cleanall xfind xfindall
+.PHONY: all tree depend cleanup-rts clean cleanall xfind xfindall
 
 all: $(BUILDDIR)/adalib/$(LIBGNAT) $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
+
+depend:
+	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) depend
 
 cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libgnat$GCCSUFFIX.a
 	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \

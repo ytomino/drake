@@ -1,6 +1,7 @@
 # targets:
 #   all         building drake runtime, default target
 #   tree        building adainclude only
+#   depend      make dependencies to $BUILDDIR/libgnat.build/Makefile.depend
 #   import_objs compiling translated headers only, by recursive
 #   c-archive   archiving translated headers to .tar.bz2
 # variables:
@@ -399,7 +400,7 @@ LIBGNAT=libgnat$(GCCSUFFIX).a
 LIBS=$(RTSDIR)/adalib/$(LIBGNAT)
 endif
 
-.PHONY: all tree import_objs c-archive
+.PHONY: all tree depend import_objs c-archive
 
 all: $(EXTRA_OBJS) $(LIBS) $(ALL_ALI)
 
@@ -721,11 +722,21 @@ $(IMPORTDIR)/c.ads: import.h
 	headmaster -t ada -p -D $(IMPORTDIR) -gcc="$(GCC)" $<
 endif
 
-# separated
+# dependencies of separated
 
 $(LIBGNAT_BUILDDIR)/s-unwbac.o : $(EH)/s-unbase.adb
 $(LIBGNAT_BUILDDIR)/s-unwocc.o : $(EH)/s-unocse.adb
 $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
+
+# dependencies of all objs belonging to libgnat.a
+
+-include $(LIBGNAT_BUILDDIR)/Makefile.depend
+
+depend: $(TREE) $(ALL_OBJS)
+	grep '^D [acis][^y]' $(LIBGNAT_BUILDDIR)/*.ali \
+		| grep -v -E '/(.+)\.ali:D \1\.ad[sb]\b' \
+		| sed -E $$'s|^$(LIBGNAT_BUILDDIR)/(.+)\\.ali:D ([^\t ]+)[\t ].*$$|$$(LIBGNAT_BUILDDIR)/\\1.o: $$(RTSDIR)/adainclude/\\2|' \
+		> $(LIBGNAT_BUILDDIR)/Makefile.depend
 
 # nested
 
