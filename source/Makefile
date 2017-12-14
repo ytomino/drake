@@ -316,7 +316,7 @@ else ifeq ($(OPTIMIZE),1)
 CFLAGS_OPTIMIZE=-Og
 else
 CFLAGS_OPTIMIZE=-Os
-ifeq ($(OBJFMT),ELF)
+ifneq ($(filter ELF COFF,$(OBJFMT)),)
 CFLAGS_OPTIMIZE+=-ffunction-sections -fdata-sections
 endif
 endif
