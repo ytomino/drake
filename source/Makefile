@@ -420,10 +420,10 @@ $(RTSDIR)/adalib/$(LDSCRIPT):
 	echo "GROUP($(LIBGNAT) AS_NEEDED($(LDFLAGS)))" > $@
 endif
 
-$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
-$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/notb.o: $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
 
 $(RTSDIR)/adainclude:
@@ -737,6 +737,11 @@ depend: $(TREE) $(ALL_OBJS)
 		| grep -v -E '/(.+)\.ali:D \1\.ad[sb]\b' \
 		| sed -E $$'s|^$(LIBGNAT_BUILDDIR)/(.+)\\.ali:D ([^\t ]+)[\t ].*$$|$$(LIBGNAT_BUILDDIR)/\\1.o: $$(RTSDIR)/adainclude/\\2|' \
 		> $(LIBGNAT_BUILDDIR)/Makefile.depend
+
+# dependencies of extra objs
+
+$(NOSIG_BUILDDIR)/nosig.o: $(RTSDIR)/adainclude/system.ads
+$(NOTB_BUILDDIR)/notb.o: $(RTSDIR)/adainclude/system.ads $(RTSDIR)/adainclude/s-unwind.ads
 
 # nested
 
