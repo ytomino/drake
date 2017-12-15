@@ -473,19 +473,19 @@ package body System.Native_Processes is
       Status : out Ada.Command_Line.Exit_Status)
    is
       Code : aliased C.signed_int;
-      R : C.sys.types.pid_t;
+      Terminated_Child : C.sys.types.pid_t;
       errno : C.signed_int;
    begin
       Synchronous_Control.Unlock_Abort;
-      R := C.sys.wait.waitpid (Child.Id, Code'Access, Options);
+      Terminated_Child := C.sys.wait.waitpid (Child.Id, Code'Access, Options);
       errno := C.errno.errno;
       Synchronous_Control.Lock_Abort; -- raise if aborted
-      if R < 0 then
+      if Terminated_Child < 0 then
          if errno /= C.errno.EINTR then
             Raise_Exception (Use_Error'Identity);
          end if;
          Terminated := False; -- interrupted and the signal is not "abort"
-      elsif R = 0 then
+      elsif Terminated_Child = 0 then
          Terminated := False; -- WNOHANG
       else
          if WIFEXITED (Code) then

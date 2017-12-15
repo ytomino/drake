@@ -109,15 +109,17 @@ package body System.Native_Directories.Searching is
          C_Directory : C.char_array (
             0 ..
             Directory'Length * Zero_Terminated_Strings.Expanding);
+         Handle : C.dirent.DIR_ptr;
       begin
          Zero_Terminated_Strings.To_C (
             Directory,
             C_Directory (0)'Access);
-         Search.Handle := C.dirent.opendir (C_Directory (0)'Access);
+         Handle := C.dirent.opendir (C_Directory (0)'Access);
+         if Handle = null then
+            Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
+         end if;
+         Search.Handle := Handle;
       end;
-      if Search.Handle = null then
-         Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
-      end if;
       Search.Filter := Filter;
       Search.Pattern := char_ptr_Conv.To_Pointer (
          Standard_Allocators.Allocate (

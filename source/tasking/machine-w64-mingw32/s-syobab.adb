@@ -63,21 +63,22 @@ package body System.Synchronous_Objects.Abortable is
          declare
             Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
                (Object.Handle, Abort_Event.Handle);
-            R : C.windef.DWORD;
+            Signaled : C.windef.DWORD;
          begin
-            R := C.winbase.WaitForMultipleObjects (
-               2,
-               Handles (0)'Access,
-               0,
-               C.winbase.INFINITE);
+            Signaled :=
+               C.winbase.WaitForMultipleObjects (
+                  2,
+                  Handles (0)'Access,
+                  0,
+                  C.winbase.INFINITE);
             pragma Check (Debug,
                Check =>
-                  R = C.winbase.WAIT_OBJECT_0
-                  or else R = C.winbase.WAIT_OBJECT_0 + 1
+                  Signaled = C.winbase.WAIT_OBJECT_0
+                  or else Signaled = C.winbase.WAIT_OBJECT_0 + 1
                   or else Debug.Runtime_Error (
                      "WaitForMultipleObjects failed"));
             Aborted :=
-               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
+               Signaled = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object);
@@ -99,23 +100,24 @@ package body System.Synchronous_Objects.Abortable is
                (Object.Handle, Abort_Event.Handle);
             Milliseconds : constant C.windef.DWORD :=
                C.windef.DWORD (Timeout * 1_000);
-            R : C.windef.DWORD;
+            Signaled : C.windef.DWORD;
          begin
-            R := C.winbase.WaitForMultipleObjects (
-               2,
-               Handles (0)'Access,
-               0,
-               Milliseconds);
+            Signaled :=
+               C.winbase.WaitForMultipleObjects (
+                  2,
+                  Handles (0)'Access,
+                  0,
+                  Milliseconds);
             pragma Check (Debug,
                Check =>
-                  R = C.winbase.WAIT_OBJECT_0
-                  or else R = C.winbase.WAIT_OBJECT_0 + 1
-                  or else R = C.winerror.WAIT_TIMEOUT
+                  Signaled = C.winbase.WAIT_OBJECT_0
+                  or else Signaled = C.winbase.WAIT_OBJECT_0 + 1
+                  or else Signaled = C.winerror.WAIT_TIMEOUT
                   or else Debug.Runtime_Error (
                      "WaitForMultipleObjects failed"));
-            Value := R = C.winbase.WAIT_OBJECT_0 or else Get (Object);
+            Value := Signaled = C.winbase.WAIT_OBJECT_0 or else Get (Object);
             Aborted :=
-               R = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
+               Signaled = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
          end;
       else
          Wait (Object, Timeout, Value);

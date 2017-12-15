@@ -72,20 +72,21 @@ package body System.Native_IO.Names is
       end;
       loop
          declare
-            R : constant C.sys.types.ssize_t :=
+            S_Length : C.sys.types.ssize_t;
+         begin
+            S_Length :=
                C.unistd.readlink (
                   Link (0)'Access,
                   New_Name,
                   New_Name_Capacity);
-         begin
-            if R < 0 then
+            if S_Length < 0 then
                --  Failed, keep Has_Full_Name and Name.
                if Raise_On_Error then
                   Raise_Exception (Use_Error'Identity);
                end if;
                return;
             end if;
-            New_Name_Length := C.size_t (R);
+            New_Name_Length := C.size_t (S_Length);
          end;
          exit when New_Name_Length < New_Name_Capacity; -- success
          New_Name_Capacity := New_Name_Capacity * 2;

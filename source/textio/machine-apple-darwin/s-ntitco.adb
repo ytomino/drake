@@ -27,8 +27,9 @@ package body System.Native_Text_IO.Terminal_Colors is
 
    procedure Support_256_Color_Init;
    procedure Support_256_Color_Init is
-      TERM : constant C.char_ptr := C.stdlib.getenv (TERM_Variable (0)'Access);
+      TERM : C.char_ptr;
    begin
+      TERM := C.stdlib.getenv (TERM_Variable (0)'Access);
       if TERM /= null
          and then strlen (TERM) = xterm_256color'Length
       then

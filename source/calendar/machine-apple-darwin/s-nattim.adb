@@ -64,13 +64,16 @@ package body System.Native_Time is
 
    procedure Simple_Delay_For (D : Duration) is
       Req_T : aliased C.time.struct_timespec := To_timespec (D);
-      Rem_T : aliased C.time.struct_timespec;
-      R : C.signed_int;
    begin
       loop
-         R := C.time.nanosleep (Req_T'Access, Rem_T'Access);
-         exit when R = 0;
-         Req_T := Rem_T;
+         declare
+            Rem_T : aliased C.time.struct_timespec;
+            R : C.signed_int;
+         begin
+            R := C.time.nanosleep (Req_T'Access, Rem_T'Access);
+            exit when not (R < 0);
+            Req_T := Rem_T;
+         end;
       end loop;
    end Simple_Delay_For;
 

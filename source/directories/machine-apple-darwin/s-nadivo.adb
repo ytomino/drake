@@ -67,30 +67,32 @@ package body System.Native_Directories.Volumes is
    end Device;
 
    function Case_Preserving (FS : File_System) return Boolean is
-      R : C.signed_long;
+      Value : C.signed_long;
    begin
-      R := C.unistd.pathconf (
-         FS.Statistics.f_mntonname (0)'Access,
-         C.unistd.PC_CASE_PRESERVING);
-      if R < 0 then
+      Value :=
+         C.unistd.pathconf (
+            FS.Statistics.f_mntonname (0)'Access,
+            C.unistd.PC_CASE_PRESERVING);
+      if Value < 0 then
          Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
-      return R /= 0;
+      return Value /= 0;
    end Case_Preserving;
 
    function Case_Sensitive (FS : aliased in out File_System) return Boolean is
    begin
       if not FS.Case_Sensitive_Valid then
          declare
-            R : C.signed_long;
+            Value : C.signed_long;
          begin
-            R := C.unistd.pathconf (
-               FS.Statistics.f_mntonname (0)'Access,
-               C.unistd.PC_CASE_SENSITIVE);
-            if R < 0 then
+            Value :=
+               C.unistd.pathconf (
+                  FS.Statistics.f_mntonname (0)'Access,
+                  C.unistd.PC_CASE_SENSITIVE);
+            if Value < 0 then
                Raise_Exception (IO_Exception_Id (C.errno.errno));
             end if;
-            FS.Case_Sensitive := R /= 0;
+            FS.Case_Sensitive := Value /= 0;
             FS.Case_Sensitive_Valid := True;
          end;
       end if;

@@ -253,26 +253,26 @@ package body System.Native_IO.Sockets is
             Len : aliased C.unistd.socklen_t :=
                Socket_Address'Size / Standard'Storage_Unit;
             Socket_Address_Argument : C.sys.socket.SOCKADDR_ARG;
-            R : C.signed_int;
+            New_Socket : C.signed_int;
             errno : C.signed_int;
          begin
             Synchronous_Control.Unlock_Abort;
             Socket_Address_Argument.sockaddr :=
                Remote_Address'Unrestricted_Access;
-            R :=
+            New_Socket :=
                C.sys.socket.C_accept (
                   Server,
                   Socket_Address_Argument,
                   Len'Access);
             errno := C.errno.errno;
             Synchronous_Control.Lock_Abort;
-            if R < 0 then
+            if New_Socket < 0 then
                if errno /= C.errno.EINTR then
                   Raise_Exception (Use_Error'Identity);
                end if;
                --  interrupted and the signal is not "abort", then retry
             else
-               Handle := R;
+               Handle := New_Socket;
                Set_Close_On_Exec (Handle);
                exit;
             end if;

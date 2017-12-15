@@ -4,10 +4,11 @@ package body System.Multiprocessors is
    use type C.signed_long;
 
    function Number_Of_CPUs return CPU is
-      Result : constant C.signed_long :=
+      Result : C.signed_long;
+   begin
+      Result :=
          C.unistd.sysconf (
             C.bits.confname.Cast (C.unistd.SC_NPROCESSORS_ONLN));
-   begin
       if Result < 0 then
          raise Program_Error;
       end if;

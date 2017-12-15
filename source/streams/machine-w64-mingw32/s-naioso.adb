@@ -311,18 +311,19 @@ package body System.Native_IO.Sockets is
    is
       Len : aliased C.windef.INT :=
          Socket_Address'Size / Standard'Storage_Unit;
-      R : C.psdk_inc.qsocket_types.SOCKET;
+      New_Socket : C.psdk_inc.qsocket_types.SOCKET;
    begin
-      R := C.winsock2.WSAAccept (
-         Server,
-         Remote_Address'Unrestricted_Access,
-         Len'Access,
-         lpfnCondition => null,
-         dwCallbackData => 0);
-      if R = C.psdk_inc.qsocket_types.INVALID_SOCKET then
+      New_Socket :=
+         C.winsock2.WSAAccept (
+            Server,
+            Remote_Address'Unrestricted_Access,
+            Len'Access,
+            lpfnCondition => null,
+            dwCallbackData => 0);
+      if New_Socket = C.psdk_inc.qsocket_types.INVALID_SOCKET then
          Raise_Exception (Use_Error'Identity);
       else
-         Handle := To_Handle (R);
+         Handle := To_Handle (New_Socket);
       end if;
    end Accept_Socket;
 

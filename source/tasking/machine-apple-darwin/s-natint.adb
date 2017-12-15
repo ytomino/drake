@@ -6,12 +6,12 @@ package body System.Native_Interrupts is
    procedure Mask (How : C.signed_int; Interrupt : Interrupt_Id) is
       Mask : aliased C.signal.sigset_t;
       Dummy : C.signed_int;
-      errno : C.signed_int;
+      R : C.signed_int;
    begin
       Dummy := C.signal.sigemptyset (Mask'Access);
       Dummy := C.signal.sigaddset (Mask'Access, Interrupt);
-      errno := C.signal.sigprocmask (How, Mask'Access, null);
-      if errno /= 0 then
+      R := C.signal.sigprocmask (How, Mask'Access, null);
+      if R < 0 then
          raise Program_Error;
       end if;
    end Mask;
@@ -28,13 +28,13 @@ package body System.Native_Interrupts is
 
    function Is_Blocked (Interrupt : Interrupt_Id) return Boolean is
       Current_Mask : aliased C.signal.sigset_t;
-      errno : C.signed_int;
+      R : C.signed_int;
    begin
-      errno := C.signal.sigprocmask (
+      R := C.signal.sigprocmask (
          C.signal.SIG_SETMASK,
          null,
          Current_Mask'Access);
-      if errno /= 0 then
+      if R < 0 then
          raise Program_Error;
       end if;
       return C.signal.sigismember (Current_Mask'Access, Interrupt) /= 0;

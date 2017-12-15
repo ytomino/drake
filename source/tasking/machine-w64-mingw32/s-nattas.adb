@@ -59,7 +59,7 @@ package body System.Native_Tasks is
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
       Error := False;
       if Current_Abort_Event /= null then
@@ -67,20 +67,21 @@ package body System.Native_Tasks is
             Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
                (Handle, Synchronous_Objects.Handle (Current_Abort_Event.all));
          begin
-            R := C.winbase.WaitForMultipleObjects (
-               2,
-               Handles (0)'Access,
-               0,
-               C.winbase.INFINITE);
-            if R /= C.winbase.WAIT_OBJECT_0 + 1 then
+            Signaled :=
+               C.winbase.WaitForMultipleObjects (
+                  2,
+                  Handles (0)'Access,
+                  0,
+                  C.winbase.INFINITE);
+            if Signaled /= C.winbase.WAIT_OBJECT_0 + 1 then
                goto Done;
             end if;
             Installed_Abort_Handler.all; -- may abort child tasks
          end;
       end if;
-      R := C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE);
+      Signaled := C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE);
    <<Done>>
-      case R is
+      case Signaled is
          when C.winbase.WAIT_OBJECT_0 =>
             if C.winbase.GetExitCodeThread (Handle, Result'Access) =
                C.windef.FALSE
