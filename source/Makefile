@@ -736,7 +736,7 @@ $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
 depend: $(TREE) $(ALL_OBJS)
 	grep '^D [acis][^y]' $(LIBGNAT_BUILDDIR)/*.ali \
 		| grep -v -E '/(.+)\.ali:D \1\.ad[sb]\b' \
-		| sed -E $$'s|^$(LIBGNAT_BUILDDIR)/(.+)\\.ali:D ([^\t ]+)[\t ].*$$|$$(LIBGNAT_BUILDDIR)/\\1.o: $$(RTSDIR)/adainclude/\\2|' \
+		| sed -E 's|^$(LIBGNAT_BUILDDIR)/(.+)\.ali:D ([^[:space:]]+)[[:space:]].*$$|$(LIBGNAT_BUILDDIR)/\1.o: $(RTSDIR)/adainclude/\2|' \
 		> $(LIBGNAT_BUILDDIR)/Makefile.depend
 
 # dependencies of extra objs
