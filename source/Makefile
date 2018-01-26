@@ -36,6 +36,17 @@ endif
 GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
 LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
+LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
+
+ifneq ($(and \
+	$(findstring linux-gnu,$(HOST)), \
+	$(findstring linux-gnu,$(TARGET)), \
+	$(filter /usr/lib/gcc/$(TARGET)/%,$(LIBGCCDIR)), \
+	$(wildcard /usr/lib/$(TARGET)/libgnat-$(LIBVERSION).so)),) # Debian
+LIBGNATBASE=libgnat-$(LIBVERSION)
+else
+LIBGNATBASE=libgnat
+endif
 
 ifeq ($(INSTALL),)
 INSTALL=install -m 444
@@ -107,7 +118,7 @@ RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
 
 BUILDDIR=$(RTSDIR)/adalib
-LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat$(GCCSUFFIX).build
+LIBGNAT_BUILDDIR=$(BUILDDIR)/$(LIBGNATBASE).build
 NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
 NOTB_BUILDDIR=$(BUILDDIR)/notb.build
 
@@ -127,7 +138,7 @@ else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
-LDSCRIPT=libgnat$(GCCSUFFIX).so
+LDSCRIPT=$(LIBGNATBASE).so
 LDFLAGS=-ldl -lm -lpthread -lrt
 # -lrt is necessary in old Linux
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
@@ -394,10 +405,10 @@ TREE= \
 	$(IMPORT_HEADERS)
 
 ifneq ($(LDSCRIPT),)
-LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
 LIBS=$(RTSDIR)/adalib/$(LIBGNAT) $(RTSDIR)/adalib/$(LDSCRIPT)
 else
-LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBGNAT=$(LIBGNATBASE).a
 LIBS=$(RTSDIR)/adalib/$(LIBGNAT)
 endif
 

@@ -24,6 +24,20 @@ else
 GCCPREFIX=$(TARGET)-
 endif
 GCCSUFFIX=
+GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
+
+LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
+LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
+
+ifneq ($(and \
+	$(findstring linux-gnu,$(HOST)), \
+	$(findstring linux-gnu,$(TARGET)), \
+	$(filter /usr/lib/gcc/$(TARGET)/%,$(LIBGCCDIR)), \
+	$(wildcard /usr/lib/$(TARGET)/libgnat-$(LIBVERSION).so)),) # Debian
+LIBGNATBASE=libgnat-$(LIBVERSION)
+else
+LIBGNATBASE=libgnat
+endif
 
 ifneq ($(findstring mingw,$(TARGET)),)
 EXEEXT=.exe
@@ -61,9 +75,9 @@ export WITHA=0
 export DEBUG=2
 
 ifneq ($(findstring linux,$(TARGET)),)
-LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
 else
-LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBGNAT=$(LIBGNATBASE).a
 endif
 
 GFLAGS=
@@ -89,8 +103,7 @@ else ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
 endif
 
-GCC=
-ifneq ($(GCC),)
+ifneq ($(GCC),$(GCCPREFIX)gcc$(GCCSUFFIX))
 MFLAGS_ALL+=--GCC="$(GCC)"
 LFLAGS_ALL+=--GCC="$(GCC)"
 endif
@@ -132,13 +145,13 @@ tree:
 depend:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) depend
 
-cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libgnat$GCCSUFFIX.a
-	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
+cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/$LIBGNATBASE.build
+	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/$(LIBGNATBASE).build) ; do \
 		B=$${I%.*} ; \
 		if [[ -f $(BUILDDIR)/$$B.o ]] ; then \
 			echo rm $$B.\* ; \
 			rm $(BUILDDIR)/$$B.* ; \
-			rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/$$B.* ; \
+			rm $(BUILDDIR)/adalib/$(LIBGNATBASE).build/$$B.* ; \
 			if [[ -f $(BUILDDIR)/adalib/$$B.ali ]] ; then \
 				rm -f $(BUILDDIR)/adalib/$$B.ali ; \
 			fi ; \
@@ -148,9 +161,9 @@ cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libg
 			fi ; \
 		fi ; \
 	done ; \
-	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ]] ; then \
+	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/$(LIBGNATBASE).build/c.o ]] ; then \
 		echo rm c.\* ; \
-		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.* ; \
+		rm $(BUILDDIR)/adalib/$(LIBGNATBASE).build/c.* ; \
 	fi ; \
 	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/$(LIBGNAT) ]] ; then \
 		echo rm $(LIBGNAT) ; \
