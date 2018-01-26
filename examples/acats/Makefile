@@ -11,7 +11,7 @@
 #   make ONCE=aa2010a     # run aa2010a only
 #   make RTSDIR=          # run the all tests with GNAT runtime
 
-export HOST=$(shell gcc -dumpmachine)
+export HOST:=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)

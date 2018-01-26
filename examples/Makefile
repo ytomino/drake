@@ -15,7 +15,7 @@
 
 export MAKEFLAGS+=r
 
-export HOST=$(shell gcc -dumpmachine)
+export HOST:=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 ifeq ($(TARGET),$(HOST))
@@ -26,7 +26,8 @@ endif
 GCCSUFFIX=
 GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
-LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
+LIBGCC:=$(shell $(GCC) -print-libgcc-file-name)
+LIBGCCDIR=$(patsubst %/,%,$(dir $(LIBGCC)))
 LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
 
 ifneq ($(and \
