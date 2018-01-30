@@ -11,25 +11,25 @@
 #define st_mtimespec st_mtim
 #define st_ctimespec st_ctim
 #endif
-#elif defined(__linux__)
+#elif defined(__gnu_linux__)
 #define _GNU_SOURCE /* use GNU extension */
 #define _FILE_OFFSET_BITS 64
 #endif
 
 #include <stdint.h> /* included by unwind-pe.h */
 
-#if defined(__linux__) || defined(__WINNT__)
+#if defined(__gnu_linux__) || defined(__WINNT__)
 #include <limits.h> /* before bits/posix1_lim.h / winuser.h */
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <stddef.h>
 #include <errno.h>
-#if defined(__linux__)
+#if defined(__gnu_linux__)
 #define _SYS_SELECT_H
 #endif
 #include <sys/types.h> /* before other system headers */
-#if defined(__linux__)
+#if defined(__gnu_linux__)
 #undef _SYS_SELECT_H
 #endif
 #include <sys/ucontext.h> /* before signal.h */
@@ -51,7 +51,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
-#if defined(__linux__)
+#if defined(__gnu_linux__)
 #include <sys/stat.h> /* before fcntl.h */
 #include <fcntl.h>
 #else
@@ -60,7 +60,7 @@
 #endif
 #include <sys/file.h>
 #include <poll.h>
-#if defined(__linux__)
+#if defined(__gnu_linux__)
 #define _SYS_SOCKET_H
 #include <bits/socket.h> /* before netinet/in.h */
 #include <netinet/in.h> /* before sys/socket.h */
@@ -68,11 +68,11 @@
 #endif
 #include <sys/socket.h> /* before sys/mount.h */
 #include <netdb.h>
-#if !defined(__linux__)
+#if !defined(__gnu_linux__)
 #include <netinet/in.h> /* after netdb.h in FreeBSD */
 #endif
 #include <sys/mount.h>
-#if defined(__linux__)
+#if defined(__gnu_linux__)
 #include <sys/statfs.h>
 #endif
 #include <dirent.h>
@@ -88,7 +88,7 @@
 #include <pthread.h>
 #include <dlfcn.h>
 #include <spawn.h>
-#if !defined(__linux__)
+#if !defined(__gnu_linux__)
 #if defined(__FreeBSD__)
 #include <stdio.h> /* before wchar.h in FreeBSD */
 #endif
@@ -128,7 +128,7 @@
 #include <malloc_np.h>
 #include <pthread_np.h>
 #include <sys/link_elf.h>
-#elif defined(__linux__)
+#elif defined(__gnu_linux__)
 #undef st_atime
 #undef st_mtime
 #undef st_ctime
@@ -199,7 +199,7 @@
 #pragma instance pthread_once_t "PTHREAD_ONCE_INIT"
 #pragma for Ada overload int fcntl(int, int, int)
 #pragma for Ada overload int ioctl(int, unsigned long, struct winsize *)
-#if !defined(__linux__)
+#if !defined(__gnu_linux__)
 #pragma for Ada overload int open(const char *, int, mode_t)
 #pragma for Ada overload int syscall(int, void *, unsigned int)
 #endif
@@ -285,7 +285,7 @@
 #pragma for Ada "stdint.h" include "sys/_stdint.h"
 #pragma for Ada "termios.h" include "sys/_termios.h"
 #endif
-#elif defined(__linux__)
+#elif defined(__gnu_linux__)
 #undef si_value /* cannot inline returning unchecked union */
 #pragma for Ada overload int open(const char *, int, __mode_t)
 #pragma for Ada overload long syscall(long, void *, unsigned int)

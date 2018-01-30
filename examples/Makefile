@@ -75,7 +75,7 @@ export INSTALL=ln -s
 export WITHA=0
 export DEBUG=2
 
-ifneq ($(findstring linux,$(TARGET)),)
+ifneq ($(findstring linux-gnu,$(TARGET)),)
 LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
 else
 LIBGNAT=$(LIBGNATBASE).a
