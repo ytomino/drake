@@ -46,7 +46,8 @@ else
 EXEEXT=
 endif
 
-EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
+EXAMPLESPREFIX=
+EXAMPLES=$(basename $(filter-out b~%,$(notdir $(wildcard $(EXAMPLESPREFIX)*.adb))))
 
 ifneq ($(TARGET),$(HOST))
 EXAMPLES:=$(filter-out exception_cpp,$(EXAMPLES))
@@ -178,10 +179,10 @@ $(BUILDDIR)/adalib/$(LIBGNAT): $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildca
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 
-$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/$(LIBGNAT)
-	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
-	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
-	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
+$(BUILDDIR)/%$(EXEEXT): $(EXAMPLESPREFIX)%.adb $(BUILDDIR)/adalib/$(LIBGNAT)
+	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $(EXAMPLESPREFIX)$*.adb $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $*.ali $(GFLAGS_ALL) $(BFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $*.ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
 $(BUILDDIR)/bindtimevars$(EXEEXT): BFLAGS_ALL+=-VKEY1=VALUE1 -VKAGI2=ATAI2
 $(BUILDDIR)/nop$(EXEEXT): BFLAGS_ALL:=$(filter-out -E,$(BFLAGS_ALL))
