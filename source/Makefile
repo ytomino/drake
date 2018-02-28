@@ -297,6 +297,8 @@ SPEED_OBJS+=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	a-nscoar.o \
 	a-nsrear.o \
 	a-nucoar.o \
+	a-nuds19.o \
+	a-nuds21.o \
 	a-nummt1.o \
 	a-nurear.o \
 	a-nusf19.o \
