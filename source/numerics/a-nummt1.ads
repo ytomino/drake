@@ -49,16 +49,16 @@ package Ada.Numerics.MT19937 is
    --  Mersenne Twister.
    pragma Preelaborate;
 
-   subtype Cardinal is Interfaces.Unsigned_32;
-   type Cardinal_Vector is array (Natural range <>) of Cardinal;
+   subtype Unsigned_32 is Interfaces.Unsigned_32;
+   type Unsigned_32_Array is array (Natural range <>) of Unsigned_32;
 
    type Generator is limited private;
 
-   function Random_32 (Gen : aliased in out Generator) return Cardinal;
+   function Random_32 (Gen : aliased in out Generator) return Unsigned_32;
 
    function Initialize return Generator;
-   function Initialize (Initiator : Cardinal) return Generator;
-   function Initialize (Initiator : Cardinal_Vector) return Generator;
+   function Initialize (Initiator : Unsigned_32) return Generator;
+   function Initialize (Initiator : Unsigned_32_Array) return Generator;
 
    procedure Reset (Gen : in out Generator);
    procedure Reset (Gen : in out Generator; Initiator : Integer);
@@ -66,8 +66,8 @@ package Ada.Numerics.MT19937 is
    type State is private;
 
    function Initialize return State;
-   function Initialize (Initiator : Cardinal) return State;
-   function Initialize (Initiator : Cardinal_Vector) return State;
+   function Initialize (Initiator : Unsigned_32) return State;
+   function Initialize (Initiator : Unsigned_32_Array) return State;
 
    procedure Save (Gen : Generator; To_State : out State);
    procedure Reset (Gen : in out Generator; From_State : State);
@@ -101,11 +101,12 @@ private
 
    N : constant := 624;
    M : constant := 397;
-   subtype N_Range is Natural range 0 .. N - 1;
+
+   subtype Unsigned_32_Array_N is Unsigned_32_Array (0 .. N - 1);
 
    type State is record
-      Vector : Cardinal_Vector (N_Range);
-      Condition : Cardinal;
+      Vector : Unsigned_32_Array_N;
+      Condition : Unsigned_32;
    end record;
 
    type Generator is limited record
