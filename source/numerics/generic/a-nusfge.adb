@@ -116,7 +116,7 @@ package body Ada.Numerics.SFMT.Generating is
          do_recursion (
             sfmt (i),
             sfmt (i),
-            sfmt (i + POS1 - N),
+            sfmt (i - (N - POS1)),
             r1.all,
             r2.all);
          r1 := r2;
@@ -155,7 +155,7 @@ package body Ada.Numerics.SFMT.Generating is
          do_recursion (
             the_array (i),
             sfmt (i),
-            the_array (i + POS1 - N),
+            the_array (i - (N - POS1)),
             r1.all,
             r2.all);
          r1 := r2;
@@ -166,7 +166,7 @@ package body Ada.Numerics.SFMT.Generating is
          do_recursion (
             the_array (i),
             the_array (i - N),
-            the_array (i + POS1 - N),
+            the_array (i - (N - POS1)),
             r1.all,
             r2.all);
          r1 := r2;
@@ -174,15 +174,15 @@ package body Ada.Numerics.SFMT.Generating is
          i := i + 1;
       end loop;
       j := 0;
-      while j < 2 * N - size loop
-         sfmt (j) := the_array (j + size - N);
+      while j < N - (size - N) loop
+         sfmt (j) := the_array (j + (size - N));
          j := j + 1;
       end loop;
       while i < size loop
          do_recursion (
             the_array (i),
             the_array (i - N),
-            the_array (i + POS1 - N),
+            the_array (i - (N - POS1)),
             r1.all,
             r2.all);
          r1 := r2;
