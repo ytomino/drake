@@ -78,7 +78,7 @@ package body System.Native_IO.Names is
                C.unistd.readlink (
                   Link (0)'Access,
                   New_Name,
-                  New_Name_Capacity);
+                  New_Name_Capacity - 1); -- reserving for NUL
             if S_Length < 0 then
                --  Failed, keep Has_Full_Name and Name.
                if Raise_On_Error then
@@ -129,18 +129,24 @@ package body System.Native_IO.Names is
             end if;
             New_Name := New_New_Name;
          end;
+         New_Name_Length := New_Name_Length + 1; -- '*'
          declare
-            New_Name_All : C.char_array (
-               0 .. New_Name_Length + 1); -- '*' & NUL
+            New_Name_All : C.char_array (0 .. New_Name_Length); -- NUL
             for New_Name_All'Address use
                Name_Pointer_Conv.To_Address (New_Name);
          begin
-            New_Name_All (1 .. New_Name_Length) :=
-               New_Name_All (0 .. New_Name_Length - 1);
+            New_Name_All (1 .. New_Name_Length - 1) :=
+               New_Name_All (0 .. New_Name_Length - 2);
             New_Name_All (0) := '*';
-            New_Name_All (New_Name_Length + 1) := C.char'Val (0);
          end;
       end if;
+      declare -- append NUL
+         New_Name_All : C.char_array (0 .. New_Name_Length); -- NUL
+         for New_Name_All'Address use
+            Name_Pointer_Conv.To_Address (New_Name);
+      begin
+         New_Name_All (New_Name_Length) := C.char'Val (0);
+      end;
       if not Is_Standard then
          Free (Name); -- External or External_No_Close
       end if;
