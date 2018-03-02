@@ -1,4 +1,5 @@
 with Ada.Exception_Identification.From_Here;
+with Ada.Exceptions.Finally;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
 with C.sys.ioctl;
@@ -204,27 +205,46 @@ package body System.Native_Text_IO is
    is
       Seq : constant String (1 .. 4) :=
          (Character'Val (16#1b#), '[', '6', 'n');
-      Old_Settings : aliased C.termios.struct_termios;
+      type Terminal_Setting is record
+         Old_Settings : aliased C.termios.struct_termios;
+         Handle : Handle_Type;
+         Error : Boolean;
+      end record;
+      pragma Suppress_Initialization (Terminal_Setting);
+      TS : aliased Terminal_Setting;
       Buffer : String (1 .. 256);
       Last : Natural;
    begin
+      TS.Handle := Handle;
       --  non-canonical mode and disable echo
       tcgetsetattr (
          Handle,
          C.termios.TCSAFLUSH,
          not (C.termios.ECHO or C.termios.ICANON),
          1,
-         Old_Settings'Access);
-      --  output
-      Write_Just (Handle, Seq);
-      --  input
-      Read_Escape_Sequence (Handle, Buffer, Last, 'R');
-      --  restore terminal mode
-      if C.termios.tcsetattr (
-         Handle,
-         C.termios.TCSANOW,
-         Old_Settings'Access) < 0
-      then
+         TS.Old_Settings'Access);
+      declare
+         procedure Finally (X : in out Terminal_Setting);
+         procedure Finally (X : in out Terminal_Setting) is
+         begin
+            --  restore terminal mode
+            X.Error := C.termios.tcsetattr (
+               X.Handle,
+               C.termios.TCSANOW,
+               X.Old_Settings'Access) < 0;
+         end Finally;
+         package Holder is
+            new Ada.Exceptions.Finally.Scoped_Holder (
+               Terminal_Setting,
+               Finally);
+      begin
+         Holder.Assign (TS);
+         --  output
+         Write_Just (Handle, Seq);
+         --  input
+         Read_Escape_Sequence (Handle, Buffer, Last, 'R');
+      end;
+      if TS.Error then
          Raise_Exception (Device_Error'Identity);
       end if;
       --  parse
