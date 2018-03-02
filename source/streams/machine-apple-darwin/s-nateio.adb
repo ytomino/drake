@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
+with C.signal;
 with C.sys.ioctl;
 with C.unistd;
 package body System.Native_Text_IO is
@@ -205,6 +206,12 @@ package body System.Native_Text_IO is
    is
       Seq : constant String (1 .. 4) :=
          (Character'Val (16#1b#), '[', '6', 'n');
+      type Signal_Setting is record
+         Old_Mask : aliased C.signal.sigset_t;
+         Error : Boolean;
+      end record;
+      pragma Suppress_Initialization (Signal_Setting);
+      SS : aliased Signal_Setting;
       type Terminal_Setting is record
          Old_Settings : aliased C.termios.struct_termios;
          Handle : Handle_Type;
@@ -215,37 +222,72 @@ package body System.Native_Text_IO is
       Buffer : String (1 .. 256);
       Last : Natural;
    begin
-      TS.Handle := Handle;
-      --  non-canonical mode and disable echo
-      tcgetsetattr (
-         Handle,
-         C.termios.TCSAFLUSH,
-         not (C.termios.ECHO or C.termios.ICANON),
-         1,
-         TS.Old_Settings'Access);
+      --  block SIGINT
       declare
-         procedure Finally (X : in out Terminal_Setting);
-         procedure Finally (X : in out Terminal_Setting) is
+         Mask : aliased C.signal.sigset_t;
+         Dummy_R : C.signed_int;
+      begin
+         Dummy_R := C.signal.sigemptyset (Mask'Access);
+         Dummy_R := C.signal.sigaddset (Mask'Access, C.signal.SIGINT);
+         if C.signal.sigprocmask (
+            C.signal.SIG_BLOCK,
+            Mask'Access,
+            SS.Old_Mask'Access) < 0
+         then
+            raise Program_Error; -- sigprocmask failed
+         end if;
+      end;
+      declare
+         procedure Finally (X : in out Signal_Setting);
+         procedure Finally (X : in out Signal_Setting) is
          begin
-            --  restore terminal mode
-            X.Error := C.termios.tcsetattr (
-               X.Handle,
-               C.termios.TCSANOW,
-               X.Old_Settings'Access) < 0;
+            --  unblock SIGINT
+            X.Error := C.signal.sigprocmask (
+               C.signal.SIG_SETMASK,
+               X.Old_Mask'Access,
+               null) < 0;
          end Finally;
          package Holder is
             new Ada.Exceptions.Finally.Scoped_Holder (
-               Terminal_Setting,
+               Signal_Setting,
                Finally);
       begin
-         Holder.Assign (TS);
-         --  output
-         Write_Just (Handle, Seq);
-         --  input
-         Read_Escape_Sequence (Handle, Buffer, Last, 'R');
+         Holder.Assign (SS);
+         TS.Handle := Handle;
+         --  non-canonical mode and disable echo
+         tcgetsetattr (
+            Handle,
+            C.termios.TCSAFLUSH,
+            not (C.termios.ECHO or C.termios.ICANON),
+            1,
+            TS.Old_Settings'Access);
+         declare
+            procedure Finally (X : in out Terminal_Setting);
+            procedure Finally (X : in out Terminal_Setting) is
+            begin
+               --  restore terminal mode
+               X.Error := C.termios.tcsetattr (
+                  X.Handle,
+                  C.termios.TCSANOW,
+                  X.Old_Settings'Access) < 0;
+            end Finally;
+            package Holder is
+               new Ada.Exceptions.Finally.Scoped_Holder (
+                  Terminal_Setting,
+                  Finally);
+         begin
+            Holder.Assign (TS);
+            --  output
+            Write_Just (Handle, Seq);
+            --  input
+            Read_Escape_Sequence (Handle, Buffer, Last, 'R');
+         end;
+         if TS.Error then
+            Raise_Exception (Device_Error'Identity);
+         end if;
       end;
-      if TS.Error then
-         Raise_Exception (Device_Error'Identity);
+      if SS.Error then
+         raise Program_Error; -- sigprocmask failed
       end if;
       --  parse
       Parse_Escape_Sequence (
