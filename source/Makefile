@@ -12,7 +12,7 @@
 #   BUILDDIR=   parent of build directories (default:$RTSDIR/adalib)
 #   GCCPREFIX=  prefix of gcc (default:$TARGET-)
 #   GCCSUFFIX=  suffix of gcc (default:empty)
-#   GCC=        compiler (default:$GCCPREFIX/gcc$GCCSUFFIX)
+#   GCC=        compiler (default:${GCCPREFIX}gcc$GCCSUFFIX)
 #   AR=         librarian (default:$TARGET-ar)
 #   INSTALL=    copy source files to adainclude (default:install -m 444)
 #   EH=         mechanism of exception handling (default:selected by $TARGET)

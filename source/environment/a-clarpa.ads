@@ -28,7 +28,7 @@ private package Ada.Command_Line.Argument_Parsing is
    type Option_Character is (
       ' ', -- without value
       ':', -- with value by no space or space
-      '?'); -- with value by no space (ex. -M50% --prefix=/usr/local)
+      '?'); -- with value by no space (e.g. -M50% --prefix=/usr/local)
 
    function Is_Option (
       Argument : String;

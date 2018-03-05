@@ -69,7 +69,7 @@ package body System.Finalization_Masters is
             while I /= null loop
                if I.Finalize_Address = Fin_Addr_Ptr then
                   List := I;
-                  return;
+                  return; -- found
                end if;
                I := I.Next;
             end loop;

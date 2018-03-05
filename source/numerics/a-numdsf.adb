@@ -620,7 +620,7 @@ package body Ada.Numerics.dSFMT is
    --    Mersenne exponent, and all parameters of this generator.
    --  equivalent to dsfmt_get_idstring
    function Id return String is
-      --  ex: "dSFMT2-19937:117-19:ffafffffffb3f-ffdfffc90fffd"
+      --  e.g. "dSFMT2-19937:117-19:ffafffffffb3f-ffdfffc90fffd"
       Result : String (
          1 ..
          6 + 1 -- "dSFMT2-"

@@ -91,7 +91,7 @@ package body Ada.Numerics.SFMT is
    --  This function returns the identification string.
    --  The string shows the word size, the Mersenne exponent,
    --  and all parameters of this generator.
-   --  ex. "SFMT-19937:122-18-1-11-1:dfffffef-ddfecb7f-bffaffff-bffffff6"
+   --  e.g. "SFMT-19937:122-18-1-11-1:dfffffef-ddfecb7f-bffaffff-bffffff6"
    function Id return String is
       Result : String (
          1 ..

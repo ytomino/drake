@@ -1332,7 +1332,7 @@ package body Ada.Naked_Text_IO is
                   From_Status);
                File.Last := 0;
                Put (File, Wide_Wide_Character'Val (Code));
-               return; -- done
+               return;
             end;
          else
             Write_Buffer (File, File.Last);
