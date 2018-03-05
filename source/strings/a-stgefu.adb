@@ -915,22 +915,23 @@ package body Ada.Strings.Generic_Functions is
                Pattern_Count := Pattern_Count + 1;
                declare
                   Code : Wide_Wide_Character;
-                  Error : Boolean; -- ignore
+                  Is_Illegal_Sequence : Boolean; -- ignore
                begin
                   Get (
                      Pattern (Pattern_Last + 1 .. Pattern'Last),
                      Pattern_Last,
                      Code,
-                     Error);
+                     Is_Illegal_Sequence => Is_Illegal_Sequence);
                end;
             end loop;
          end;
          while Pattern_Count > 0 and then Result < Source'Last loop
             declare
                Code : Wide_Wide_Character;
-               Error : Boolean; -- ignore
+               Is_Illegal_Sequence : Boolean; -- ignore
             begin
-               Get (Source (Result + 1 .. Source'Last), Result, Code, Error);
+               Get (Source (Result + 1 .. Source'Last), Result, Code,
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
             end;
             Pattern_Count := Pattern_Count - 1;
          end loop;
@@ -968,14 +969,14 @@ package body Ada.Strings.Generic_Functions is
                      Buffer : String_Type (1 .. Expanding);
                      J, J_Last, Pattern_Last, Character_Length : Positive;
                      Code : Wide_Wide_Character;
-                     Error : Boolean;
+                     Is_Illegal_Sequence : Boolean;
                   begin
                      Get (
                         Source (Source_Index .. Source'Last),
                         Searched_Last,
                         Code,
-                        Error);
-                     if Error then
+                        Is_Illegal_Sequence => Is_Illegal_Sequence);
+                     if Is_Illegal_Sequence then
                         Character_Length := Searched_Last - Source_Index + 1;
                         Buffer (1 .. Character_Length) :=
                            Source (Source_Index .. Searched_Last);
@@ -994,12 +995,9 @@ package body Ada.Strings.Generic_Functions is
                            end if;
                            J := J_Last + 1;
                            exit when J > Source'Last;
-                           Get (
-                              Source (J .. Source'Last),
-                              J_Last,
-                              Code,
-                              Error);
-                           if Error then
+                           Get (Source (J .. Source'Last), J_Last, Code,
+                              Is_Illegal_Sequence => Is_Illegal_Sequence);
+                           if Is_Illegal_Sequence then
                               Character_Length := J_Last - J + 1;
                               Buffer (1 .. Character_Length) :=
                                  Source (J .. J_Last);
@@ -1046,15 +1044,15 @@ package body Ada.Strings.Generic_Functions is
                      Buffer : String_Type (1 .. Expanding);
                      J, J_First, Pattern_First, Character_Length : Natural;
                      Code : Wide_Wide_Character;
-                     Error : Boolean;
+                     Is_Illegal_Sequence : Boolean;
                   begin
                      Get_Reverse (
                         Source (Source'First .. Source_Index),
                         J_First,
                         Code,
-                        Error);
+                        Is_Illegal_Sequence => Is_Illegal_Sequence);
                      Unsearched_Last := J_First - 1;
-                     if Error then
+                     if Is_Illegal_Sequence then
                         Character_Length := Source_Index - J_First + 1;
                         Buffer (1 .. Character_Length) :=
                            Source (J_First .. Source_Index);
@@ -1076,8 +1074,8 @@ package body Ada.Strings.Generic_Functions is
                               Source (Source'First .. J),
                               J_First,
                               Code,
-                              Error);
-                           if Error then
+                              Is_Illegal_Sequence => Is_Illegal_Sequence);
+                           if Is_Illegal_Sequence then
                               Character_Length := J - J_First + 1;
                               Buffer (1 .. Character_Length) :=
                                  Source (J_First .. J);
@@ -1120,15 +1118,12 @@ package body Ada.Strings.Generic_Functions is
                Source_Index : constant Positive := Source_Last + 1;
                Target_Index : constant Positive := Target_Last + 1;
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Is_Illegal_Sequence : Boolean;
             begin
                --  get single unicode character
-               Get (
-                  Source (Source_Index .. Source'Last),
-                  Source_Last,
-                  Code,
-                  Error);
-               if Error then
+               Get (Source (Source_Index .. Source'Last), Source_Last, Code,
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if Is_Illegal_Sequence then
                   --  keep illegal sequence
                   Target_Last := Target_Index + (Source_Last - Source_Index);
                   Target (Target_Index .. Target_Last) :=
@@ -1190,14 +1185,14 @@ package body Ada.Strings.Generic_Functions is
             declare
                Code_First : Positive;
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Is_Illegal_Sequence : Boolean;
             begin
                Get_Reverse (
                   Source (Source'First .. Unsearched_Last),
                   Code_First,
                   Code,
-                  Error);
-               if Error then
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if Is_Illegal_Sequence then
                   exit when Test = Inside; -- illegal sequence is outside
                else
                   exit when Is_In (Code, Set) /= (Test = Inside);
@@ -1511,14 +1506,11 @@ package body Ada.Strings.Generic_Functions is
             declare
                Source_Index : constant Positive := Searched_Last + 1;
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Is_Illegal_Sequence : Boolean;
             begin
-               Get (
-                  Source (Source_Index .. Source'Last),
-                  Searched_Last,
-                  Code,
-                  Error);
-               if Error then
+               Get (Source (Source_Index .. Source'Last), Searched_Last, Code,
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if Is_Illegal_Sequence then
                   if Test /= Inside then -- illegal sequence is outside
                      return Source_Index;
                   end if;
@@ -1544,14 +1536,14 @@ package body Ada.Strings.Generic_Functions is
             declare
                Code_First : Positive;
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Is_Illegal_Sequence : Boolean;
             begin
                Get_Reverse (
                   Source (Source'First .. Unsearched_Last),
                   Code_First,
                   Code,
-                  Error);
-               if Error then
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if Is_Illegal_Sequence then
                   if Test /= Inside then -- illegal sequence is outside
                      return Code_First;
                   end if;
@@ -1609,10 +1601,11 @@ package body Ada.Strings.Generic_Functions is
          while Last < Source'Last loop
             declare
                Code : Wide_Wide_Character;
-               Error : Boolean;
+               Is_Illegal_Sequence : Boolean;
             begin
-               Get (Source (Last + 1 .. Source'Last), Last, Code, Error);
-               if not Error and then Is_In (Code, Set) then
+               Get (Source (Last + 1 .. Source'Last), Last, Code,
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if not Is_Illegal_Sequence and then Is_In (Code, Set) then
                   Result := Result + 1;
                end if;
             end;
@@ -1661,10 +1654,11 @@ package body Ada.Strings.Generic_Functions is
             declare
                New_Last : Natural;
                Code : Wide_Wide_Character;
-               Error : Boolean; -- ignore
+               Is_Illegal_Sequence : Boolean; -- ignore
             begin
-               Get (Source (Last + 1 .. Source'Last), New_Last, Code, Error);
-               if Error then
+               Get (Source (Last + 1 .. Source'Last), New_Last, Code,
+                  Is_Illegal_Sequence => Is_Illegal_Sequence);
+               if Is_Illegal_Sequence then
                   exit when Test = Inside; -- illegal sequence is outside
                else
                   exit when Is_In (Code, Set) /= (Test = Inside);
