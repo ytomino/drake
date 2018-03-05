@@ -96,6 +96,7 @@ package body System.Native_Directories.Searching is
                   --  no files match the pattern
                   Has_Next_Entry := False;
                when others =>
+                  Handle := Null_Handle; -- not started
                   Raise_Exception (Named_IO_Exception_Id (Error));
             end case;
          end;
@@ -134,7 +135,8 @@ package body System.Native_Directories.Searching is
    is
       Closing_Handle : constant C.winnt.HANDLE := Handle;
    begin
-      Handle := Handle_Type (Null_Address);
+      Handle := Null_Handle;
+      --  INVALID_HANDLE_VALUE means started but empty.
       if Closing_Handle /= C.winbase.INVALID_HANDLE_VALUE then
          if C.winbase.FindClose (Closing_Handle) = C.windef.FALSE then
             if Raise_On_Error then
