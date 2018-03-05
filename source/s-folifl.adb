@@ -4,9 +4,6 @@ package body System.Formatting.Literals.Float is
    function copysignl (X, Y : Long_Long_Float) return Long_Long_Float
       with Import,
          Convention => Intrinsic, External_Name => "__builtin_copysignl";
-   function truncl (X : Long_Long_Float) return Long_Long_Float
-      with Import,
-         Convention => Intrinsic, External_Name => "__builtin_truncl";
 
    procedure Get_Aft (
       Item : String;
@@ -22,36 +19,39 @@ package body System.Formatting.Literals.Float is
       Scale : Long_Long_Float := 1.0;
       Old_Last : constant Natural := Last + 1; -- skip '.'
    begin
-      Last := Old_Last;
       Result := 0.0;
-      while Last < Item'Last loop
-         declare
-            X : Digit;
-            Is_Invalid : Boolean;
-         begin
-            if Item (Last + 1) = '_' then
-               exit when Last = Old_Last or else Last + 1 >= Item'Last;
+      if Old_Last <= Item'Last and then Item (Old_Last) = '.' then
+         Last := Old_Last;
+         while Last < Item'Last loop
+            declare
+               X : Digit;
+               Is_Invalid : Boolean;
+            begin
+               if Item (Last + 1) = '_' then
+                  exit when Last = Old_Last or else Last + 1 >= Item'Last;
+                  Last := Last + 1;
+               end if;
+               Value (Item (Last + 1), X, Is_Invalid);
+               exit when Is_Invalid or else X >= Base;
+               if Scale <= Long_Long_Float'Last / Long_Long_Float (Base) then
+                  Result :=
+                     Result * Long_Long_Float (Base) + Long_Long_Float (X);
+                  Scale := Scale * Long_Long_Float (Base);
+               end if;
                Last := Last + 1;
-            end if;
-            Value (Item (Last + 1), X, Is_Invalid);
-            exit when Is_Invalid or else X >= Base;
-            if Scale <= Long_Long_Float'Last / Long_Long_Float (Base) then
-               Result := Result * Long_Long_Float (Base) + Long_Long_Float (X);
-               Scale := Scale * Long_Long_Float (Base);
-            end if;
-            Last := Last + 1;
-         end;
-      end loop;
-      Result := Result / Scale;
+            end;
+         end loop;
+         Result := Result / Scale;
+      end if;
    end Get_Aft;
 
-   procedure Get_Unsigned_Real (
+   procedure Get_Fore (
       Item : String;
       Last : in out Natural;
       Result : out Long_Long_Float;
       Base : Number_Base;
       Error : out Boolean);
-   procedure Get_Unsigned_Real (
+   procedure Get_Fore (
       Item : String;
       Last : in out Natural;
       Result : out Long_Long_Float;
@@ -69,17 +69,9 @@ package body System.Formatting.Literals.Float is
             if Item (Last + 1) = '_' then
                exit when Last = Old_Last or else Last + 1 >= Item'Last;
                Last := Last + 1;
-            elsif Item (Last + 1) = '.' then
-               declare
-                  Decimal : Long_Long_Float;
-               begin
-                  Get_Aft (Item, Last, Decimal, Base);
-                  Result := Result + Decimal;
-               end;
-               exit;
             end if;
             Value (Item (Last + 1), X, Is_Invalid);
-            exit when Is_Invalid or else X >= Base;
+            exit when Is_Invalid or else X >= Base; -- implies '.'
             if Result >
                (Long_Long_Float'Last - Long_Long_Float (X))
                / Long_Long_Float (Base)
@@ -92,7 +84,7 @@ package body System.Formatting.Literals.Float is
          end;
       end loop;
       Error := False;
-   end Get_Unsigned_Real;
+   end Get_Fore;
 
    --  implementation
 
@@ -103,6 +95,7 @@ package body System.Formatting.Literals.Float is
       Error : out Boolean)
    is
       Sign : Long_Long_Float;
+      Aft : Long_Long_Float;
       Base : Number_Base := 10;
       Mark : Character;
       Exponent : Integer;
@@ -118,23 +111,22 @@ package body System.Formatting.Literals.Float is
          end if;
          Sign := 1.0;
       end if;
-      Get_Unsigned_Real (Item, Last, Result, Base => Base, Error => Error);
+      Get_Fore (Item, Last, Result, Base => Base, Error => Error);
       if not Error then
          if Last < Item'Last
             and then (Item (Last + 1) = '#' or else Item (Last + 1) = ':')
          then
             Mark := Item (Last + 1);
             Last := Last + 1;
-            if Result = truncl (Result)
-               and then Result in
-                  Long_Long_Float (Number_Base'First) ..
-                  Long_Long_Float (Number_Base'Last)
+            if Result in
+               Long_Long_Float (Number_Base'First) ..
+               Long_Long_Float (Number_Base'Last)
             then
                Base := Number_Base (Result);
-               Get_Unsigned_Real (Item, Last, Result,
-                  Base => Base,
-                  Error => Error);
+               Get_Fore (Item, Last, Result, Base => Base, Error => Error);
                if not Error then
+                  Get_Aft (Item, Last, Aft, Base => Base);
+                  Result := Result + Aft;
                   if Last < Item'Last and then Item (Last + 1) = Mark then
                      Last := Last + 1;
                   else
@@ -148,6 +140,9 @@ package body System.Formatting.Literals.Float is
                Error := True;
                return;
             end if;
+         else
+            Get_Aft (Item, Last, Aft, Base => Base);
+            Result := Result + Aft;
          end if;
          Get_Exponent (Item, Last, Exponent,
             Positive_Only => False,
