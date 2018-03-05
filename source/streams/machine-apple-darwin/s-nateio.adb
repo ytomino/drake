@@ -95,27 +95,34 @@ package body System.Native_Text_IO is
       Error : Boolean;
       L : constant Natural := Item'First + (Prefix'Length - 1);
    begin
-      if L <= Item'Last and then Item (Item'First .. L) = Prefix then
+      if L > Item'Last or else Item (Item'First .. L) /= Prefix then
+         Error := True;
+      else
          Formatting.Value (
             Item (L + 1 .. Item'Last),
             P,
             X1,
             Error => Error);
-         if not Error and then P < Item'Last and then Item (P + 1) = ';' then
-            Formatting.Value (
-               Item (P + 2 .. Item'Last),
-               P,
-               X2,
-               Error => Error);
-            if not Error
-               and then P + 1 = Item'Last
-               and then Item (P + 1) = Postfix
-            then
-               return;
+         if not Error then
+            if P >= Item'Last or else Item (P + 1) /= ';' then
+               Error := True;
+            else
+               Formatting.Value (
+                  Item (P + 2 .. Item'Last),
+                  P,
+                  X2,
+                  Error => Error);
+               if not Error
+                  and then (P + 1 /= Item'Last or else Item (P + 1) /= Postfix)
+               then
+                  Error := True;
+               end if;
             end if;
          end if;
       end if;
-      Raise_Exception (Data_Error'Identity);
+      if Error then
+         Raise_Exception (Data_Error'Identity);
+      end if;
    end Parse_Escape_Sequence;
 
    State_Stack_Count : Natural := 0;

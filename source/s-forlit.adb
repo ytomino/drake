@@ -68,32 +68,30 @@ package body System.Formatting.Literals is
          then
             Mark := Item (Last + 1);
             Last := Last + 1;
-            if Result in
+            if Result not in
                Word_Unsigned (Number_Base'First) ..
                Word_Unsigned (Number_Base'Last)
             then
+               Error := True;
+            else
                Base := Number_Base (Result);
                Get (Item, Last, Result, Base => Base, Error => Error);
                if not Error then
-                  if Last < Item'Last and then Item (Last + 1) = Mark then
-                     Last := Last + 1;
-                  else
+                  if Last >= Item'Last or else Item (Last + 1) /= Mark then
                      Error := True;
-                     return;
+                  else
+                     Last := Last + 1;
                   end if;
-               else
-                  return;
                end if;
-            else
-               Error := True;
-               return;
             end if;
          end if;
-         Get_Exponent (Item, Last, Exponent,
-            Positive_Only => True,
-            Error => Error);
-         if not Error and then Exponent /= 0 then
-            Result := Result * Word_Unsigned (Base) ** Exponent;
+         if not Error then
+            Get_Exponent (Item, Last, Exponent,
+               Positive_Only => True,
+               Error => Error);
+            if not Error and then Exponent /= 0 then
+               Result := Result * Word_Unsigned (Base) ** Exponent;
+            end if;
          end if;
       end if;
    end Get_Literal_Without_Sign;
@@ -120,32 +118,30 @@ package body System.Formatting.Literals is
          then
             Mark := Item (Last + 1);
             Last := Last + 1;
-            if Result in
+            if Result not in
                Long_Long_Unsigned (Number_Base'First) ..
                Long_Long_Unsigned (Number_Base'Last)
             then
+               Error := True;
+            else
                Base := Number_Base (Result);
                Get (Item, Last, Result, Base => Base, Error => Error);
                if not Error then
-                  if Last < Item'Last and then Item (Last + 1) = Mark then
-                     Last := Last + 1;
-                  else
+                  if Last >= Item'Last or else Item (Last + 1) /= Mark then
                      Error := True;
-                     return;
+                  else
+                     Last := Last + 1;
                   end if;
-               else
-                  return;
                end if;
-            else
-               Error := True;
-               return;
             end if;
          end if;
-         Get_Exponent (Item, Last, Exponent,
-            Positive_Only => True,
-            Error => Error);
-         if not Error and then Exponent /= 0 then
-            Result := Result * Long_Long_Unsigned (Base) ** Exponent;
+         if not Error then
+            Get_Exponent (Item, Last, Exponent,
+               Positive_Only => True,
+               Error => Error);
+            if not Error and then Exponent /= 0 then
+               Result := Result * Long_Long_Unsigned (Base) ** Exponent;
+            end if;
          end if;
       end if;
    end Get_Literal_Without_Sign;
@@ -217,10 +213,10 @@ package body System.Formatting.Literals is
          Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
             Error => Error);
          if not Error then
-            if Unsigned_Result <= -Word_Unsigned'Mod (Word_Integer'First) then
-               Result := -Word_Integer (Unsigned_Result);
-            else
+            if Unsigned_Result > -Word_Unsigned'Mod (Word_Integer'First) then
                Error := True;
+            else
+               Result := -Word_Integer (Unsigned_Result);
             end if;
          end if;
       else
@@ -230,10 +226,10 @@ package body System.Formatting.Literals is
          Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
             Error => Error);
          if not Error then
-            if Unsigned_Result <= Word_Unsigned (Word_Integer'Last) then
-               Result := Word_Integer (Unsigned_Result);
-            else
+            if Unsigned_Result > Word_Unsigned (Word_Integer'Last) then
                Error := True;
+            else
+               Result := Word_Integer (Unsigned_Result);
             end if;
          end if;
       end if;
@@ -257,12 +253,12 @@ package body System.Formatting.Literals is
                Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
                   Error => Error);
                if not Error then
-                  if Unsigned_Result <=
+                  if Unsigned_Result >
                      -Long_Long_Unsigned'Mod (Long_Long_Integer'First)
                   then
-                     Result := -Long_Long_Integer (Unsigned_Result);
-                  else
                      Error := True;
+                  else
+                     Result := -Long_Long_Integer (Unsigned_Result);
                   end if;
                end if;
             else
@@ -272,12 +268,12 @@ package body System.Formatting.Literals is
                Get_Literal_Without_Sign (Item, Last, Unsigned_Result,
                   Error => Error);
                if not Error then
-                  if Unsigned_Result <=
+                  if Unsigned_Result >
                      Long_Long_Unsigned (Long_Long_Integer'Last)
                   then
-                     Result := Long_Long_Integer (Unsigned_Result);
-                  else
                      Error := True;
+                  else
+                     Result := Long_Long_Integer (Unsigned_Result);
                   end if;
                end if;
             end if;

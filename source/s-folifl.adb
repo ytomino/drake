@@ -118,40 +118,38 @@ package body System.Formatting.Literals.Float is
          then
             Mark := Item (Last + 1);
             Last := Last + 1;
-            if Result in
+            if Result not in
                Long_Long_Float (Number_Base'First) ..
                Long_Long_Float (Number_Base'Last)
             then
+               Error := True;
+            else
                Base := Number_Base (Result);
                Get_Fore (Item, Last, Result, Base => Base, Error => Error);
                if not Error then
                   Get_Aft (Item, Last, Aft, Base => Base);
                   Result := Result + Aft;
-                  if Last < Item'Last and then Item (Last + 1) = Mark then
-                     Last := Last + 1;
-                  else
+                  if Last >= Item'Last or else Item (Last + 1) /= Mark then
                      Error := True;
-                     return;
+                  else
+                     Last := Last + 1;
                   end if;
-               else
-                  return;
                end if;
-            else
-               Error := True;
-               return;
             end if;
          else
             Get_Aft (Item, Last, Aft, Base => Base);
             Result := Result + Aft;
          end if;
-         Get_Exponent (Item, Last, Exponent,
-            Positive_Only => False,
-            Error => Error);
          if not Error then
-            if Exponent /= 0 then
-               Result := Result * Long_Long_Float (Base) ** Exponent;
+            Get_Exponent (Item, Last, Exponent,
+               Positive_Only => False,
+               Error => Error);
+            if not Error then
+               if Exponent /= 0 then
+                  Result := Result * Long_Long_Float (Base) ** Exponent;
+               end if;
+               Result := copysignl (Result, Sign);
             end if;
-            Result := copysignl (Result, Sign);
          end if;
       end if;
    end Get_Literal;

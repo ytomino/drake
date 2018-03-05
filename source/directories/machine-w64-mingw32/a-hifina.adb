@@ -34,20 +34,20 @@ package body Ada.Hierarchical_File_Names is
             and then Is_Path_Delimiter (Name (Name'First + 1))
          then -- UNC \\HOST\SHARE\
             Last := Name'First + 1;
-            loop -- skip host-name
-               if Last = Name'Last then
-                  return;
-               end if;
-               Last := Last + 1;
-               exit when Is_Path_Delimiter (Name (Last));
-            end loop;
-            loop -- skip share-name
-               if Last = Name'Last then
-                  return;
-               end if;
-               Last := Last + 1;
-               exit when Is_Path_Delimiter (Name (Last));
-            end loop;
+            if Last < Name'Last then
+               loop -- skip host-name
+                  Last := Last + 1;
+                  exit when Last = Name'Last;
+                  if Is_Path_Delimiter (Name (Last)) then
+                     loop -- skip share-name
+                        Last := Last + 1;
+                        exit when Last = Name'Last;
+                        exit when Is_Path_Delimiter (Name (Last));
+                     end loop;
+                     exit;
+                  end if;
+               end loop;
+            end if;
          else
             Last := Name'First; -- no drive letter
          end if;

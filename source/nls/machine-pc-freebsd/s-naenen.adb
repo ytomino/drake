@@ -351,11 +351,11 @@ package body System.Native_Environment_Encoding is
       Is_Overflow := Out_Item'Length < Object.Substitute_Length;
       if Is_Overflow then
          Out_Last := Out_Item'First - 1;
-         return;
+      else
+         Out_Last := Out_Item'First + (Object.Substitute_Length - 1);
+         Out_Item (Out_Item'First .. Out_Last) :=
+            Object.Substitute (1 .. Object.Substitute_Length);
       end if;
-      Out_Last := Out_Item'First + (Object.Substitute_Length - 1);
-      Out_Item (Out_Item'First .. Out_Last) :=
-         Object.Substitute (1 .. Object.Substitute_Length);
    end Put_Substitute;
 
 end System.Native_Environment_Encoding;

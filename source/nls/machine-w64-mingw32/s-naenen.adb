@@ -31,55 +31,52 @@ package body System.Native_Environment_Encoding is
          when UTF_16 =>
             Last := Item'First - 1;
             Is_Overflow := Item'First + 1 > Item'Last;
-            if Is_Overflow then
-               return;
+            if not Is_Overflow then
+               case Default_Bit_Order is
+                  when High_Order_First =>
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := Character'Pos ('?');
+                  when Low_Order_First =>
+                     Last := Last + 1;
+                     Item (Last) := Character'Pos ('?');
+                     Last := Last + 1;
+                     Item (Last) := 0;
+               end case;
             end if;
-            case Default_Bit_Order is
-               when High_Order_First =>
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := Character'Pos ('?');
-               when Low_Order_First =>
-                  Last := Last + 1;
-                  Item (Last) := Character'Pos ('?');
-                  Last := Last + 1;
-                  Item (Last) := 0;
-            end case;
          when UTF_32 =>
             Last := Item'First - 1;
             Is_Overflow := Item'First + 3 > Item'Last;
-            if Is_Overflow then
-               return;
+            if not Is_Overflow then
+               case Default_Bit_Order is
+                  when High_Order_First =>
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := Character'Pos ('?');
+                  when Low_Order_First =>
+                     Last := Last + 1;
+                     Item (Last) := Character'Pos ('?');
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := 0;
+                     Last := Last + 1;
+                     Item (Last) := 0;
+               end case;
             end if;
-            case Default_Bit_Order is
-               when High_Order_First =>
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := Character'Pos ('?');
-               when Low_Order_First =>
-                  Last := Last + 1;
-                  Item (Last) := Character'Pos ('?');
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := 0;
-                  Last := Last + 1;
-                  Item (Last) := 0;
-            end case;
          when others =>
             Last := Item'First - 1;
             Is_Overflow := Item'First > Item'Last;
-            if Is_Overflow then
-               return;
+            if not Is_Overflow then
+               Last := Last + 1;
+               Item (Last) := Character'Pos ('?');
             end if;
-            Last := Last + 1;
-            Item (Last) := Character'Pos ('?');
       end case;
    end Default_Substitute;
 
@@ -657,11 +654,11 @@ package body System.Native_Environment_Encoding is
          Is_Overflow := Out_Item'Length < Object.Substitute_Length;
          if Is_Overflow then
             Out_Last := Out_Item'First - 1;
-            return;
+         else
+            Out_Last := Out_Item'First + (Object.Substitute_Length - 1);
+            Out_Item (Out_Item'First .. Out_Last) :=
+               Object.Substitute (1 .. Object.Substitute_Length);
          end if;
-         Out_Last := Out_Item'First + (Object.Substitute_Length - 1);
-         Out_Item (Out_Item'First .. Out_Last) :=
-            Object.Substitute (1 .. Object.Substitute_Length);
       end if;
    end Put_Substitute;
 

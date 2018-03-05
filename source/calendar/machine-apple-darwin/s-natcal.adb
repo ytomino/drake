@@ -110,12 +110,13 @@ package body System.Native_Calendar is
             Result := -7857734400.0; -- first day in Time
          else
             Error := True;
-            return;
          end if;
       else
          Result := To_Time (time);
       end if;
-      Result := Result - Duration (Time_Zone * 60) + Seconds;
+      if not Error then
+         Result := Result - Duration (Time_Zone * 60) + Seconds;
+      end if;
    end Time_Of;
 
    procedure Simple_Delay_Until (T : Native_Time) is
