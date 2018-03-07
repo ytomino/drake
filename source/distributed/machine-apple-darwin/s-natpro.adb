@@ -3,6 +3,7 @@ with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
 with System.Native_IO;
+with System.Shared_Locking;
 with System.Standard_Allocators;
 with System.Startup;
 with System.Storage_Elements;
@@ -337,96 +338,104 @@ package body System.Native_Processes is
       Output : Native_IO.Handle_Type;
       Error : Native_IO.Handle_Type)
    is
+      Directory_Length : constant C.size_t := Directory'Length;
+      C_Directory : C.char_array (
+         0 .. Directory_Length * Zero_Terminated_Strings.Expanding);
+         --  This is a dynamic array and should have been allocated before
+         --    below no exception area.
       Old_Directory : C.char_ptr := null;
+      Actions : access C.spawn.posix_spawn_file_actions_t := null;
+      Actions_Body : aliased C.spawn.posix_spawn_file_actions_t;
       Exception_Id : Ada.Exception_Identification.Exception_Id :=
          Ada.Exception_Identification.Null_Id;
    begin
+      Shared_Locking.Enter; -- exclusive chdir, no exception from here
       --  set current directory
-      if Directory /= "" then
+      if Directory_Length > 0 then
          Old_Directory := C.unistd.getcwd (null, 0);
+         Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
+         if C.unistd.chdir (C_Directory (0)'Access) < 0 then
+            Exception_Id := Name_Error'Identity;
+         end if;
+      end if;
+      --  execute
+      if Exception_Id = Ada.Exception_Identification.Null_Id then
          declare
-            C_Directory : C.char_array (
-               0 ..
-               Directory'Length * Zero_Terminated_Strings.Expanding);
+            Environment_Block : constant C.char_ptr_ptr :=
+               System.Environment_Block;
+            subtype Handle_Index is C.signed_int range 0 .. 2;
+            Source_Handles : array (Handle_Index) of C.signed_int;
+            New_Child : aliased C.sys.types.pid_t;
+            errno : C.signed_int;
          begin
-            Zero_Terminated_Strings.To_C (
-               Directory,
-               C_Directory (0)'Access);
-            if C.unistd.chdir (C_Directory (0)'Access) < 0 then
-               Exception_Id := Name_Error'Identity;
-               goto Cleanup;
+            Source_Handles (0) := Input;
+            Source_Handles (1) := Output;
+            Source_Handles (2) := Error;
+            for I in Handle_Index loop
+               if Source_Handles (I) /= I then
+                  if Actions = null then
+                     if C.spawn.posix_spawn_file_actions_init (
+                        Actions_Body'Access) /= 0
+                     then
+                        Exception_Id := Use_Error'Identity;
+                        exit; -- failed
+                     end if;
+                     Actions := Actions_Body'Access;
+                  end if;
+                  if C.spawn.posix_spawn_file_actions_adddup2 (
+                     Actions,
+                     Source_Handles (I),
+                     I) /= 0
+                  then
+                     Exception_Id := Use_Error'Identity;
+                     exit; -- failed
+                  end if;
+               end if;
+            end loop;
+            if Exception_Id = Ada.Exception_Identification.Null_Id then
+               if Search_Path then
+                  errno := C.spawn.posix_spawnp (
+                     New_Child'Access,
+                     Command.all,
+                     Actions,
+                     null,
+                     Command,
+                     Environment_Block);
+               else
+                  errno := C.spawn.posix_spawn (
+                     New_Child'Access,
+                     Command.all,
+                     Actions,
+                     null,
+                     Command,
+                     Environment_Block);
+               end if;
+               case errno is
+                  when 0 => -- success
+                     Child := New_Child;
+                  when C.errno.E2BIG => -- too long arguments
+                     Exception_Id := Constraint_Error'Identity;
+                  when C.errno.ENOMEM =>
+                     Exception_Id := Storage_Error'Identity;
+                  when C.errno.ENOTDIR
+                     | C.errno.ENAMETOOLONG
+                     | C.errno.ENOENT =>
+                     Exception_Id := Name_Error'Identity;
+                  when others =>
+                     Exception_Id := Native_IO.IO_Exception_Id (Error);
+               end case;
             end if;
          end;
       end if;
-      --  execute
-      declare
-         Environment_Block : constant C.char_ptr_ptr :=
-            System.Environment_Block;
-         Actions : aliased C.spawn.posix_spawn_file_actions_t;
-         Attrs : aliased C.spawn.posix_spawnattr_t;
-         subtype Handle_Index is C.signed_int range 0 .. 2;
-         Source_Handles : array (Handle_Index) of C.signed_int;
-         New_Child : aliased C.sys.types.pid_t;
-         errno : C.signed_int;
-      begin
-         if C.spawn.posix_spawn_file_actions_init (Actions'Access) /= 0 then
-            Exception_Id := Use_Error'Identity;
-            goto Cleanup;
-         end if;
-         if C.spawn.posix_spawnattr_init (Attrs'Access) /= 0 then
-            Exception_Id := Use_Error'Identity;
-            goto Cleanup;
-         end if;
-         Source_Handles (0) := Input;
-         Source_Handles (1) := Output;
-         Source_Handles (2) := Error;
-         for I in Handle_Index loop
-            if Source_Handles (I) /= I then
-               if C.spawn.posix_spawn_file_actions_adddup2 (
-                  Actions'Access,
-                  Source_Handles (I),
-                  I) /= 0
-               then
-                  Exception_Id := Use_Error'Identity;
-                  goto Cleanup;
-               end if;
+      if Actions /= null then
+         if C.spawn.posix_spawn_file_actions_destroy (Actions) /= 0 then
+            if Exception_Id = Ada.Exception_Identification.Null_Id then
+               Exception_Id := Use_Error'Identity;
             end if;
-         end loop;
-         if Search_Path then
-            errno := C.spawn.posix_spawnp (
-               New_Child'Access,
-               Command.all,
-               Actions'Access,
-               Attrs'Access,
-               Command,
-               Environment_Block);
-         else
-            errno := C.spawn.posix_spawn (
-               New_Child'Access,
-               Command.all,
-               Actions'Access,
-               Attrs'Access,
-               Command,
-               Environment_Block);
          end if;
-         case errno is
-            when 0 => -- success
-               Child := New_Child;
-            when C.errno.E2BIG => -- too long arguments
-               Exception_Id := Constraint_Error'Identity;
-            when C.errno.ENOMEM =>
-               Exception_Id := Storage_Error'Identity;
-            when C.errno.ENOTDIR
-               | C.errno.ENAMETOOLONG
-               | C.errno.ENOENT =>
-               Exception_Id := Name_Error'Identity;
-            when others =>
-               Exception_Id := Native_IO.IO_Exception_Id (Error);
-         end case;
-      end;
-   <<Cleanup>>
+      end if;
       --  restore current directory
-      if Old_Directory /= null then
+      if Directory_Length > 0 then
          if C.unistd.chdir (Old_Directory) < 0 then
             if Exception_Id = Ada.Exception_Identification.Null_Id then
                Exception_Id := Name_Error'Identity;
@@ -434,6 +443,7 @@ package body System.Native_Processes is
          end if;
          C.stdlib.free (C.void_ptr (char_ptr_Conv.To_Address (Old_Directory)));
       end if;
+      Shared_Locking.Leave; -- no exception until here
       if Exception_Id /= Ada.Exception_Identification.Null_Id then
          Raise_Exception (Exception_Id);
       end if;
