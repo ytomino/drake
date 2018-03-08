@@ -173,8 +173,10 @@ package body System.Native_Processes is
                LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv)
                + C.ptrdiff_t (I);
          begin
-            Additional_Length := Additional_Length
-               + C.string.wcslen (P.all) + 3; -- space and a pair of '"'
+            Additional_Length :=
+               Additional_Length
+               + C.string.wcslen (P.all)
+               + 3; -- space and a pair of '"'
          end;
       end loop;
       if Command = null then

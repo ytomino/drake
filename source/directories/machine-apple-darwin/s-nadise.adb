@@ -137,8 +137,7 @@ package body System.Native_Directories.Searching is
       Handle : constant C.dirent.DIR_ptr := Search.Handle;
    begin
       Search.Handle := null;
-      Standard_Allocators.Free (
-         char_ptr_Conv.To_Address (Search.Pattern));
+      Standard_Allocators.Free (char_ptr_Conv.To_Address (Search.Pattern));
       Search.Pattern := null;
       if C.dirent.closedir (Handle) < 0 then
          if Raise_On_Error then

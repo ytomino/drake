@@ -35,7 +35,7 @@ package Ada.Hierarchical_File_Names is
    function Containing_Directory (Name : String) return String;
    --  extended
    --  This function returns null string instead of Use_Error,
-   --     if Name has no directory part.
+   --    if Name has no directory part.
    function Unchecked_Containing_Directory (Name : String) return String;
 
    function Extension (Name : String) return String;

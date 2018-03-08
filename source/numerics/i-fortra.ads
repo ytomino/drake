@@ -110,7 +110,7 @@ package Interfaces.Fortran is
    subtype Real_Kind_4 is Real;
    subtype Real_Kind_8 is Double_Precision;
    type Real_Kind_10 is new Long_Long_Float; -- i686/x86_64
---  type Real_Kind_16 is ...; --  libquadmath
+--  type Real_Kind_16 is ...; -- libquadmath
 
    subtype Real_Star_4 is Real_Kind_4;
    subtype Real_Star_8 is Real_Kind_8;

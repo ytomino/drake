@@ -103,11 +103,12 @@ package body System.Native_Text_IO.Terminal_Colors is
 --          or Boolean'Pos (Reversed) * C.wincon.COMMON_LVB_REVERSE_VIDEO;
 --    end if;
       if Foreground_Changing then
-         Attributes := (Attributes and not 16#0F#)
-            or C.windef.WORD (Foreground);
+         Attributes :=
+            (Attributes and not 16#0F#) or C.windef.WORD (Foreground);
       end if;
       if Background_Changing then
-         Attributes := (Attributes and not 16#F0#)
+         Attributes :=
+            (Attributes and not 16#F0#)
             or (C.windef.WORD (Background) * 16#10#);
       end if;
       --  setting

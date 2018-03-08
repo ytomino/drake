@@ -13,7 +13,7 @@ package Ada.IO_Modes is
       Allow, -- "shared=allow", "shared=yes", or "shared=no"
       Read_Only, -- "shared=read"
       Deny, -- "shared=deny"
-      By_Mode); --  default
+      By_Mode); -- default
    type File_Shared is new File_Shared_Spec range Allow .. Deny;
 
 --  subtype File_Wait is Boolean;

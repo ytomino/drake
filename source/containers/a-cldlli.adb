@@ -780,8 +780,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       function LT (Left, Right : not null Linked_Lists.Node_Access)
          return Boolean is
       begin
-         return Downcast (Left).Element.all <
-            Downcast (Right).Element.all;
+         return Downcast (Left).Element.all < Downcast (Right).Element.all;
       end LT;
 
       function Is_Sorted (Container : List) return Boolean is

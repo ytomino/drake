@@ -255,7 +255,8 @@ package body System.C_Encoding is
                               Target_As_Ada'Last),
                            Target_Ada_Last,
                            To_Status);
-                        Target_Last := Target'First
+                        Target_Last :=
+                           Target'First
                            + C.size_t (Target_Ada_Last - Target_As_Ada'First);
                         case To_Status is
                            when UTF_Conversions.Success =>

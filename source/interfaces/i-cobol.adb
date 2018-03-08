@@ -433,7 +433,7 @@ package body Interfaces.COBOL is
       return 2
          + Natural (
             Word_Unsigned (System.Formatting.Width (Long_Long_Unsigned (Item)))
-            and not 1);
+               and not 1);
    end Length_To_Packed;
 
    function To_Packed_Unsigned (Item : Long_Long_Integer)

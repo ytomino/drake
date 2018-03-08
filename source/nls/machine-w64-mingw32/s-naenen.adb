@@ -240,7 +240,8 @@ package body System.Native_Environment_Encoding is
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
                      return;
                   end if;
-                  Last := Item'First
+                  Last :=
+                     Item'First
                      + (Ada.Streams.Stream_Element_Offset (Length) - 1);
                end;
             when UTF_16 =>
@@ -340,7 +341,8 @@ package body System.Native_Environment_Encoding is
                   else
                      Length := 1;
                   end if;
-                  Last := Item'First
+                  Last :=
+                     Item'First
                      + (Ada.Streams.Stream_Element_Offset (Length) - 1);
                   Buffer_Length := C.winnls.MultiByteToWideChar (
                      C.windef.UINT (Object.From),
@@ -438,7 +440,8 @@ package body System.Native_Environment_Encoding is
                      end case;
                      return;
                   end if;
-                  Out_Last := Out_Item'First
+                  Out_Last :=
+                     Out_Item'First
                      + (Ada.Streams.Stream_Element_Offset (Out_Length) - 1);
                end;
          end case;
@@ -631,7 +634,8 @@ package body System.Native_Environment_Encoding is
                   pragma Check (Trace, Ada.Debug.Put ("overflow"));
                   return;
                end if;
-               Out_Last := Out_Item'First
+               Out_Last :=
+                  Out_Item'First
                   + (Ada.Streams.Stream_Element_Offset (Out_Length) - 1);
             end;
       end case;
