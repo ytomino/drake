@@ -1,4 +1,4 @@
-private with System.Native_Execution_Time;
+with System.Native_Execution_Time;
 package body Ada.Execution_Time is
 
    function Clock return CPU_Time is
