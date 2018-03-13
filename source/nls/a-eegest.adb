@@ -216,7 +216,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
          new Exceptions.Finally.Scoped_Holder (String_Type_Access, Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      MS_In_SE : constant Streams.Stream_Element_Count :=
+      MS_In_SE : constant Streams.Stream_Element_Positive_Count :=
          Min_Size_In_From_Stream_Elements (Object);
       I : Streams.Stream_Element_Offset := Item'First;
       Out_Item : aliased String_Type_Access;
