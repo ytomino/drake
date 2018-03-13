@@ -92,6 +92,7 @@ package body Ada.Numerics.dSFMT is
       Item : out w128_t_Array_1;
       size : Integer)
    is
+      pragma Suppress (Index_Check);
       the_array : w128_t_Array (0 .. size - 1);
       for the_array'Address use Item'Address;
       i, j : Integer;
@@ -152,6 +153,7 @@ package body Ada.Numerics.dSFMT is
       Item : out w128_t_Array_1;
       size : Integer)
    is
+      pragma Suppress (Index_Check);
       the_array : w128_t_Array (0 .. size - 1);
       for the_array'Address use Item'Address;
       i, j : Integer;
@@ -219,6 +221,7 @@ package body Ada.Numerics.dSFMT is
       Item : out w128_t_Array_1;
       size : Integer)
    is
+      pragma Suppress (Index_Check);
       the_array : w128_t_Array (0 .. size - 1);
       for the_array'Address use Item'Address;
       i, j : Integer;
@@ -286,6 +289,7 @@ package body Ada.Numerics.dSFMT is
       Item : out w128_t_Array_1;
       size : Integer)
    is
+      pragma Suppress (Index_Check);
       the_array : w128_t_Array (0 .. size - 1);
       for the_array'Address use Item'Address;
       i, j : Integer;
@@ -427,6 +431,7 @@ package body Ada.Numerics.dSFMT is
    --  This function fills the internal state array with double precision
    --    floating point pseudorandom numbers of the IEEE 754 format.
    procedure dsfmt_gen_rand_all (dsfmt : in out State) is
+      pragma Suppress (Index_Check);
       i : Integer;
       lung : aliased w128_t := dsfmt.lung;
    begin
@@ -680,6 +685,7 @@ package body Ada.Numerics.dSFMT is
    function Random_1_To_Less_Than_2 (Gen : aliased in out Generator)
       return Long_Float
    is
+      pragma Suppress (Index_Check);
       dsfmt : State renames Gen.dsfmt;
       idx : Integer := dsfmt.idx;
    begin
@@ -753,6 +759,7 @@ package body Ada.Numerics.dSFMT is
       Gen : aliased in out Generator;
       Item : out Long_Float_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Natural := Item'Length;
    begin
       if Gen.dsfmt.idx /= N64 or else size rem 2 /= 0 or else size < N64 then
@@ -779,6 +786,7 @@ package body Ada.Numerics.dSFMT is
       Gen : aliased in out Generator;
       Item : out Long_Float_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Natural := Item'Length;
    begin
       if Gen.dsfmt.idx /= N64 or else size rem 2 /= 0 or else size < N64 then
@@ -803,6 +811,7 @@ package body Ada.Numerics.dSFMT is
       Gen : aliased in out Generator;
       Item : out Long_Float_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Natural := Item'Length;
    begin
       if Gen.dsfmt.idx /= N64 or else size rem 2 /= 0 or else size < N64 then
@@ -827,6 +836,7 @@ package body Ada.Numerics.dSFMT is
       Gen : aliased in out Generator;
       Item : out Long_Float_Array)
    is
+      pragma Suppress (Range_Check);
       size : constant Natural := Item'Length;
    begin
       if Gen.dsfmt.idx /= N64 or else size rem 2 /= 0 or else size < N64 then
