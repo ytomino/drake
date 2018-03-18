@@ -16,17 +16,23 @@ package Ada.Directories is
    procedure Set_Directory (Directory : String);
    pragma Inline (Set_Directory); -- renamed
 
+   --  modified
    procedure Create_Directory (
       New_Directory : String;
-      Form : String := "");
+      Form : String); -- removed default
+   procedure Create_Directory (
+      New_Directory : String);
    pragma Inline (Create_Directory);
 
    procedure Delete_Directory (Directory : String);
    pragma Inline (Delete_Directory); -- renamed
 
+   --  modified
    procedure Create_Path (
       New_Directory : String;
-      Form : String := "");
+      Form : String); -- removed default
+   procedure Create_Path (
+      New_Directory : String);
 
    procedure Delete_Tree (Directory : String);
 

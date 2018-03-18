@@ -32,6 +32,32 @@ package body Ada.Storage_Mapped_IO is
          Mapped_Size);
    end Map;
 
+   procedure Map (
+      Object : aliased in out Non_Controlled_Mapping;
+      Mode : File_Mode;
+      Name : String;
+      Form : System.Native_IO.Packed_Form;
+      Offset : Streams.Stream_IO.Positive_Count;
+      Size : Streams.Stream_IO.Count);
+   procedure Map (
+      Object : aliased in out Non_Controlled_Mapping;
+      Mode : File_Mode;
+      Name : String;
+      Form : System.Native_IO.Packed_Form;
+      Offset : Streams.Stream_IO.Positive_Count;
+      Size : Streams.Stream_IO.Count) is
+   begin
+      --  open file
+      --  this file will be closed in Finalize even if any exception is raised
+      Streams.Naked_Stream_IO.Open (
+         Object.File,
+         IO_Modes.Inout_File_Mode (Mode),
+         Name => Name,
+         Form => Form);
+      --  map
+      Map (Object, Object.File, Offset, Size);
+   end Map;
+
    procedure Unmap (
       Object : in out Non_Controlled_Mapping;
       Raise_On_Error : Boolean);
@@ -94,7 +120,7 @@ package body Ada.Storage_Mapped_IO is
       Object : in out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
-      Form : String := "";
+      Form : String;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
    is
@@ -103,27 +129,59 @@ package body Ada.Storage_Mapped_IO is
       NC_Object : Non_Controlled_Mapping
          renames Controlled.Reference (Object).all;
    begin
-      --  open file
-      --  this file will be closed in Finalize even if any exception is raised
-      Streams.Naked_Stream_IO.Open (
-         NC_Object.File,
-         IO_Modes.Inout_File_Mode (Mode),
-         Name,
-         Streams.Naked_Stream_IO.Pack (Form));
-      --  map
-      Map (NC_Object, NC_Object.File, Offset, Size);
+      Map (
+         NC_Object,
+         Mode,
+         Name => Name,
+         Form => Streams.Naked_Stream_IO.Pack (Form),
+         Offset => Offset,
+         Size => Size);
+   end Map;
+
+   procedure Map (
+      Object : in out Storage_Type;
+      Mode : File_Mode := In_File;
+      Name : String;
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0)
+   is
+      pragma Check (Pre,
+         Check => not Is_Mapped (Object) or else raise Status_Error);
+      NC_Object : Non_Controlled_Mapping
+         renames Controlled.Reference (Object).all;
+   begin
+      Map (
+         NC_Object,
+         Mode,
+         Name => Name,
+         Form => (Shared, Wait, Overwrite),
+         Offset => Offset,
+         Size => Size);
    end Map;
 
    function Map (
       Mode : File_Mode := In_File;
       Name : String;
-      Form : String := "";
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
       return Storage_Type is
    begin
       return Result : Storage_Type do
-         Map (Result, Mode, Name, Form, Offset, Size);
+         Map (
+            Result,
+            Mode,
+            Name => Name,
+            Shared => Shared,
+            Wait => Wait,
+            Overwrite => Overwrite,
+            Offset => Offset,
+            Size => Size);
       end return;
    end Map;
 

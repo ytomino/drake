@@ -135,14 +135,32 @@ package body Ada.Directories is
 
    --  directory and file operations
 
-   procedure Create_Directory (New_Directory : String; Form : String := "") is
+   procedure Create_Directory (
+      New_Directory : String;
+      Form : String)
+   is
       pragma Unreferenced (Form);
    begin
       System.Native_Directories.Create_Directory (New_Directory);
    end Create_Directory;
 
-   procedure Create_Path (New_Directory : String; Form : String := "") is
+   procedure Create_Directory (
+      New_Directory : String) is
+   begin
+      System.Native_Directories.Create_Directory (New_Directory);
+   end Create_Directory;
+
+   procedure Create_Path (
+      New_Directory : String;
+      Form : String)
+   is
       pragma Unreferenced (Form);
+   begin
+      Create_Path (New_Directory);
+   end Create_Path;
+
+   procedure Create_Path (
+      New_Directory : String) is
    begin
       if not Exists (New_Directory) then
          declare
