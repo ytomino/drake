@@ -31,7 +31,7 @@ package body Ada.Directories is
             Item_First,
             Item_Last,
             Last);
-         Set : declare
+         declare
             Keyword : String
                renames Form (Keyword_First .. Keyword_Last);
             Item : String
@@ -51,7 +51,7 @@ package body Ada.Directories is
                   Overwrite := True; -- overwrite
                end if;
             end if;
-         end Set;
+         end;
       end loop;
       return Overwrite;
    end Pack_For_Copy_File;
