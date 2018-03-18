@@ -461,6 +461,7 @@ package body System.Native_IO is
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
       Mode : File_Mode;
+      Private_Copy : Boolean;
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
       Size : Ada.Streams.Stream_Element_Count)
    is
@@ -472,7 +473,10 @@ package body System.Native_IO is
       Mapped_Address : C.windef.LPVOID;
       File_Mapping : C.winnt.HANDLE;
    begin
-      if Mode = Read_Only_Mode then
+      if Private_Copy then
+         Protect := C.winnt.PAGE_WRITECOPY;
+         Desired_Access := C.winbase.FILE_MAP_COPY;
+      elsif Mode = Read_Only_Mode then
          Protect := C.winnt.PAGE_READONLY;
          Desired_Access := C.winbase.FILE_MAP_READ;
       else -- Write_Only_Mode or Read_Write_Mode

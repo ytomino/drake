@@ -494,6 +494,7 @@ package body System.Native_IO is
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
       Mode : File_Mode;
+      Private_Copy : Boolean;
       Offset : Ada.Streams.Stream_Element_Offset;
       Size : Ada.Streams.Stream_Element_Count)
    is
@@ -504,22 +505,30 @@ package body System.Native_IO is
       else
          declare
             Prot : C.unsigned_int;
+            Flags : C.unsigned_int;
             Mapped_Offset : constant C.sys.types.off_t :=
                C.sys.types.off_t (Offset) - 1;
             Mapped_Size : constant C.size_t := C.size_t (Size);
          begin
-            if Mode = Read_Only_Mode then
-               Prot := C.sys.mman.PROT_READ;
-            elsif Mode = Write_Only_Mode then
-               Prot := C.sys.mman.PROT_WRITE; -- may fail in mostly platforms
-            else -- Read_Write_Mode
+            if Private_Copy then
                Prot := C.sys.mman.PROT_READ or C.sys.mman.PROT_WRITE;
+               Flags := C.sys.mman.MAP_FILE or C.sys.mman.MAP_PRIVATE;
+            else
+               if Mode = Read_Only_Mode then
+                  Prot := C.sys.mman.PROT_READ;
+               elsif Mode = Write_Only_Mode then
+                  Prot := C.sys.mman.PROT_WRITE;
+                     --  may fail in mostly platforms
+               else -- Read_Write_Mode
+                  Prot := C.sys.mman.PROT_READ or C.sys.mman.PROT_WRITE;
+               end if;
+               Flags := C.sys.mman.MAP_FILE or C.sys.mman.MAP_SHARED;
             end if;
             Mapped_Address := C.sys.mman.mmap (
                C.void_ptr (Null_Address),
                Mapped_Size,
                C.signed_int (Prot),
-               C.sys.mman.MAP_FILE + C.sys.mman.MAP_SHARED,
+               C.signed_int (Flags),
                Handle,
                Mapped_Offset);
             if Address (Mapped_Address) = Address (C.sys.mman.MAP_FAILED) then
