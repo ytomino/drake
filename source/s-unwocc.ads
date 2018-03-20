@@ -94,6 +94,8 @@ package System.Unwind.Occurrences is
 
    --  output the information of unhandled exception
 
+   procedure Put_Exception_Information (X : Exception_Occurrence);
+
    procedure Default_Report (X : Exception_Occurrence; Where : String);
 
    type Report_Handler is

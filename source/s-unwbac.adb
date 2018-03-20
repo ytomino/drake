@@ -2,7 +2,6 @@ pragma Check_Policy (Trace => Ignore);
 with Ada;
 with System.Formatting.Address;
 with System.Storage_Map;
-with System.Termination;
 with System.Unwind.Occurrences;
 with System.Unwind.Raising;
 package body System.Unwind.Backtrace is
@@ -21,45 +20,13 @@ package body System.Unwind.Backtrace is
 
    package body Separated is separate;
 
-   --  for Report_Backtrace
-
-   type Information_Context_Type is record
-      Item : String (
-         1 ..
-         256
-            + Unwind.Exception_Msg_Max_Length
-            + Unwind.Max_Tracebacks
-               * (3 + (Standard'Address_Size + 3) / 4));
-      Last : Natural;
-   end record;
-   pragma Suppress_Initialization (Information_Context_Type);
-
-   procedure Put (S : String; Params : Address);
-   procedure Put (S : String; Params : Address) is
-      Context : Information_Context_Type;
-      for Context'Address use Params;
-      First : constant Positive := Context.Last + 1;
-   begin
-      Context.Last := Context.Last + S'Length;
-      Context.Item (First .. Context.Last) := S;
-   end Put;
-
-   procedure New_Line (Params : Address);
-   procedure New_Line (Params : Address) is
-      Context : Information_Context_Type;
-      for Context'Address use Params;
-   begin
-      Termination.Error_Put_Line (Context.Item (1 .. Context.Last));
-      Context.Last := 0;
-   end New_Line;
-
    --  implementation
 
    procedure Call_Chain (Current : in out Exception_Occurrence) is
       function Report return Boolean;
       function Report return Boolean is
       begin
-         Report_Backtrace (Current);
+         Occurrences.Put_Exception_Information (Current);
          return True;
       end Report;
    begin
@@ -112,16 +79,5 @@ package body System.Unwind.Backtrace is
       end loop;
       New_Line (Params);
    end Backtrace_Information;
-
-   procedure Report_Backtrace (X : Exception_Occurrence) is
-      Context : Information_Context_Type;
-   begin
-      Context.Last := 0;
-      Occurrences.Exception_Information (
-         X,
-         Context'Address,
-         Put => Put'Access,
-         New_Line => New_Line'Access);
-   end Report_Backtrace;
 
 end System.Unwind.Backtrace;

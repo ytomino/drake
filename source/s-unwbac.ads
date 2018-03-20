@@ -29,9 +29,4 @@ package System.Unwind.Backtrace is
          Convention => Ada, External_Name => "__drake_backtrace_information";
    pragma No_Inline (Backtrace_Information);
 
-   procedure Report_Backtrace (X : Exception_Occurrence)
-      with Export, -- for weak linking
-         Convention => Ada, External_Name => "__drake_report_backtrace";
-   pragma No_Inline (Report_Backtrace);
-
 end System.Unwind.Backtrace;
