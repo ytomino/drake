@@ -16,6 +16,28 @@ procedure ucd_normalization is
 	begin
 		return Wide_Wide_Character'Value (Img);
 	end Value;
+	procedure Put_16 (Item : Integer) is
+	begin
+		if Item >= 16#10000# then
+			Put (Item, Width => 1, Base => 16);
+		else
+			declare
+				S : String (1 .. 8); -- "16#XXXX#"
+			begin
+				Put (S, Item, Base => 16);
+				S (1) := '1';
+				S (2) := '6';
+				S (3) := '#';
+				for I in reverse 4 .. 6 loop
+					if S (I) = '#' then
+						S (4 .. I) := (others => '0');
+						exit;
+					end if;
+				end loop;
+				Put (S);
+			end;
+		end if;
+	end Put_16;
 	function NFS_Exclusion (C : Wide_Wide_Character) return Boolean is
 	begin
 		case Wide_Wide_Character'Pos (C) is
@@ -335,18 +357,12 @@ begin
 										Put ("1 => ");
 									end if;
 									Put ("(");
-									Put (
-										Integer'(Wide_Wide_Character'Pos (Key (I))),
-										Base => 16,
-										Width => 8, -- 16#XXXX#
-										Padding => '0');
+									Put_16 (Wide_Wide_Character'Pos (Key (I)));
 									Put (", ");
 									if K = Singleton then
-										Put (
-											Integer'(Wide_Wide_Character'Pos (Element (Element (I), 1))),
-											Base => 16,
-											Width => 8, -- 16#XXXX#
-											Padding => '0');
+										Put_16 (
+											Wide_Wide_Character'Pos (
+												Element (Element (I), 1)));
 									else
 										declare
 											E : Ada.Strings.Wide_Wide_Unbounded.Unbounded_Wide_Wide_String
@@ -357,11 +373,9 @@ begin
 												if EI > 1 then
 													Put (", ");
 												end if;
-												Put (
-													Integer'(Wide_Wide_Character'Pos (Element (E, EI))),
-													Base => 16,
-													Width => 8, -- 16#XXXX#
-													Padding => '0');
+												Put_16 (
+													Wide_Wide_Character'Pos (
+														Element (E, EI)));
 											end loop;
 											Put (")");
 										end;

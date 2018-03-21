@@ -14,6 +14,28 @@ procedure ucd_eastasianwidth is
 	begin
 		return Wide_Wide_Character'Value (Img);
 	end Value;
+	procedure Put_16 (Item : Integer) is
+	begin
+		if Item >= 16#10000# then
+			Put (Item, Width => 1, Base => 16);
+		else
+			declare
+				S : String (1 .. 8); -- "16#XXXX#"
+			begin
+				Put (S, Item, Base => 16);
+				S (1) := '1';
+				S (2) := '6';
+				S (3) := '#';
+				for I in reverse 4 .. 6 loop
+					if S (I) = '#' then
+						S (4 .. I) := (others => '0');
+						exit;
+					end if;
+				end loop;
+				Put (S);
+			end;
+		end if;
+	end Put_16;
 	package EAW_Property_Names is new Ada.Strings.Bounded.Generic_Bounded_Length (2);
 	use type EAW_Property_Names.Bounded_String;
 	package CP2EAW_Maps is
@@ -86,7 +108,9 @@ begin
 					if Token_First /= P then
 						raise Data_Error with Line & " -- E";
 					end if;
-					EAW := +Line (Token_First .. Token_Last);
+					EAW_Property_Names.Set_Bounded_String (
+						EAW,
+						Line (Token_First .. Token_Last));
 					if EAW /= "N" then
 						for I in First .. Last loop
 							Insert (Table, I, EAW);
@@ -219,11 +243,7 @@ begin
 							+ 1 = 2 ** 13 - 1;
 				end loop;
 				Put ("      (");
-				Put (
-					Integer'(Wide_Wide_Character'Pos (Key (I))) - Offset,
-					Base => 16,
-					Width => 8, -- 16#XXXX#
-					Padding => '0');
+				Put_16 (Wide_Wide_Character'Pos (Key (I)) - Offset);
 				Put (", ");
 				Put (
 					Integer'(Wide_Wide_Character'Pos (Key (L)))
@@ -231,7 +251,7 @@ begin
 					+ 1,
 					Width => 1);
 				Put (", ");
-				Put (EAW_Property_Names.Bounded_Strings.Constant_Reference (EAW).Element.all);
+				Put (EAW_Property_Names.To_String (EAW));
 				Put (")");
 				if Has_Element (N) then
 					if State = In_XXXX
