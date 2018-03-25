@@ -763,7 +763,6 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 --  diff
 --  diff
 --  diff
---  diff
             end;
          end loop;
       end Read;

@@ -52,11 +52,10 @@ package body System.Storage_Map is
          declare
             PBI : aliased C.winternl.PROCESS_BASIC_INFORMATION;
             ReturnLength : aliased C.windef.ULONG;
-            Status : C.winternl.NTSTATUS;
-            pragma Unreferenced (Status);
+            Dummy_Status : C.winternl.NTSTATUS;
             PEB : C.winternl.PPEB;
          begin
-            Status := NtQueryInformationProcess (
+            Dummy_Status := NtQueryInformationProcess (
                C.winbase.GetCurrentProcess,
                C.winternl.ProcessBasicInformation,
                C.windef.LPVOID (PBI'Address),

@@ -131,10 +131,9 @@ package body System.Native_Tasks is
          declare
             TBI : aliased struct_THREAD_BASIC_INFORMATION;
             ReturnLength : aliased C.windef.ULONG;
-            Status : C.winternl.NTSTATUS;
-            pragma Unreferenced (Status);
+            Dummy_Status : C.winternl.NTSTATUS;
          begin
-            Status := NtQueryInformationThread (
+            Dummy_Status := NtQueryInformationThread (
                Handle,
                C.winternl.ThreadBasicInformation,
                C.windef.LPVOID (TBI'Address),

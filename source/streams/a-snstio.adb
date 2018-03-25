@@ -438,14 +438,13 @@ package body Ada.Streams.Naked_Stream_IO is
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type) is
-      New_Index : Stream_Element_Offset;
-      pragma Unreferenced (New_Index);
+      Dummy_New_Index : Stream_Element_Offset;
    begin
       System.Native_IO.Set_Relative_Index (
          File.Handle,
          File.Reading_Index - File.Buffer_Index,
          System.Native_IO.From_Current,
-         New_Index);
+         Dummy_New_Index);
       File.Buffer_Index := File.Reading_Index;
       File.Writing_Index := File.Buffer_Index;
    end Reset_Reading_Buffer;
@@ -976,8 +975,7 @@ package body Ada.Streams.Naked_Stream_IO is
       File : not null Non_Controlled_File_Type;
       To : Stream_Element_Positive_Count)
    is
-      New_Index : Stream_Element_Offset;
-      pragma Unreferenced (New_Index);
+      Dummy_New_Index : Stream_Element_Offset;
       Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
       Flush_Writing_Buffer (File);
@@ -990,7 +988,7 @@ package body Ada.Streams.Naked_Stream_IO is
          File.Handle,
          Z_Index,
          System.Native_IO.From_Begin,
-         New_Index);
+         Dummy_New_Index);
       Set_Buffer_Index (File, Z_Index);
    end Set_Index;
 
