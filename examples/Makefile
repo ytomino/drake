@@ -192,7 +192,7 @@ $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
 clean:
 	-rm -rf $(BINLN) $(BUILDDIR)/adalib
-	-find $(BUILDDIR) -depth 1 -not -name adainclude | xargs rm -r
+	-find $(BUILDDIR) -mindepth 1 -maxdepth 1 -not -name adainclude | xargs rm -r
 
 cleanall:
 	-rm -rf $(BINLN) *.build
