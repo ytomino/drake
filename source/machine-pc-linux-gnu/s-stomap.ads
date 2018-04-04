@@ -5,4 +5,6 @@ package System.Storage_Map is
 
    function Load_Address return Address;
 
+   Growing_Down_Is_Preferred : constant Boolean := True; -- bias of mmap
+
 end System.Storage_Map;
