@@ -250,6 +250,7 @@ package body System.Unbounded_Stack_Allocators is
                   Additional_Block => Additional_Block,
                   Additional_Block_Size => Additional_Block_Size,
                   Reverse_Growing => True) -- reverse
+                  and then Top_Is_Unused
                then
                   --  The new block is allocated brefore the top block,
                   --    concatenate them.
@@ -258,17 +259,14 @@ package body System.Unbounded_Stack_Allocators is
                      Additional_Block => Additional_Block,
                      Additional_Block_Size => Additional_Block_Size,
                      Reverse_Growing => True,
-                     Top_Is_Unused => Top_Is_Unused);
+                     Top_Is_Unused => True); -- already checked in above
                   Allocator := Top;
-                  if Top_Is_Unused then
-                     Commit (
-                        Used => Cast (Top).Used,
-                        Storage_Address => Storage_Address,
-                        Size_In_Storage_Elements => Size_In_Storage_Elements,
-                        Mask => Mask);
-                     return;
-                  end if;
-                  goto Allocating_New_Block;
+                  Commit (
+                     Used => Cast (Top).Used,
+                     Storage_Address => Storage_Address,
+                     Size_In_Storage_Elements => Size_In_Storage_Elements,
+                     Mask => Mask);
+                  return;
                end if;
                New_Block := Additional_Block;
                New_Block_Size := Additional_Block_Size;
@@ -285,7 +283,6 @@ package body System.Unbounded_Stack_Allocators is
             end;
          end if;
       end if;
-   <<Allocating_New_Block>>
       --  new block
       declare
          Default_Block_Size : constant := 10 * 1024;
