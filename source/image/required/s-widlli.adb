@@ -25,7 +25,7 @@ package body System.Wid_LLI is
                   -Long_Long_Unsigned'Mod (Lo),
                   Long_Long_Unsigned (Hi));
             end if;
-            return 1 + Formatting.Width (Max_Abs);
+            return 1 + Formatting.Digits_Width (Max_Abs); -- sign
          end;
       end if;
    end Width_Long_Long_Integer;

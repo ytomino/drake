@@ -19,8 +19,7 @@ package body Ada.Formatting is
       Longest_Abs_Item : Long_Long_Unsigned;
       Word_Abs_Item : Word_Unsigned;
       Result : String (
-         1 ..
-         4 + Long_Long_Integer'Width + Width); -- "16##"
+         1 .. 4 + Long_Long_Integer'Width + Digits_Width); -- "16##"
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
@@ -67,8 +66,8 @@ package body Ada.Formatting is
             Base => Base,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Width => Width,
-            Padding => Padding,
+            Width => Digits_Width,
+            Fill => Digits_Fill,
             Error => Error);
       else
          System.Formatting.Image (
@@ -78,8 +77,8 @@ package body Ada.Formatting is
             Base => Base,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Width => Width,
-            Padding => Padding,
+            Width => Digits_Width,
+            Fill => Digits_Fill,
             Error => Error);
       end if;
       if Form = Ada and then Base /= 10 then
@@ -90,7 +89,8 @@ package body Ada.Formatting is
    end Integer_Image;
 
    function Modular_Image (Item : T) return String is
-      Result : String (1 .. 4 + Long_Long_Unsigned'Width + Width); -- "16##"
+      Result : String (
+         1 .. 4 + Long_Long_Unsigned'Width + Digits_Width); -- "16##"
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
@@ -122,8 +122,8 @@ package body Ada.Formatting is
             Base => Base,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Width => Width,
-            Padding => Padding,
+            Width => Digits_Width,
+            Fill => Digits_Fill,
             Error => Error);
       else
          System.Formatting.Image (
@@ -133,8 +133,8 @@ package body Ada.Formatting is
             Base => Base,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Width => Width,
-            Padding => Padding,
+            Width => Digits_Width,
+            Fill => Digits_Fill,
             Error => Error);
       end if;
       if Form = Ada and then Base /= 10 then
@@ -147,7 +147,7 @@ package body Ada.Formatting is
    function Float_Image (Item : T) return String is
       Result : String (
          1 ..
-         Fore_Width + Aft_Width + Exponent_Width
+         Fore_Digits_Width + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
@@ -161,15 +161,15 @@ package body Ada.Formatting is
          Base => Base,
          Base_Form => Form = Ada and then Base /= 10,
          Set => System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-         Fore_Width => Fore_Width,
-         Fore_Padding => Fore_Padding,
+         Fore_Digits_Width => Fore_Digits_Width,
+         Fore_Digits_Fill => Fore_Digits_Fill,
          Aft_Width => Aft_Width,
          Exponent_Mark => Exponent_Mark,
          Exponent_Minus_Sign => Exponent_Signs (-1),
          Exponent_Zero_Sign => Exponent_Signs (0),
          Exponent_Plus_Sign => Exponent_Signs (1),
-         Exponent_Width => Exponent_Width,
-         Exponent_Padding => Exponent_Padding,
+         Exponent_Digits_Width => Exponent_Digits_Width,
+         Exponent_Digits_Fill => Exponent_Digits_Fill,
          NaN => NaN,
          Infinity => Infinity);
       return Result (1 .. Last);
@@ -179,12 +179,12 @@ package body Ada.Formatting is
       Result : String (
          1 ..
          Integer'Max (
-               System.Formatting.Float.Fore_Width (
+               System.Formatting.Float.Fore_Digits_Width (
                   Long_Long_Float (T'First),
                   Long_Long_Float (T'Last),
                   Base => Base),
-               Fore_Width)
-            + Aft_Width + Exponent_Width
+               Fore_Digits_Width)
+            + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
@@ -200,15 +200,15 @@ package body Ada.Formatting is
             Base_Form => Form = Ada and then Base /= 10,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Fore_Width => Fore_Width,
-            Fore_Padding => Fore_Padding,
+            Fore_Digits_Width => Fore_Digits_Width,
+            Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
             Exponent_Minus_Sign => Exponent_Signs (-1),
             Exponent_Zero_Sign => Exponent_Signs (0),
             Exponent_Plus_Sign => Exponent_Signs (1),
-            Exponent_Width => Exponent_Width,
-            Exponent_Padding => Exponent_Padding);
+            Exponent_Digits_Width => Exponent_Digits_Width,
+            Exponent_Digits_Fill => Exponent_Digits_Fill);
       else
          System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
@@ -221,8 +221,8 @@ package body Ada.Formatting is
             Base_Form => Form = Ada and then Base /= 10,
             Set =>
                System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
-            Fore_Width => Fore_Width,
-            Fore_Padding => Fore_Padding,
+            Fore_Digits_Width => Fore_Digits_Width,
+            Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width);
       end if;
       return Result (1 .. Last);
@@ -232,11 +232,11 @@ package body Ada.Formatting is
       Result : String (
          1 ..
          Integer'Max (
-               System.Formatting.Float.Fore_Width (
+               System.Formatting.Float.Fore_Digits_Width (
                   Long_Long_Float (T'First),
                   Long_Long_Float (T'Last)),
-               Fore_Width)
-            + Aft_Width + Exponent_Width
+               Fore_Digits_Width)
+            + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
@@ -248,15 +248,15 @@ package body Ada.Formatting is
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
             Plus_Sign => Signs (1),
-            Fore_Width => Fore_Width,
-            Fore_Padding => Fore_Padding,
+            Fore_Digits_Width => Fore_Digits_Width,
+            Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
             Exponent_Minus_Sign => Exponent_Signs (-1),
             Exponent_Zero_Sign => Exponent_Signs (0),
             Exponent_Plus_Sign => Exponent_Signs (1),
-            Exponent_Width => Exponent_Width,
-            Exponent_Padding => Exponent_Padding);
+            Exponent_Digits_Width => Exponent_Digits_Width,
+            Exponent_Digits_Fill => Exponent_Digits_Fill);
       else
          System.Formatting.Decimal.Image (
             Long_Long_Integer'Integer_Value (Item),
@@ -266,8 +266,8 @@ package body Ada.Formatting is
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
             Plus_Sign => Signs (1),
-            Fore_Width => Fore_Width,
-            Fore_Padding => Fore_Padding,
+            Fore_Digits_Width => Fore_Digits_Width,
+            Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width);
       end if;
       return Result (1 .. Last);

@@ -180,8 +180,7 @@ procedure random_dsfmt is
 				Signs => Ada.Formatting.Triming_Unsign_Marks,
 				Base => 16,
 				Set => Ada.Formatting.Lower_Case,
-				Width => 8,
-				Padding => '0');
+				Digits_Width => 8);
 	begin
 		Ada.Long_Float_Text_IO.Put (Item.d, Aft => 15);
 		Ada.Text_IO.Put ("(");

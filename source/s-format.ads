@@ -10,11 +10,11 @@ package System.Formatting is
    type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
    pragma Discard_Names (Type_Set);
 
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10)
       return Positive;
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base := 10)
       return Positive;
@@ -31,7 +31,7 @@ package System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean);
 
    procedure Image (
@@ -41,7 +41,7 @@ package System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean);
 
    procedure Value (

@@ -15,7 +15,7 @@ begin
 				Form => Ada.Formatting.Simple,
 				Signs => Ada.Formatting.Triming_Unsign_Marks,
 				Base => 16,
-				Width => 4);
+				Digits_Width => 4);
 	begin
 		Ada.Debug.Put (Image (CW));
 	end;

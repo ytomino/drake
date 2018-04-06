@@ -259,15 +259,15 @@ package body System.Formatting is
 
    --  implementation
 
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10)
       return Positive is
    begin
       return Width_Digits (Value, Base);
-   end Width;
+   end Digits_Width;
 
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base := 10)
       return Positive is
@@ -277,9 +277,9 @@ package body System.Formatting is
          return Width_Digits (Value, Base);
       else
          --  optimized for 64bit
-         return Width (Word_Unsigned (Value), Base);
+         return Digits_Width (Word_Unsigned (Value), Base);
       end if;
-   end Width;
+   end Digits_Width;
 
    procedure Image (
       Value : Digit;
@@ -306,10 +306,10 @@ package body System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean)
    is
-      W : constant Positive := Formatting.Width (Value, Base);
+      W : constant Positive := Formatting.Digits_Width (Value, Base);
       Padding_Length : constant Natural := Integer'Max (0, Width - W);
       Length : constant Natural := Padding_Length + W;
    begin
@@ -320,7 +320,7 @@ package body System.Formatting is
          Last := Item'First + Length - 1;
          Fill_Padding (
             Item (Item'First .. Item'First + Padding_Length - 1),
-            Padding);
+            Fill);
          Fill_Digits (
             Value,
             Item (Item'First + Padding_Length .. Last),
@@ -336,13 +336,13 @@ package body System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean) is
    begin
       if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            W : constant Positive := Formatting.Width (Value, Base);
+            W : constant Positive := Formatting.Digits_Width (Value, Base);
             Padding_Length : constant Natural := Integer'Max (0, Width - W);
             Length : constant Natural := Padding_Length + W;
          begin
@@ -353,7 +353,7 @@ package body System.Formatting is
                Last := Item'First + Length - 1;
                Fill_Padding (
                   Item (Item'First .. Item'First + Padding_Length - 1),
-                  Padding);
+                  Fill);
                Fill_Digits (
                   Value,
                   Item (Item'First + Padding_Length .. Last),
@@ -370,7 +370,7 @@ package body System.Formatting is
             Base,
             Set,
             Width,
-            Padding,
+            Fill,
             Error);
       end if;
    end Image;

@@ -10,13 +10,13 @@ begin
 		function Hex_Image is new Ada.Formatting.Integer_Image (
 			T,
 			Base => 16);
-		function Simple_Hex_Image is new Ada.Formatting.Integer_Image (
-			T,
-			Form => Ada.Formatting.Simple,
-			Signs => Ada.Formatting.Triming_Sign_Marks,
-			Base => 16,
-			Width => 4,
-			Padding => '0');
+		function Simple_Hex_Image is
+			new Ada.Formatting.Integer_Image (
+				T,
+				Form => Ada.Formatting.Simple,
+				Signs => Ada.Formatting.Triming_Sign_Marks,
+				Base => 16,
+				Digits_Width => 4);
 	begin
 		pragma Assert (Image (123) = " 123");
 		pragma Assert (Trimed_Image (123) = "123");
@@ -30,13 +30,13 @@ begin
 		function Hex_Image is new Ada.Formatting.Modular_Image (
 			T,
 			Base => 16);
-		function Simple_Hex_Image is new Ada.Formatting.Modular_Image (
-			T,
-			Form => Ada.Formatting.Simple,
-			Signs => Ada.Formatting.Triming_Unsign_Marks,
-			Base => 16,
-			Width => 4,
-			Padding => '0');
+		function Simple_Hex_Image is
+			new Ada.Formatting.Modular_Image (
+				T,
+				Form => Ada.Formatting.Simple,
+				Signs => Ada.Formatting.Triming_Unsign_Marks,
+				Base => 16,
+				Digits_Width => 4);
 	begin
 		pragma Assert (Image (123) = " 123");
 		pragma Assert (Hex_Image (123) = " 16#7B#");

@@ -27,7 +27,7 @@ package body Ada.Text_IO.Float_IO is
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
             Aft_Width => Aft_Width,
-            Exponent_Width => Exp - 1);
+            Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
          System.Formatting.Fixed.Image (
             Long_Long_Float (Item),

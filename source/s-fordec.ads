@@ -11,8 +11,8 @@ package System.Formatting.Decimal is
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
       Plus_Sign : Character := ' ';
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Natural);
 
 end System.Formatting.Decimal;

@@ -328,8 +328,8 @@ package body Ada.Text_IO.Editing is
                Item_Last,
                Scale,
                Minus_Sign => ' ', -- for skipping
-               Fore_Width => Fore,
-               Fore_Padding => ' ',
+               Fore_Digits_Width => Fore,
+               Fore_Digits_Fill => ' ',
                Aft_Width => Aft);
             --  skip single zero before decimal point
             if Item_Image (Item_Image'First + Fore - 1) = ' ' -- sign is blank

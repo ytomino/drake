@@ -95,13 +95,13 @@ package body System.Formatting.Float is
       Exponent : Integer;
       Round_Up : out Boolean;
       Base : Number_Base := 10;
-      Width : Positive := Standard.Float'Digits - 1)
+      Aft_Width : Positive := Standard.Float'Digits - 1)
    is
       L : constant Long_Long_Unsigned_Float :=
-         Long_Long_Unsigned_Float (Base) ** Width;
+         Long_Long_Unsigned_Float (Base) ** Aft_Width;
    begin
       Scaled_Aft := roundl (
-         Aft * Long_Long_Unsigned_Float (Base) ** (Width - Exponent));
+         Aft * Long_Long_Unsigned_Float (Base) ** (Aft_Width - Exponent));
       Round_Up := Scaled_Aft >= L; -- ".99"99.. would be rounded up to 1".00"
    end Aft_Scale;
 
@@ -111,11 +111,11 @@ package body System.Formatting.Float is
       Last : out Natural;
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
-      Width : Positive := Standard.Float'Digits - 1)
+      Aft_Width : Positive := Standard.Float'Digits - 1)
    is
       X : Long_Long_Unsigned_Float := Value;
    begin
-      Last := Item'First + Width;
+      Last := Item'First + Aft_Width;
       Item (Item'First) := '.';
       for I in reverse Item'First + 1 .. Last loop
          declare
@@ -130,7 +130,7 @@ package body System.Formatting.Float is
       pragma Assert (X = 0.0);
    end Aft_Image;
 
-   function Fore_Width (
+   function Fore_Digits_Width (
       Value : Long_Long_Unsigned_Float;
       Base : Number_Base := 10)
       return Positive
@@ -143,9 +143,9 @@ package body System.Formatting.Float is
          P := P * Long_Long_Float (Base);
       end loop;
       return Result;
-   end Fore_Width;
+   end Fore_Digits_Width;
 
-   function Fore_Width (
+   function Fore_Digits_Width (
       First, Last : Long_Long_Float;
       Base : Number_Base := 10)
       return Positive
@@ -165,8 +165,8 @@ package body System.Formatting.Float is
       else -- Actual_First < 0 and then Actual_Last > 0
          Max_Abs := Long_Long_Float'Max (-Actual_First, Actual_Last);
       end if;
-      return Fore_Width (Max_Abs, Base => Base);
-   end Fore_Width;
+      return Fore_Digits_Width (Max_Abs, Base => Base);
+   end Fore_Digits_Width;
 
    procedure Image (
       Value : Long_Long_Float;
@@ -178,15 +178,15 @@ package body System.Formatting.Float is
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive;
       Exponent_Mark : Character := 'E';
       Exponent_Minus_Sign : Character := '-';
       Exponent_Zero_Sign : Character := '+';
       Exponent_Plus_Sign : Character := '+';
-      Exponent_Width : Positive := 2;
-      Exponent_Padding : Character := '0';
+      Exponent_Digits_Width : Positive := 2;
+      Exponent_Digits_Fill : Character := '0';
       NaN : String := "NAN";
       Infinity : String := "INF") is
    begin
@@ -247,7 +247,7 @@ package body System.Formatting.Float is
                Exponent,
                Rouned_Up,
                Base => Base,
-               Width => Aft_Width);
+               Aft_Width => Aft_Width);
             if Rouned_Up then
                Fore := Fore + 1;
                Scaled_Aft := 0.0;
@@ -269,11 +269,11 @@ package body System.Formatting.Float is
                Item (Last) := '#';
             end if;
             --  integer part
-            pragma Assert (Last + Fore_Width <= Item'Last);
+            pragma Assert (Last + Fore_Digits_Width <= Item'Last);
             Fill_Padding (
-               Item (Last + 1 .. Last + Fore_Width - 1),
-               Fore_Padding);
-            Last := Last + Fore_Width; -- including one digit
+               Item (Last + 1 .. Last + Fore_Digits_Width - 1),
+               Fore_Digits_Fill);
+            Last := Last + Fore_Digits_Width; -- including one digit
             Image (Fore, Item (Last), Set => Set);
             --  '.' and decimal part
             pragma Assert (Last + 1 + Aft_Width <= Item'Last);
@@ -282,7 +282,7 @@ package body System.Formatting.Float is
                Item (Last + 1 .. Item'Last),
                Last,
                Base => Base,
-               Width => Aft_Width);
+               Aft_Width => Aft_Width);
             --  closing #
             if Base_Form then
                Last := Last + 1;
@@ -316,8 +316,8 @@ package body System.Formatting.Float is
                Word_Unsigned (abs Exponent),
                Item (Last + 1 .. Item'Last),
                Last,
-               Width => Exponent_Width,
-               Padding => Exponent_Padding,
+               Width => Exponent_Digits_Width,
+               Fill => Exponent_Digits_Fill,
                Error => Error);
             pragma Assert (not Error);
          end;

@@ -14,7 +14,7 @@ package body System.Wid_LLU is
       if Lo > Hi then
          return 0;
       else
-         return 1 + Formatting.Width (Long_Long_Unsigned (Hi));
+         return 1 + Formatting.Digits_Width (Long_Long_Unsigned (Hi)); -- sign
       end if;
    end Width_Long_Long_Unsigned;
 

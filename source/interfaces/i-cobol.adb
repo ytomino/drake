@@ -244,7 +244,7 @@ package body Interfaces.COBOL is
    function Length_To_Display_Unsigned (Item : Long_Long_Integer)
       return Natural is
    begin
-      return System.Formatting.Width (Long_Long_Unsigned (Item));
+      return System.Formatting.Digits_Width (Long_Long_Unsigned (Item));
    end Length_To_Display_Unsigned;
 
    procedure To_Display_Unsigned (
@@ -432,7 +432,8 @@ package body Interfaces.COBOL is
    begin
       return 2
          + Natural (
-            Word_Unsigned (System.Formatting.Width (Long_Long_Unsigned (Item)))
+            Word_Unsigned (
+                  System.Formatting.Digits_Width (Long_Long_Unsigned (Item)))
                and not 1);
    end Length_To_Packed;
 

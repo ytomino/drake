@@ -13,8 +13,8 @@ package System.Formatting.Fixed is
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive);
 
 end System.Formatting.Fixed;

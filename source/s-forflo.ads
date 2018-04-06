@@ -14,7 +14,7 @@ package System.Formatting.Float is
       Exponent : Integer;
       Round_Up : out Boolean;
       Base : Number_Base := 10;
-      Width : Positive := Standard.Float'Digits - 1);
+      Aft_Width : Positive := Standard.Float'Digits - 1);
 
    procedure Aft_Image (
       Value : Long_Long_Unsigned_Float; -- scaled Aft
@@ -22,14 +22,14 @@ package System.Formatting.Float is
       Last : out Natural;
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
-      Width : Positive := Standard.Float'Digits - 1);
+      Aft_Width : Positive := Standard.Float'Digits - 1);
 
-   --  Width of integer part.
-   function Fore_Width (
+   --  Width of integer part, without sign.
+   function Fore_Digits_Width (
       Value : Long_Long_Unsigned_Float;
       Base : Number_Base := 10)
       return Positive;
-   function Fore_Width (
+   function Fore_Digits_Width (
       First, Last : Long_Long_Float;
       Base : Number_Base := 10)
       return Positive;
@@ -44,15 +44,15 @@ package System.Formatting.Float is
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive;
       Exponent_Mark : Character := 'E';
       Exponent_Minus_Sign : Character := '-';
       Exponent_Zero_Sign : Character := '+';
       Exponent_Plus_Sign : Character := '+';
-      Exponent_Width : Positive := 2;
-      Exponent_Padding : Character := '0';
+      Exponent_Digits_Width : Positive := 2;
+      Exponent_Digits_Fill : Character := '0';
       NaN : String := "NAN";
       Infinity : String := "INF");
 

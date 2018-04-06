@@ -90,7 +90,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
                   Buffer (Last + 1 .. Buffer'Last),
                   Last,
                   Width => 3,
-                  Padding => ' ',
+                  Fill => ' ',
                   Error => Error);
             end;
             Put (Buffer, Last, "%)");

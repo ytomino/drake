@@ -25,8 +25,8 @@ package body System.Formatting.Fixed is
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive)
    is
       Item_Fore : aliased Long_Long_Float;
@@ -76,19 +76,20 @@ package body System.Formatting.Fixed is
          0,
          Round_Up,
          Base => Base,
-         Width => Aft_Width);
+         Aft_Width => Aft_Width);
       if Round_Up then
          Item_Fore := Item_Fore + 1.0;
          Scaled_Aft := 0.0;
       end if;
       --  integer part
-      Required_Fore_Width := Float.Fore_Width (Item_Fore, Base => Base);
-      if Fore_Width > Required_Fore_Width then
-         pragma Assert (Last + Fore_Width - Required_Fore_Width <= Item'Last);
+      Required_Fore_Width := Float.Fore_Digits_Width (Item_Fore, Base => Base);
+      if Fore_Digits_Width > Required_Fore_Width then
+         pragma Assert (
+            Last + Fore_Digits_Width - Required_Fore_Width <= Item'Last);
          Fill_Padding (
-            Item (Last + 1 .. Last + Fore_Width - Required_Fore_Width),
-            Fore_Padding);
-         Last := Last + Fore_Width - Required_Fore_Width;
+            Item (Last + 1 .. Last + Fore_Digits_Width - Required_Fore_Width),
+            Fore_Digits_Fill);
+         Last := Last + Fore_Digits_Width - Required_Fore_Width;
       end if;
       pragma Assert (Last + Required_Fore_Width <= Item'Last);
       for I in reverse Last + 1 .. Last + Required_Fore_Width loop
@@ -114,7 +115,7 @@ package body System.Formatting.Fixed is
          Last,
          Base => Base,
          Set => Set,
-         Width => Aft_Width);
+         Aft_Width => Aft_Width);
       --  closing '#'
       if Base_Form then
          Last := Last + 1;
