@@ -6,7 +6,7 @@ package System.Formatting.Decimal is
    procedure Image (
       Value : Long_Long_Integer;
       Item : out String; -- To'Length >= T'Fore + T'Aft + 1 (.)
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Scale : Integer;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';

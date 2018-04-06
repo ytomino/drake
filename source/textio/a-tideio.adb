@@ -6,13 +6,13 @@ package body Ada.Text_IO.Decimal_IO is
 
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field);
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field) is
@@ -22,6 +22,7 @@ package body Ada.Text_IO.Decimal_IO is
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
@@ -31,6 +32,7 @@ package body Ada.Text_IO.Decimal_IO is
          System.Formatting.Decimal.Image (
             Long_Long_Integer'Integer_Value (Item),
             To,
+            Fore_Last,
             Last,
             Num'Scale,
             Zero_Sign => System.Formatting.No_Sign,
@@ -118,13 +120,13 @@ package body Ada.Text_IO.Decimal_IO is
       S : String (
          1 ..
          Integer'Max (Num'Width, Long_Long_Float'Width) + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (
          File, -- checking the predicate
          S (1 .. Last),
-         Fore + Aft + Exp + 1);
+         Last - Fore_Last + Fore);
    end Put;
 
    procedure Put (
@@ -154,9 +156,9 @@ package body Ada.Text_IO.Decimal_IO is
       S : String (
          1 ..
          Integer'Max (Num'Width, Long_Long_Float'Width) + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (To, S (1 .. Last));
    end Put;
 

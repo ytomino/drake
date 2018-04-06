@@ -37,7 +37,7 @@ package System.Formatting.Float is
    procedure Image (
       Value : Long_Long_Float;
       Item : out String; -- Item'Length >= Long_Long_Float'Width + 4 for "16##"
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
       Plus_Sign : Character := ' ';

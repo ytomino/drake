@@ -9,7 +9,7 @@ package body System.Formatting.Decimal is
    procedure Image (
       Value : Long_Long_Integer;
       Item : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Scale : Integer;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
@@ -61,6 +61,7 @@ package body System.Formatting.Decimal is
                Fill => Fore_Digits_Fill,
                Error => Error);
             pragma Assert (not Error);
+            Fore_Last := Last;
             if Aft_Width > 0 then
                Last := Last + 1;
                pragma Assert (Last <= Item'Last);
@@ -100,6 +101,7 @@ package body System.Formatting.Decimal is
             Last := Last + Fore_Digits_Width; -- including '0'
             Item (Last) := '0';
          end if;
+         Fore_Last := Last;
          if Aft_Width > 0 then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);

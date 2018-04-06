@@ -6,7 +6,7 @@ package System.Formatting.Fixed is
    procedure Image (
       Value : Long_Long_Float;
       Item : out String; -- To'Length >= T'Fore + T'Aft + 5 (16#.#)
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
       Plus_Sign : Character := ' ';

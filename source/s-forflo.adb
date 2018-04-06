@@ -171,7 +171,7 @@ package body System.Formatting.Float is
    procedure Image (
       Value : Long_Long_Float;
       Item : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
       Plus_Sign : Character := ' ';
@@ -275,6 +275,7 @@ package body System.Formatting.Float is
                Fore_Digits_Fill);
             Last := Last + Fore_Digits_Width; -- including one digit
             Image (Fore, Item (Last), Set => Set);
+            Fore_Last := Last;
             --  '.' and decimal part
             pragma Assert (Last + 1 + Aft_Width <= Item'Last);
             Aft_Image (

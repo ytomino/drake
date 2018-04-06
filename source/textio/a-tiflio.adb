@@ -6,13 +6,13 @@ package body Ada.Text_IO.Float_IO is
 
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field);
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field)
@@ -23,6 +23,7 @@ package body Ada.Text_IO.Float_IO is
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
@@ -32,6 +33,7 @@ package body Ada.Text_IO.Float_IO is
          System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
             Zero_Sign => System.Formatting.No_Sign,
             Plus_Sign => System.Formatting.No_Sign,
@@ -123,13 +125,13 @@ package body Ada.Text_IO.Float_IO is
       Exp : Field := Default_Exp)
    is
       S : String (1 .. Long_Long_Float'Width + Fore + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (
          File, -- checking the predicate
          S (1 .. Last),
-         Fore + Aft + Exp + 2);
+         Last - Fore_Last + Fore);
    end Put;
 
    procedure Put (
@@ -167,9 +169,9 @@ package body Ada.Text_IO.Float_IO is
       Exp : Field := Default_Exp)
    is
       S : String (1 .. Long_Long_Float'Width + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (To, S (1 .. Last));
    end Put;
 
@@ -179,6 +181,10 @@ package body Ada.Text_IO.Float_IO is
       Item : Num;
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp)
-      renames Put_To_Field;
+   is
+      Fore_Last : Natural;
+   begin
+      Put_To_Field (To, Fore_Last, Last, Item, Aft, Exp);
+   end Put;
 
 end Ada.Text_IO.Float_IO;

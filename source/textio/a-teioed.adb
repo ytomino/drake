@@ -316,7 +316,7 @@ package body Ada.Text_IO.Editing is
             Currency_Length : constant Natural := Currency'Length;
             Aft : constant Natural := Pic.Aft;
             Item_Image : String (1 .. Fore + Aft + 2); -- sign and '.'
-            Item_Last : Natural;
+            Item_Fore_Last, Item_Last : Natural;
             Radix_Position : Integer := Pic.Radix_Position;
          begin
             if Pic.Has_Dollar = Previous then
@@ -325,6 +325,7 @@ package body Ada.Text_IO.Editing is
             System.Formatting.Decimal.Image (
                Item,
                Item_Image,
+               Item_Fore_Last,
                Item_Last,
                Scale,
                Minus_Sign => ' ', -- for skipping

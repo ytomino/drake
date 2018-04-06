@@ -18,7 +18,7 @@ package body System.Formatting.Fixed is
    procedure Image (
       Value : Long_Long_Float;
       Item : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Minus_Sign : Character := '-';
       Zero_Sign : Character := ' ';
       Plus_Sign : Character := ' ';
@@ -107,6 +107,7 @@ package body System.Formatting.Fixed is
          end;
       end loop;
       Last := Last + Required_Fore_Width;
+      Fore_Last := Last;
       --  '.' and decimal part
       pragma Assert (Last + Aft_Width <= Item'Last);
       Float.Aft_Image (

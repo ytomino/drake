@@ -149,11 +149,12 @@ package body Ada.Formatting is
          1 ..
          Fore_Digits_Width + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
       System.Formatting.Float.Image (
          Long_Long_Float (Item),
          Result,
+         Fore_Last,
          Last,
          Minus_Sign => Signs (-1),
          Zero_Sign => Signs (0),
@@ -186,12 +187,13 @@ package body Ada.Formatting is
                Fore_Digits_Width)
             + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
       if Exponent then
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             Result,
+            Fore_Last,
             Last,
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
@@ -213,6 +215,7 @@ package body Ada.Formatting is
          System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
             Result,
+            Fore_Last,
             Last,
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
@@ -238,12 +241,13 @@ package body Ada.Formatting is
                Fore_Digits_Width)
             + Aft_Width + Exponent_Digits_Width
             + 13); -- 5(15bit exponent) + 8("-16#.#E-")
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
       if Exponent then
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             Result,
+            Fore_Last,
             Last,
             Minus_Sign => Signs (-1),
             Zero_Sign => Signs (0),
@@ -261,6 +265,7 @@ package body Ada.Formatting is
          System.Formatting.Decimal.Image (
             Long_Long_Integer'Integer_Value (Item),
             Result,
+            Fore_Last,
             Last,
             T'Scale,
             Minus_Sign => Signs (-1),
