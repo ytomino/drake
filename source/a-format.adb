@@ -147,7 +147,8 @@ package body Ada.Formatting is
    function Float_Image (Item : T) return String is
       Result : String (
          1 ..
-         Fore_Width + Aft_Width + Exponent_Width + 8); -- (-16#.#E-)
+         Fore_Width + Aft_Width + Exponent_Width
+            + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
       System.Formatting.Float.Image (
@@ -182,8 +183,9 @@ package body Ada.Formatting is
                   Long_Long_Float (T'First),
                   Long_Long_Float (T'Last),
                   Base => Base),
-               Fore_Width + 1)
-            + Aft_Width + Exponent_Width + 7); -- (16#.#/16#.#E-)
+               Fore_Width)
+            + Aft_Width + Exponent_Width
+            + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
       if Exponent then
@@ -233,8 +235,9 @@ package body Ada.Formatting is
                System.Formatting.Float.Fore_Width (
                   Long_Long_Float (T'First),
                   Long_Long_Float (T'Last)),
-               Fore_Width + 1)
-            + Aft_Width + Exponent_Width + 7); -- (./16#.#E+)
+               Fore_Width)
+            + Aft_Width + Exponent_Width
+            + 13); -- 5(15bit exponent) + 8("-16#.#E-")
       Last : Natural;
    begin
       if Exponent then
