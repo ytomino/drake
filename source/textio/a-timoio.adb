@@ -13,33 +13,17 @@ package body Ada.Text_IO.Modular_IO is
       To : out String;
       Last : out Natural;
       Item : Num;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field);
+      Base : Number_Base);
    procedure Put_To_Field (
       To : out String;
       Last : out Natural;
       Item : Num;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field) is
+      Base : Number_Base) is
    begin
       if Num'Size > Standard'Word_Size then
-         Formatting.Modular_Image (
-            To,
-            Last,
-            Long_Long_Unsigned (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Formatting.Modular_Image (To, Last, Long_Long_Unsigned (Item), Base);
       else
-         Formatting.Modular_Image (
-            To,
-            Last,
-            Word_Unsigned (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Formatting.Modular_Image (To, Last, Word_Unsigned (Item), Base);
       end if;
    end Put_To_Field;
 
@@ -131,23 +115,21 @@ package body Ada.Text_IO.Modular_IO is
       File : File_Type;
       Item : Num;
       Width : Field := Default_Width;
-      Base : Number_Base := Default_Base;
-      Padding : Character := Default_Padding)
+      Base : Number_Base := Default_Base)
    is
       S : String (1 .. 4 + Num'Width + Width); -- "16##"
       Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Base, Padding, Width);
+      Put_To_Field (S, Last, Item, Base);
       Formatting.Tail (File, S (1 .. Last), Width); -- checking the predicate
    end Put;
 
    procedure Put (
       Item : Num;
       Width : Field := Default_Width;
-      Base : Number_Base := Default_Base;
-      Padding : Character := Default_Padding) is
+      Base : Number_Base := Default_Base) is
    begin
-      Put (Current_Output.all, Item, Width, Base, Padding);
+      Put (Current_Output.all, Item, Width, Base);
    end Put;
 
    procedure Get (
@@ -162,13 +144,12 @@ package body Ada.Text_IO.Modular_IO is
    procedure Put (
       To : out String;
       Item : Num;
-      Base : Number_Base := Default_Base;
-      Padding : Character := Default_Padding)
+      Base : Number_Base := Default_Base)
    is
       S : String (1 .. To'Length);
       Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Base, Padding, To'Length);
+      Put_To_Field (S, Last, Item, Base);
       Formatting.Tail (To, S (1 .. Last));
    end Put;
 

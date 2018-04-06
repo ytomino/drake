@@ -111,9 +111,7 @@ package body Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field)
+      Base : Number_Base)
    is
       Unsigned_Item : Word_Unsigned;
    begin
@@ -125,22 +123,14 @@ package body Ada.Text_IO.Formatting is
       else
          Unsigned_Item := Word_Unsigned (Item);
       end if;
-      Modular_Image (
-         To (Last + 1 .. To'Last),
-         Last,
-         Unsigned_Item,
-         Base,
-         Padding,
-         Padding_Width);
+      Modular_Image (To (Last + 1 .. To'Last), Last, Unsigned_Item, Base);
    end Integer_Image;
 
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : Long_Long_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field) is
+      Base : Number_Base) is
    begin
       if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
@@ -159,19 +149,11 @@ package body Ada.Text_IO.Formatting is
                To (Last + 1 .. To'Last),
                Last,
                Unsigned_Item,
-               Base,
-               Padding,
-               Padding_Width);
+               Base);
          end;
       else
          --  optimized for 64bit
-         Integer_Image (
-            To,
-            Last,
-            Word_Integer (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Integer_Image (To, Last, Word_Integer (Item), Base);
       end if;
    end Integer_Image;
 
@@ -179,18 +161,10 @@ package body Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field)
+      Base : Number_Base)
    is
-      Actual_Padding_Width : Field;
       Error : Boolean;
    begin
-      if Padding /= ' ' then
-         Actual_Padding_Width := Padding_Width;
-      else
-         Actual_Padding_Width := 1;
-      end if;
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
@@ -206,17 +180,12 @@ package body Ada.Text_IO.Formatting is
             Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
-         if Padding /= ' ' then
-            Actual_Padding_Width := Padding_Width - (Last - To'First + 2);
-         end if;
       end if;
       System.Formatting.Image (
          Item,
          To (Last + 1 .. To'Last),
          Last,
-         Width => Actual_Padding_Width,
          Base => Base,
-         Padding => Padding,
          Error => Error);
       if Error then
          Raise_Exception (Layout_Error'Identity);
@@ -234,21 +203,13 @@ package body Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Long_Long_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field) is
+      Base : Number_Base) is
    begin
       if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            Actual_Padding_Width : Field;
             Error : Boolean;
          begin
-            if Padding /= ' ' then
-               Actual_Padding_Width := Padding_Width;
-            else
-               Actual_Padding_Width := 1;
-            end if;
             Last := To'First - 1;
             if Base /= 10 then
                System.Formatting.Image (
@@ -264,18 +225,12 @@ package body Ada.Text_IO.Formatting is
                   Raise_Exception (Layout_Error'Identity);
                end if;
                To (Last) := '#';
-               if Padding /= ' ' then
-                  Actual_Padding_Width :=
-                     Padding_Width - (Last - To'First + 2);
-               end if;
             end if;
             System.Formatting.Image (
                Item,
                To (Last + 1 .. To'Last),
                Last,
-               Width => Actual_Padding_Width,
                Base => Base,
-               Padding => Padding,
                Error => Error);
             if Error then
                Raise_Exception (Layout_Error'Identity);
@@ -290,13 +245,7 @@ package body Ada.Text_IO.Formatting is
          end;
       else
          --  optimized for 64bit
-         Modular_Image (
-            To,
-            Last,
-            Word_Unsigned (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Modular_Image (To, Last, Word_Unsigned (Item), Base);
       end if;
    end Modular_Image;
 
@@ -567,11 +516,7 @@ package body Ada.Text_IO.Formatting is
       end loop;
    end Get_Tail;
 
-   procedure Head (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ')
-   is
+   procedure Head (Target : out String; Source : String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
@@ -580,14 +525,10 @@ package body Ada.Text_IO.Formatting is
       Target (Target'First .. Target'First + Source_Length - 1) := Source;
       System.Formatting.Fill_Padding (
          Target (Target'First + Source_Length .. Target'Last),
-         Padding);
+         ' ');
    end Head;
 
-   procedure Tail (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ')
-   is
+   procedure Tail (Target : out String; Source : String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
@@ -596,37 +537,29 @@ package body Ada.Text_IO.Formatting is
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
       System.Formatting.Fill_Padding (
          Target (Target'First .. Target'Last - Source_Length),
-         Padding);
+         ' ');
    end Tail;
 
-   procedure Tail (
-      Target : out Wide_String;
-      Source : Wide_String;
-      Padding : Wide_Character := ' ')
-   is
+   procedure Tail (Target : out Wide_String; Source : Wide_String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source_Length loop
-         Target (I) := Padding;
+         Target (I) := ' ';
       end loop;
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;
 
-   procedure Tail (
-      Target : out Wide_Wide_String;
-      Source : Wide_Wide_String;
-      Padding : Wide_Wide_Character := ' ')
-   is
+   procedure Tail (Target : out Wide_Wide_String; Source : Wide_Wide_String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source_Length loop
-         Target (I) := Padding;
+         Target (I) := ' ';
       end loop;
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;
