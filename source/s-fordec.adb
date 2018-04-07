@@ -21,29 +21,26 @@ package body System.Formatting.Decimal is
       Error : Boolean;
    begin
       Last := Item'First - 1;
-      if Value < 0 then
-         Abs_Value := -Long_Long_Unsigned'Mod (Value);
-         if Signs.Minus /= No_Sign then
+      declare
+         Sign : Character;
+      begin
+         if Value < 0 then
+            Abs_Value := -Long_Long_Unsigned'Mod (Value);
+            Sign := Signs.Minus;
+         else
+            Abs_Value := Long_Long_Unsigned (Value);
+            if Value > 0 then
+               Sign := Signs.Plus;
+            else
+               Sign := Signs.Zero;
+            end if;
+         end if;
+         if Sign /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Minus;
+            Item (Last) := Sign;
          end if;
-      else
-         Abs_Value := Long_Long_Unsigned (Value);
-         if Value > 0 then
-            if Signs.Plus /= No_Sign then
-               Last := Last + 1;
-               pragma Assert (Last <= Item'Last);
-               Item (Last) := Signs.Plus;
-            end if;
-         else
-            if Signs.Zero /= No_Sign then
-               Last := Last + 1;
-               pragma Assert (Last <= Item'Last);
-               Item (Last) := Signs.Zero;
-            end if;
-         end if;
-      end if;
+      end;
       if Scale > 0 then
          declare
             Rounded_Item : Long_Long_Unsigned := Abs_Value;

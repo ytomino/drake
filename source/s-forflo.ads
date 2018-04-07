@@ -6,6 +6,11 @@ package System.Formatting.Float is
    subtype Long_Long_Unsigned_Float is
       Long_Long_Float range 0.0 .. Long_Long_Float'Last;
 
+   --  sign marks
+
+   function Sign_Mark (Value : Long_Long_Float; Signs : Sign_Marks)
+      return Character;
+
    --  decimal part for floating-point format = Aft / Base ** Exponent
 
    procedure Aft_Scale (
@@ -25,6 +30,7 @@ package System.Formatting.Float is
       Aft_Width : Positive := Standard.Float'Digits - 1);
 
    --  Width of integer part, without sign.
+
    function Fore_Digits_Width (
       Value : Long_Long_Unsigned_Float;
       Base : Number_Base := 10)

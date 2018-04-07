@@ -23,32 +23,33 @@ package body Ada.Formatting is
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
-      if T'Size > Standard'Word_Size then
-         Longest_Abs_Item := Long_Long_Unsigned'Mod (Item);
-      else
-         Word_Abs_Item := Word_Unsigned'Mod (Item);
-      end if;
-      if Item < 0 then
-         if T'Size > Standard'Word_Size then
-            Longest_Abs_Item := -Longest_Abs_Item;
+      declare
+         Sign : Character;
+      begin
+         if Item < 0 then
+            if T'Size > Standard'Word_Size then
+               Longest_Abs_Item := -Long_Long_Unsigned'Mod (Item);
+            else
+               Word_Abs_Item := -Word_Unsigned'Mod (Item);
+            end if;
+            Sign := Signs (-1);
          else
-            Word_Abs_Item := -Word_Abs_Item;
+            if T'Size > Standard'Word_Size then
+               Longest_Abs_Item := Long_Long_Unsigned (Item);
+            else
+               Word_Abs_Item := Word_Unsigned (Item);
+            end if;
+            if Item > 0 then
+               Sign := Signs (1);
+            else
+               Sign := Signs (0);
+            end if;
          end if;
-         if Signs (-1) /= No_Sign then
+         if Sign /= No_Sign then
             Last := Last + 1;
-            Result (Last) := Signs (-1);
+            Result (Last) := Sign;
          end if;
-      elsif Item > 0 then
-         if Signs (1) /= No_Sign then
-            Last := Last + 1;
-            Result (Last) := Signs (1);
-         end if;
-      else
-         if Signs (0) /= No_Sign then
-            Last := Last + 1;
-            Result (Last) := Signs (0);
-         end if;
-      end if;
+      end;
       if Form = Ada and then Base /= 10 then
          System.Formatting.Image (
             Word_Unsigned (Base),
@@ -94,17 +95,19 @@ package body Ada.Formatting is
       Last : Natural := Result'First - 1;
       Error : Boolean;
    begin
-      if Item > 0 then
-         if Signs (1) /= No_Sign then
-            Last := Last + 1;
-            Result (Last) := Signs (1);
+      declare
+         Sign : Character;
+      begin
+         if Item > 0 then
+            Sign := Signs (1);
+         else
+            Sign := Signs (0);
          end if;
-      else
-         if Signs (0) /= No_Sign then
+         if Sign /= No_Sign then
             Last := Last + 1;
-            Result (Last) := Signs (0);
+            Result (Last) := Sign;
          end if;
-      end if;
+      end;
       if Form = Ada and then Base /= 10 then
          System.Formatting.Image (
             Word_Unsigned (Base),

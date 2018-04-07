@@ -1,6 +1,7 @@
 with System.Long_Long_Float_Types;
 package body System.Formatting.Float is
    pragma Suppress (All_Checks);
+   use type Long_Long_Integer_Types.Word_Unsigned;
 
    subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
@@ -88,6 +89,18 @@ package body System.Formatting.Float is
    end Split;
 
    --  implementation
+
+   function Sign_Mark (Value : Long_Long_Float; Signs : Sign_Marks)
+      return Character is
+   begin
+      if signbitl (Value) /= 0 then
+         return Signs.Minus;
+      elsif Value > 0.0 then
+         return Signs.Plus;
+      else
+         return Signs.Zero;
+      end if;
+   end Sign_Mark;
 
    procedure Aft_Scale (
       Aft : Long_Long_Unsigned_Float;
@@ -187,25 +200,15 @@ package body System.Formatting.Float is
       Infinity : String := "INF") is
    begin
       Last := Item'First - 1;
-      if signbitl (Value) /= 0 then
-         if Signs.Minus /= No_Sign then
+      declare
+         Sign : constant Character := Sign_Mark (Value, Signs);
+      begin
+         if Sign /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Minus;
+            Item (Last) := Sign;
          end if;
-      elsif Value > 0.0 then
-         if Signs.Plus /= No_Sign then
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Plus;
-         end if;
-      else
-         if Signs.Zero /= No_Sign then
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Zero;
-         end if;
-      end if;
+      end;
       if isnanl (Value) /= 0 then
          declare
             First : constant Positive := Last + 1;
@@ -227,6 +230,7 @@ package body System.Formatting.Float is
             Fore : Digit;
             Aft : Long_Long_Float;
             Exponent : Integer;
+            Abs_Exponent : Word_Unsigned;
             Scaled_Aft : Long_Long_Float;
             Rouned_Up : Boolean;
             Error : Boolean;
@@ -290,27 +294,28 @@ package body System.Formatting.Float is
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
             Item (Last) := Exponent_Mark;
-            if Exponent < 0 then
-               if Exponent_Signs.Minus /= No_Sign then
+            declare
+               Exponent_Sign : Character;
+            begin
+               if Exponent < 0 then
+                  Abs_Exponent := -Word_Unsigned'Mod (Exponent);
+                  Exponent_Sign := Exponent_Signs.Minus;
+               else
+                  Abs_Exponent := Word_Unsigned (Exponent);
+                  if Exponent > 0 then
+                     Exponent_Sign := Exponent_Signs.Plus;
+                  else
+                     Exponent_Sign := Exponent_Signs.Zero;
+                  end if;
+               end if;
+               if Exponent_Sign /= No_Sign then
                   Last := Last + 1;
                   pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Signs.Minus;
+                  Item (Last) := Exponent_Sign;
                end if;
-            elsif Exponent > 0 then
-               if Exponent_Signs.Plus /= No_Sign then
-                  Last := Last + 1;
-                  pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Signs.Plus;
-               end if;
-            else
-               if Exponent_Signs.Zero /= No_Sign then
-                  Last := Last + 1;
-                  pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Signs.Zero;
-               end if;
-            end if;
+            end;
             Image (
-               Word_Unsigned (abs Exponent),
+               Abs_Exponent,
                Item (Last + 1 .. Item'Last),
                Last,
                Width => Exponent_Digits_Width,

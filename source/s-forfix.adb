@@ -5,10 +5,6 @@ package body System.Formatting.Fixed is
 
    subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
-   function signbitl (X : Long_Long_Float) return Integer
-      with Import,
-         Convention => Intrinsic, External_Name => "__builtin_signbitl";
-
    function modfl (value : Long_Long_Float; iptr : access Long_Long_Float)
       return Long_Long_Float
       with Import, Convention => Intrinsic, External_Name => "__builtin_modfl";
@@ -35,25 +31,15 @@ package body System.Formatting.Fixed is
       Error : Boolean;
    begin
       Last := Item'First - 1;
-      if signbitl (Value) /= 0 then
-         if Signs.Minus /= No_Sign then
+      declare
+         Sign : constant Character := Float.Sign_Mark (Value, Signs);
+      begin
+         if Sign /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Minus;
+            Item (Last) := Sign;
          end if;
-      elsif Value > 0.0 then
-         if Signs.Plus /= No_Sign then
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Plus;
-         end if;
-      else
-         if Signs.Zero /= No_Sign then
-            Last := Last + 1;
-            pragma Assert (Last <= Item'Last);
-            Item (Last) := Signs.Zero;
-         end if;
-      end if;
+      end;
       --  opening '#'
       if Base_Form then
          Image (
