@@ -309,7 +309,7 @@ package body System.Native_Environment_Encoding is
                   return;
                when Overflow =>
                   Status := Overflow;
-                  return;
+                  return; -- error
                when Illegal_Sequence =>
                   declare
                      Is_Overflow : Boolean;

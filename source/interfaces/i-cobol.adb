@@ -430,6 +430,7 @@ package body Interfaces.COBOL is
 
    function Length_To_Packed (Item : Long_Long_Integer) return Natural is
    begin
+      --  The packed form is BCD and terminated with a magic number.
       return 2
          + Natural (
             Word_Unsigned (

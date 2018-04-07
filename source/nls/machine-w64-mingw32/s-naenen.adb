@@ -213,13 +213,13 @@ package body System.Native_Environment_Encoding is
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
                            Check => Ada.Debug.Put ("illegal sequence"));
-                        return;
+                        return; -- error
                      when UTF_Conversions.Truncated =>
                         Last := Item'First - 1;
                         Out_Last := Out_Item'First - 1;
                         Status := Truncated;
                         pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                        return;
+                        return; -- error
                   end case;
                   declare
                      Item_As_C : aliased C.char_array (0 .. 0); -- at least
@@ -238,7 +238,7 @@ package body System.Native_Environment_Encoding is
                      Out_Last := Out_Item'First - 1;
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
-                     return;
+                     return; -- error
                   end if;
                   Last :=
                      Item'First
@@ -250,7 +250,7 @@ package body System.Native_Environment_Encoding is
                   Out_Last := Out_Item'First - 1;
                   Status := Truncated;
                   pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                  return;
+                  return; -- error
                end if;
                if Item'First + 3 > Item'Last then
                   Last := Item'First + 1;
@@ -279,13 +279,13 @@ package body System.Native_Environment_Encoding is
                         Status := Illegal_Sequence;
                         pragma Check (Trace,
                            Check => Ada.Debug.Put ("illegal sequence"));
-                        return;
+                        return; -- error
                      when UTF_Conversions.Truncated =>
                         Last := Item'First - 1;
                         Out_Last := Out_Item'First - 1;
                         Status := Truncated;
                         pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                        return;
+                        return; -- error
                   end case;
                end;
                Last := 2 * Ada.Streams.Stream_Element_Offset (Buffer_Length);
@@ -295,7 +295,7 @@ package body System.Native_Environment_Encoding is
                   Out_Last := Out_Item'First - 1;
                   Status := Truncated;
                   pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                  return;
+                  return; -- error
                end if;
                declare
                   Code : aliased UTF_Conversions.UCS_4;
@@ -316,7 +316,7 @@ package body System.Native_Environment_Encoding is
                      pragma Assert (To_Status = UTF_Conversions.Unmappable);
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
-                     return;
+                     return; -- error
                   end if;
                end;
             when others =>
@@ -335,7 +335,7 @@ package body System.Native_Environment_Encoding is
                         Out_Last := Out_Item'First - 1;
                         Status := Truncated;
                         pragma Check (Trace, Ada.Debug.Put ("truncated"));
-                        return;
+                        return; -- error
                      end if;
                      Length := 2;
                   else
@@ -355,7 +355,7 @@ package body System.Native_Environment_Encoding is
                      Out_Last := Out_Item'First - 1;
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
-                     return;
+                     return; -- error
                   end if;
                end;
          end case;
@@ -373,7 +373,7 @@ package body System.Native_Environment_Encoding is
                      Out_Last := Out_Item'First - 1;
                      Status := Overflow;
                      pragma Check (Trace, Ada.Debug.Put ("overflow"));
-                     return;
+                     return; -- error
                   end if;
                   Out_Last := Out_Item'First + (Buffer_SEA_Length - 1);
                   Out_Item (Out_Item'First .. Out_Last) :=
@@ -385,7 +385,7 @@ package body System.Native_Environment_Encoding is
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;
                   pragma Check (Trace, Ada.Debug.Put ("overflow"));
-                  return;
+                  return; -- error
                end if;
                declare
                   Out_Code : aliased UTF_Conversions.UCS_4;
@@ -406,7 +406,7 @@ package body System.Native_Environment_Encoding is
                      Out_Last := Out_Item'First - 1;
                      Status := Illegal_Sequence;
                      pragma Check (Trace, Ada.Debug.Put ("illegal sequence"));
-                     return;
+                     return; -- error
                   end if;
                   Out_Last := Out_Item'First + 3;
                   Out_Item (Out_Item'First .. Out_Last) := Out_Code_As_SEA;
@@ -438,7 +438,7 @@ package body System.Native_Environment_Encoding is
                            pragma Check (Trace,
                               Check => Ada.Debug.Put ("illegal sequence"));
                      end case;
-                     return;
+                     return; -- error
                   end if;
                   Out_Last :=
                      Out_Item'First
@@ -568,7 +568,7 @@ package body System.Native_Environment_Encoding is
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;
                   pragma Check (Trace, Ada.Debug.Put ("overflow"));
-                  return;
+                  return; -- error
                end if;
                Out_Item (Out_Item'First .. Out_Last) :=
                   Buffer_As_SEA (1 .. Buffer_Length_In_SEA);
@@ -599,7 +599,7 @@ package body System.Native_Environment_Encoding is
                      Out_Last := Out_Item'First - 1;
                      Status := Overflow;
                      pragma Check (Trace, Ada.Debug.Put ("overflow"));
-                     return;
+                     return; -- error
                   end if;
                   Out_Item (Out_Item'First .. Out_Last) :=
                      Out_WW_As_SEA (1 .. Out_WW_Length_In_SEA); -- un-alignment
@@ -632,7 +632,7 @@ package body System.Native_Environment_Encoding is
                   Out_Last := Out_Item'First - 1;
                   Status := Overflow;
                   pragma Check (Trace, Ada.Debug.Put ("overflow"));
-                  return;
+                  return; -- error
                end if;
                Out_Last :=
                   Out_Item'First

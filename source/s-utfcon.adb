@@ -60,7 +60,7 @@ package body System.UTF_Conversions is
       if I > Result'Last then
          Last := Result'Last;
          Status := Overflow;
-         return;
+         return; -- error
       end if;
       declare
          Dummy_Sequence_Status : Sequence_Status_Type;
@@ -123,7 +123,7 @@ package body System.UTF_Conversions is
             Last := I;
             Result := Character'Pos (First) + (UCS_4'Last - 16#ff#); -- dummy
             Status := Illegal_Sequence; -- trailing byte or invalid code
-            return;
+            return; -- error
       end case;
       --  trailing bytes
       for J in reverse 1 .. Length - 1 loop
@@ -175,12 +175,12 @@ package body System.UTF_Conversions is
             First := Data'Last; -- take 1 element
             Result := Character'Pos (Data (First)) + (UCS_4'Last - 16#ff#);
             Status := Truncated;
-            return;
+            return; -- error
          elsif Data'Last - First + 1 = 6 then
             First := Data'Last; -- take 1 element
             Result := Character'Pos (Data (First)) + (UCS_4'Last - 16#ff#);
             Status := Illegal_Sequence;
-            return;
+            return; -- error
          end if;
          First := First - 1;
       end loop;
@@ -342,7 +342,7 @@ package body System.UTF_Conversions is
             First := Data'Last;
             Result := Wide_Character'Pos (Data (First));
             Status := Truncated;
-            return;
+            return; -- error
          end if;
       else
          First := Data'Last;

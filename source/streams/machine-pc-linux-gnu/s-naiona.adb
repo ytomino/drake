@@ -84,7 +84,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   Raise_Exception (Use_Error'Identity);
                end if;
-               return;
+               return; -- error
             end if;
             New_Name_Length := C.size_t (S_Length);
          end;
@@ -104,7 +104,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             New_Name := New_New_Name;
          end;
@@ -125,7 +125,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             New_Name := New_New_Name;
          end;

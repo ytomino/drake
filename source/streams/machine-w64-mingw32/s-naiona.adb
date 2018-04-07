@@ -108,7 +108,7 @@ package body System.Native_IO.Names is
          if Raise_On_Error then
             raise Program_Error; -- ??
          end if;
-         return;
+         return; -- error
       end if;
       --  Get ObjectNameInformation.
       Holder.Assign (Info);
@@ -118,7 +118,7 @@ package body System.Native_IO.Names is
          if Raise_On_Error then
             raise Storage_Error;
          end if;
-         return;
+         return; -- error
       end if;
       if NtQueryObject (
          Handle,
@@ -139,7 +139,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             Info := New_Info;
          end;
@@ -154,7 +154,7 @@ package body System.Native_IO.Names is
             if Raise_On_Error then
                Raise_Exception (Use_Error'Identity);
             end if;
-            return;
+            return; -- error
          end if;
       end if;
       Unicode_Name :=
@@ -167,7 +167,7 @@ package body System.Native_IO.Names is
          if Raise_On_Error then
             Raise_Exception (Use_Error'Identity);
          end if;
-         return;
+         return; -- error
       end if;
       Drive (1) := Name_Character'Val (Character'Pos (':'));
       Drive (2) := Name_Character'Val (0);
@@ -253,7 +253,7 @@ package body System.Native_IO.Names is
          if Raise_On_Error then
             raise Storage_Error;
          end if;
-         return;
+         return; -- error
       end if;
       declare
          Unicode_Name_All : Name_String (

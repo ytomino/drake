@@ -77,7 +77,7 @@ package body System.Formatting.Literals.Float is
                / Long_Long_Float (Base)
             then
                Error := True;
-               return;
+               return; -- error
             end if;
             Result := Result * Long_Long_Float (Base) + Long_Long_Float (X);
             Last := Last + 1;
