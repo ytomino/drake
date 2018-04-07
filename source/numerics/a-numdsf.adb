@@ -657,24 +657,46 @@ package body Ada.Numerics.dSFMT is
          Error => Error);
       Result (Last + 1) := ':';
       Last := Last + 1;
-      System.Formatting.Image (
-         Long_Long_Unsigned (MSK1),
-         Result (Last + 1 .. Result'Last),
-         Last,
-         Base => 16,
-         Set => System.Formatting.Lower_Case,
-         Width => 13,
-         Error => Error);
+      if Standard'Word_Size >= 64 then -- 52?
+         System.Formatting.Image (
+            Word_Unsigned (MSK1),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => 16,
+            Set => System.Formatting.Lower_Case,
+            Width => 13,
+            Error => Error);
+      else
+         System.Formatting.Image (
+            Long_Long_Unsigned (MSK1),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => 16,
+            Set => System.Formatting.Lower_Case,
+            Width => 13,
+            Error => Error);
+      end if;
       Result (Last + 1) := '-';
       Last := Last + 1;
-      System.Formatting.Image (
-         Long_Long_Unsigned (MSK2),
-         Result (Last + 1 .. Result'Last),
-         Last,
-         Base => 16,
-         Set => System.Formatting.Lower_Case,
-         Width => 13,
-         Error => Error);
+      if Standard'Word_Size >= 64 then -- 52?
+         System.Formatting.Image (
+            Word_Unsigned (MSK2),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => 16,
+            Set => System.Formatting.Lower_Case,
+            Width => 13,
+            Error => Error);
+      else
+         System.Formatting.Image (
+            Long_Long_Unsigned (MSK2),
+            Result (Last + 1 .. Result'Last),
+            Last,
+            Base => 16,
+            Set => System.Formatting.Lower_Case,
+            Width => 13,
+            Error => Error);
+      end if;
       return Result (1 .. Last);
    end Id;
 
@@ -928,16 +950,27 @@ package body Ada.Numerics.dSFMT is
       begin
          for I in w128_t'Range loop
             declare
+               E : constant Unsigned_64 := Item (I);
                Previous_Last : constant Natural := Last;
                Error : Boolean;
             begin
-               System.Formatting.Image (
-                  Long_Long_Unsigned (Item (I)),
-                  To (Previous_Last + 1 .. Previous_Last + 64 / 4),
-                  Last,
-                  Base => 16,
-                  Width => 64 / 4,
-                  Error => Error);
+               if Standard'Word_Size >= 64 then
+                  System.Formatting.Image (
+                     Word_Unsigned (E),
+                     To (Previous_Last + 1 .. Previous_Last + 64 / 4),
+                     Last,
+                     Base => 16,
+                     Width => 64 / 4,
+                     Error => Error);
+               else
+                  System.Formatting.Image (
+                     Long_Long_Unsigned (E),
+                     To (Previous_Last + 1 .. Previous_Last + 64 / 4),
+                     Last,
+                     Base => 16,
+                     Width => 64 / 4,
+                     Error => Error);
+               end if;
                pragma Check (Validate,
                   Check => not Error and then Last = Previous_Last + 64 / 4);
             end;
@@ -988,17 +1021,28 @@ package body Ada.Numerics.dSFMT is
          for I in w128_t'Range loop
             declare
                Previous_Last : constant Natural := Last;
+               E : Unsigned_64;
                Error : Boolean;
             begin
-               System.Formatting.Value (
-                  From (Previous_Last + 1 .. Previous_Last + 64 / 4),
-                  Last,
-                  Long_Long_Unsigned (Item (I)),
-                  Base => 16,
-                  Error => Error);
+               if Standard'Word_Size >= 64 then
+                  System.Formatting.Value (
+                     From (Previous_Last + 1 .. Previous_Last + 64 / 4),
+                     Last,
+                     Word_Unsigned (E),
+                     Base => 16,
+                     Error => Error);
+               else
+                  System.Formatting.Value (
+                     From (Previous_Last + 1 .. Previous_Last + 64 / 4),
+                     Last,
+                     Long_Long_Unsigned (E),
+                     Base => 16,
+                     Error => Error);
+               end if;
                if Error or else Last /= Previous_Last + 64 / 4 then
                   raise Constraint_Error;
                end if;
+               Item (I) := E;
             end;
             Last := Last + 1;
             if From (Last) /= ':' then

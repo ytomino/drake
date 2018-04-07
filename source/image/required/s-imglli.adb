@@ -3,6 +3,7 @@ with System.Long_Long_Integer_Types;
 package body System.Img_LLI is
    use type Long_Long_Integer_Types.Long_Long_Unsigned;
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    --  implementation
@@ -23,7 +24,12 @@ package body System.Img_LLI is
          S (S'First) := ' ';
          X := Long_Long_Unsigned (V);
       end if;
-      Formatting.Image (X, S (S'First + 1 .. S'Last), P, Error => Error);
+      if Long_Long_Integer'Size <= Standard'Word_Size then
+         Formatting.Image (Word_Unsigned (X), S (S'First + 1 .. S'Last), P,
+            Error => Error);
+      else
+         Formatting.Image (X, S (S'First + 1 .. S'Last), P, Error => Error);
+      end if;
       pragma Assert (not Error);
    end Image_Long_Long_Integer;
 
