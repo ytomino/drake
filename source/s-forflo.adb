@@ -172,9 +172,7 @@ package body System.Formatting.Float is
       Value : Long_Long_Float;
       Item : out String;
       Fore_Last, Last : out Natural;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := ('-', ' ', ' ');
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
@@ -182,9 +180,7 @@ package body System.Formatting.Float is
       Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive;
       Exponent_Mark : Character := 'E';
-      Exponent_Minus_Sign : Character := '-';
-      Exponent_Zero_Sign : Character := '+';
-      Exponent_Plus_Sign : Character := '+';
+      Exponent_Signs : Sign_Marks := ('-', '+', '+');
       Exponent_Digits_Width : Positive := 2;
       Exponent_Digits_Fill : Character := '0';
       NaN : String := "NAN";
@@ -192,22 +188,22 @@ package body System.Formatting.Float is
    begin
       Last := Item'First - 1;
       if signbitl (Value) /= 0 then
-         if Minus_Sign /= No_Sign then
+         if Signs.Minus /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Minus_Sign;
+            Item (Last) := Signs.Minus;
          end if;
       elsif Value > 0.0 then
-         if Plus_Sign /= No_Sign then
+         if Signs.Plus /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Plus_Sign;
+            Item (Last) := Signs.Plus;
          end if;
       else
-         if Zero_Sign /= No_Sign then
+         if Signs.Zero /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Zero_Sign;
+            Item (Last) := Signs.Zero;
          end if;
       end if;
       if isnanl (Value) /= 0 then
@@ -295,22 +291,22 @@ package body System.Formatting.Float is
             pragma Assert (Last <= Item'Last);
             Item (Last) := Exponent_Mark;
             if Exponent < 0 then
-               if Exponent_Minus_Sign /= No_Sign then
+               if Exponent_Signs.Minus /= No_Sign then
                   Last := Last + 1;
                   pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Minus_Sign;
+                  Item (Last) := Exponent_Signs.Minus;
                end if;
             elsif Exponent > 0 then
-               if Exponent_Plus_Sign /= No_Sign then
+               if Exponent_Signs.Plus /= No_Sign then
                   Last := Last + 1;
                   pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Plus_Sign;
+                  Item (Last) := Exponent_Signs.Plus;
                end if;
             else
-               if Exponent_Zero_Sign /= No_Sign then
+               if Exponent_Signs.Zero /= No_Sign then
                   Last := Last + 1;
                   pragma Assert (Last <= Item'Last);
-                  Item (Last) := Exponent_Zero_Sign;
+                  Item (Last) := Exponent_Signs.Zero;
                end if;
             end if;
             Image (

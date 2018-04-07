@@ -17,6 +17,8 @@ package body Ada.Text_IO.Float_IO is
       Aft : Field;
       Exp : Field)
    is
+      Triming_Sign_Marks : constant System.Formatting.Sign_Marks :=
+         ('-', System.Formatting.No_Sign, System.Formatting.No_Sign);
       Aft_Width : constant Field := Field'Max (1, Aft);
    begin
       if Exp /= 0 then
@@ -25,8 +27,7 @@ package body Ada.Text_IO.Float_IO is
             To,
             Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width,
             Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
@@ -35,8 +36,7 @@ package body Ada.Text_IO.Float_IO is
             To,
             Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width);
       end if;
    end Put_To_Field;

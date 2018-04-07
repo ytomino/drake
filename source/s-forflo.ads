@@ -38,9 +38,7 @@ package System.Formatting.Float is
       Value : Long_Long_Float;
       Item : out String; -- Item'Length >= Long_Long_Float'Width + 4 for "16##"
       Fore_Last, Last : out Natural;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := ('-', ' ', ' ');
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
@@ -48,9 +46,7 @@ package System.Formatting.Float is
       Fore_Digits_Fill : Character := '0';
       Aft_Width : Positive;
       Exponent_Mark : Character := 'E';
-      Exponent_Minus_Sign : Character := '-';
-      Exponent_Zero_Sign : Character := '+';
-      Exponent_Plus_Sign : Character := '+';
+      Exponent_Signs : Sign_Marks := ('-', '+', '+');
       Exponent_Digits_Width : Positive := 2;
       Exponent_Digits_Fill : Character := '0';
       NaN : String := "NAN";

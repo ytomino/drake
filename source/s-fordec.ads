@@ -8,9 +8,7 @@ package System.Formatting.Decimal is
       Item : out String; -- To'Length >= T'Fore + T'Aft + 1 (.)
       Fore_Last, Last : out Natural;
       Scale : Integer;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := ('-', ' ', ' ');
       Fore_Digits_Width : Positive := 1;
       Fore_Digits_Fill : Character := '0';
       Aft_Width : Natural);

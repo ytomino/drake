@@ -19,9 +19,7 @@ package body System.Formatting.Fixed is
       Value : Long_Long_Float;
       Item : out String;
       Fore_Last, Last : out Natural;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := ('-', ' ', ' ');
       Base : Number_Base := 10;
       Base_Form : Boolean := False;
       Set : Type_Set := Upper_Case;
@@ -38,22 +36,22 @@ package body System.Formatting.Fixed is
    begin
       Last := Item'First - 1;
       if signbitl (Value) /= 0 then
-         if Minus_Sign /= No_Sign then
+         if Signs.Minus /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Minus_Sign;
+            Item (Last) := Signs.Minus;
          end if;
       elsif Value > 0.0 then
-         if Plus_Sign /= No_Sign then
+         if Signs.Plus /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Plus_Sign;
+            Item (Last) := Signs.Plus;
          end if;
       else
-         if Zero_Sign /= No_Sign then
+         if Signs.Zero /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Zero_Sign;
+            Item (Last) := Signs.Zero;
          end if;
       end if;
       --  opening '#'

@@ -12,9 +12,7 @@ package body System.Formatting.Decimal is
       Item : out String;
       Fore_Last, Last : out Natural;
       Scale : Integer;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
+      Signs : Sign_Marks := ('-', ' ', ' ');
       Fore_Digits_Width : Positive := 1;
       Fore_Digits_Fill : Character := '0';
       Aft_Width : Natural)
@@ -25,24 +23,24 @@ package body System.Formatting.Decimal is
       Last := Item'First - 1;
       if Value < 0 then
          Abs_Value := -Long_Long_Unsigned'Mod (Value);
-         if Minus_Sign /= No_Sign then
+         if Signs.Minus /= No_Sign then
             Last := Last + 1;
             pragma Assert (Last <= Item'Last);
-            Item (Last) := Minus_Sign;
+            Item (Last) := Signs.Minus;
          end if;
       else
          Abs_Value := Long_Long_Unsigned (Value);
          if Value > 0 then
-            if Plus_Sign /= No_Sign then
+            if Signs.Plus /= No_Sign then
                Last := Last + 1;
                pragma Assert (Last <= Item'Last);
-               Item (Last) := Plus_Sign;
+               Item (Last) := Signs.Plus;
             end if;
          else
-            if Zero_Sign /= No_Sign then
+            if Signs.Zero /= No_Sign then
                Last := Last + 1;
                pragma Assert (Last <= Item'Last);
-               Item (Last) := Zero_Sign;
+               Item (Last) := Signs.Zero;
             end if;
          end if;
       end if;

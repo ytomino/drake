@@ -15,7 +15,10 @@ package body Ada.Text_IO.Decimal_IO is
       Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
-      Exp : Field) is
+      Exp : Field)
+   is
+      Triming_Sign_Marks : constant System.Formatting.Sign_Marks :=
+         ('-', System.Formatting.No_Sign, System.Formatting.No_Sign);
    begin
       if Exp /= 0 then
          --  decimal version should be implemented...
@@ -24,8 +27,7 @@ package body Ada.Text_IO.Decimal_IO is
             To,
             Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Field'Max (1, Aft),
             Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
@@ -35,8 +37,7 @@ package body Ada.Text_IO.Decimal_IO is
             Fore_Last,
             Last,
             Num'Scale,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft);
       end if;
    end Put_To_Field;

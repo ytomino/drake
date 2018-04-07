@@ -328,7 +328,7 @@ package body Ada.Text_IO.Editing is
                Item_Fore_Last,
                Item_Last,
                Scale,
-               Minus_Sign => ' ', -- for skipping
+               Signs => (' ', ' ', ' '), -- for skipping
                Fore_Digits_Width => Fore,
                Fore_Digits_Fill => ' ',
                Aft_Width => Aft);

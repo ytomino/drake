@@ -156,9 +156,7 @@ package body Ada.Formatting is
          Result,
          Fore_Last,
          Last,
-         Minus_Sign => Signs (-1),
-         Zero_Sign => Signs (0),
-         Plus_Sign => Signs (1),
+         Signs => (Signs (-1), Signs (0), Signs (1)),
          Base => Base,
          Base_Form => Form = Ada and then Base /= 10,
          Set => System.Formatting.Type_Set'Enum_Val (Type_Set'Enum_Rep (Set)),
@@ -166,9 +164,8 @@ package body Ada.Formatting is
          Fore_Digits_Fill => Fore_Digits_Fill,
          Aft_Width => Aft_Width,
          Exponent_Mark => Exponent_Mark,
-         Exponent_Minus_Sign => Exponent_Signs (-1),
-         Exponent_Zero_Sign => Exponent_Signs (0),
-         Exponent_Plus_Sign => Exponent_Signs (1),
+         Exponent_Signs =>
+            (Exponent_Signs (-1), Exponent_Signs (0), Exponent_Signs (1)),
          Exponent_Digits_Width => Exponent_Digits_Width,
          Exponent_Digits_Fill => Exponent_Digits_Fill,
          NaN => NaN,
@@ -195,9 +192,7 @@ package body Ada.Formatting is
             Result,
             Fore_Last,
             Last,
-            Minus_Sign => Signs (-1),
-            Zero_Sign => Signs (0),
-            Plus_Sign => Signs (1),
+            Signs => (Signs (-1), Signs (0), Signs (1)),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
             Set =>
@@ -206,9 +201,8 @@ package body Ada.Formatting is
             Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
-            Exponent_Minus_Sign => Exponent_Signs (-1),
-            Exponent_Zero_Sign => Exponent_Signs (0),
-            Exponent_Plus_Sign => Exponent_Signs (1),
+            Exponent_Signs =>
+               (Exponent_Signs (-1), Exponent_Signs (0), Exponent_Signs (1)),
             Exponent_Digits_Width => Exponent_Digits_Width,
             Exponent_Digits_Fill => Exponent_Digits_Fill);
       else
@@ -217,9 +211,7 @@ package body Ada.Formatting is
             Result,
             Fore_Last,
             Last,
-            Minus_Sign => Signs (-1),
-            Zero_Sign => Signs (0),
-            Plus_Sign => Signs (1),
+            Signs => (Signs (-1), Signs (0), Signs (1)),
             Base => Base,
             Base_Form => Form = Ada and then Base /= 10,
             Set =>
@@ -249,16 +241,13 @@ package body Ada.Formatting is
             Result,
             Fore_Last,
             Last,
-            Minus_Sign => Signs (-1),
-            Zero_Sign => Signs (0),
-            Plus_Sign => Signs (1),
+            Signs => (Signs (-1), Signs (0), Signs (1)),
             Fore_Digits_Width => Fore_Digits_Width,
             Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width,
             Exponent_Mark => Exponent_Mark,
-            Exponent_Minus_Sign => Exponent_Signs (-1),
-            Exponent_Zero_Sign => Exponent_Signs (0),
-            Exponent_Plus_Sign => Exponent_Signs (1),
+            Exponent_Signs =>
+               (Exponent_Signs (-1), Exponent_Signs (0), Exponent_Signs (1)),
             Exponent_Digits_Width => Exponent_Digits_Width,
             Exponent_Digits_Fill => Exponent_Digits_Fill);
       else
@@ -268,9 +257,7 @@ package body Ada.Formatting is
             Fore_Last,
             Last,
             T'Scale,
-            Minus_Sign => Signs (-1),
-            Zero_Sign => Signs (0),
-            Plus_Sign => Signs (1),
+            Signs => (Signs (-1), Signs (0), Signs (1)),
             Fore_Digits_Width => Fore_Digits_Width,
             Fore_Digits_Fill => Fore_Digits_Fill,
             Aft_Width => Aft_Width);
