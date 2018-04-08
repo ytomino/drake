@@ -1,5 +1,4 @@
 with Ada.Text_IO.Formatting;
-with System.Formatting.Fixed;
 with System.Formatting.Float;
 with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Float_IO is
@@ -31,7 +30,7 @@ package body Ada.Text_IO.Float_IO is
             Aft_Width => Aft_Width,
             Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
-         System.Formatting.Fixed.Image (
+         System.Formatting.Float.Image_No_Exponent (
             Long_Long_Float (Item),
             To,
             Fore_Last,
@@ -126,12 +125,22 @@ package body Ada.Text_IO.Float_IO is
    is
       S : String (1 .. Long_Long_Float'Width + Fore + Aft + Exp);
       Fore_Last, Last : Natural;
+      Width : Field;
    begin
       Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
+      if Fore_Last = Last then
+         --  infinity or NaN, reserve a minimum width
+         Width := Fore + 1 + Aft;
+         if Exp /= 0 then
+            Width := Width + 1 + Exp;
+         end if;
+      else
+         Width := Last - Fore_Last + Fore;
+      end if;
       Formatting.Tail (
          File, -- checking the predicate
          S (1 .. Last),
-         Last - Fore_Last + Fore);
+         Width);
    end Put;
 
    procedure Put (

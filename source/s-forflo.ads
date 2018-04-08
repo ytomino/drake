@@ -40,6 +40,35 @@ package System.Formatting.Float is
       Base : Number_Base := 10)
       return Positive;
 
+   --  for Image_No_Exponent and fixed
+
+   procedure Image_No_Sign_Nor_Exponent (
+      Value : Long_Long_Float;
+      Item : out String;
+      Fore_Last, Last : out Natural;
+      Base : Number_Base := 10;
+      Base_Form : Boolean := False;
+      Set : Type_Set := Upper_Case;
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
+      Aft_Width : Positive);
+
+   --  for float
+
+   procedure Image_No_Exponent (
+      Value : Long_Long_Float;
+      Item : out String; -- same as above except unnecessary width for exponent
+      Fore_Last, Last : out Natural;
+      Signs : Sign_Marks := ('-', ' ', ' ');
+      Base : Number_Base := 10;
+      Base_Form : Boolean := False;
+      Set : Type_Set := Upper_Case;
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
+      Aft_Width : Positive;
+      NaN : String := "NAN";
+      Infinity : String := "INF");
+
    procedure Image (
       Value : Long_Long_Float;
       Item : out String; -- Item'Length >= Long_Long_Float'Width + 4 for "16##"

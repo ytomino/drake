@@ -95,6 +95,7 @@ package body System.Formatting.Literals.Float is
       Error : out Boolean)
    is
       Sign : Long_Long_Float;
+      Before_Fore : Positive;
       Aft : Long_Long_Float;
       Base : Number_Base := 10;
       Mark : Character;
@@ -111,6 +112,7 @@ package body System.Formatting.Literals.Float is
          end if;
          Sign := 1.0;
       end if;
+      Before_Fore := Last;
       Get_Fore (Item, Last, Result, Base => Base, Error => Error);
       if not Error then
          if Last < Item'Last
@@ -125,20 +127,29 @@ package body System.Formatting.Literals.Float is
                Error := True;
             else
                Base := Number_Base (Result);
+               Before_Fore := Last;
                Get_Fore (Item, Last, Result, Base => Base, Error => Error);
                if not Error then
                   Get_Aft (Item, Last, Aft, Base => Base);
-                  Result := Result + Aft;
-                  if Last >= Item'Last or else Item (Last + 1) /= Mark then
-                     Error := True;
+                  if Last = Before_Fore then
+                     Error := True; -- no fore nor aft
                   else
-                     Last := Last + 1;
+                     Result := Result + Aft;
+                     if Last >= Item'Last or else Item (Last + 1) /= Mark then
+                        Error := True;
+                     else
+                        Last := Last + 1;
+                     end if;
                   end if;
                end if;
             end if;
          else
             Get_Aft (Item, Last, Aft, Base => Base);
-            Result := Result + Aft;
+            if Last = Before_Fore then
+               Error := True; -- no fore nor aft
+            else
+               Result := Result + Aft;
+            end if;
          end if;
          if not Error then
             Get_Exponent (Item, Last, Exponent,
