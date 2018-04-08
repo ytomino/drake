@@ -59,14 +59,7 @@ package body Ada.Text_IO.Formatting is
    begin
       Last := Last + 1;
       if Last > Buffer'Last then
-         declare
-            New_Buffer : constant String_Access :=
-               new String (1 .. Buffer'Last * 2);
-         begin
-            New_Buffer (Buffer'Range) := Buffer.all;
-            Free (Buffer);
-            Buffer := New_Buffer;
-         end;
+         Reallocate (Buffer, 1, 2 * Buffer'Last); -- Buffer'First = 1
       end if;
       Buffer (Last) := Item;
    end Add;
@@ -104,6 +97,69 @@ package body Ada.Text_IO.Formatting is
          Look_Ahead (File, Item, End_Of_Line);
       end loop;
    end Get_Num;
+
+   procedure Get_Numeric_Literal_To_Buffer (
+      File : File_Type; -- Input_File_Type
+      Buffer : in out String_Access;
+      Last : in out Natural;
+      Real : Boolean);
+   procedure Get_Numeric_Literal_To_Buffer (
+      File : File_Type; -- Input_File_Type
+      Buffer : in out String_Access;
+      Last : in out Natural;
+      Real : Boolean)
+   is
+      Prev_Last : Natural;
+      Mark : Character;
+      Item : Character;
+      End_Of_Line : Boolean;
+   begin
+      Look_Ahead (File, Item, End_Of_Line);
+      if Item = '+' or else Item = '-' then
+         Add (Buffer, Last, Item);
+         Skip_Ahead (File);
+         Look_Ahead (File, Item, End_Of_Line);
+      end if;
+      Prev_Last := Last;
+      Get_Num (File, Buffer, Last, Based => False);
+      if Last > Prev_Last then
+         Look_Ahead (File, Item, End_Of_Line);
+         if Item = '#' or else Item = ':' then
+            Mark := Item;
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Get_Num (File, Buffer, Last, Based => True);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = '.' and then Real then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Get_Num (File, Buffer, Last, Based => False);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+            if Item = Mark then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+         elsif Item = '.' and then Real then
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Get_Num (File, Buffer, Last, Based => False);
+            Look_Ahead (File, Item, End_Of_Line);
+         end if;
+         if Item = 'E' or else Item = 'e' then
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = '+' or else Item = '-' then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+            Get_Num (File, Buffer, Last, Based => False);
+         end if;
+      end if;
+   end Get_Numeric_Literal_To_Buffer;
 
    --  implementation
 
@@ -262,98 +318,56 @@ package body Ada.Text_IO.Formatting is
             new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
          Holder.Assign (Buffer);
-         declare
-            Prev_Last : Natural;
-            Mark : Character;
-            Item : Character;
-            End_Of_Line : Boolean;
-         begin
-            Look_Ahead (File, Item, End_Of_Line);
-            if Item = '+' or else Item = '-' then
-               Add (Buffer, Last, Item);
-               Skip_Ahead (File);
-               Look_Ahead (File, Item, End_Of_Line);
-            end if;
-            Prev_Last := Last;
-            Get_Num (File, Buffer, Last, Based => False);
-            if Last > Prev_Last then
-               Look_Ahead (File, Item, End_Of_Line);
-               if Item = '#' or else Item = ':' then
-                  Mark := Item;
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Get_Num (File, Buffer, Last, Based => True);
-                  Look_Ahead (File, Item, End_Of_Line);
-                  if Item = '.' and then Real then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Get_Num (File, Buffer, Last, Based => False);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-                  if Item = Mark then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-               elsif Item = '.' and then Real then
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Get_Num (File, Buffer, Last, Based => False);
-                  Look_Ahead (File, Item, End_Of_Line);
-               end if;
-               if Item = 'E' or else Item = 'e' then
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Look_Ahead (File, Item, End_Of_Line);
-                  if Item = '+' or else Item = '-' then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-                  Get_Num (File, Buffer, Last, Based => False);
-               end if;
-            end if;
-         end;
+         Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => Real);
          return Buffer (1 .. Last);
       end;
    end Get_Numeric_Literal;
 
    function Get_Complex_Literal (
       File : File_Type)
-      return String
-   is
-      Item : Character;
-      End_Of_Line : Boolean;
-      Paren : Boolean;
+      return String is
    begin
       Skip_Spaces (File); -- checking the predicate
-      Look_Ahead (File, Item, End_Of_Line);
-      Paren := Item = '(';
-      if Paren then
-         Skip_Ahead (File);
-      end if;
       declare
-         Re : constant String := Get_Numeric_Literal (File, True);
+         Buffer : aliased String_Access := new String (1 .. 256);
+         Last : Natural := 0;
+         package Holder is
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Skip_Spaces (File);
-         Look_Ahead (File, Item, End_Of_Line);
-         if Item = ',' then
-            Skip_Ahead (File);
-         end if;
+         Holder.Assign (Buffer);
          declare
-            Im : constant String := Get_Numeric_Literal (File, True);
+            Item : Character;
+            End_Of_Line : Boolean;
+            Paren : Boolean;
          begin
+            Look_Ahead (File, Item, End_Of_Line);
+            Paren := Item = '(';
+            if Paren then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Skip_Spaces (File);
+            end if;
+            Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => True);
+            Skip_Spaces (File);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = ',' then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Skip_Spaces (File);
+            end if;
+            Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => True);
             if Paren then
                Skip_Spaces (File);
                Look_Ahead (File, Item, End_Of_Line);
                if Item = ')' then
+                  Add (Buffer, Last, Item);
                   Skip_Ahead (File);
                else
                   Raise_Exception (Data_Error'Identity);
                end if;
             end if;
-            return '(' & Re & ',' & Im & ')';
          end;
+         return Buffer (1 .. Last);
       end;
    end Get_Complex_Literal;
 
