@@ -96,13 +96,6 @@ package body System.Finalization_Masters is
       N.Prev := L;
    end Attach_Unprotected;
 
-   procedure Attach (N, L : not null FM_Node_Ptr) is
-   begin
-      Shared_Locking.Enter;
-      Attach_Unprotected (N, L);
-      Shared_Locking.Leave;
-   end Attach;
-
    procedure Detach_Unprotected (N : not null FM_Node_Ptr) is
    begin
       if N.Prev /= null and then N.Next /= null then
@@ -112,13 +105,6 @@ package body System.Finalization_Masters is
          N.Next := null;
       end if;
    end Detach_Unprotected;
-
-   procedure Detach (N : not null FM_Node_Ptr) is
-   begin
-      Shared_Locking.Enter;
-      Detach_Unprotected (N);
-      Shared_Locking.Leave;
-   end Detach;
 
    function Objects_Unprotected (
       Master : aliased in out Finalization_Master'Class;

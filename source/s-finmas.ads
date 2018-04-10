@@ -21,10 +21,8 @@ package System.Finalization_Masters is
       limited new Ada.Finalization.Limited_Controlled with private;
 
    procedure Attach_Unprotected (N, L : not null FM_Node_Ptr);
-   procedure Attach (N, L : not null FM_Node_Ptr);
 
    procedure Detach_Unprotected (N : not null FM_Node_Ptr);
-   procedure Detach (N : not null FM_Node_Ptr);
 
    function Objects_Unprotected (
       Master : aliased in out Finalization_Master'Class;
