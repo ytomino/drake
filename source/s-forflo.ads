@@ -11,24 +11,6 @@ package System.Formatting.Float is
    function Sign_Mark (Value : Long_Long_Float; Signs : Sign_Marks)
       return Character;
 
-   --  decimal part for floating-point format = Aft / Base ** Exponent
-
-   procedure Aft_Scale (
-      Aft : Long_Long_Unsigned_Float;
-      Scaled_Aft : out Long_Long_Unsigned_Float;
-      Exponent : Integer;
-      Round_Up : out Boolean;
-      Base : Number_Base := 10;
-      Aft_Width : Positive := Standard.Float'Digits - 1);
-
-   procedure Aft_Image (
-      Value : Long_Long_Unsigned_Float; -- scaled Aft
-      Item : out String; -- Item'Length >= Width + 1 for '.'
-      Last : out Natural;
-      Base : Number_Base := 10;
-      Set : Type_Set := Upper_Case;
-      Aft_Width : Positive := Standard.Float'Digits - 1);
-
    --  Width of integer part, without sign.
 
    function Fore_Digits_Width (

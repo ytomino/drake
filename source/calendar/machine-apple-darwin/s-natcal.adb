@@ -1,5 +1,6 @@
 with System.Native_Time;
 with C.sys.time;
+with C.sys.types;
 package body System.Native_Calendar is
 --  use type C.signed_int;
 --  use type C.sys.types.time_t;
@@ -7,6 +8,12 @@ package body System.Native_Calendar is
    Diff : constant := 5680281600.0;
       --  seconds from 1970-01-01 (0 of POSIX time)
       --    to 2150-01-01 (0 of Ada time)
+
+   function To_Time (T : C.sys.types.time_t) return Duration;
+   function To_Time (T : C.sys.types.time_t) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
 
    --  implementation
 
@@ -16,11 +23,6 @@ package body System.Native_Calendar is
    end To_Native_Time;
 
    function To_Time (T : Native_Time) return Duration is
-   begin
-      return System.Native_Time.To_Duration (T) - Diff;
-   end To_Time;
-
-   function To_Time (T : C.sys.types.time_t) return Duration is
    begin
       return System.Native_Time.To_Duration (T) - Diff;
    end To_Time;

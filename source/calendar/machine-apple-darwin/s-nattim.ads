@@ -18,7 +18,6 @@ package System.Native_Time is
       return C.time.struct_timespec;
    function To_timespec (D : Duration) return C.time.struct_timespec;
    function To_Duration (D : C.time.struct_timespec) return Duration;
-   function To_Duration (D : C.sys.time.struct_timeval) return Duration;
    function To_Duration (D : C.sys.types.time_t) return Duration;
 
    pragma Pure_Function (To_timespec);

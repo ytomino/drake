@@ -51,11 +51,6 @@ package body System.Native_Time is
             + Nanosecond_Number (D.tv_nsec));
    end To_Duration;
 
-   function To_Duration (D : C.sys.time.struct_timeval) return Duration is
-   begin
-      return To_Duration (To_timespec (D));
-   end To_Duration;
-
    function To_Duration (D : C.sys.types.time_t) return Duration is
    begin
       return Duration'Fixed_Value (

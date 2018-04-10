@@ -91,20 +91,15 @@ package body System.Formatting.Float is
       end if;
    end Split;
 
-   --  implementation
+   --  decimal part for floating-point format = Aft / Base ** Exponent
 
-   function Sign_Mark (Value : Long_Long_Float; Signs : Sign_Marks)
-      return Character is
-   begin
-      if signbitl (Value) /= 0 then
-         return Signs.Minus;
-      elsif Value > 0.0 then
-         return Signs.Plus;
-      else
-         return Signs.Zero;
-      end if;
-   end Sign_Mark;
-
+   procedure Aft_Scale (
+      Aft : Long_Long_Unsigned_Float;
+      Scaled_Aft : out Long_Long_Unsigned_Float;
+      Exponent : Integer;
+      Round_Up : out Boolean;
+      Base : Number_Base := 10;
+      Aft_Width : Positive := Standard.Float'Digits - 1);
    procedure Aft_Scale (
       Aft : Long_Long_Unsigned_Float;
       Scaled_Aft : out Long_Long_Unsigned_Float;
@@ -121,6 +116,13 @@ package body System.Formatting.Float is
       Round_Up := Scaled_Aft >= L; -- ".99"99.. would be rounded up to 1".00"
    end Aft_Scale;
 
+   procedure Aft_Image (
+      Value : Long_Long_Unsigned_Float; -- scaled Aft
+      Item : out String; -- Item'Length >= Width + 1 for '.'
+      Last : out Natural;
+      Base : Number_Base := 10;
+      Set : Type_Set := Upper_Case;
+      Aft_Width : Positive := Standard.Float'Digits - 1);
    procedure Aft_Image (
       Value : Long_Long_Unsigned_Float;
       Item : out String;
@@ -145,6 +147,20 @@ package body System.Formatting.Float is
       end loop;
       pragma Assert (X = 0.0);
    end Aft_Image;
+
+   --  implementation
+
+   function Sign_Mark (Value : Long_Long_Float; Signs : Sign_Marks)
+      return Character is
+   begin
+      if signbitl (Value) /= 0 then
+         return Signs.Minus;
+      elsif Value > 0.0 then
+         return Signs.Plus;
+      else
+         return Signs.Zero;
+      end if;
+   end Sign_Mark;
 
    function Fore_Digits_Width (
       Value : Long_Long_Unsigned_Float;

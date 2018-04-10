@@ -1,6 +1,5 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for POSIX (Darwin, FreeBSD, or Linux)
-with C.sys.types;
 with C.time;
 package System.Native_Calendar is
    pragma Preelaborate;
@@ -9,7 +8,6 @@ package System.Native_Calendar is
 
    function To_Native_Time (T : Duration) return Native_Time;
    function To_Time (T : Native_Time) return Duration;
-   function To_Time (T : C.sys.types.time_t) return Duration;
 
    pragma Pure_Function (To_Native_Time);
    pragma Pure_Function (To_Time);
