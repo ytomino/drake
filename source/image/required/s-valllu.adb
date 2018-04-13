@@ -3,6 +3,7 @@ with System.Long_Long_Integer_Types;
 with System.Value_Errors;
 package body System.Val_LLU is
 
+   subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
    --  implementation
@@ -14,11 +15,19 @@ package body System.Val_LLU is
       Result : Unsigned_Types.Long_Long_Unsigned;
       Error : Boolean;
    begin
-      Formatting.Literals.Get_Literal (
-         Str,
-         Last,
-         Long_Long_Unsigned (Result),
-         Error => Error);
+      if Unsigned_Types.Long_Long_Unsigned'Size <= Standard'Word_Size then
+         Formatting.Literals.Get_Literal (
+            Str,
+            Last,
+            Word_Unsigned (Result),
+            Error => Error);
+      else
+         Formatting.Literals.Get_Literal (
+            Str,
+            Last,
+            Long_Long_Unsigned (Result),
+            Error => Error);
+      end if;
       if not Error then
          Formatting.Literals.Check_Last (Str, Last, Error);
          if not Error then

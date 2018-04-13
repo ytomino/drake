@@ -1,13 +1,26 @@
 with System.Formatting.Literals;
+with System.Long_Long_Integer_Types;
 with System.Value_Errors;
 package body System.Val_LLI is
+
+   subtype Word_Integer is Long_Long_Integer_Types.Word_Integer;
+
+   --  implementation
 
    function Value_Long_Long_Integer (Str : String) return Long_Long_Integer is
       Last : Natural;
       Result : Long_Long_Integer;
       Error : Boolean;
    begin
-      Formatting.Literals.Get_Literal (Str, Last, Result, Error);
+      if Long_Long_Integer'Size <= Standard'Word_Size then
+         Formatting.Literals.Get_Literal (
+            Str,
+            Last,
+            Word_Integer (Result),
+            Error => Error);
+      else
+         Formatting.Literals.Get_Literal (Str, Last, Result, Error => Error);
+      end if;
       if not Error then
          Formatting.Literals.Check_Last (Str, Last, Error);
          if not Error then
