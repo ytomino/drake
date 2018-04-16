@@ -66,6 +66,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             "-");
+      pragma Inline_Always (neg_Body);
    begin
       return neg_Body (Right);
    end "-";
@@ -78,6 +79,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             "abs");
+      pragma Inline_Always (abs_Body);
    begin
       return abs_Body (Right);
    end "abs";
@@ -92,6 +94,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -106,6 +109,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -119,6 +123,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real_Vector,
             Real'Base,
             Zero => 0.0);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -131,6 +136,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Zero => 0.0,
             Sqrt => Elementary_Functions.Sqrt);
+      pragma Inline_Always (abs_Body);
    begin
       return abs_Body (Right);
    end "abs";
@@ -149,6 +155,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -170,6 +177,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real_Vector,
             Zero => 0.0,
             One => 1.0);
+      pragma Inline_Always (Unit_Vector_Body);
    begin
       return Unit_Vector_Body (Index, Order, First);
    end Unit_Vector;
@@ -187,6 +195,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             "-");
+      pragma Inline_Always (neg_Body);
    begin
       return neg_Body (Right);
    end "-";
@@ -199,6 +208,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             "abs");
+      pragma Inline_Always (abs_Body);
    begin
       return abs_Body (Right);
    end "abs";
@@ -206,6 +216,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    function Transpose (X : Real_Matrix) return Real_Matrix is
       function Transpose_Body is
          new Generic_Arrays.Transpose (Real'Base, Real_Matrix);
+      pragma Inline_Always (Transpose_Body);
    begin
       return Transpose_Body (X);
    end Transpose;
@@ -220,6 +231,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -234,6 +246,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -248,6 +261,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             Zero => 0.0);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -261,6 +275,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real_Vector,
             Real'Base,
             Real_Matrix);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -275,6 +290,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             Zero => 0.0);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -289,6 +305,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Vector,
             Zero => 0.0);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -307,6 +324,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -332,6 +350,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             One => 1.0);
+      pragma Inline_Always (Inverse_Body);
    begin
       return Inverse_Body (A);
    end Inverse;
@@ -342,8 +361,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real'Base,
             Real_Matrix,
             Zero => 0.0,
-            One => 1.0)
-         with Convention => Intrinsic;
+            One => 1.0);
+         --  no inline, Determinant uses recursive calling
    begin
       return Determinant_Body (A);
    end Determinant;
@@ -384,6 +403,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Is_Minus => Is_Minus,
             Is_Small => Is_Small,
             To_Real => "+");
+      pragma Inline_Always (Eigensystem_Body);
    begin
       Eigensystem_Body (A, Values, Vectors);
    end Eigensystem;
@@ -397,6 +417,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
             Real_Matrix,
             Zero => 0.0,
             One => 1.0);
+      pragma Inline_Always (Unit_Matrix_Body);
    begin
       return Unit_Matrix_Body (Order, First_1, First_2);
    end Unit_Matrix;
