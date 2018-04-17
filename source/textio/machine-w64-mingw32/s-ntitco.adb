@@ -55,6 +55,16 @@ package body System.Native_Text_IO.Terminal_Colors is
       return Result;
    end RGB_To_Color;
 
+   function Brightness_To_Grayscale_Color (Item : Ada.Colors.Brightness)
+      return Color is
+   begin
+      --  [0.000 .. 0.250) => 0
+      --  [0.250 .. 0.625) => 16#80# = INTENSITY
+      --  [0.625 .. 0.875) => 16#C0# = RED | GREEN | BLUE
+      --  [0.875 .. 1.000] => 16#FF# = RED | GREEN | BLUE | INTENSITY
+      return RGB_To_Color ((Red => Item, Green => Item, Blue => Item));
+   end Brightness_To_Grayscale_Color;
+
    procedure Set (
       Handle : Handle_Type;
       Reset : Boolean;

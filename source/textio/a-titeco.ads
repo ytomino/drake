@@ -8,7 +8,10 @@ package Ada.Text_IO.Terminal.Colors is
    type Color is private;
 
    function To_Color (Item : Ada.Colors.RGB) return Color;
+   function To_Grayscale_Color (Item : Ada.Colors.Brightness) return Color;
+
    pragma Inline (To_Color); -- renamed
+   pragma Inline (To_Grayscale_Color); -- renamed
 
    type Boolean_Parameter (Changing : Boolean := False) is record
       case Changing is
@@ -51,5 +54,7 @@ private
 
    function To_Color (Item : Ada.Colors.RGB) return Color
       renames RGB_To_Color;
+   function To_Grayscale_Color (Item : Ada.Colors.Brightness) return Color
+      renames Brightness_To_Grayscale_Color;
 
 end Ada.Text_IO.Terminal.Colors;
