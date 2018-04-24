@@ -14,6 +14,15 @@ package Ada.Characters.Handling is
    --  Character classification functions
 
    --  extended
+   --  These are the implementation of Wide_Characters.Handling.Is_Basic and
+   --     Wide_Wide_Characters.Handling.Is_Basic.
+   --  They are defined different from Characters.Handling.Is_Basic.
+   function Overloaded_Is_Basic (Item : Wide_Character) return Boolean;
+   function Overloaded_Is_Basic (Item : Wide_Wide_Character) return Boolean;
+
+   pragma Inline (Overloaded_Is_Basic);
+
+   --  extended
    function Overloaded_Is_Control (Item : Character) return Boolean;
    function Overloaded_Is_Control (Item : Wide_Character) return Boolean;
    function Overloaded_Is_Control (Item : Wide_Wide_Character)
@@ -101,9 +110,15 @@ package Ada.Characters.Handling is
       return Wide_Character;
    function Overloaded_To_Upper (Item : Wide_Wide_Character)
       return Wide_Wide_Character;
+   function Overloaded_To_Basic (Item : Character) return Character;
+   function Overloaded_To_Basic (Item : Wide_Character)
+      return Wide_Character;
+   function Overloaded_To_Basic (Item : Wide_Wide_Character)
+      return Wide_Wide_Character;
 
    pragma Inline (Overloaded_To_Lower);
    pragma Inline (Overloaded_To_Upper);
+   pragma Inline (Overloaded_To_Basic);
 
    function To_Lower (Item : Character) return Character
       renames Overloaded_To_Lower;
@@ -114,9 +129,8 @@ package Ada.Characters.Handling is
    function To_Case_Folding (Item : Character) return Character
       renames To_Lower; -- same as To_Lower in ASCII
    --  to here
-   function To_Basic (Item : Character) return Character;
-
-   pragma Inline (To_Basic);
+   function To_Basic (Item : Character) return Character
+      renames Overloaded_To_Basic;
 
    --  extended
    function Overloaded_To_Lower (Item : String) return String;
@@ -127,9 +141,14 @@ package Ada.Characters.Handling is
    function Overloaded_To_Upper (Item : Wide_String) return Wide_String;
    function Overloaded_To_Upper (Item : Wide_Wide_String)
       return Wide_Wide_String;
+   function Overloaded_To_Basic (Item : String) return String;
+   function Overloaded_To_Basic (Item : Wide_String) return Wide_String;
+   function Overloaded_To_Basic (Item : Wide_Wide_String)
+      return Wide_Wide_String;
 
    pragma Inline (Overloaded_To_Lower);
    pragma Inline (Overloaded_To_Upper);
+   pragma Inline (Overloaded_To_Basic);
 
    function To_Lower (Item : String) return String
       renames Overloaded_To_Lower;
@@ -138,10 +157,10 @@ package Ada.Characters.Handling is
    --  extended from here
    function To_Case_Folding (Item : String) return String;
    --  to here
-   function To_Basic (Item : String) return String;
+   function To_Basic (Item : String) return String
+      renames Overloaded_To_Basic;
 
    pragma Inline (To_Case_Folding);
-   pragma Inline (To_Basic);
 
    --  Classifications of and conversions between Character and ISO 646
 
