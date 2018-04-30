@@ -313,8 +313,8 @@ package body Ada.Directories is
    is
       pragma Check (Pre,
          Check => not Is_Open (Search) or else raise Status_Error);
-      function Cast is new
-         Unchecked_Conversion (
+      function Cast is
+         new Unchecked_Conversion (
             Filter_Type,
             System.Native_Directories.Searching.Filter_Type);
       NC_Search : Non_Controlled_Search_Type

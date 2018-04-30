@@ -103,9 +103,7 @@ private
       Index => 0,
       Option_Index => 0);
 
-   type Argument_Iterator is
-      limited -- new Forward_Iterator with
-   record
+   type Argument_Iterator is limited record -- new Forward_Iterator with
       First : Cursor;
    end record;
    pragma Suppress_Initialization (Argument_Iterator);

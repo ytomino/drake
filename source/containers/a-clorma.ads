@@ -47,8 +47,8 @@ package Ada.Containers.Limited_Ordered_Maps is
 
    procedure Clear (Container : in out Map);
 
-   type Key_Reference_Type (Element : not null access constant Key_Type) is
-      private
+   type Key_Reference_Type (
+      Element : not null access constant Key_Type) is private
       with Implicit_Dereference => Element;
    function Key (Position : Cursor) return Key_Reference_Type;
 
@@ -254,8 +254,8 @@ private
 
    type Cursor is access Node;
 
-   type Key_Reference_Type (Element : not null access constant Key_Type) is
-      null record;
+   type Key_Reference_Type (
+      Element : not null access constant Key_Type) is null record;
 
    type Constant_Reference_Type (
       Element : not null access constant Element_Type) is null record;

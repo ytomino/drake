@@ -116,8 +116,9 @@ private
 
    type Cursor is new System.Native_Environment_Variables.Cursor;
 
-   type Iterator is limited new Finalization.Limited_Controlled
-      and Iterator_Interfaces.Forward_Iterator with
+   type Iterator is
+      limited new Finalization.Limited_Controlled
+         and Iterator_Interfaces.Forward_Iterator with
    record
       Block : System.Address := System.Null_Address;
    end record

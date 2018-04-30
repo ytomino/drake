@@ -230,7 +230,8 @@ package Ada.Containers.Limited_Ordered_Sets is
          Process : not null access procedure (
             Element : in out Element_Type));
 
-      type Reference_Type (Element : not null access Element_Type) is private
+      type Reference_Type (
+         Element : not null access Element_Type) is private
          with Implicit_Dereference => Element;
 
       function Reference_Preserving_Key (
@@ -248,8 +249,8 @@ package Ada.Containers.Limited_Ordered_Sets is
 
    private
 
-      type Reference_Type (Element : not null access Element_Type) is
-         null record;
+      type Reference_Type (
+         Element : not null access Element_Type) is null record;
 
       --  dummy 'Read and 'Write
 

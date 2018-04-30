@@ -8,8 +8,8 @@ package Ada.Synchronous_Barriers is
    subtype Barrier_Limit is
       Positive range 1 .. Natural'Last; -- implementation-defined
 
-   type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
-      limited private;
+   type Synchronous_Barrier (
+      Release_Threshold : Barrier_Limit) is limited private;
 
    procedure Wait_For_Release (
       The_Barrier : in out Synchronous_Barrier;
@@ -17,7 +17,8 @@ package Ada.Synchronous_Barriers is
 
 private
 
-   type Synchronous_Barrier (Release_Threshold : Barrier_Limit) is
+   type Synchronous_Barrier (
+      Release_Threshold : Barrier_Limit) is
       limited new Finalization.Limited_Controlled with
    record
       Mutex : System.Synchronous_Objects.Mutex;
