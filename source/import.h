@@ -137,7 +137,13 @@
 #undef _GNU_SOURCE
 #undef __USE_GNU /* avoiding circular dependency between libio.h and stdio.h */
 #undef __USE_XOPEN2K8 /* avoiding circular dependency between wchar.h and stdio.h */
+#if !__GLIBC_PREREQ(2, 27)
 #include <libio.h> /* before stdio.h */
+#else
+#define _LIBIO_H
+#include <bits/libio.h> /* before stdio.h */
+#undef _LIBIO_H
+#endif
 #undef _SC_NPROCESSORS_ONLN
 #include <malloc.h>
 #include <pwd.h> /* after stdio.h in Linux */
