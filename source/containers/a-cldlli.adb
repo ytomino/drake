@@ -635,28 +635,36 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
-
---  diff (Reverse_Find)
---
---
---
---
---
---
---
---
---
---
---
---
---
---
 --
 --
 --
 --
 
 --  diff (Reverse_Find)
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+
+--  diff (Reverse_Find)
+--
+--
+--
+--
 --
 --
 --
@@ -898,7 +906,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       function Find (Container : List; Item : Element_Type; Position : Cursor)
          return Cursor
       is
-         pragma Unreferenced (Container);
+         pragma Check (Pre,
+            Check =>
+               (not Is_Empty (Container) and then Position /= No_Element)
+               or else (Is_Empty (Container) and then Position = No_Element)
+               or else raise Constraint_Error);
          Context : Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (Base.Find (
@@ -926,7 +938,11 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Position : Cursor)
          return Cursor
       is
-         pragma Unreferenced (Container);
+         pragma Check (Pre,
+            Check =>
+               (not Is_Empty (Container) and then Position /= No_Element)
+               or else (Is_Empty (Container) and then Position = No_Element)
+               or else raise Constraint_Error);
          Context : Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (Linked_Lists.Reverse_Find (
