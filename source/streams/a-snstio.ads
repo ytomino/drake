@@ -127,6 +127,13 @@ package Ada.Streams.Naked_Stream_IO is
       Name : String := "";
       Form : System.Native_IO.Packed_Form := Default_Form;
       To_Close : Boolean := False);
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode;
+      Handle : System.Native_IO.Handle_Type;
+      Name : String := "";
+      Form : System.Native_IO.Packed_Form := Default_Form;
+      To_Close : Boolean := False);
 
    function Handle (File : not null Non_Controlled_File_Type)
       return System.Native_IO.Handle_Type;
