@@ -15,6 +15,11 @@ package body System.Native_IO.Sockets is
 
    subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
+   SOCK_STREAM : constant :=
+      C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM);
+   SOCK_CLOEXEC : constant :=
+      C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_CLOEXEC);
+
    --  implementation
 
    procedure Close_Socket (Handle : Handle_Type; Raise_On_Error : Boolean) is
@@ -58,8 +63,7 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => 0,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype =>
-            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_socktype => SOCK_STREAM,
          ai_protocol =>
             C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
@@ -84,8 +88,7 @@ package body System.Native_IO.Sockets is
       Hints : aliased constant C.netdb.struct_addrinfo := (
          ai_flags => C.netdb.AI_NUMERICSERV,
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype =>
-            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_socktype => SOCK_STREAM,
          ai_protocol => C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
@@ -121,7 +124,10 @@ package body System.Native_IO.Sockets is
    begin
       while I /= null loop
          Handle :=
-            C.sys.socket.socket (I.ai_family, I.ai_socktype, I.ai_protocol);
+            C.sys.socket.socket (
+               I.ai_family,
+               C.signed_int (C.unsigned_int (I.ai_socktype) or SOCK_CLOEXEC),
+               I.ai_protocol);
          if Handle >= 0 then
             if C.sys.socket.connect (
                Handle,
@@ -132,7 +138,6 @@ package body System.Native_IO.Sockets is
                I.ai_addrlen) = 0
             then
                --  connected
-               Set_Close_On_Exec (Handle);
                return;
             end if;
             declare
@@ -160,8 +165,7 @@ package body System.Native_IO.Sockets is
             C.signed_int (
                C.unsigned_int'(C.netdb.AI_PASSIVE or C.netdb.AI_NUMERICSERV)),
          ai_family => C.sys.socket.AF_UNSPEC,
-         ai_socktype =>
-            C.sys.socket.enum_socket_type'Enum_Rep (C.sys.socket.SOCK_STREAM),
+         ai_socktype => SOCK_STREAM,
          ai_protocol => C.netinet.in_h.Cast (C.netinet.in_h.IPPROTO_TCP),
          ai_addrlen => 0,
          ai_canonname => null,
@@ -211,10 +215,9 @@ package body System.Native_IO.Sockets is
          Server :=
             C.sys.socket.socket (
                Data.ai_family,
-               Data.ai_socktype,
+               C.signed_int (
+                  C.unsigned_int (Data.ai_socktype) or SOCK_CLOEXEC),
                Data.ai_protocol);
-         --  set FD_CLOEXEC
-         Set_Close_On_Exec (Server);
          --  set SO_REUSEADDR
          Reuse_Addr_Option := 1;
          if C.sys.socket.setsockopt (
@@ -260,10 +263,11 @@ package body System.Native_IO.Sockets is
             Socket_Address_Argument.sockaddr :=
                Remote_Address'Unrestricted_Access;
             New_Socket :=
-               C.sys.socket.C_accept (
+               C.sys.socket.accept4 (
                   Server,
                   Socket_Address_Argument,
-                  Len'Access);
+                  Len'Access,
+                  SOCK_CLOEXEC);
             errno := C.errno.errno;
             Synchronous_Control.Lock_Abort;
             if New_Socket < 0 then
@@ -273,7 +277,6 @@ package body System.Native_IO.Sockets is
                --  interrupted and the signal is not "abort", then retry
             else
                Handle := New_Socket;
-               Set_Close_On_Exec (Handle);
                exit;
             end if;
          end;
