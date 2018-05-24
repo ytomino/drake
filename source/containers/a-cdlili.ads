@@ -2,7 +2,6 @@ pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
 private with Ada.Containers.Copy_On_Write;
-private with Ada.Containers.Linked_Lists;
 private with Ada.Containers.Linked_Lists.Doubly;
 private with Ada.Finalization;
 private with Ada.Streams;
@@ -275,8 +274,8 @@ private
 
    type Data is limited record
       Super : aliased Copy_On_Write.Data;
-      First : Linked_Lists.Node_Access := null;
-      Last : Linked_Lists.Node_Access := null;
+      First : Base.Node_Access := null;
+      Last : Base.Node_Access := null;
       Length : Count_Type := 0;
    end record;
 

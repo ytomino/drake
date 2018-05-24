@@ -8,7 +8,7 @@ package body Ada.Containers.Linked_Lists is
    begin
       while Position /= null loop
          Process (Position);
-         Position := Position.Previous;
+         Position := Previous (Position);
       end loop;
    end Reverse_Iterate;
 
@@ -27,7 +27,7 @@ package body Ada.Containers.Linked_Lists is
          if Equivalent (I, Params) then
             return I;
          end if;
-         I := I.Previous;
+         I := Previous (I);
       end loop;
       return null;
    end Reverse_Find;
@@ -46,8 +46,8 @@ package body Ada.Containers.Linked_Lists is
          if not Equivalent (I, J) then
             return False;
          end if;
-         I := I.Previous;
-         J := J.Previous;
+         I := Previous (I);
+         J := Previous (J);
       end loop;
       return I = null and then J = null;
    end Equivalent;
@@ -59,13 +59,15 @@ package body Ada.Containers.Linked_Lists is
       Free : not null access procedure (Object : in out Node_Access))
    is
       Position : Node_Access := Last;
-      Previous : Node_Access;
    begin
       while Position /= null loop
-         Previous := Position.Previous;
-         Free (Position);
-         Length := Length - 1;
-         Position := Previous;
+         declare
+            Prev : constant Node_Access := Previous (Position);
+         begin
+            Free (Position);
+            Length := Length - 1;
+            Position := Prev;
+         end;
       end loop;
       First := null;
       Last := null;
@@ -94,7 +96,7 @@ package body Ada.Containers.Linked_Lists is
             Length => Length,
             Before => Target_First,
             New_Item => New_Node);
-         I := I.Previous;
+         I := Previous (I);
       end loop;
    end Copy;
 
@@ -130,11 +132,16 @@ package body Ada.Containers.Linked_Lists is
       if I = null then
          return True;
       else
-         while I.Previous /= null loop
-            if LT (I, I.Previous) then
-               return False;
-            end if;
-            I := I.Previous;
+         loop
+            declare
+               Prev : constant Node_Access := Previous (I);
+            begin
+               exit when Prev = null;
+               if LT (I, Prev) then
+                  return False;
+               end if;
+               I := Prev;
+            end;
          end loop;
          return True;
       end if;
@@ -156,35 +163,46 @@ package body Ada.Containers.Linked_Lists is
       Left_Length : Count_Type := Length;
       I : Node_Access := Left_Last;
       J : Node_Access := Source_Last;
-      Previous : Node_Access;
    begin
       Target_First := null;
       Target_Last := null;
       Length := 0;
       while I /= null and then J /= null loop
          if LT (J, I) then
-            Previous := I.Previous;
-            Remove (Left_First, Left_Last, Left_Length, I, null);
-            Insert (Target_First, Target_Last, Length, Target_First, I);
-            I := Previous;
+            declare
+               Prev : constant Node_Access := Previous (I);
+            begin
+               Remove (Left_First, Left_Last, Left_Length, I, null);
+               Insert (Target_First, Target_Last, Length, Target_First, I);
+               I := Prev;
+            end;
          else
-            Previous := J.Previous;
-            Remove (Source_First, Source_Last, Source_Length, J, null);
-            Insert (Target_First, Target_Last, Length, Target_First, J);
-            J := Previous;
+            declare
+               Prev : constant Node_Access := Previous (J);
+            begin
+               Remove (Source_First, Source_Last, Source_Length, J, null);
+               Insert (Target_First, Target_Last, Length, Target_First, J);
+               J := Prev;
+            end;
          end if;
       end loop;
       while I /= null loop
-         Previous := I.Previous;
-         Remove (Left_First, Left_Last, Left_Length, I, null);
-         Insert (Target_First, Target_Last, Length, Target_First, I);
-         I := Previous;
+         declare
+            Prev : constant Node_Access := Previous (I);
+         begin
+            Remove (Left_First, Left_Last, Left_Length, I, null);
+            Insert (Target_First, Target_Last, Length, Target_First, I);
+            I := Prev;
+         end;
       end loop;
       while J /= null loop
-         Previous := J.Previous;
-         Remove (Source_First, Source_Last, Source_Length, J, null);
-         Insert (Target_First, Target_Last, Length, Target_First, J);
-         J := Previous;
+         declare
+            Prev : constant Node_Access := Previous (J);
+         begin
+            Remove (Source_First, Source_Last, Source_Length, J, null);
+            Insert (Target_First, Target_Last, Length, Target_First, J);
+            J := Prev;
+         end;
       end loop;
    end Merge;
 
