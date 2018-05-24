@@ -1,4 +1,5 @@
-package body Ada.Containers.Linked_Lists.Singly is
+with Ada.Containers.Linked_Lists;
+package body Ada.Containers.Naked_Singly_Linked_Lists is
 
    function Previous (Position : not null Node_Access) return Node_Access is
    begin
@@ -242,4 +243,4 @@ package body Ada.Containers.Linked_Lists.Singly is
       Merge_Sort_Body (Target_First, Target_Last, Length, LT => LT);
    end Merge_Sort;
 
-end Ada.Containers.Linked_Lists.Singly;
+end Ada.Containers.Naked_Singly_Linked_Lists;

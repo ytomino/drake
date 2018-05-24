@@ -2,7 +2,7 @@ pragma License (Unrestricted);
 --  Ada 2005
 with Ada.Iterator_Interfaces;
 private with Ada.Containers.Copy_On_Write;
-private with Ada.Containers.Linked_Lists.Doubly;
+private with Ada.Containers.Naked_Doubly_Linked_Lists;
 private with Ada.Finalization;
 private with Ada.Streams;
 generic
@@ -258,7 +258,7 @@ package Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
 private
 
-   package Base renames Linked_Lists.Doubly;
+   package Base renames Naked_Doubly_Linked_Lists;
 
    type Element_Access is access Element_Type;
 

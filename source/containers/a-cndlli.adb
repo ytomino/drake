@@ -1,4 +1,5 @@
-package body Ada.Containers.Linked_Lists.Doubly is
+with Ada.Containers.Linked_Lists;
+package body Ada.Containers.Naked_Doubly_Linked_Lists is
 
    function Next (Position : not null Node_Access) return Node_Access is
    begin
@@ -385,4 +386,4 @@ package body Ada.Containers.Linked_Lists.Doubly is
       Merge_Sort_Body (Target_First, Target_Last, Length, LT => LT);
    end Merge_Sort;
 
-end Ada.Containers.Linked_Lists.Doubly;
+end Ada.Containers.Naked_Doubly_Linked_Lists;
