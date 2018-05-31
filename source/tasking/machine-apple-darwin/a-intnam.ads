@@ -77,5 +77,6 @@ private
 
    First_Interrupt_Id : constant Interrupt_Id := SIGHUP;
    Last_Interrupt_Id : constant Interrupt_Id := SIGUSR2;
+      --  SIGUSR2 = NSIG - 1 = 31
 
 end Ada.Interrupts.Names;

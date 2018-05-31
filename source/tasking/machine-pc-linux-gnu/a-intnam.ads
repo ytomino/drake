@@ -40,8 +40,11 @@ package Ada.Interrupts.Names is
    SIGSYS : constant Interrupt_Id;
 --  SIGUNUSED : constant Interrupt_Id renames SIGSYS;
 
-   SIGRTMIN : constant Interrupt_Id;
-   SIGRTMAX : constant Interrupt_Id;
+   function SIGRTMIN return Interrupt_Id;
+   function SIGRTMAX return Interrupt_Id;
+
+   pragma Inline (SIGRTMIN);
+   pragma Inline (SIGRTMAX);
 
    First_Interrupt_Id : constant Interrupt_Id;
    Last_Interrupt_Id : constant Interrupt_Id;
@@ -80,10 +83,12 @@ private
    SIGSYS : constant Interrupt_Id := C.signal.SIGSYS;
    SIGPWR : constant Interrupt_Id := C.signal.SIGPWR;
 
-   SIGRTMIN : constant Interrupt_Id := Interrupt_Id (C.signal.SIGRTMIN);
-   SIGRTMAX : constant Interrupt_Id := Interrupt_Id (C.signal.SIGRTMAX);
+   --  SIGRTMIN and SIGRTMAX are functions in Linux.
+   function SIGRTMIN return Interrupt_Id is (Interrupt_Id (C.signal.SIGRTMIN));
+   function SIGRTMAX return Interrupt_Id is (Interrupt_Id (C.signal.SIGRTMAX));
 
    First_Interrupt_Id : constant Interrupt_Id := SIGHUP;
-   Last_Interrupt_Id : constant Interrupt_Id := SIGRTMAX;
+   Last_Interrupt_Id : constant Interrupt_Id := C.signal.NSIG - 1;
+      --  SIGRTMAX (__libc_current_sigrtmax) = NSIG - 1 = 64
 
 end Ada.Interrupts.Names;
