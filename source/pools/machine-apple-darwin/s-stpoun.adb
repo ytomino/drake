@@ -1,17 +1,17 @@
 with System.System_Allocators;
 package body System.Storage_Pools.Unbounded is
 
-   overriding procedure Initialize (Object : in out Unbounded_Pool) is
+   procedure Initialize (Object : in out Unbounded_Pool) is
    begin
       Object.Zone := C.malloc.malloc.malloc_create_zone (0, 0);
    end Initialize;
 
-   overriding procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Pool) is
    begin
       C.malloc.malloc.malloc_destroy_zone (Object.Zone);
    end Finalize;
 
-   overriding procedure Allocate (
+   procedure Allocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
@@ -30,7 +30,7 @@ package body System.Storage_Pools.Unbounded is
       end if;
    end Allocate;
 
-   overriding procedure Deallocate (
+   procedure Deallocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;

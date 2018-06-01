@@ -25,7 +25,7 @@ package body System.Storage_Pools.Unbounded is
 
    --  implementation
 
-   overriding procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Pool) is
    begin
       while Object.List /= null loop
          declare
@@ -37,7 +37,7 @@ package body System.Storage_Pools.Unbounded is
       end loop;
    end Finalize;
 
-   overriding procedure Allocate (
+   procedure Allocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
@@ -59,7 +59,7 @@ package body System.Storage_Pools.Unbounded is
       Pool.List := HA_Conv.To_Pointer (X);
    end Allocate;
 
-   overriding procedure Deallocate (
+   procedure Deallocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;

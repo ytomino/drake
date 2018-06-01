@@ -9,12 +9,12 @@ package body System.Storage_Pools.Unbounded is
 
    --  implementation
 
-   overriding procedure Initialize (Object : in out Unbounded_Pool) is
+   procedure Initialize (Object : in out Unbounded_Pool) is
    begin
       Object.Heap := C.winbase.HeapCreate (0, 0, 0);
    end Initialize;
 
-   overriding procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Pool) is
       Success : C.windef.WINBOOL;
    begin
       Success := C.winbase.HeapDestroy (Object.Heap);
@@ -24,7 +24,7 @@ package body System.Storage_Pools.Unbounded is
             or else Debug.Runtime_Error ("HeapDestroy failed"));
    end Finalize;
 
-   overriding procedure Allocate (
+   procedure Allocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
@@ -47,7 +47,7 @@ package body System.Storage_Pools.Unbounded is
       end if;
    end Allocate;
 
-   overriding procedure Deallocate (
+   procedure Deallocate (
       Pool : in out Unbounded_Pool;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
