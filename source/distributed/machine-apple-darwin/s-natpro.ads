@@ -32,10 +32,9 @@ package System.Native_Processes is
 
    --  Child process type
 
-   type Process is record
-      Id : C.sys.types.pid_t := -1;
-   end record;
-   pragma Suppress_Initialization (Process);
+   type Process is new C.sys.types.pid_t;
+
+   Null_Process : constant Process := -1;
 
    --  Child process management
 
@@ -73,8 +72,8 @@ package System.Native_Processes is
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Abort_Process (Child : in out Process);
-   procedure Forced_Abort_Process (Child : in out Process);
+   procedure Abort_Process (Child : Process);
+   procedure Forced_Abort_Process (Child : Process);
 
    --  Pass a command to the shell
 

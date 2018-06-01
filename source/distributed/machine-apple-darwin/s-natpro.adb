@@ -487,7 +487,8 @@ package body System.Native_Processes is
       errno : C.signed_int;
    begin
       Synchronous_Control.Unlock_Abort;
-      Terminated_Child := C.sys.wait.waitpid (Child.Id, Code'Access, Options);
+      Terminated_Child :=
+         C.sys.wait.waitpid (C.sys.types.pid_t (Child), Code'Access, Options);
       errno := C.errno.errno;
       Synchronous_Control.Lock_Abort; -- raise if aborted
       if Terminated_Child < 0 then
@@ -499,11 +500,11 @@ package body System.Native_Processes is
          Terminated := False; -- WNOHANG
       else
          if WIFEXITED (Code) then
-            Child.Id := -1;
+            Child := Null_Process;
             Status := Ada.Command_Line.Exit_Status (WEXITSTATUS (Code));
             Terminated := True; -- exited
          elsif WIFSIGNALED (Code) then
-            Child.Id := -1;
+            Child := Null_Process;
             Status := -1;
             Terminated := True; -- signaled
          else
@@ -515,7 +516,7 @@ package body System.Native_Processes is
    procedure Kill (Child : Process; Signal : C.signed_int);
    procedure Kill (Child : Process; Signal : C.signed_int) is
    begin
-      if C.signal.kill (Child.Id, Signal) < 0 then
+      if C.signal.kill (C.sys.types.pid_t (Child), Signal) < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
    end Kill;
@@ -524,7 +525,7 @@ package body System.Native_Processes is
 
    function Is_Open (Child : Process) return Boolean is
    begin
-      return Child.Id /= -1;
+      return Child /= Null_Process;
    end Is_Open;
 
    procedure Create (
@@ -537,7 +538,7 @@ package body System.Native_Processes is
       Error : Ada.Streams.Naked_Stream_IO.Non_Controlled_File_Type) is
    begin
       Spawn (
-         Child.Id,
+         C.sys.types.pid_t (Child),
          Command,
          Directory,
          Search_Path,
@@ -562,7 +563,7 @@ package body System.Native_Processes is
       Holder.Assign (Command);
       Value (Command_Line, Command);
       Spawn (
-         Child.Id,
+         C.sys.types.pid_t (Child),
          Command,
          Directory,
          Search_Path,
@@ -594,12 +595,12 @@ package body System.Native_Processes is
          Terminated => Terminated, Status => Status);
    end Wait_Immediate;
 
-   procedure Abort_Process (Child : in out Process) is
+   procedure Abort_Process (Child : Process) is
    begin
       Kill (Child, C.signal.SIGTERM);
    end Abort_Process;
 
-   procedure Forced_Abort_Process (Child : in out Process) is
+   procedure Forced_Abort_Process (Child : Process) is
    begin
       Kill (Child, C.signal.SIGKILL);
    end Forced_Abort_Process;

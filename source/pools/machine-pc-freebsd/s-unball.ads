@@ -36,8 +36,6 @@ private
    end record;
    pragma Suppress_Initialization (Header);
 
-   type Unbounded_Allocator is limited record
-      List : Header_Access := null;
-   end record;
+   type Unbounded_Allocator is new Header_Access;
 
 end System.Unbounded_Allocators;

@@ -27,12 +27,13 @@ package body System.Unbounded_Allocators is
 
    procedure Finalize (Object : in out Unbounded_Allocator) is
    begin
-      while Object.List /= null loop
+      while Object /= null loop
          declare
-            Next : constant Header_Access := Object.List.Next;
+            Next : constant Header_Access := Object.Next;
          begin
-            System_Allocators.Free (HA_Conv.To_Address (Object.List));
-            Object.List := Next;
+            System_Allocators.Free (
+               HA_Conv.To_Address (Header_Access (Object)));
+            Object := Unbounded_Allocator (Next);
          end;
       end loop;
    end Finalize;
@@ -54,9 +55,9 @@ package body System.Unbounded_Allocators is
          Standard_Allocators.Raise_Heap_Exhausted;
       end if;
       Storage_Address := X + Header_Offset (Alignment);
-      HA_Conv.To_Pointer (X).Previous := Allocator.List;
+      HA_Conv.To_Pointer (X).Previous := Header_Access (Allocator);
       HA_Conv.To_Pointer (X).Next := null;
-      Allocator.List := HA_Conv.To_Pointer (X);
+      Allocator := Unbounded_Allocator (HA_Conv.To_Pointer (X));
    end Allocate;
 
    procedure Deallocate (
@@ -72,7 +73,7 @@ package body System.Unbounded_Allocators is
    begin
       X := Storage_Address - Header_Offset (Alignment);
       if HA_Conv.To_Pointer (X).Previous = null then
-         Allocator.List := HA_Conv.To_Pointer (X).Next;
+         Allocator := Unbounded_Allocator (HA_Conv.To_Pointer (X).Next);
       else
          HA_Conv.To_Pointer (X).Previous.Next := HA_Conv.To_Pointer (X).Next;
       end if;

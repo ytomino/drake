@@ -3,12 +3,14 @@ package body System.Unbounded_Allocators is
 
    procedure Initialize (Object : in out Unbounded_Allocator) is
    begin
-      Object.Zone := C.malloc.malloc.malloc_create_zone (0, 0);
+      Object :=
+         Unbounded_Allocator (C.malloc.malloc.malloc_create_zone (0, 0));
    end Initialize;
 
    procedure Finalize (Object : in out Unbounded_Allocator) is
    begin
-      C.malloc.malloc.malloc_destroy_zone (Object.Zone);
+      C.malloc.malloc.malloc_destroy_zone (
+         C.malloc.malloc.malloc_zone_t_ptr (Object));
    end Finalize;
 
    procedure Allocate (
@@ -19,7 +21,7 @@ package body System.Unbounded_Allocators is
    begin
       Storage_Address := Address (
          C.malloc.malloc.malloc_zone_memalign (
-            Allocator.Zone,
+            C.malloc.malloc.malloc_zone_t_ptr (Allocator),
             C.size_t (
                Storage_Elements.Storage_Count'Max (
                   System_Allocators.Minimum_System_Allocator_Alignment,
@@ -40,7 +42,7 @@ package body System.Unbounded_Allocators is
       pragma Unreferenced (Alignment);
    begin
       C.malloc.malloc.malloc_zone_free (
-         Allocator.Zone,
+         C.malloc.malloc.malloc_zone_t_ptr (Allocator),
          C.void_ptr (Storage_Address));
    end Deallocate;
 

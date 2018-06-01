@@ -34,10 +34,9 @@ package System.Native_Processes is
 
    --  Child process type
 
-   type Process is record
-      Handle : C.winnt.HANDLE := C.winbase.INVALID_HANDLE_VALUE;
-   end record;
-   pragma Suppress_Initialization (Process);
+   type Process is new C.winnt.HANDLE;
+
+   Null_Process : constant Process := Process (C.winbase.INVALID_HANDLE_VALUE);
 
    --  Child process management
 
@@ -74,9 +73,9 @@ package System.Native_Processes is
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status);
 
-   procedure Forced_Abort_Process (Child : in out Process);
+   procedure Forced_Abort_Process (Child : Process);
 
-   procedure Abort_Process (Child : in out Process)
+   procedure Abort_Process (Child : Process)
       renames Forced_Abort_Process;
       --  Should it use CREATE_NEW_PROCESS_GROUP and GenerateConsoleCtrlEvent?
 

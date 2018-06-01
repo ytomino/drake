@@ -31,8 +31,6 @@ package System.Unbounded_Allocators is
 
 private
 
-   type Unbounded_Allocator is limited record
-      Heap : C.winnt.HANDLE;
-   end record;
+   type Unbounded_Allocator is new C.winnt.HANDLE;
 
 end System.Unbounded_Allocators;

@@ -11,13 +11,13 @@ package body System.Unbounded_Allocators is
 
    procedure Initialize (Object : in out Unbounded_Allocator) is
    begin
-      Object.Heap := C.winbase.HeapCreate (0, 0, 0);
+      Object := Unbounded_Allocator (C.winbase.HeapCreate (0, 0, 0));
    end Initialize;
 
    procedure Finalize (Object : in out Unbounded_Allocator) is
       Success : C.windef.WINBOOL;
    begin
-      Success := C.winbase.HeapDestroy (Object.Heap);
+      Success := C.winbase.HeapDestroy (C.winnt.HANDLE (Object));
       pragma Check (Debug,
          Check =>
             Success /= C.windef.FALSE
@@ -32,7 +32,7 @@ package body System.Unbounded_Allocators is
    begin
       Storage_Address := Address (
          C.winbase.HeapAlloc (
-            Allocator.Heap,
+            C.winnt.HANDLE (Allocator),
             0,
             C.basetsd.SIZE_T (Size_In_Storage_Elements)));
       if Storage_Address = Null_Address then
@@ -58,7 +58,7 @@ package body System.Unbounded_Allocators is
       Success : C.windef.WINBOOL;
    begin
       Success := C.winbase.HeapFree (
-         Allocator.Heap,
+         C.winnt.HANDLE (Allocator),
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,

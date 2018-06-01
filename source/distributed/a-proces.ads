@@ -195,7 +195,8 @@ private
    private
 
       type Process is limited new Finalization.Limited_Controlled with record
-         Data : aliased System.Native_Processes.Process := (others => <>);
+         Data : aliased System.Native_Processes.Process :=
+            System.Native_Processes.Null_Process;
       end record
          with
             Disable_Controlled =>

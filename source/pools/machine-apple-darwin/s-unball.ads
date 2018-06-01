@@ -29,8 +29,6 @@ package System.Unbounded_Allocators is
 
 private
 
-   type Unbounded_Allocator is limited record
-      Zone : C.malloc.malloc.malloc_zone_t_ptr;
-   end record;
+   type Unbounded_Allocator is new C.malloc.malloc.malloc_zone_t_ptr;
 
 end System.Unbounded_Allocators;
