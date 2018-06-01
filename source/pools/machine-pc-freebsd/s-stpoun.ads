@@ -6,21 +6,6 @@ package System.Storage_Pools.Unbounded is
 
    type Unbounded_Pool is limited new Root_Storage_Pool with private;
 
-private
-
-   type Header;
-   type Header_Access is access all Header;
-   type Header is record
-      Previous : Header_Access;
-      Next : Header_Access;
-   end record;
-   pragma Suppress_Initialization (Header);
-
-   type Unbounded_Pool is limited new Root_Storage_Pool with record
-      List : Header_Access := null;
-   end record;
-   pragma Finalize_Storage_Only (Unbounded_Pool);
-
    overriding procedure Finalize (Object : in out Unbounded_Pool);
 
    overriding procedure Allocate (
@@ -38,5 +23,20 @@ private
    overriding function Storage_Size (Pool : Unbounded_Pool)
       return Storage_Elements.Storage_Count is
       (Storage_Elements.Storage_Count'Last);
+
+   type Header;
+   type Header_Access is access all Header;
+   type Header is record
+      Previous : Header_Access;
+      Next : Header_Access;
+   end record;
+   pragma Suppress_Initialization (Header);
+
+private
+
+   type Unbounded_Pool is limited new Root_Storage_Pool with record
+      List : Header_Access := null;
+   end record;
+   pragma Finalize_Storage_Only (Unbounded_Pool);
 
 end System.Storage_Pools.Unbounded;
