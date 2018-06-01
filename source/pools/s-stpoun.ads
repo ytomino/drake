@@ -37,6 +37,7 @@ private
       Alignment : Storage_Elements.Storage_Count);
 
    overriding function Storage_Size (Pool : Unbounded_Pool)
-      return Storage_Elements.Storage_Count;
+      return Storage_Elements.Storage_Count is
+      (Storage_Elements.Storage_Count'Last);
 
 end System.Storage_Pools.Unbounded;

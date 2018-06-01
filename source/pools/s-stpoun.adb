@@ -36,10 +36,4 @@ package body System.Storage_Pools.Unbounded is
          Alignment => Alignment);
    end Deallocate;
 
-   overriding function Storage_Size (Pool : Unbounded_Pool)
-      return Storage_Elements.Storage_Count is
-   begin
-      return Unbounded_Allocators.Storage_Size (Pool.Allocator);
-   end Storage_Size;
-
 end System.Storage_Pools.Unbounded;

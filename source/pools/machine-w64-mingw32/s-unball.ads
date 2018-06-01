@@ -23,10 +23,6 @@ package System.Unbounded_Allocators is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count);
 
-   function Storage_Size (Allocator : Unbounded_Allocator)
-      return Storage_Elements.Storage_Count is
-      (Storage_Elements.Storage_Count'Last);
-
    --  Note: The custom value of Alignment is not supported in Windows.
 
 private
