@@ -1,7 +1,7 @@
 with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 with System.System_Allocators;
-package body System.Storage_Pools.Unbounded is
+package body System.Unbounded_Allocators is
    use type Storage_Elements.Integer_Address;
    use type Storage_Elements.Storage_Offset;
 
@@ -25,7 +25,7 @@ package body System.Storage_Pools.Unbounded is
 
    --  implementation
 
-   procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Allocator) is
    begin
       while Object.List /= null loop
          declare
@@ -38,7 +38,7 @@ package body System.Storage_Pools.Unbounded is
    end Finalize;
 
    procedure Allocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -54,13 +54,13 @@ package body System.Storage_Pools.Unbounded is
          Standard_Allocators.Raise_Heap_Exhausted;
       end if;
       Storage_Address := X + Header_Offset (Alignment);
-      HA_Conv.To_Pointer (X).Previous := Pool.List;
+      HA_Conv.To_Pointer (X).Previous := Allocator.List;
       HA_Conv.To_Pointer (X).Next := null;
-      Pool.List := HA_Conv.To_Pointer (X);
+      Allocator.List := HA_Conv.To_Pointer (X);
    end Allocate;
 
    procedure Deallocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -72,7 +72,7 @@ package body System.Storage_Pools.Unbounded is
    begin
       X := Storage_Address - Header_Offset (Alignment);
       if HA_Conv.To_Pointer (X).Previous = null then
-         Pool.List := HA_Conv.To_Pointer (X).Next;
+         Allocator.List := HA_Conv.To_Pointer (X).Next;
       else
          HA_Conv.To_Pointer (X).Previous.Next := HA_Conv.To_Pointer (X).Next;
       end if;
@@ -80,4 +80,4 @@ package body System.Storage_Pools.Unbounded is
       System_Allocators.Free (X);
    end Deallocate;
 
-end System.Storage_Pools.Unbounded;
+end System.Unbounded_Allocators;

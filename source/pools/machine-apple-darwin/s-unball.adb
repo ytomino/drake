@@ -1,25 +1,25 @@
 with System.System_Allocators;
-package body System.Storage_Pools.Unbounded is
+package body System.Unbounded_Allocators is
 
-   procedure Initialize (Object : in out Unbounded_Pool) is
+   procedure Initialize (Object : in out Unbounded_Allocator) is
    begin
       Object.Zone := C.malloc.malloc.malloc_create_zone (0, 0);
    end Initialize;
 
-   procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Allocator) is
    begin
       C.malloc.malloc.malloc_destroy_zone (Object.Zone);
    end Finalize;
 
    procedure Allocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is
    begin
       Storage_Address := Address (
          C.malloc.malloc.malloc_zone_memalign (
-            Pool.Zone,
+            Allocator.Zone,
             C.size_t (
                Storage_Elements.Storage_Count'Max (
                   System_Allocators.Minimum_System_Allocator_Alignment,
@@ -31,7 +31,7 @@ package body System.Storage_Pools.Unbounded is
    end Allocate;
 
    procedure Deallocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -40,8 +40,8 @@ package body System.Storage_Pools.Unbounded is
       pragma Unreferenced (Alignment);
    begin
       C.malloc.malloc.malloc_zone_free (
-         Pool.Zone,
+         Allocator.Zone,
          C.void_ptr (Storage_Address));
    end Deallocate;
 
-end System.Storage_Pools.Unbounded;
+end System.Unbounded_Allocators;

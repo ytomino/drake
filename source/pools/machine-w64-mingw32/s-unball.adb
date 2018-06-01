@@ -2,19 +2,19 @@ with System.Debug;
 with C.basetsd;
 with C.winbase;
 with C.windef;
-package body System.Storage_Pools.Unbounded is
+package body System.Unbounded_Allocators is
    use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
 
    --  implementation
 
-   procedure Initialize (Object : in out Unbounded_Pool) is
+   procedure Initialize (Object : in out Unbounded_Allocator) is
    begin
       Object.Heap := C.winbase.HeapCreate (0, 0, 0);
    end Initialize;
 
-   procedure Finalize (Object : in out Unbounded_Pool) is
+   procedure Finalize (Object : in out Unbounded_Allocator) is
       Success : C.windef.WINBOOL;
    begin
       Success := C.winbase.HeapDestroy (Object.Heap);
@@ -25,21 +25,21 @@ package body System.Storage_Pools.Unbounded is
    end Finalize;
 
    procedure Allocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is
    begin
       Storage_Address := Address (
          C.winbase.HeapAlloc (
-            Pool.Heap,
+            Allocator.Heap,
             0,
             C.basetsd.SIZE_T (Size_In_Storage_Elements)));
       if Storage_Address = Null_Address then
          raise Storage_Error;
       elsif Storage_Address mod Alignment /= 0 then
          Deallocate (
-            Pool,
+            Allocator,
             Storage_Address,
             Size_In_Storage_Elements,
             Alignment);
@@ -48,7 +48,7 @@ package body System.Storage_Pools.Unbounded is
    end Allocate;
 
    procedure Deallocate (
-      Pool : in out Unbounded_Pool;
+      Allocator : in out Unbounded_Allocator;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -58,7 +58,7 @@ package body System.Storage_Pools.Unbounded is
       Success : C.windef.WINBOOL;
    begin
       Success := C.winbase.HeapFree (
-         Pool.Heap,
+         Allocator.Heap,
          0,
          C.windef.LPVOID (Storage_Address));
       pragma Check (Debug,
@@ -67,4 +67,4 @@ package body System.Storage_Pools.Unbounded is
             or else Debug.Runtime_Error ("HeapFree failed"));
    end Deallocate;
 
-end System.Storage_Pools.Unbounded;
+end System.Unbounded_Allocators;
