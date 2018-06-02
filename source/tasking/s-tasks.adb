@@ -317,7 +317,6 @@ package body System.Tasks is
    procedure Abort_Signal_Handler;
    procedure Abort_Signal_Handler is
       T : constant Task_Id := TLS_Current_Task_Id;
-      Error : Boolean;
    begin
       pragma Check (Trace, Ada.Debug.Put (Name (T).all));
       T.Aborted := True;
@@ -326,10 +325,11 @@ package body System.Tasks is
       end if;
       if T.Kind = Environment then
          Native_Tasks.Uninstall_Abort_Handler;
-         Native_Tasks.Send_Abort_Signal (
-            T.Handle,
-            T.Abort_Event,
-            Error); -- ignore error
+         declare
+            Error : Boolean; -- ignored
+         begin
+            Native_Tasks.Resend_Abort_Signal (T.Handle, Error => Error);
+         end;
       end if;
    end Abort_Signal_Handler;
 
