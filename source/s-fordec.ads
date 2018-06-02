@@ -6,13 +6,11 @@ package System.Formatting.Decimal is
    procedure Image (
       Value : Long_Long_Integer;
       Item : out String; -- To'Length >= T'Fore + T'Aft + 1 (.)
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Scale : Integer;
-      Minus_Sign : Character := '-';
-      Zero_Sign : Character := ' ';
-      Plus_Sign : Character := ' ';
-      Fore_Width : Positive := 1;
-      Fore_Padding : Character := '0';
+      Signs : Sign_Marks := ('-', ' ', ' ');
+      Fore_Digits_Width : Positive := 1;
+      Fore_Digits_Fill : Character := '0';
       Aft_Width : Natural);
 
 end System.Formatting.Decimal;

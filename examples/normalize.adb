@@ -82,21 +82,21 @@ begin
 		package F renames Ada.Strings.Fixed;
 		package M renames Ada.Strings.Maps;
 	begin
-		pragma Assert (M.Value (M.Constants.Base_Map, '6') = '6'); -- 16#36#
-		pragma Assert (M.Value (M.Constants.Base_Map, 'Y') = 'Y'); -- 16#59#
-		pragma Assert (M.Value (M.Constants.Base_Map, Latin_1.LC_R) = 'r'); -- 16#72#
-		pragma Assert (F.Translate (Latin_1.UC_O_Acute, M.Constants.Base_Map) = "O"); -- 16#D4#
-		pragma Assert (F.Translate (Latin_1.UC_O_Tilde, M.Constants.Base_Map) = "O"); -- 16#D6#
-		pragma Assert (F.Translate (Latin_1.UC_U_Grave, M.Constants.Base_Map) = "U"); -- 16#D9#
-		pragma Assert (F.Translate (Latin_1.UC_U_Acute, M.Constants.Base_Map) = "U"); -- 16#DA#
-		pragma Assert (F.Translate (Latin_1.LC_A_Circumflex, M.Constants.Base_Map) = "a"); -- 16#E2#
-		pragma Assert (F.Translate (Latin_1.LC_A_Tilde, M.Constants.Base_Map) = "a"); -- 16#E3#
-		pragma Assert (F.Translate (Latin_1.LC_E_Grave, M.Constants.Base_Map) = "e"); -- 16#E8#
-		pragma Assert (F.Translate (Latin_1.LC_E_Acute, M.Constants.Base_Map) = "e"); -- 16#E9#
-		pragma Assert (F.Translate (Latin_1.LC_I_Circumflex, M.Constants.Base_Map) = "i"); -- 16#EE#
-		pragma Assert (F.Translate (Latin_1.LC_I_Diaeresis, M.Constants.Base_Map) = "i"); -- 16#EF#
-		pragma Assert (F.Translate (Latin_1.LC_Y_Acute, M.Constants.Base_Map) = "y"); -- 16#FD#
-		pragma Assert (F.Translate (Latin_1.LC_Y_Diaeresis, M.Constants.Base_Map) = "y"); -- 16#FF#
+		pragma Assert (M.Value (M.Constants.Basic_Map, '6') = '6'); -- 16#36#
+		pragma Assert (M.Value (M.Constants.Basic_Map, 'Y') = 'Y'); -- 16#59#
+		pragma Assert (M.Value (M.Constants.Basic_Map, Latin_1.LC_R) = 'r'); -- 16#72#
+		pragma Assert (F.Translate (Latin_1.UC_O_Acute, M.Constants.Basic_Map) = "O"); -- 16#D4#
+		pragma Assert (F.Translate (Latin_1.UC_O_Tilde, M.Constants.Basic_Map) = "O"); -- 16#D6#
+		pragma Assert (F.Translate (Latin_1.UC_U_Grave, M.Constants.Basic_Map) = "U"); -- 16#D9#
+		pragma Assert (F.Translate (Latin_1.UC_U_Acute, M.Constants.Basic_Map) = "U"); -- 16#DA#
+		pragma Assert (F.Translate (Latin_1.LC_A_Circumflex, M.Constants.Basic_Map) = "a"); -- 16#E2#
+		pragma Assert (F.Translate (Latin_1.LC_A_Tilde, M.Constants.Basic_Map) = "a"); -- 16#E3#
+		pragma Assert (F.Translate (Latin_1.LC_E_Grave, M.Constants.Basic_Map) = "e"); -- 16#E8#
+		pragma Assert (F.Translate (Latin_1.LC_E_Acute, M.Constants.Basic_Map) = "e"); -- 16#E9#
+		pragma Assert (F.Translate (Latin_1.LC_I_Circumflex, M.Constants.Basic_Map) = "i"); -- 16#EE#
+		pragma Assert (F.Translate (Latin_1.LC_I_Diaeresis, M.Constants.Basic_Map) = "i"); -- 16#EF#
+		pragma Assert (F.Translate (Latin_1.LC_Y_Acute, M.Constants.Basic_Map) = "y"); -- 16#FD#
+		pragma Assert (F.Translate (Latin_1.LC_Y_Diaeresis, M.Constants.Basic_Map) = "y"); -- 16#FF#
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end normalize;

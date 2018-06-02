@@ -1,40 +1,41 @@
 with Ada.Text_IO.Formatting;
-with System.Formatting.Fixed;
 with System.Formatting.Float;
 with System.Formatting.Literals.Float;
 package body Ada.Text_IO.Float_IO is
 
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field);
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field)
    is
+      Triming_Sign_Marks : constant System.Formatting.Sign_Marks :=
+         ('-', System.Formatting.No_Sign, System.Formatting.No_Sign);
       Aft_Width : constant Field := Field'Max (1, Aft);
    begin
       if Exp /= 0 then
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width,
-            Exponent_Width => Exp - 1);
+            Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
-         System.Formatting.Fixed.Image (
+         System.Formatting.Float.Image_No_Exponent (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width);
       end if;
    end Put_To_Field;
@@ -123,13 +124,23 @@ package body Ada.Text_IO.Float_IO is
       Exp : Field := Default_Exp)
    is
       S : String (1 .. Long_Long_Float'Width + Fore + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
+      Width : Field;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
+      if Fore_Last = Last then
+         --  infinity or NaN, reserve a minimum width
+         Width := Fore + 1 + Aft;
+         if Exp /= 0 then
+            Width := Width + 1 + Exp;
+         end if;
+      else
+         Width := Last - Fore_Last + Fore;
+      end if;
       Formatting.Tail (
          File, -- checking the predicate
          S (1 .. Last),
-         Fore + Aft + Exp + 2);
+         Width);
    end Put;
 
    procedure Put (
@@ -167,9 +178,9 @@ package body Ada.Text_IO.Float_IO is
       Exp : Field := Default_Exp)
    is
       S : String (1 .. Long_Long_Float'Width + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (To, S (1 .. Last));
    end Put;
 
@@ -179,6 +190,10 @@ package body Ada.Text_IO.Float_IO is
       Item : Num;
       Aft : Field := Default_Aft;
       Exp : Field := Default_Exp)
-      renames Put_To_Field;
+   is
+      Fore_Last : Natural;
+   begin
+      Put_To_Field (To, Fore_Last, Last, Item, Aft, Exp);
+   end Put;
 
 end Ada.Text_IO.Float_IO;

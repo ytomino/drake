@@ -1,5 +1,4 @@
 with Ada.Exceptions.Finally;
-with Ada.Streams.Stream_IO.Naked;
 with System.Native_IO;
 package body Ada.Streams.Stream_IO.Sockets is
    use type System.Native_IO.Sockets.End_Point;
@@ -92,11 +91,16 @@ package body Ada.Streams.Stream_IO.Sockets is
       begin
          System.Native_IO.Sockets.Connect (Handle, Peer_Handle);
       end;
-      Naked.Open (
-         File,
-         Append_File, -- Inout
-         Handle,
-         To_Close => True);
+      declare
+         NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+            renames Controlled.Reference (File).all;
+      begin
+         Naked_Stream_IO.Open (
+            NC_File,
+            IO_Modes.Inout_File,
+            Handle,
+            To_Close => True);
+      end;
       --  complete
       Holder.Clear;
    end Connect;
@@ -208,11 +212,16 @@ package body Ada.Streams.Stream_IO.Sockets is
             Handle,
             System.Native_IO.Sockets.Socket_Address (Remote_Address));
       end;
-      Naked.Open (
-         File,
-         Append_File, -- Inout
-         Handle,
-         To_Close => True);
+      declare
+         NC_File : Naked_Stream_IO.Non_Controlled_File_Type
+            renames Controlled.Reference (File).all;
+      begin
+         Naked_Stream_IO.Open (
+            NC_File,
+            IO_Modes.Inout_File,
+            Handle,
+            To_Close => True);
+      end;
       --  complete
       Holder.Clear;
    end Accept_Socket;

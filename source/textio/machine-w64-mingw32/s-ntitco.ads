@@ -10,6 +10,8 @@ package System.Native_Text_IO.Terminal_Colors is
    --    and INTENSITY(8).
 
    function RGB_To_Color (Item : Ada.Colors.RGB) return Color;
+   function Brightness_To_Grayscale_Color (Item : Ada.Colors.Brightness)
+      return Color;
 
    procedure Set (
       Handle : Handle_Type;

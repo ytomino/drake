@@ -839,10 +839,14 @@ package body Ada.Containers.Vectors is
       Index : Index_Type := Index_Type'First)
       return Extended_Index is
    begin
-      return Find (
-         Vector (Container),
-         Item,
-         Index); -- checking Constraint_Error
+      if Index = Index_Type'First and then Container.Length = 0 then
+         return No_Index;
+      else
+         return Find (
+            Vector (Container),
+            Item,
+            Index); -- checking Constraint_Error
+      end if;
    end Find_Index;
 
    function Find (
@@ -850,7 +854,7 @@ package body Ada.Containers.Vectors is
       Item : Element_Type)
       return Cursor is
    begin
-      return Find (Container, Item, Index_Type'First);
+      return Find (Container, Item, First (Container));
    end Find;
 
    function Find (
@@ -861,12 +865,12 @@ package body Ada.Containers.Vectors is
    is
       pragma Check (Pre,
          Check =>
-            (Position in Index_Type'First .. Last (Container))
-            or else (Is_Empty (Container) and then Position = Index_Type'First)
+            Position in Index_Type'First .. Last (Container)
+            or else (Is_Empty (Container) and then Position = No_Element)
             or else raise Constraint_Error);
       Last : constant Cursor := Vectors.Last (Container);
    begin
-      if Position <= Last then
+      if Position in Index_Type'First .. Last then
          Unique (Container'Unrestricted_Access.all, False); -- private
          for I in Position .. Last loop
             if Downcast (Container.Super.Data).Items (I) = Item then

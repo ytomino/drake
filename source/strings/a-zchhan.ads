@@ -21,6 +21,12 @@ package Ada.Wide_Wide_Characters.Handling is
    function Is_Upper (Item : Wide_Wide_Character) return Boolean
       renames Characters.Handling.Overloaded_Is_Upper;
 
+   function Is_Basic (Item : Wide_Wide_Character) return Boolean
+      renames Characters.Handling.Overloaded_Is_Basic;
+
+   --  Note: Wide_Wide_Characters.Handling.Is_Basic is incompatible with
+   --    Characters.Handling.Is_Basic. See AI12-0260-1.
+
    function Is_Digit (Item : Wide_Wide_Character) return Boolean
       renames Characters.Handling.Overloaded_Is_Digit;
 
@@ -50,6 +56,9 @@ package Ada.Wide_Wide_Characters.Handling is
    function Is_Graphic (Item : Wide_Wide_Character) return Boolean
       renames Characters.Handling.Overloaded_Is_Graphic;
 
+   function To_Basic (Item : Wide_Wide_Character) return Wide_Wide_Character
+      renames Characters.Handling.Overloaded_To_Basic;
+
    function To_Lower (Item : Wide_Wide_Character) return Wide_Wide_Character
       renames Characters.Handling.Overloaded_To_Lower;
    function To_Upper (Item : Wide_Wide_Character) return Wide_Wide_Character
@@ -59,6 +68,9 @@ package Ada.Wide_Wide_Characters.Handling is
       renames Characters.Handling.Overloaded_To_Lower;
    function To_Upper (Item : Wide_Wide_String) return Wide_Wide_String
       renames Characters.Handling.Overloaded_To_Upper;
+
+   function To_Basic (Item : Wide_Wide_String) return Wide_Wide_String
+      renames Characters.Handling.Overloaded_To_Basic;
 
 private
 

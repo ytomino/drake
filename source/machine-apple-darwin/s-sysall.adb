@@ -85,7 +85,8 @@ package body System.System_Allocators is
 
    procedure Unmap (
       Storage_Address : Address;
-      Size : Storage_Elements.Storage_Count) is
+      Size : Storage_Elements.Storage_Count)
+   is
       R : C.signed_int;
    begin
       pragma Check (Trace, Ada.Debug.Put ("enter"));

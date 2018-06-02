@@ -327,7 +327,7 @@ package body Ada.Strings.Naked_Maps is
                Source (Source_Index .. Source'Last),
                Source_Last,
                Code,
-               Is_Illegal_Sequence);
+               Is_Illegal_Sequence => Is_Illegal_Sequence);
             if Is_Illegal_Sequence then
                --  keep illegal sequence
                Result_Last := Index + (Source_Last - Source_Index);
@@ -370,7 +370,7 @@ package body Ada.Strings.Naked_Maps is
                Source (Source_Index .. Source'Last),
                Source_Last,
                Code,
-               Is_Illegal_Sequence);
+               Is_Illegal_Sequence => Is_Illegal_Sequence);
             if Is_Illegal_Sequence then
                --  keep illegal sequence
                Result_Last := Index + (Source_Last - Source_Index);
@@ -411,7 +411,7 @@ package body Ada.Strings.Naked_Maps is
                Source (Source_Index .. Source'Last),
                Source_Last,
                Code,
-               Is_Illegal_Sequence);
+               Is_Illegal_Sequence => Is_Illegal_Sequence);
             if Is_Illegal_Sequence then
                --  keep illegal sequence
                Result_Last := Index + (Source_Last - Source_Index);

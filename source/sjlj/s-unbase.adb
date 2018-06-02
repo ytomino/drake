@@ -32,24 +32,18 @@ package body Separated is
       Item : aliased out Tracebacks_Array;
       Last : out Natural;
       Exclude_Min : Address;
-      Exclude_Max : Address;
-      Skip_Frames : Natural)
+      Exclude_Max : Address)
    is
       BP : Address;
       IP : Address;
-      Skip : Natural;
    begin
       pragma Check (Trace, Ada.Debug.Put ("start"));
       BP := AA_Conv.To_Address (builtin_frame_address (0));
       Last := Tracebacks_Array'First - 1;
-      Skip := Skip_Frames;
       loop
          IP := AA_Conv.To_Pointer (BP + Return_Offset).all - Call_Length;
-         if Skip > 0 then
-            Skip := Skip - 1;
-            pragma Check (Trace, Ada.Debug.Put ("skip"));
-         elsif IP >= Exclude_Min and then IP <= Exclude_Max then
-            Skip := 0; -- end of skip
+         if IP >= Exclude_Min and then IP <= Exclude_Max then
+            Last := Tracebacks_Array'First - 1; -- reset
             pragma Check (Trace, Ada.Debug.Put ("exclude"));
          else
             Last := Last + 1;

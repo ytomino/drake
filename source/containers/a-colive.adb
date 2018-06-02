@@ -844,6 +844,10 @@ package body Ada.Containers.Limited_Vectors is
 --
 --
 --
+--
+--
+--
+--
 
 --  diff (Find)
 --
@@ -1180,7 +1184,7 @@ package body Ada.Containers.Limited_Vectors is
          Item : Element_Type)
          return Cursor is
       begin
-         return Find (Container, Item, Index_Type'First);
+         return Find (Container, Item, First (Container));
       end Find;
 
       function Find (
@@ -1191,16 +1195,17 @@ package body Ada.Containers.Limited_Vectors is
       is
          pragma Check (Pre,
             Check =>
-               (Position in Index_Type'First .. Last (Container))
-               or else (
-                  Is_Empty (Container) and then Position = Index_Type'First)
+               Position in Index_Type'First .. Last (Container)
+               or else (Is_Empty (Container) and then Position = No_Element)
                or else raise Constraint_Error);
       begin
-         for I in Position .. Last (Container) loop
-            if Equivalent_Element (Container.Data.Items (I), Item) then
-               return I;
-            end if;
-         end loop;
+         if Position >= Index_Type'First then
+            for I in Position .. Last (Container) loop
+               if Equivalent_Element (Container.Data.Items (I), Item) then
+                  return I;
+               end if;
+            end loop;
+         end if;
          return No_Element;
       end Find;
 
@@ -1220,15 +1225,17 @@ package body Ada.Containers.Limited_Vectors is
       is
          pragma Check (Pre,
             Check =>
-               (Position in Index_Type'First .. Last (Container))
+               Position in Index_Type'First .. Last (Container)
                or else (Is_Empty (Container) and then Position = No_Element)
                or else raise Constraint_Error);
       begin
-         for I in reverse Index_Type'First .. Position loop
-            if Equivalent_Element (Container.Data.Items (I), Item) then
-               return I;
-            end if;
-         end loop;
+         if Position >= Index_Type'First then
+            for I in reverse Index_Type'First .. Position loop
+               if Equivalent_Element (Container.Data.Items (I), Item) then
+                  return I;
+               end if;
+            end loop;
+         end if;
          return No_Element;
       end Reverse_Find;
 

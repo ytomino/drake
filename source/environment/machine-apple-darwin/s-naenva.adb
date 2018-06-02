@@ -73,8 +73,9 @@ package body System.Native_Environment_Variables is
    --  implementation
 
    function Value (Name : String) return String is
-      Result : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
+      Result : C.char_ptr;
    begin
+      Result := getenv (Name);
       if Result = null then
          raise Constraint_Error;
       else
@@ -83,8 +84,9 @@ package body System.Native_Environment_Variables is
    end Value;
 
    function Value (Name : String; Default : String) return String is
-      Result : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
+      Result : C.char_ptr;
    begin
+      Result := getenv (Name);
       if Result = null then
          return Default;
       else
@@ -93,8 +95,9 @@ package body System.Native_Environment_Variables is
    end Value;
 
    function Exists (Name : String) return Boolean is
-      Item : constant C.char_const_ptr := C.char_const_ptr (getenv (Name));
+      Item : C.char_ptr;
    begin
+      Item := getenv (Name);
       return Item /= null;
    end Exists;
 

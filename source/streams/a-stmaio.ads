@@ -25,10 +25,18 @@ package Ada.Storage_Mapped_IO is
    procedure Map (
       Object : in out Storage_Type;
       File : Streams.Stream_IO.File_Type;
+      Form : String; -- removed default
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0);
+   procedure Map (
+      Object : in out Storage_Type;
+      File : Streams.Stream_IO.File_Type;
+      Private_Copy : Boolean := False;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
    function Map (
       File : Streams.Stream_IO.File_Type;
+      Private_Copy : Boolean := False;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
       return Storage_Type;
@@ -37,13 +45,26 @@ package Ada.Storage_Mapped_IO is
       Object : in out Storage_Type;
       Mode : File_Mode := In_File;
       Name : String;
-      Form : String := "";
+      Form : String; -- removed default
+      Offset : Streams.Stream_IO.Positive_Count := 1;
+      Size : Streams.Stream_IO.Count := 0);
+   procedure Map (
+      Object : in out Storage_Type;
+      Mode : File_Mode := In_File;
+      Name : String;
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      Private_Copy : Boolean := False;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0);
    function Map (
       Mode : File_Mode := In_File;
       Name : String;
-      Form : String := "";
+      Shared : IO_Modes.File_Shared_Spec := IO_Modes.By_Mode;
+      Wait : Boolean := False;
+      Overwrite : Boolean := True;
+      Private_Copy : Boolean := False;
       Offset : Streams.Stream_IO.Positive_Count := 1;
       Size : Streams.Stream_IO.Count := 0)
       return Storage_Type;

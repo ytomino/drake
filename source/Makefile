@@ -1,6 +1,7 @@
 # targets:
 #   all         building drake runtime, default target
 #   tree        building adainclude only
+#   depend      make dependencies to $BUILDDIR/libgnat.build/Makefile.depend
 #   import_objs compiling translated headers only, by recursive
 #   c-archive   archiving translated headers to .tar.bz2
 # variables:
@@ -11,7 +12,7 @@
 #   BUILDDIR=   parent of build directories (default:$RTSDIR/adalib)
 #   GCCPREFIX=  prefix of gcc (default:$TARGET-)
 #   GCCSUFFIX=  suffix of gcc (default:empty)
-#   GCC=        compiler (default:$GCCPREFIX/gcc$GCCSUFFIX)
+#   GCC=        compiler (default:${GCCPREFIX}gcc$GCCSUFFIX)
 #   AR=         librarian (default:$TARGET-ar)
 #   INSTALL=    copy source files to adainclude (default:install -m 444)
 #   EH=         mechanism of exception handling (default:selected by $TARGET)
@@ -24,7 +25,7 @@
 
 export MAKEFLAGS+=r
 
-HOST=$(shell gcc -dumpmachine)
+HOST:=$(shell gcc -dumpmachine)
 TARGET=$(HOST)
 GCCSUFFIX=
 ifeq ($(TARGET),$(HOST))
@@ -34,7 +35,19 @@ GCCPREFIX=$(TARGET)-
 endif
 GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
 
-LIBGCCDIR=$(patsubst %/,%,$(dir $(shell $(GCC) -print-libgcc-file-name)))
+LIBGCC:=$(shell $(GCC) -print-libgcc-file-name)
+LIBGCCDIR=$(patsubst %/,%,$(dir $(LIBGCC)))
+LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
+
+ifneq ($(and \
+	$(findstring linux-gnu,$(HOST)), \
+	$(findstring linux-gnu,$(TARGET)), \
+	$(filter /usr/lib/gcc/$(TARGET)/%,$(LIBGCCDIR)), \
+	$(wildcard /usr/lib/$(TARGET)/libgnat-$(LIBVERSION).so)),) # Debian
+LIBGNATBASE=libgnat-$(LIBVERSION)
+else
+LIBGNATBASE=libgnat
+endif
 
 ifeq ($(INSTALL),)
 INSTALL=install -m 444
@@ -94,13 +107,19 @@ OPTIMIZE=3
 endif
 endif
 
+ifneq ($(findstring mingw,$(HOST)),) # *-w64-mingw32
+ARGLIMIT=500
+else
+ARGLIMIT=
+endif
+
 PHASE=
 
 RTSDIR=.
 IMPORTDIR=$(RTSDIR)/adainclude
 
 BUILDDIR=$(RTSDIR)/adalib
-LIBGNAT_BUILDDIR=$(BUILDDIR)/libgnat$(GCCSUFFIX).build
+LIBGNAT_BUILDDIR=$(BUILDDIR)/$(LIBGNATBASE).build
 NOSIG_BUILDDIR=$(BUILDDIR)/nosig.build
 NOTB_BUILDDIR=$(BUILDDIR)/notb.build
 
@@ -110,20 +129,17 @@ ifneq ($(findstring darwin,$(TARGET)),) # *-apple-darwin*
 EH=zcx
 TARGETSUBDIR=machine-apple-darwin
 OBJFMT=MACHO
-ARGLIMIT=
 LDSCRIPT=
 else ifneq ($(findstring freebsd,$(TARGET)),) # *-pc-freebsd*
 EH=zcx
 TARGETSUBDIR=machine-pc-freebsd
 OBJFMT=ELF
-ARGLIMIT=
 LDSCRIPT=
 else ifneq ($(findstring linux-gnu,$(TARGET)),) # *-pc-linux-gnu
 EH=zcx
 TARGETSUBDIR=machine-pc-linux-gnu
 OBJFMT=ELF
-ARGLIMIT=
-LDSCRIPT=libgnat$(GCCSUFFIX).so
+LDSCRIPT=$(LIBGNATBASE).so
 LDFLAGS=-ldl -lm -lpthread -lrt
 # -lrt is necessary in old Linux
 else ifneq ($(findstring mingw,$(TARGET)),) # *-w64-mingw32
@@ -134,13 +150,11 @@ EH=sjlj
 endif
 TARGETSUBDIR=machine-w64-mingw32
 OBJFMT=COFF
-ARGLIMIT=500
 LDSCRIPT=
 else # others
 EH=zcx
 TARGETSUBDIR=$(TARGET)
 OBJFMT=
-ARGLIMIT=
 LDSCRIPT=
 endif
 
@@ -178,8 +192,8 @@ endif
 # text_io     : image numerics streams strings # child packages of Text_IO
 
 SRC=$(wildcard *.ad[sb]) $(wildcard $(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(TARGETSUBDIR)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard required/*.ad[sb]) \
-	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb]) \
-	$(wildcard $(EH)/*.ad[sb]))
+	$(foreach i,$(SUBDIRS),$(wildcard $(i)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(CPUSUBDIR)/$(SIMDSUBDIR)/*.ad[sb]) $(wildcard $(i)/$(TARGETSUBDIR)/*.ad[sb]) $(wildcard $(i)/required/*.ad[sb])) \
+	$(wildcard $(EH)/*.ad[sb])
 
 LIBRARY_SRCS=$(addprefix $(RTSDIR)/adainclude/,$(notdir $(SRC)))
 
@@ -283,6 +297,8 @@ SPEED_OBJS+=$(addprefix $(LIBGNAT_BUILDDIR)/, \
 	a-nscoar.o \
 	a-nsrear.o \
 	a-nucoar.o \
+	a-nuds19.o \
+	a-nuds21.o \
 	a-nummt1.o \
 	a-nurear.o \
 	a-nusf19.o \
@@ -314,7 +330,7 @@ else ifeq ($(OPTIMIZE),1)
 CFLAGS_OPTIMIZE=-Og
 else
 CFLAGS_OPTIMIZE=-Os
-ifeq ($(OBJFMT),ELF)
+ifneq ($(filter ELF COFF,$(OBJFMT)),)
 CFLAGS_OPTIMIZE+=-ffunction-sections -fdata-sections
 endif
 endif
@@ -392,14 +408,14 @@ TREE= \
 	$(IMPORT_HEADERS)
 
 ifneq ($(LDSCRIPT),)
-LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
 LIBS=$(RTSDIR)/adalib/$(LIBGNAT) $(RTSDIR)/adalib/$(LDSCRIPT)
 else
-LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBGNAT=$(LIBGNATBASE).a
 LIBS=$(RTSDIR)/adalib/$(LIBGNAT)
 endif
 
-.PHONY: all tree import_objs c-archive
+.PHONY: all tree depend import_objs c-archive
 
 all: $(EXTRA_OBJS) $(LIBS) $(ALL_ALI)
 
@@ -419,10 +435,10 @@ $(RTSDIR)/adalib/$(LDSCRIPT):
 	echo "GROUP($(LIBGNAT) AS_NEEDED($(LDFLAGS)))" > $@
 endif
 
-$(RTSDIR)/adalib/nosig.o: $(TREE) $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
-$(RTSDIR)/adalib/notb.o: $(TREE) $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/notb.o: $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
 	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
 
 $(RTSDIR)/adainclude:
@@ -721,11 +737,26 @@ $(IMPORTDIR)/c.ads: import.h
 	headmaster -t ada -p -D $(IMPORTDIR) -gcc="$(GCC)" $<
 endif
 
-# separated
+# dependencies of separated
 
 $(LIBGNAT_BUILDDIR)/s-unwbac.o : $(EH)/s-unbase.adb
 $(LIBGNAT_BUILDDIR)/s-unwocc.o : $(EH)/s-unocse.adb
 $(LIBGNAT_BUILDDIR)/s-unwrai.o : $(EH)/s-unrase.adb
+
+# dependencies of all objs belonging to libgnat.a
+
+-include $(LIBGNAT_BUILDDIR)/Makefile.depend
+
+depend: $(TREE) $(ALL_OBJS)
+	grep '^D [acis][^y]' $(LIBGNAT_BUILDDIR)/*.ali \
+		| grep -v -E '/(.+)\.ali:D \1\.ad[sb]\b' \
+		| sed -E 's|^$(LIBGNAT_BUILDDIR)/(.+)\.ali:D ([^[:space:]]+)[[:space:]].*$$|$(LIBGNAT_BUILDDIR)/\1.o: $(RTSDIR)/adainclude/\2|' \
+		> $(LIBGNAT_BUILDDIR)/Makefile.depend
+
+# dependencies of extra objs
+
+$(NOSIG_BUILDDIR)/nosig.o: $(RTSDIR)/adainclude/system.ads
+$(NOTB_BUILDDIR)/notb.o: $(RTSDIR)/adainclude/system.ads $(RTSDIR)/adainclude/s-unwind.ads
 
 # nested
 

@@ -13,6 +13,21 @@ procedure ucd_combiningclass is
 	begin
 		return Wide_Wide_Character'Value (Img);
 	end Value;
+	procedure Put_16 (Item : Integer) is
+		S : String (1 .. 8); -- "16#XXXX#"
+	begin
+		Put (S, Item, Base => 16);
+		S (1) := '1';
+		S (2) := '6';
+		S (3) := '#';
+		for I in reverse 4 .. 6 loop
+			if S (I) = '#' then
+				S (4 .. I) := (others => '0');
+				exit;
+			end if;
+		end loop;
+		Put (S);
+	end Put_16;
 	type Combining_Class is mod 2 ** 8;
 	package CC_IO is new Ada.Text_IO.Modular_IO (Combining_Class);
 	use CC_IO;
@@ -180,11 +195,7 @@ begin
 					N := Next (N);
 				end loop;
 				Put ("      (");
-				Put (
-					Integer'(Wide_Wide_Character'Pos (Key (I))) - Offset,
-					Base => 16,
-					Width => 8, -- 16#XXXX#
-					Padding => '0');
+				Put_16 (Wide_Wide_Character'Pos (Key (I)) - Offset);
 				Put (", ");
 				Put (
 					Integer'(Wide_Wide_Character'Pos (Key (L)))

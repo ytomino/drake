@@ -45,10 +45,9 @@ package body Ada.Interrupts is
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id)
    is
-      Old_Handler : Parameterless_Handler;
-      pragma Unreferenced (Old_Handler);
+      Dummy_Old_Handler : Parameterless_Handler;
    begin
-      Exchange_Handler (Old_Handler, New_Handler, Interrupt);
+      Exchange_Handler (Dummy_Old_Handler, New_Handler, Interrupt);
    end Attach_Handler;
 
    procedure Exchange_Handler (
@@ -69,20 +68,18 @@ package body Ada.Interrupts is
    end Exchange_Handler;
 
    procedure Detach_Handler (Interrupt : Interrupt_Id) is
-      Old_Handler : Parameterless_Handler;
-      pragma Unreferenced (Old_Handler);
+      Dummy_Old_Handler : Parameterless_Handler;
    begin
-      Exchange_Handler (Old_Handler, null, Interrupt);
+      Exchange_Handler (Dummy_Old_Handler, null, Interrupt);
    end Detach_Handler;
 
    procedure Unchecked_Attach_Handler (
       New_Handler : Parameterless_Handler;
       Interrupt : Interrupt_Id)
    is
-      Old_Handler : Parameterless_Handler;
-      pragma Unreferenced (Old_Handler);
+      Dummy_Old_Handler : Parameterless_Handler;
    begin
-      Unchecked_Exchange_Handler (Old_Handler, New_Handler, Interrupt);
+      Unchecked_Exchange_Handler (Dummy_Old_Handler, New_Handler, Interrupt);
    end Unchecked_Attach_Handler;
 
    procedure Unchecked_Exchange_Handler (
@@ -95,6 +92,12 @@ package body Ada.Interrupts is
          New_Handler,
          System.Native_Interrupts.Interrupt_Id (Interrupt));
    end Unchecked_Exchange_Handler;
+
+   procedure Unchecked_Detach_Handler (Interrupt : Interrupt_Id) is
+      Dummy_Old_Handler : Parameterless_Handler;
+   begin
+      Unchecked_Exchange_Handler (Dummy_Old_Handler, null, Interrupt);
+   end Unchecked_Detach_Handler;
 
    procedure Raise_Interrupt (Interrupt : Interrupt_Id) is
    begin

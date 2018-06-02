@@ -9,4 +9,6 @@ package System.Storage_Map is
    --  module handle of "NTDLL.DLL"
    function NTDLL return C.windef.HMODULE;
 
+   Growing_Down_Is_Preferred : constant Boolean := False;
+
 end System.Storage_Map;

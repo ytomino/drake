@@ -5,24 +5,32 @@ package body System.Native_Real_Time is
    use type C.windef.WINBOOL;
    use type C.winnt.LONGLONG;
 
+   subtype Positive_LONGLONG is
+      C.winnt.LONGLONG range 1 .. C.winnt.LONGLONG'Last;
+
    Performance_Counter_Enabled : Boolean;
-   Frequency : aliased C.winnt.LARGE_INTEGER;
+   Frequency : Positive_LONGLONG;
+
+   procedure Initialize;
+   procedure Initialize is
+      Freq : aliased C.winnt.LARGE_INTEGER;
+   begin
+      Performance_Counter_Enabled :=
+         C.winbase.QueryPerformanceFrequency (Freq'Access) /= C.windef.FALSE;
+      Frequency := Freq.QuadPart;
+   end Initialize;
 
    --  implementation
 
    function To_Native_Time (T : Duration) return Native_Time is
    begin
-      return (
-         Unchecked_Tag => 255, -- any value in others
-         QuadPart =>
-            C.winnt.LONGLONG (
-               System.Native_Time.Nanosecond_Number'Integer_Value (T)));
+      return C.winnt.LONGLONG (
+         System.Native_Time.Nanosecond_Number'Integer_Value (T));
    end To_Native_Time;
 
    function To_Duration (T : Native_Time) return Duration is
    begin
-      return Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number (T.QuadPart));
+      return Duration'Fixed_Value (System.Native_Time.Nanosecond_Number (T));
    end To_Duration;
 
    function Clock return Native_Time is
@@ -36,10 +44,7 @@ package body System.Native_Real_Time is
             then
                raise Program_Error; -- ???
             else
-               return (
-                  Unchecked_Tag => 255, -- any value in others
-                  QuadPart =>
-                     Count.QuadPart * 1_000_000_000 / Frequency.QuadPart);
+               return Count.QuadPart * 1_000_000_000 / Frequency;
             end if;
          end;
       else
@@ -61,6 +66,5 @@ package body System.Native_Real_Time is
    end Delay_Until;
 
 begin
-   Performance_Counter_Enabled :=
-      C.winbase.QueryPerformanceFrequency (Frequency'Access) /= C.windef.FALSE;
+   Initialize;
 end System.Native_Real_Time;

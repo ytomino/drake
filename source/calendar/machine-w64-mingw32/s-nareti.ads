@@ -3,7 +3,7 @@ pragma License (Unrestricted);
 with C.winnt;
 package System.Native_Real_Time is
 
-   subtype Native_Time is C.winnt.LARGE_INTEGER;
+   subtype Native_Time is C.winnt.LONGLONG;
 
    function To_Native_Time (T : Duration) return Native_Time;
    function To_Duration (T : Native_Time) return Duration;

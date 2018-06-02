@@ -64,7 +64,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             declare
                New_Name_All : Name_String (0 .. New_Name_Length);

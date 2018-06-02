@@ -21,8 +21,8 @@ package Ada.References is
          Last : Index_Type'Base)
          return Constant_Reference_Type;
 
-      type Reference_Type (Element : not null access Array_Type) is
-         limited private
+      type Reference_Type (
+         Element : not null access Array_Type) is limited private
          with Implicit_Dereference => Element;
 
       function Slice (
@@ -42,8 +42,8 @@ package Ada.References is
       end record;
       pragma Suppress_Initialization (Constant_Reference_Type);
 
-      type Reference_Type (Element : not null access Array_Type) is
-         limited
+      type Reference_Type (
+         Element : not null access Array_Type) is limited
       record
          First : Index_Type;
          Last : Index_Type'Base;

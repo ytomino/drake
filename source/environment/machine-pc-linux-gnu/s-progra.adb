@@ -34,24 +34,24 @@ package body System.Program is
       Holder.Assign (Buffer);
       loop
          declare
-            Length : constant C.sys.types.ssize_t :=
-               C.unistd.readlink (Name, Buffer, Buffer_Length);
+            S_Length : C.sys.types.ssize_t;
          begin
-            if Length < 0 then
+            S_Length := C.unistd.readlink (Name, Buffer, Buffer_Length);
+            if S_Length < 0 then
                raise Program_Error;
             end if;
-            if C.size_t (Length) < Buffer_Length then
+            if C.size_t (S_Length) < Buffer_Length then
                return Zero_Terminated_Strings.Value (
                   Buffer,
-                  C.size_t (Length));
+                  C.size_t (S_Length));
             end if;
-            Buffer_Length := Buffer_Length * 2;
-            Buffer :=
-               char_ptr_Conv.To_Pointer (
-                  Standard_Allocators.Reallocate (
-                     char_ptr_Conv.To_Address (Buffer),
-                     Storage_Elements.Storage_Offset (Buffer_Length)));
          end;
+         Buffer_Length := Buffer_Length * 2;
+         Buffer :=
+            char_ptr_Conv.To_Pointer (
+               Standard_Allocators.Reallocate (
+                  char_ptr_Conv.To_Address (Buffer),
+                  Storage_Elements.Storage_Offset (Buffer_Length)));
       end loop;
    end Read_Symbolic_Link;
 

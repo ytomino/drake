@@ -52,13 +52,13 @@ with Ada.Numerics.MT19937;
 with Ada.Text_IO;
 procedure random_mt19937 is
 	use Ada.Numerics.MT19937;
-	package Cardinal_IO is new Ada.Text_IO.Modular_IO (Cardinal);
-	init : Cardinal_Vector (0 .. 3) := (16#123#, 16#234#, 16#345#, 16#456#);
+	package Unsigned_32_IO is new Ada.Text_IO.Modular_IO (Unsigned_32);
+	init : Unsigned_32_Array (0 .. 3) := (16#123#, 16#234#, 16#345#, 16#456#);
 	Gen : aliased Generator := Initialize (init);
 begin
 	Ada.Text_IO.Put_Line ("1000 outputs of genrand_int32()");
 	for i in 0 .. 1000 - 1 loop
-		Cardinal_IO.Put (
+		Unsigned_32_IO.Put (
 			Random_32 (Gen),
 			Width => 10);
 		Ada.Text_IO.Put (' ');

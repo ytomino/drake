@@ -310,6 +310,50 @@ package body Ada.Streams.Naked_Stream_IO is
       Holder.Clear;
    end Allocate_And_Open;
 
+   procedure Allocate_External (
+      File : out Non_Controlled_File_Type;
+      Mode : System.Native_IO.File_Mode;
+      Handle : System.Native_IO.Handle_Type;
+      Name : String;
+      Form : System.Native_IO.Packed_Form;
+      To_Close : Boolean);
+   procedure Allocate_External (
+      File : out Non_Controlled_File_Type;
+      Mode : System.Native_IO.File_Mode;
+      Handle : System.Native_IO.Handle_Type;
+      Name : String;
+      Form : System.Native_IO.Packed_Form;
+      To_Close : Boolean)
+   is
+      package Name_Holder is
+         new Exceptions.Finally.Scoped_Holder (
+            System.Native_IO.Name_Pointer,
+            System.Native_IO.Free);
+      Kind : Stream_Kind;
+      Closer : Close_Handler;
+      Full_Name : aliased System.Native_IO.Name_Pointer;
+   begin
+      if To_Close then
+         Kind := External;
+         Closer := System.Native_IO.Close_Ordinary'Access;
+      else
+         Kind := External_No_Close;
+         Closer := null;
+      end if;
+      Name_Holder.Assign (Full_Name);
+      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
+      File := Allocate (
+         Handle => Handle,
+         Mode => Mode,
+         Name => Full_Name,
+         Form => Form,
+         Kind => Kind,
+         Has_Full_Name => False,
+         Closer => Closer);
+      --  complete
+      Name_Holder.Clear;
+   end Allocate_External;
+
    procedure Get_Full_Name (File : not null Non_Controlled_File_Type);
    procedure Get_Full_Name (File : not null Non_Controlled_File_Type) is
    begin
@@ -438,14 +482,13 @@ package body Ada.Streams.Naked_Stream_IO is
 
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type);
    procedure Reset_Reading_Buffer (File : not null Non_Controlled_File_Type) is
-      New_Index : Stream_Element_Offset;
-      pragma Unreferenced (New_Index);
+      Dummy_New_Index : Stream_Element_Offset;
    begin
       System.Native_IO.Set_Relative_Index (
          File.Handle,
          File.Reading_Index - File.Buffer_Index,
          System.Native_IO.From_Current,
-         New_Index);
+         Dummy_New_Index);
       File.Buffer_Index := File.Reading_Index;
       File.Writing_Index := File.Buffer_Index;
    end Reset_Reading_Buffer;
@@ -976,8 +1019,7 @@ package body Ada.Streams.Naked_Stream_IO is
       File : not null Non_Controlled_File_Type;
       To : Stream_Element_Positive_Count)
    is
-      New_Index : Stream_Element_Offset;
-      pragma Unreferenced (New_Index);
+      Dummy_New_Index : Stream_Element_Offset;
       Z_Index : constant Stream_Element_Offset := To - 1; -- zero based
    begin
       Flush_Writing_Buffer (File);
@@ -990,7 +1032,7 @@ package body Ada.Streams.Naked_Stream_IO is
          File.Handle,
          Z_Index,
          System.Native_IO.From_Begin,
-         New_Index);
+         Dummy_New_Index);
       Set_Buffer_Index (File, Z_Index);
    end Set_Index;
 
@@ -1118,33 +1160,34 @@ package body Ada.Streams.Naked_Stream_IO is
    is
       pragma Check (Pre,
          Check => not Is_Open (File) or else raise Status_Error);
-      package Name_Holder is
-         new Exceptions.Finally.Scoped_Holder (
-            System.Native_IO.Name_Pointer,
-            System.Native_IO.Free);
-      Kind : Stream_Kind;
-      Closer : Close_Handler;
-      Full_Name : aliased System.Native_IO.Name_Pointer;
    begin
-      if To_Close then
-         Kind := External;
-         Closer := System.Native_IO.Close_Ordinary'Access;
-      else
-         Kind := External_No_Close;
-         Closer := null;
-      end if;
-      Name_Holder.Assign (Full_Name);
-      System.Native_IO.New_External_Name (Name, Full_Name); -- '*' & Name & NUL
-      File := Allocate (
-         Handle => Handle,
+      Allocate_External (
+         File => File,
          Mode => To_Native_Mode (Mode),
-         Name => Full_Name,
+         Handle => Handle,
+         Name => Name,
          Form => Form,
-         Kind => Kind,
-         Has_Full_Name => False,
-         Closer => Closer);
-      --  complete
-      Name_Holder.Clear;
+         To_Close => To_Close);
+   end Open;
+
+   procedure Open (
+      File : in out Non_Controlled_File_Type;
+      Mode : IO_Modes.Inout_File_Mode;
+      Handle : System.Native_IO.Handle_Type;
+      Name : String := "";
+      Form : System.Native_IO.Packed_Form := Default_Form;
+      To_Close : Boolean := False)
+   is
+      pragma Check (Pre,
+         Check => not Is_Open (File) or else raise Status_Error);
+   begin
+      Allocate_External (
+         File => File,
+         Mode => Inout_To_Native_Mode (Mode),
+         Handle => Handle,
+         Name => Name,
+         Form => Form,
+         To_Close => To_Close);
    end Open;
 
    function Handle (File : not null Non_Controlled_File_Type)

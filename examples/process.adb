@@ -50,7 +50,7 @@ begin
 			Ada.Processes.Shell ("ls @@@ 2> /dev/null", Code); -- is not existing
 		end if;
 		pragma Check (Trace, Ada.Debug.Put (Ada.Command_Line.Exit_Status'Image (Code)));
-		pragma Assert (Code = 1);
+		pragma Assert (Code in 1 .. 2); -- GNU ls returns 2
 		-- error case
 		begin
 			Ada.Processes.Shell ("acats 2> /dev/null", Code); -- dir
@@ -152,16 +152,27 @@ begin
 		-- error case
 		begin
 			Ada.Processes.Create (C, "acats"); -- dir
+			Ada.Debug.Put ("fallthrough from Create");
+			declare
+				Code : Ada.Command_Line.Exit_Status;
+			begin
+				-- In Linux and glibc < 2.26, posix_spawn can't return the error.
+				Ada.Processes.Wait (C, Code);
+				if Code = 127 then
+					raise Ada.Processes.Name_Error;
+				end if;
+				Ada.Debug.Put (Ada.Command_Line.Exit_Status'Image (Code));
+			end;
 			raise Program_Error;
 		exception
 			when Ada.Processes.Use_Error =>
+				-- In Darwin, errno may be EACCES.
 				null;
 			when Ada.Processes.Name_Error =>
+				-- In FreeBSD, errno may be ENOENT.
 				-- In Windows, the executable attribute is missing.
 				-- ERROR_FILE_NOT_FOUND may be returned.
-				if not In_Windows then
-					raise;
-				end if;
+				null;
 		end;
 	end;
 	pragma Debug (Ada.Debug.Put ("OK"));

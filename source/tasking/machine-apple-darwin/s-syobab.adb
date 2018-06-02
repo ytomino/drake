@@ -32,7 +32,8 @@ package body System.Synchronous_Objects.Abortable is
          Taking : loop
             Take_No_Sync (Object, Item, Params, Filter, Previous, I);
             exit Taking when Item /= null;
-            Not_Found : declare
+            --  not found
+            declare
                Tail_On_Waiting : constant Queue_Node_Access := Object.Tail;
             begin
                Object.Params := Params;
@@ -56,7 +57,7 @@ package body System.Synchronous_Objects.Abortable is
                   Previous := null;
                   I := Object.Head;
                end if;
-            end Not_Found;
+            end;
          end loop Taking;
       end;
       Leave (Object.Mutex.all);

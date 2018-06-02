@@ -148,7 +148,8 @@ package body System.Native_Text_IO is
       Wide_Buffer_Length : C.signed_int;
       DBCS_Seq : Natural;
    begin
-      DBCS_Seq := 1
+      DBCS_Seq :=
+         1 -- leading byte
          + Boolean'Pos (
             C.winnls.IsDBCSLeadByte (
                C.windef.BYTE'(Character'Pos (Buffer (1)))) /=

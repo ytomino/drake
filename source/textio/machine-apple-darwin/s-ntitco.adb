@@ -1,3 +1,5 @@
+--  reference:
+--  http://www.mudpedia.org/mediawiki/index.php/Xterm_256_colors
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
@@ -27,8 +29,9 @@ package body System.Native_Text_IO.Terminal_Colors is
 
    procedure Support_256_Color_Init;
    procedure Support_256_Color_Init is
-      TERM : constant C.char_ptr := C.stdlib.getenv (TERM_Variable (0)'Access);
+      TERM : C.char_ptr;
    begin
+      TERM := C.stdlib.getenv (TERM_Variable (0)'Access);
       if TERM /= null
          and then strlen (TERM) = xterm_256color'Length
       then
@@ -43,10 +46,16 @@ package body System.Native_Text_IO.Terminal_Colors is
       end if;
    end Support_256_Color_Init;
 
+   procedure Initialize;
+   procedure Initialize is
+   begin
+      Once.Initialize (
+         Support_256_Color_Flag'Access,
+         Support_256_Color_Init'Access);
+   end Initialize;
+
    function RGB_To_256_Color (Item : Ada.Colors.RGB) return Color;
    function RGB_To_256_Color (Item : Ada.Colors.RGB) return Color is
-      --  reference:
-      --    http://www.mudpedia.org/mediawiki/index.php/Xterm_256_colors
       subtype B is Ada.Colors.Brightness'Base;
       function Color_Scale (Item : B) return Color;
       function Color_Scale (Item : B) return Color is
@@ -65,31 +74,30 @@ package body System.Native_Text_IO.Terminal_Colors is
             return 5;
          end if;
       end Color_Scale;
-      Gray : constant B := (Item.Red + Item.Green + Item.Blue) / 3.0;
    begin
-      --  gray scale
-      if Gray in 5.0 / 255.0 .. B'Pred ((16#5F.0# + 16#87.0#) / 2.0 / 255.0)
-         --  no use of bright gray colors because it seems
-         --    there is a differences of luminance between environments
-         and then abs (Item.Red - Gray) < 5.0 / 255.0
-         and then abs (Item.Green - Gray) < 5.0 / 255.0
-         and then abs (Item.Blue - Gray) < 5.0 / 255.0
-      then
-         declare
-            Color_Index : constant Integer :=
-               232 + (Integer (B'Floor (Gray * 255.0)) - 5) / 10;
-         begin
-            if Color_Index in 232 .. 255 then
-               return Color (Color_Index);
-            end if;
-         end;
-      end if;
-      --  RGB
       return 16
          + 36 * Color_Scale (Item.Red)
          + 6 * Color_Scale (Item.Green)
          + Color_Scale (Item.Blue);
    end RGB_To_256_Color;
+
+   function Brightness_To_Grayscale_256_Color (Item : Ada.Colors.Brightness)
+      return Color;
+   function Brightness_To_Grayscale_256_Color (Item : Ada.Colors.Brightness)
+      return Color
+   is
+      subtype B is Ada.Colors.Brightness'Base;
+      Grayscale_Index : constant Integer :=
+         (Integer (B'Floor (Item * B'Pred (250.0))) + 5) / 10 - 1 + 232;
+   begin
+      if Grayscale_Index < 232 then
+         return 16; -- 16#00#
+      elsif Grayscale_Index <= 255 then -- in 232 .. 255
+         return Color (Grayscale_Index);
+      else
+         return 16 + 6#555#; -- 16#FF#
+      end if;
+   end Brightness_To_Grayscale_256_Color;
 
    function RGB_To_System_Color (Item : Ada.Colors.RGB) return Color;
    function RGB_To_System_Color (Item : Ada.Colors.RGB) return Color is
@@ -130,19 +138,40 @@ package body System.Native_Text_IO.Terminal_Colors is
       return Result;
    end RGB_To_System_Color;
 
+   function Brightness_To_Grayscale_System_Color (Item : Ada.Colors.Brightness)
+      return Color;
+   function Brightness_To_Grayscale_System_Color (Item : Ada.Colors.Brightness)
+      return Color is
+   begin
+      --  [0.000 .. 0.250) => 0
+      --  [0.250 .. 0.625) => 16#80# = 8
+      --  [0.625 .. 0.875) => 16#C0# = 7
+      --  [0.875 .. 1.000] => 16#FF# = 15
+      return RGB_To_System_Color ((Red => Item, Green => Item, Blue => Item));
+   end Brightness_To_Grayscale_System_Color;
+
    --  implementation
 
    function RGB_To_Color (Item : Ada.Colors.RGB) return Color is
    begin
-      Once.Initialize (
-         Support_256_Color_Flag'Access,
-         Support_256_Color_Init'Access);
+      Initialize;
       if Support_256_Color then
          return RGB_To_256_Color (Item);
       else
          return RGB_To_System_Color (Item);
       end if;
    end RGB_To_Color;
+
+   function Brightness_To_Grayscale_Color (Item : Ada.Colors.Brightness)
+      return Color is
+   begin
+      Initialize;
+      if Support_256_Color then
+         return Brightness_To_Grayscale_256_Color (Item);
+      else
+         return Brightness_To_Grayscale_System_Color (Item);
+      end if;
+   end Brightness_To_Grayscale_Color;
 
    procedure Set (
       Handle : Handle_Type;

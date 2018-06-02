@@ -1,9 +1,23 @@
-with Ada.Strings.Naked_Maps.Basic;
+with Ada.Strings.Naked_Maps.Canonical_Composites;
 with Ada.Strings.Naked_Maps.Case_Folding;
 with Ada.Strings.Naked_Maps.Case_Mapping;
 with Ada.Strings.Naked_Maps.General_Category;
 with Ada.Strings.Naked_Maps.Set_Constants;
 package body Ada.Characters.Handling is
+
+   function Overloaded_Is_Basic (Item : Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Strings.Naked_Maps.To_Wide_Wide_Character (Item),
+         Strings.Naked_Maps.Canonical_Composites.Base_Set.all);
+   end Overloaded_Is_Basic;
+
+   function Overloaded_Is_Basic (Item : Wide_Wide_Character) return Boolean is
+   begin
+      return Strings.Naked_Maps.Is_In (
+         Item,
+         Strings.Naked_Maps.Canonical_Composites.Base_Set.all);
+   end Overloaded_Is_Basic;
 
    function Overloaded_Is_Control (Item : Character) return Boolean is
    begin
@@ -252,10 +266,27 @@ package body Ada.Characters.Handling is
          Item);
    end Overloaded_To_Upper;
 
-   function To_Basic (Item : Character) return Character is
+   function Overloaded_To_Basic (Item : Character) return Character is
    begin
       return Item; -- all letters are "basic" in ASCII
-   end To_Basic;
+   end Overloaded_To_Basic;
+
+   function Overloaded_To_Basic (Item : Wide_Character)
+      return Wide_Character is
+   begin
+      return Strings.Naked_Maps.To_Wide_Character (
+         Strings.Naked_Maps.Value (
+            Strings.Naked_Maps.Canonical_Composites.Basic_Map.all,
+            Strings.Naked_Maps.To_Wide_Wide_Character (Item)));
+   end Overloaded_To_Basic;
+
+   function Overloaded_To_Basic (Item : Wide_Wide_Character)
+      return Wide_Wide_Character is
+   begin
+      return Strings.Naked_Maps.Value (
+         Strings.Naked_Maps.Canonical_Composites.Basic_Map.all,
+         Item);
+   end Overloaded_To_Basic;
 
    function Overloaded_To_Lower (Item : String) return String is
    begin
@@ -301,19 +332,34 @@ package body Ada.Characters.Handling is
          Strings.Naked_Maps.Case_Mapping.Upper_Case_Map.all);
    end Overloaded_To_Upper;
 
+   function Overloaded_To_Basic (Item : String) return String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Canonical_Composites.Basic_Map.all);
+   end Overloaded_To_Basic;
+
+   function Overloaded_To_Basic (Item : Wide_String) return Wide_String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Canonical_Composites.Basic_Map.all);
+   end Overloaded_To_Basic;
+
+   function Overloaded_To_Basic (Item : Wide_Wide_String)
+      return Wide_Wide_String is
+   begin
+      return Strings.Naked_Maps.Translate (
+         Item,
+         Strings.Naked_Maps.Canonical_Composites.Basic_Map.all);
+   end Overloaded_To_Basic;
+
    function To_Case_Folding (Item : String) return String is
    begin
       return Strings.Naked_Maps.Translate (
          Item,
          Strings.Naked_Maps.Case_Folding.Case_Folding_Map.all);
    end To_Case_Folding;
-
-   function To_Basic (Item : String) return String is
-   begin
-      return Strings.Naked_Maps.Translate (
-         Item,
-         Strings.Naked_Maps.Basic.Basic_Map.all);
-   end To_Basic;
 
    function Is_ISO_646 (Item : Character) return Boolean is
    begin

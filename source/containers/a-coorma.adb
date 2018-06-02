@@ -759,7 +759,6 @@ package body Ada.Containers.Ordered_Maps is
                New_Key : Key_Type;
                Position : Cursor;
                Inserted : Boolean;
-               pragma Unreferenced (Inserted);
             begin
                Key_Type'Read (Stream, New_Key);
                Insert (Item, New_Key, Position, Inserted);

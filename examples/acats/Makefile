@@ -11,8 +11,20 @@
 #   make ONCE=aa2010a     # run aa2010a only
 #   make RTSDIR=          # run the all tests with GNAT runtime
 
-export HOST=$(shell gcc -dumpmachine)
+export HOST:=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
+
+ifeq ($(TARGET),$(HOST))
+GCCPREFIX=
+else
+export GCCPREFIX=$(TARGET)-
+endif
+GCCSUFFIX=
+GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
+
+LIBGCC:=$(shell $(GCC) -print-libgcc-file-name)
+LIBGCCDIR=$(patsubst %/,%,$(dir $(LIBGCC)))
+LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
 
 SOURCES=$(wildcard ../../source/*.ad?) $(wildcard ../../source/*/*.ad?) $(wildcard ../../source/*/*/*.ad?)
 
@@ -110,7 +122,20 @@ OPTION:=$(ONCE)
 endif
 
 ifneq ($(RTSDIR),)
-LIBGNAT=../$(TARGET).build/adalib/libgnat.a
+ifneq ($(and \
+	$(findstring linux-gnu,$(HOST)), \
+	$(findstring linux-gnu,$(TARGET)), \
+	$(filter /usr/lib/gcc/$(TARGET)/%,$(LIBGCCDIR)), \
+	$(wildcard /usr/lib/$(TARGET)/libgnat-$(LIBVERSION).so)),) # Debian
+LIBGNATBASE=libgnat-$(LIBVERSION)
+else
+LIBGNATBASE=libgnat
+endif
+ifneq ($(findstring linux-gnu,$(TARGET)),)
+LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
+else
+LIBGNAT=$(LIBGNATBASE).a
+endif
 GFLAGS=--RTS=../$(TARGET).build
 CFLAGS=-pipe -ggdb -gnata
 H_GFLAGS=--RTS=../$(HOST).build
@@ -131,19 +156,19 @@ endif
 
 .PHONY: test setup
 
-test: setup $(LIBGNAT) $(RUN_ACATS)
+test: setup $(addprefix ../$(TARGET).build/adalib/,$(LIBGNAT)) $(RUN_ACATS)
 	$(RUN_ACATS) $(OPTION)
 
 setup: $(ACATSDIR) $(SUPPORTDIR) $(SUPPORT_SOURCES) $(MACROSUB)
 
-../$(TARGET).build/adalib/libgnat.a: $(SOURCES)
-	make -C .. $(TARGET).build/adalib/libgnat.a HOST=$(HOST) TARGET=$(TARGET) WITHA=1
+../$(TARGET).build/adalib/$(LIBGNAT): $(SOURCES)
+	make -C .. $(patsubst ../%,%,$@) HOST=$(HOST) TARGET=$(TARGET) WITHA=1
 
 $(MACROSUB): $(SUPPORTDIR)/macrosub.adb
-	gnatmake -o $@ $(H_GFLAGS) $(H_MFLAGS) $< -cargs $(H_CFLAGS) -bargs $(H_BFLAGS) -largs $(H_LFLAGS)
+	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -o $@ $(H_GFLAGS) $(H_MFLAGS) $< -cargs $(H_CFLAGS) -bargs $(H_BFLAGS) -largs $(H_LFLAGS)
 
 $(RUN_ACATS): run_acats.adb | $(SUPPORTDIR)
-	gnatmake -o $@ $(H_GFLAGS) $(H_MFLAGS) $< -cargs $(H_CFLAGS) -bargs $(H_BFLAGS) -largs $(H_LFLAGS)
+	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -o $@ $(H_GFLAGS) $(H_MFLAGS) $< -cargs -gnatwa $(H_CFLAGS) -bargs $(H_BFLAGS) -largs $(H_LFLAGS)
 
 $(ACATSDIR): $(ACATSARCHIVE)
 	mkdir $(ACATSDIR)
@@ -156,105 +181,105 @@ $(SUPPORTDIR)/b730006_0-child1.adb: b730006_0-child1.adb
 	ln -s ../$< $@
 
 $(SUPPORTDIR)/%.ads: $(ACATSDIR)/support/%.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/f340a000.ads: $(ACATSDIR)/support/f340a000.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/f341a00_0.ads: $(ACATSDIR)/support/f341a00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/f392c00_1.ads: $(ACATSDIR)/support/f392c00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/f393a00_0.ads: $(ACATSDIR)/support/f393a00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/fa11c00_0.ads: $(ACATSDIR)/support/fa11c00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/fa13a00_0.ads: $(ACATSDIR)/support/fa13a00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/fa13b00_0.ads: $(ACATSDIR)/support/fa13b00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/fc70c00_0.ads: $(ACATSDIR)/support/fc70c00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/fxe2a00_0.ads: $(ACATSDIR)/support/fxe2a00.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/check_file.adb: $(ACATSDIR)/support/checkfil.ada $(SUPPORTDIR)/report.ads
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/enum_check.adb: $(ACATSDIR)/support/enumchek.ada
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/fcndecl.ads: support/fcndecl.ada
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef.adb: support/impdef.a $(SUPPORTDIR)/report.ads
-	gnatchop -w --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop -w --GCC=$(GCC) $< $(SUPPORTDIR)
 	sed -i -e 's|\"cd300051\.o\"|\"$(abspath $(SUPPORTDIR))/cd300051\.o\"|' $(SUPPORTDIR)/impdef.ads
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef-annex_c.adb: support/impdefc.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef-annex_d.ads: support/impdefd.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef-annex_e.ads: support/impdefe.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef-annex_g.adb: support/impdefg.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/impdef-annex_h.ads: support/impdefh.a
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/length_check.adb: $(ACATSDIR)/support/lencheck.ada
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/macrosub.adb: $(ACATSDIR)/support/macrosub.ada | $(SUPPORTDIR)
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/report.ads: $(ACATSDIR)/support/repspec.ada
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 
 $(SUPPORTDIR)/report.adb: $(ACATSDIR)/support/repbody.ada $(SUPPORTDIR)/report.ads
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
 	cp $@ $@.orig
 	patch -p0 < report.adb.diff
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) -gnato $@
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) -gnato $@
 
 # "-gnato" means overflow check required for C43206A
 
 $(SUPPORTDIR)/tctouch.adb: $(ACATSDIR)/support/tctouch.ada
-	gnatchop --GCC=$(TARGET)-gcc $< $(SUPPORTDIR)
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	gnatchop --GCC=$(GCC) $< $(SUPPORTDIR)
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/spprt13.ads: $(ACATSDIR)/support/spprt13s.tst $(MACROSUB)
 	ln -s ../support/MACRO.DFS $(SUPPORTDIR)/MACRO.DFS
 	ln -s ../$(ACATSDIR)/support/spprt13s.tst $(SUPPORTDIR)/spprt13s.tst
 	echo spprt13s.tst > $(SUPPORTDIR)/TSTTESTS.DAT
 	cd $(SUPPORTDIR) && ./macrosub
-	gnatchop --GCC=$(TARGET)-gcc $(SUPPORTDIR)/spprt13s.adt $(SUPPORTDIR)
+	gnatchop --GCC=$(GCC) $(SUPPORTDIR)/spprt13s.adt $(SUPPORTDIR)
 	rm $(SUPPORTDIR)/TSTTESTS.DAT
-	$(TARGET)-gcc -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
+	$(GCC) -o $(basename $@).o -c $(GFLAGS) $(CFLAGS) $@
 
 $(SUPPORTDIR)/cd300051.o: $(ACATSDIR)/cd/cd300051.c
-	$(TARGET)-gcc -c -o $@ $<
+	$(GCC) -c -o $@ $<
 
 $(SUPPORTDIR):
 	mkdir $@

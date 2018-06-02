@@ -19,8 +19,9 @@ package body System.Native_Locales is
    --  implementation
 
    function Language return ISO_639_Alpha_2 is
-      P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
+      P : C.char_ptr;
    begin
+      P := C.stdlib.getenv (LANG (0)'Access);
       if P /= null then
          declare
             Value : constant char_array_const_ptr :=
@@ -44,8 +45,9 @@ package body System.Native_Locales is
    end Language;
 
    function Country return ISO_3166_1_Alpha_2 is
-      P : constant C.char_ptr := C.stdlib.getenv (LANG (0)'Access);
+      P : C.char_ptr;
    begin
+      P := C.stdlib.getenv (LANG (0)'Access);
       if P /= null then
          declare
             Value : constant char_array_const_ptr :=

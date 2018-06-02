@@ -15,7 +15,7 @@
 
 export MAKEFLAGS+=r
 
-export HOST=$(shell gcc -dumpmachine)
+export HOST:=$(shell gcc -dumpmachine)
 export TARGET=$(HOST)
 
 ifeq ($(TARGET),$(HOST))
@@ -24,6 +24,21 @@ else
 GCCPREFIX=$(TARGET)-
 endif
 GCCSUFFIX=
+GCC=$(GCCPREFIX)gcc$(GCCSUFFIX)
+
+LIBGCC:=$(shell $(GCC) -print-libgcc-file-name)
+LIBGCCDIR=$(patsubst %/,%,$(dir $(LIBGCC)))
+LIBVERSION=$(basename $(basename $(notdir $(LIBGCCDIR))))
+
+ifneq ($(and \
+	$(findstring linux-gnu,$(HOST)), \
+	$(findstring linux-gnu,$(TARGET)), \
+	$(filter /usr/lib/gcc/$(TARGET)/%,$(LIBGCCDIR)), \
+	$(wildcard /usr/lib/$(TARGET)/libgnat-$(LIBVERSION).so)),) # Debian
+LIBGNATBASE=libgnat-$(LIBVERSION)
+else
+LIBGNATBASE=libgnat
+endif
 
 ifneq ($(findstring mingw,$(TARGET)),)
 EXEEXT=.exe
@@ -31,7 +46,8 @@ else
 EXEEXT=
 endif
 
-EXAMPLES=$(basename $(filter-out b~%,$(wildcard *.adb)))
+EXAMPLESPREFIX=
+EXAMPLES=$(basename $(filter-out b~%,$(notdir $(wildcard $(EXAMPLESPREFIX)*.adb))))
 
 ifneq ($(TARGET),$(HOST))
 EXAMPLES:=$(filter-out exception_cpp,$(EXAMPLES))
@@ -60,10 +76,10 @@ export INSTALL=ln -s
 export WITHA=0
 export DEBUG=2
 
-ifneq ($(findstring linux,$(TARGET)),)
-LIBGNAT=libgnat_drake$(GCCSUFFIX).a
+ifneq ($(findstring linux-gnu,$(TARGET)),)
+LIBGNAT=$(patsubst libgnat%,libgnat_drake%,$(LIBGNATBASE)).a
 else
-LIBGNAT=libgnat$(GCCSUFFIX).a
+LIBGNAT=$(LIBGNATBASE).a
 endif
 
 GFLAGS=
@@ -89,8 +105,7 @@ else ifneq ($(findstring freebsd,$(TARGET)),)
 LFLAGS_ALL+=-lm -lpthread -liconv -lgcc_eh
 endif
 
-GCC=
-ifneq ($(GCC),)
+ifneq ($(GCC),$(GCCPREFIX)gcc$(GCCSUFFIX))
 MFLAGS_ALL+=--GCC="$(GCC)"
 LFLAGS_ALL+=--GCC="$(GCC)"
 endif
@@ -122,20 +137,23 @@ BFLAGS_ALL:=$(strip $(BFLAGS_ALL) $(BFLAGS))
 LFLAGS_ALL:=$(strip $(LFLAGS_ALL) $(LFLAGS))
 FFLAGS_ALL:=$(strip $(FFLAGS_ALL) $(FFLAGS))
 
-.PHONY: all tree cleanup-rts clean cleanall xfind xfindall
+.PHONY: all tree depend cleanup-rts clean cleanall xfind xfindall
 
 all: $(BUILDDIR)/adalib/$(LIBGNAT) $(EXAMPLES)
 
 tree:
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) tree
 
-cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libgnat$GCCSUFFIX.a
-	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build) ; do \
+depend:
+	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS) depend
+
+cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/$LIBGNATBASE.build
+	@bash -c 'for I in $$(ls $(BUILDDIR)/adalib/$(LIBGNATBASE).build) ; do \
 		B=$${I%.*} ; \
 		if [[ -f $(BUILDDIR)/$$B.o ]] ; then \
 			echo rm $$B.\* ; \
 			rm $(BUILDDIR)/$$B.* ; \
-			rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/$$B.* ; \
+			rm $(BUILDDIR)/adalib/$(LIBGNATBASE).build/$$B.* ; \
 			if [[ -f $(BUILDDIR)/adalib/$$B.ali ]] ; then \
 				rm -f $(BUILDDIR)/adalib/$$B.ali ; \
 			fi ; \
@@ -145,9 +163,9 @@ cleanup-rts: # rm duplicated object files in $BUILDDIR and $BUILDDIR/adalib/libg
 			fi ; \
 		fi ; \
 	done ; \
-	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.o ]] ; then \
+	if [[ $$REMOVED_C = 1 && -f $(BUILDDIR)/adalib/$(LIBGNATBASE).build/c.o ]] ; then \
 		echo rm c.\* ; \
-		rm $(BUILDDIR)/adalib/libgnat$(GCCSUFFIX).build/c.* ; \
+		rm $(BUILDDIR)/adalib/$(LIBGNATBASE).build/c.* ; \
 	fi ; \
 	if [[ $$REMOVED_A = 1 && -f $(BUILDDIR)/adalib/$(LIBGNAT) ]] ; then \
 		echo rm $(LIBGNAT) ; \
@@ -161,10 +179,10 @@ $(BUILDDIR)/adalib/$(LIBGNAT): $(wildcard $(BUILDDIR)/adainclude/*.ad?) $(wildca
 	$(MAKE) -C ../source RTSDIR=$(abspath $(BUILDDIR)) $(DRAKEVARS)
 	touch $@
 
-$(BUILDDIR)/%$(EXEEXT): %.adb $(BUILDDIR)/adalib/$(LIBGNAT)
-	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $< $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
-	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(BFLAGS_ALL)
-	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $(basename $(notdir $<)).ali $(GFLAGS_ALL) $(LFLAGS_ALL)
+$(BUILDDIR)/%$(EXEEXT): $(EXAMPLESPREFIX)%.adb $(BUILDDIR)/adalib/$(LIBGNAT)
+	$(GCCPREFIX)gnatmake$(GCCSUFFIX) -c $(EXAMPLESPREFIX)$*.adb $(GFLAGS_ALL) $(MFLAGS_ALL) -cargs $(CFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatbind$(GCCSUFFIX) $*.ali $(GFLAGS_ALL) $(BFLAGS_ALL)
+	cd $(BUILDDIR) && $(GCCPREFIX)gnatlink$(GCCSUFFIX) -o ../$@ $*.ali $(GFLAGS_ALL) $(LFLAGS_ALL)
 
 $(BUILDDIR)/bindtimevars$(EXEEXT): BFLAGS_ALL+=-VKEY1=VALUE1 -VKAGI2=ATAI2
 $(BUILDDIR)/nop$(EXEEXT): BFLAGS_ALL:=$(filter-out -E,$(BFLAGS_ALL))
@@ -174,7 +192,7 @@ $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
 clean:
 	-rm -rf $(BINLN) $(BUILDDIR)/adalib
-	-find $(BUILDDIR) -depth 1 -not -name adainclude | xargs rm -r
+	-find $(BUILDDIR) -mindepth 1 -maxdepth 1 -not -name adainclude | xargs rm -r
 
 cleanall:
 	-rm -rf $(BINLN) *.build

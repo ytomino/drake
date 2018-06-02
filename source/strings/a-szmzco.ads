@@ -93,14 +93,13 @@ package Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants is
    --  extended from here
    function Case_Folding_Map return Wide_Wide_Character_Mapping
       renames Maps.Constants.Case_Folding_Map;
-   function Base_Map return Wide_Wide_Character_Mapping
-      renames Maps.Constants.Base_Map;
    --  to here
 --  Basic_Map : constant Wide_Wide_Character_Mapping;
    function Basic_Map return Wide_Wide_Character_Mapping
       renames Maps.Constants.Basic_Map;
       --  Maps to basic letter for letters, else identity
-      --  Note: Basic_Map is extended for all unicode characters.
+      --  Note: Basic_Map is extended for all unicode characters, and not
+      --    limited to letters.
 
    --  RM A.4.8
 

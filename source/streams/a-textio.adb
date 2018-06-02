@@ -23,7 +23,6 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO;
 with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Reallocation;
 with System.Unwind.Occurrences;
 package body Ada.Text_IO is
    use Exception_Identification.From_Here;
@@ -43,13 +42,6 @@ package body Ada.Text_IO is
          Naked_Text_IO.Stream_IO (Naked_Text_IO.Standard_Error).all,
          Raise_On_Error => False);
    end Flush_IO;
-
-   procedure Reallocate is
-      new Unchecked_Reallocation (
-         Positive,
-         Character,
-         String,
-         String_Access);
 
    procedure Reallocate is
       new Unchecked_Reallocation (

@@ -35,10 +35,15 @@ package body System.Tasking.Stages is
 
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count;
    function Storage_Size (T : Task_Id) return Storage_Elements.Storage_Count is
+      Id : constant Tasks.Task_Id := Task_Id_Conv.To_Pointer (T);
       Addr : Address;
       Size : Storage_Elements.Storage_Count;
    begin
-      Tasks.Get_Stack (Task_Id_Conv.To_Pointer (T), Addr, Size);
+      if not Tasks.Activated (Id) then -- accessed before elaboration, C92005A
+         Size := 0;
+      else
+         Tasks.Get_Stack (Id, Addr, Size);
+      end if;
       return Size;
    end Storage_Size;
 

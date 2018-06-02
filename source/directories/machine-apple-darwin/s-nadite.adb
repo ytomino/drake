@@ -124,21 +124,19 @@ package body System.Native_Directories.Temporary is
    begin
       Put_Template (Directory, Template (0)'Unchecked_Access, Length);
       declare
-         R : C.char_ptr;
+         Name : C.char_ptr;
       begin
          declare -- mkdtemp where
             use C.stdlib; -- Linux, POSIX.1-2008
             use C.unistd; -- Darwin, FreeBSD
          begin
-            R := mkdtemp (Template (0)'Access);
+            Name := mkdtemp (Template (0)'Access);
          end;
-         if R = null then
+         if Name = null then
             Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
          end if;
+         return Zero_Terminated_Strings.Value (Name, Length);
       end;
-      return Zero_Terminated_Strings.Value (
-         Template (0)'Access,
-         Length);
    end Create_Temporary_Directory;
 
 end System.Native_Directories.Temporary;

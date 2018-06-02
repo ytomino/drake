@@ -1,4 +1,4 @@
-private with System.Native_Real_Time;
+with System.Native_Real_Time;
 package body Ada.Real_Time.Delays is
 
    procedure Delay_Until (T : Time) is

@@ -55,6 +55,8 @@ package System.Native_Tasks is
       Handle : Handle_Type;
       Abort_Event : in out Synchronous_Objects.Event;
       Error : out Boolean);
+   procedure Resend_Abort_Signal (Handle : Handle_Type; Error : out Boolean) is
+      null;
 
    procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event);
    procedure Unblock_Abort_Signal is null;

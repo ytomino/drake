@@ -1,5 +1,6 @@
 with System.Native_Time;
 with C.sys.time;
+with C.sys.types;
 package body System.Native_Calendar is
 --  use type C.signed_int;
 --  use type C.sys.types.time_t;
@@ -7,6 +8,12 @@ package body System.Native_Calendar is
    Diff : constant := 5680281600.0;
       --  seconds from 1970-01-01 (0 of POSIX time)
       --    to 2150-01-01 (0 of Ada time)
+
+   function To_Time (T : C.sys.types.time_t) return Duration;
+   function To_Time (T : C.sys.types.time_t) return Duration is
+   begin
+      return System.Native_Time.To_Duration (T) - Diff;
+   end To_Time;
 
    --  implementation
 
@@ -16,11 +23,6 @@ package body System.Native_Calendar is
    end To_Native_Time;
 
    function To_Time (T : Native_Time) return Duration is
-   begin
-      return System.Native_Time.To_Duration (T) - Diff;
-   end To_Time;
-
-   function To_Time (T : C.sys.types.time_t) return Duration is
    begin
       return System.Native_Time.To_Duration (T) - Diff;
    end To_Time;
@@ -61,16 +63,19 @@ package body System.Native_Calendar is
             System.Native_Time.Nanosecond_Number (timespec.tv_nsec));
       timespec.tv_sec := timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
-      --  does gmtime_r return no error ?
-      Year := Integer (tm.tm_year) + 1900;
-      Month := Integer (tm.tm_mon) + 1;
-      Day := Day_Number (tm.tm_mday);
-      Hour := Hour_Number (tm.tm_hour);
-      Minute := Minute_Number (tm.tm_min);
-      Second := Second_Number (tm.tm_sec);
-      Leap_Second := False;
-      Day_of_Week := (Integer (tm.tm_wday) + 6) rem 7; -- starts from Monday
-      Error := False;
+      if tm = null then
+         Error := True;
+      else
+         Year := Integer (tm.tm_year) + 1900;
+         Month := Integer (tm.tm_mon) + 1;
+         Day := Day_Number (tm.tm_mday);
+         Hour := Hour_Number (tm.tm_hour);
+         Minute := Minute_Number (tm.tm_min);
+         Second := Second_Number (tm.tm_sec);
+         Leap_Second := False;
+         Day_of_Week := (Integer (tm.tm_wday) + 6) rem 7; -- starts from Monday
+         Error := False;
+      end if;
    end Split;
 
    procedure Time_Of (
@@ -97,21 +102,23 @@ package body System.Native_Calendar is
          tm_isdst => 0,
          tm_gmtoff => 0,
          tm_zone => null);
-      C_Result : constant C.sys.types.time_t := C.time.timegm (tm'Access);
+      time : C.sys.types.time_t;
    begin
+      time := C.time.timegm (tm'Access);
       Error := False;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
-      if C_Result = -1 then -- to pass negative UNIX time (?)
+      if time = -1 then -- to pass negative UNIX time (?)
          if Year = 1901 and then Month = 1 and then Day = 1 then
             Result := -7857734400.0; -- first day in Time
          else
             Error := True;
-            return;
          end if;
       else
-         Result := To_Time (C_Result);
+         Result := To_Time (time);
       end if;
-      Result := Result - Duration (Time_Zone * 60) + Seconds;
+      if not Error then
+         Result := Result - Duration (Time_Zone * 60) + Seconds;
+      end if;
    end Time_Of;
 
    procedure Simple_Delay_Until (T : Native_Time) is

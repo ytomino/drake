@@ -244,7 +244,11 @@ package body Interfaces.COBOL is
    function Length_To_Display_Unsigned (Item : Long_Long_Integer)
       return Natural is
    begin
-      return System.Formatting.Width (Long_Long_Unsigned (Item));
+      if Long_Long_Integer'Size <= Standard'Word_Size then
+         return System.Formatting.Digits_Width (Word_Unsigned (Item));
+      else
+         return System.Formatting.Digits_Width (Long_Long_Unsigned (Item));
+      end if;
    end Length_To_Display_Unsigned;
 
    procedure To_Display_Unsigned (
@@ -259,12 +263,21 @@ package body Interfaces.COBOL is
       Last : Natural;
       Error : Boolean; -- ignored
    begin
-      System.Formatting.Image (
-         Long_Long_Unsigned (Item),
-         Result_As_Ada,
-         Last,
-         Width => Result'Length,
-         Error => Error);
+      if Long_Long_Integer'Size <= Standard'Word_Size then
+         System.Formatting.Image (
+            Word_Unsigned (Item),
+            Result_As_Ada,
+            Last,
+            Width => Result'Length,
+            Error => Error);
+      else
+         System.Formatting.Image (
+            Long_Long_Unsigned (Item),
+            Result_As_Ada,
+            Last,
+            Width => Result'Length,
+            Error => Error);
+      end if;
    end To_Display_Unsigned;
 
    function To_Display_Unsigned (Item : Long_Long_Integer) return Numeric is
@@ -430,10 +443,10 @@ package body Interfaces.COBOL is
 
    function Length_To_Packed (Item : Long_Long_Integer) return Natural is
    begin
+      --  The packed form is BCD and terminated with a magic number.
       return 2
          + Natural (
-            Word_Unsigned (System.Formatting.Width (Long_Long_Unsigned (Item)))
-            and not 1);
+            Word_Unsigned (Length_To_Display_Unsigned (Item)) and not 1);
    end Length_To_Packed;
 
    function To_Packed_Unsigned (Item : Long_Long_Integer)

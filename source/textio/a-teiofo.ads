@@ -8,32 +8,24 @@ private package Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field);
+      Base : Number_Base);
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : Long_Long_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field);
+      Base : Number_Base);
 
    --  for Modular_IO
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field);
+      Base : Number_Base);
    procedure Modular_Image (
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Long_Long_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field);
+      Base : Number_Base);
 
    --  for Integer_IO, Modular_IO, Float_IO, Fixed_IO
    function Get_Numeric_Literal (
@@ -75,21 +67,9 @@ private package Ada.Text_IO.Formatting is
    procedure Get_Tail (Item : String; First : out Positive);
 
    --  put to string
-   procedure Head (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ');
-   procedure Tail (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ');
-   procedure Tail (
-      Target : out Wide_String;
-      Source : Wide_String;
-      Padding : Wide_Character := ' ');
-   procedure Tail (
-      Target : out Wide_Wide_String;
-      Source : Wide_Wide_String;
-      Padding : Wide_Wide_Character := ' ');
+   procedure Head (Target : out String; Source : String);
+   procedure Tail (Target : out String; Source : String);
+   procedure Tail (Target : out Wide_String; Source : Wide_String);
+   procedure Tail (Target : out Wide_Wide_String; Source : Wide_Wide_String);
 
 end Ada.Text_IO.Formatting;

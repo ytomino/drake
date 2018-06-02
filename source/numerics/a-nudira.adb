@@ -4,7 +4,7 @@ package body Ada.Numerics.Discrete_Random is
    function Random (Gen : Generator) return Result_Subtype is
       function Do_Random is
          new Distributions.Linear_Discrete_Random (
-            MT19937.Cardinal,
+            MT19937.Unsigned_32,
             Result_Subtype,
             Generator,
             Random_32);
@@ -18,7 +18,7 @@ package body Ada.Numerics.Discrete_Random is
       subtype R is Result_Subtype range First .. Last;
       function Do_Random is
          new Distributions.Linear_Discrete_Random (
-            MT19937.Cardinal,
+            MT19937.Unsigned_32,
             R,
             Generator,
             Random_32);

@@ -94,8 +94,8 @@ package Ada.Strings.Maps.Constants is
    --  * Base = not decomposable
    --  * Basic = Letter * Base
    --
-   --  Note: Basic_Set and Basic_Map are confused operation in Unicode.
-   --  Use Letter_Set, Base_Set or Base_Map instead of them.
+   --  Note: Basic_Set is confused operation in Unicode.
+   --  Use Letter_Set and/or Base_Set instead of it.
 
 --  Control_Set : constant Character_Set;
       --  Control_Set is declared as unicode category in above.
@@ -146,17 +146,16 @@ package Ada.Strings.Maps.Constants is
       --  Note: Upper_Case_Map is extended for all unicode characters.
    --  extended from here
    function Case_Folding_Map return Character_Mapping;
-   function Base_Map return Character_Mapping;
    --  to here
 --  Basic_Map : constant Character_Mapping;
    function Basic_Map return Character_Mapping;
       --  Maps to basic letter for letters, else identity
-      --  Note: Basic_Map is extended for all unicode characters.
+      --  Note: Basic_Map is extended for all unicode characters, and not
+      --    limited to letters.
 
    pragma Inline (Lower_Case_Map);
    pragma Inline (Upper_Case_Map);
    pragma Inline (Case_Folding_Map);
-   pragma Inline (Base_Map);
    pragma Inline (Basic_Map);
 
 private
@@ -296,13 +295,8 @@ private
    function Case_Folding_Map return Character_Mapping
       renames Case_Folding_Map_Body;
 
-   function Base_Map_Body is
-      new Maps.Naked.To_Mapping (Naked_Maps.Canonical_Composites.Base_Map);
-   function Base_Map return Character_Mapping
-      renames Base_Map_Body;
-
    function Basic_Map_Body is
-      new Maps.Naked.To_Mapping (Naked_Maps.Basic.Basic_Map);
+      new Maps.Naked.To_Mapping (Naked_Maps.Canonical_Composites.Basic_Map);
    function Basic_Map return Character_Mapping
       renames Basic_Map_Body;
 

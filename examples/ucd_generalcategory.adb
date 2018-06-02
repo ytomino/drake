@@ -16,6 +16,28 @@ procedure ucd_generalcategory is
 	begin
 		return Wide_Wide_Character'Value (Img);
 	end Value;
+	procedure Put_16 (Item : Integer) is
+	begin
+		if Item >= 16#10000# then
+			Put (Item, Width => 1, Base => 16);
+		else
+			declare
+				S : String (1 .. 8); -- "16#XXXX#"
+			begin
+				Put (S, Item, Base => 16);
+				S (1) := '1';
+				S (2) := '6';
+				S (3) := '#';
+				for I in reverse 4 .. 6 loop
+					if S (I) = '#' then
+						S (4 .. I) := (others => '0');
+						exit;
+					end if;
+				end loop;
+				Put (S);
+			end;
+		end if;
+	end Put_16;
 	type Bit is (In_16, In_17, In_32);
 	function Get_Bit (C : Wide_Wide_Character) return Bit is
 	begin
@@ -291,24 +313,18 @@ begin
 											end if;
 											if S then
 												Put ("(");
-												Put (
-													Integer'(Wide_Wide_Character'Pos (R.First)) - Offset,
-													Base => 16,
-													Width => 8, -- 16#XXXX#
-													Padding => '0');
+												Put_16 (
+													Wide_Wide_Character'Pos (R.First)
+													- Offset);
 												Put (", ");
-												Put (
-													Integer'(Wide_Wide_Character'Pos (R.Last)) - Offset,
-													Base => 16,
-													Width => 8, -- 16#XXXX#
-													Padding => '0');
+												Put_16 (
+													Wide_Wide_Character'Pos (R.Last)
+													- Offset);
 												Put (")");
 											else
-												Put (
-													Integer'(Wide_Wide_Character'Pos (R.First)) - Offset,
-													Base => 16,
-													Width => 8, -- 16#XXXX#
-													Padding => '0');
+												Put_16 (
+													Wide_Wide_Character'Pos (R.First)
+													- Offset);
 											end if;
 											Second := True;
 										end if;

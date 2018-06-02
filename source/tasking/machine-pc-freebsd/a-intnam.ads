@@ -85,5 +85,6 @@ private
 
    First_Interrupt_Id : constant Interrupt_Id := SIGHUP;
    Last_Interrupt_Id : constant Interrupt_Id := SIGRTMAX;
+      --  SIGRTMAX = 126 > NSIG - 1 = 31
 
 end Ada.Interrupts.Names;

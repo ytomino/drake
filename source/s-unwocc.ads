@@ -44,8 +44,8 @@ package System.Unwind.Occurrences is
          not null Representation.Machine_Occurrence_Access);
 
    --  equivalent to Get_Current_Excep_NT (s-soflin.adb),
-   --     Get_Current_Excep (s-tarest.adb)
-   --     and Setup_Current_Excep (a-exexpr-gcc.adb)
+   --    Get_Current_Excep (s-tarest.adb)
+   --    and Setup_Current_Excep (a-exexpr-gcc.adb)
    function Get_Current_Occurrence (
       TLS : not null Runtime_Context.Task_Local_Storage_Access)
       return Exception_Occurrence_Access;
@@ -93,6 +93,8 @@ package System.Unwind.Occurrences is
    procedure Flush_IO;
 
    --  output the information of unhandled exception
+
+   procedure Put_Exception_Information (X : Exception_Occurrence);
 
    procedure Default_Report (X : Exception_Occurrence; Where : String);
 

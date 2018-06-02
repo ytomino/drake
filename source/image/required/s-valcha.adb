@@ -79,7 +79,7 @@ package body System.Val_Char is
             if S = E (1 .. Img_Char.Length (E)) then
                Value := I;
                Error := False;
-               return;
+               return; -- found
             end if;
          end;
       end loop;

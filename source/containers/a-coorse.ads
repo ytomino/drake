@@ -248,8 +248,8 @@ package Ada.Containers.Ordered_Sets is
 
    private
 
-      type Reference_Type (Element : not null access Element_Type) is
-         null record;
+      type Reference_Type (
+         Element : not null access Element_Type) is null record;
 
       --  dummy 'Read and 'Write
 

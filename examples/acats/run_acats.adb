@@ -10,6 +10,7 @@ with Ada.Strings.Fixed;
 with Ada.Strings.Less_Case_Insensitive;
 with Ada.Strings.Unbounded;
 with Ada.Text_IO;
+with Ada.Unchecked_Deallocation;
 procedure run_acats is
 	use type Ada.Containers.Count_Type;
 	use type Ada.Strings.Unbounded.Unbounded_String;
@@ -58,18 +59,79 @@ procedure run_acats is
 		Shell_Execute ("ln -s " & Source & " " & Destination);
 	end Symbolic_Link;
 	
+	procedure Sorted_Search (
+		Directory : in String;
+		Pattern : in String;
+		Filter : in Ada.Directories.Filter_Type;
+		Process : not null access procedure (
+			Directory_Entry : Ada.Directories.Directory_Entry_Type))
+	is
+		type Directory_Entry_Access is
+			access Ada.Directories.Directory_Entry_Type;
+		package Entry_Maps is
+			new Ada.Containers.Indefinite_Ordered_Maps (
+				String,
+				Directory_Entry_Access);
+		Entries : Entry_Maps.Map;
+	begin
+		declare -- make entries
+			Search : Ada.Directories.Search_Type;
+		begin
+			Ada.Directories.Start_Search (
+				Search,
+				Directory => Directory,
+				Pattern => Pattern,
+				Filter => Filter);
+			while Ada.Directories.More_Entries (Search) loop
+				declare
+					New_Entry : constant not null Directory_Entry_Access :=
+						new Ada.Directories.Directory_Entry_Type;
+				begin
+					Ada.Directories.Get_Next_Entry (Search, New_Entry.all);
+					Entry_Maps.Insert (
+						Entries,
+						Ada.Directories.Simple_Name (New_Entry.all),
+						New_Entry);
+				end;
+			end loop;
+			Ada.Directories.End_Search (Search);
+		end;
+		declare -- iterate sorted entries
+			procedure Do_Process (Position : in Entry_Maps.Cursor) is
+			begin
+				Process (Entry_Maps.Element (Position).all);
+			end Do_Process;
+		begin
+			Entry_Maps.Iterate (Entries, Process => Do_Process'Access);
+		end;
+		declare -- cleanup
+			procedure Cleanup (Position : in Entry_Maps.Cursor) is
+				procedure Update (
+					Unused_Key : in String;
+					Element : in out Directory_Entry_Access)
+				is
+					procedure Free is
+						new Ada.Unchecked_Deallocation (
+							Ada.Directories.Directory_Entry_Type,
+							Directory_Entry_Access);
+				begin
+					Free (Element);
+				end Update;
+			begin
+				Entry_Maps.Update_Element (Entries, Position,
+					Process => Update'Access);
+			end Cleanup;
+		begin
+			Entry_Maps.Iterate (Entries, Process => Cleanup'Access);
+		end;
+	end Sorted_Search;
+	
 	-- getting environment
 	
-	function Get_Prefix return String is
-	begin
-		if Ada.Environment_Variables.Exists ("TARGET") then
-			return Ada.Environment_Variables.Value ("TARGET") & "-";
-		else
-			return "";
-		end if;
-	end Get_Prefix;
-	
-	Prefix : constant String := Get_Prefix;
+	GCC_Prefix : constant String :=
+		Ada.Environment_Variables.Value ("GCCPREFIX", Default => "");
+	GCC_Suffix : constant String :=
+		Ada.Environment_Variables.Value ("GCCSUFFIX", Default => "");
 	
 	Start_Dir : constant String := Ada.Directories.Current_Directory;
 	
@@ -77,16 +139,8 @@ procedure run_acats is
 	Support_Dir : constant String := Ada.Environment_Variables.Value ("SUPPORTDIR");
 	Test_Dir : constant String := Ada.Environment_Variables.Value ("TESTDIR");
 	
-	function Get_RTS_Dir return String is
-	begin
-		if Ada.Environment_Variables.Exists ("RTSDIR") then
-			return Ada.Environment_Variables.Value ("RTSDIR");
-		else
-			return "";
-		end if;
-	end Get_RTS_Dir;
-	
-	RTS_Dir : constant String := Get_RTS_Dir;
+	RTS_Dir : constant String :=
+		Ada.Environment_Variables.Value ("RTSDIR", Default => "");
 	
 	--  test result
 	
@@ -328,7 +382,11 @@ procedure run_acats is
 		C : Integer;
 	begin
 		Shell_Execute ("./" & Executable, C);
-		Result.all := Test_Result'Val (C);
+		if C = 134 then -- SIGABORT in Linux
+			Result.all := Any_Exception;
+		else
+			Result.all := Test_Result'Val (C);
+		end if;
 		if Result.all /= Expected then
 			raise Test_Failure;
 		end if;
@@ -350,10 +408,11 @@ procedure run_acats is
 		Command : Ada.Strings.Unbounded.Unbounded_String;
 	begin
 		Ada.Strings.Unbounded.Append (Command, "gnatchop -w");
-		if Prefix /= "" then
+		if GCC_Prefix /= "" or else GCC_Suffix /= "" then
 			Ada.Strings.Unbounded.Append (Command, " --GCC=");
-			Ada.Strings.Unbounded.Append (Command, Prefix);
+			Ada.Strings.Unbounded.Append (Command, GCC_Prefix);
 			Ada.Strings.Unbounded.Append (Command, "gcc");
+			Ada.Strings.Unbounded.Append (Command, GCC_Suffix);
 		end if;
 		Ada.Strings.Unbounded.Append (Command, " ");
 		Ada.Strings.Unbounded.Append (Command, Name);
@@ -374,8 +433,10 @@ procedure run_acats is
 	procedure Compile_Only (Name : in String; Result : not null access Test_Result) is
 		Command : Ada.Strings.Unbounded.Unbounded_String;
 	begin
-		Ada.Strings.Unbounded.Append (Command, Prefix);
-		Ada.Strings.Unbounded.Append (Command, "gcc -c ");
+		Ada.Strings.Unbounded.Append (Command, GCC_Prefix);
+		Ada.Strings.Unbounded.Append (Command, "gcc");
+		Ada.Strings.Unbounded.Append (Command, GCC_Suffix);
+		Ada.Strings.Unbounded.Append (Command, " -c ");
 		Ada.Strings.Unbounded.Append (Command, Name);
 		Shell_Execute (+Command);
 	exception
@@ -397,7 +458,9 @@ procedure run_acats is
 	is
 		Command : Ada.Strings.Unbounded.Unbounded_String;
 	begin
+		Ada.Strings.Unbounded.Append (Command, GCC_Prefix);
 		Ada.Strings.Unbounded.Append (Command, "gnatmake");
+		Ada.Strings.Unbounded.Append (Command, GCC_Suffix);
 		if Support_Dir /= "" then
 			Ada.Strings.Unbounded.Append (Command, " -I../"); -- relative path from Test_Dir
 			Ada.Strings.Unbounded.Append (Command, Support_Dir);
@@ -598,7 +661,7 @@ procedure run_acats is
 		end return;
 	end Read_Expected_Table;
 	
-	Expected_Table : Expected_Tables.Map := Read_Expected_Table;
+	Expected_Table : constant Expected_Tables.Map := Read_Expected_Table;
 	
 	function Runtime_Expected_Result (Name : String) return Expected_Test_Result is
 	begin
@@ -640,13 +703,7 @@ procedure run_acats is
 		"<" => Ada.Strings.Less_Case_Insensitive,
 		"=" => Ada.Strings.Equal_Case_Insensitive);
 	
-	type Test_Style is (Legacy, Modern);
-	
-	procedure Test (
-		Directory : in String;
-		Name : in String;
-		Style : in Test_Style)
-	is
+	procedure Test (Directory : in String; Name : in String) is
 		In_Error_Class : constant Boolean := Is_Error_Class (Name);
 		Main : Ada.Strings.Unbounded.Unbounded_String;
 		Link_With : Ada.Strings.Unbounded.Unbounded_String;
@@ -696,9 +753,6 @@ procedure run_acats is
 							Accept_Error => In_Error_Class);
 					elsif Ada.Strings.Equal_Case_Insensitive (Extension, "tst") then
 						declare
-							Translated : constant String := Ada.Directories.Compose (
-								Name => Ada.Directories.Base_Name (Simple_Name),
-								Extension => "adt");
 							File : Ada.Text_IO.File_Type;
 						begin
 							Ada.Text_IO.Create (File, Name => "TSTTESTS.DAT");
@@ -747,7 +801,7 @@ procedure run_acats is
 		begin
 			Setup_Test_Dir;
 			Ada.Directories.Set_Directory (Test_Dir);
-			Ada.Directories.Search (
+			Sorted_Search (
 				Directory => Start_Dir & "/" & Directory,
 				Pattern => Name & "*",
 				Filter => (others => True),
@@ -939,7 +993,7 @@ procedure run_acats is
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "dep") -- implementation depending
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "tst") -- macro
 						then
-							Test (Directory, Test_Name, Legacy);
+							Test (Directory, Test_Name); -- legacy style test
 						elsif Ada.Strings.Equal_Case_Insensitive (Extension, "a")
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "am") -- main of multiple source
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "au") -- UTF-8
@@ -947,7 +1001,7 @@ procedure run_acats is
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "cbl") -- COBOL source
 							or else Ada.Strings.Equal_Case_Insensitive (Extension, "ftn") -- Fortran source
 						then
-							Test (Directory, Test_Name, Modern);
+							Test (Directory, Test_Name); -- modern style test
 						else
 							raise Unknown_Test with "unknown extension """ & Extension & """ of " & Simple_Name;
 						end if;
@@ -994,7 +1048,7 @@ procedure run_acats is
 					Process_File (Directory, Dir_Entry);
 				end Process;
 			begin
-				Ada.Directories.Search (
+				Sorted_Search (
 					Directory => Ada.Directories.Full_Name (Dir_Entry),
 					Pattern => "*",
 					Filter => (others => True),
@@ -1053,7 +1107,7 @@ begin
 		when Ada.Text_IO.Name_Error => null;
 	end;
 	Ada.Text_IO.Create (Report_File, Name => Report_File_Name);
-	Ada.Directories.Search (
+	Sorted_Search (
 		Directory => ACATS_Dir,
 		Pattern => "*",
 		Filter => (Ada.Directories.Directory => True, others => False),

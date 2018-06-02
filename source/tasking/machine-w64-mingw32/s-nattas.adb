@@ -31,7 +31,9 @@ package body System.Native_Tasks is
    NtQueryInformationThread_Name : constant C.char_array (0 .. 24) :=
       "NtQueryInformationThread" & C.char'Val (0);
 
-   Installed_Abort_Handler : Abort_Handler := null;
+   procedure Nop is null;
+
+   Installed_Abort_Handler : not null Abort_Handler := Nop'Access;
 
    --  implementation of thread
 
@@ -59,7 +61,7 @@ package body System.Native_Tasks is
       Result : aliased out Result_Type;
       Error : out Boolean)
    is
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
       Error := False;
       if Current_Abort_Event /= null then
@@ -67,20 +69,21 @@ package body System.Native_Tasks is
             Handles : aliased array (0 .. 1) of aliased C.winnt.HANDLE :=
                (Handle, Synchronous_Objects.Handle (Current_Abort_Event.all));
          begin
-            R := C.winbase.WaitForMultipleObjects (
-               2,
-               Handles (0)'Access,
-               0,
-               C.winbase.INFINITE);
-            if R /= C.winbase.WAIT_OBJECT_0 + 1 then
+            Signaled :=
+               C.winbase.WaitForMultipleObjects (
+                  2,
+                  Handles (0)'Access,
+                  0,
+                  C.winbase.INFINITE);
+            if Signaled /= C.winbase.WAIT_OBJECT_0 + 1 then
                goto Done;
             end if;
             Installed_Abort_Handler.all; -- may abort child tasks
          end;
       end if;
-      R := C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE);
+      Signaled := C.winbase.WaitForSingleObject (Handle, C.winbase.INFINITE);
    <<Done>>
-      case R is
+      case Signaled is
          when C.winbase.WAIT_OBJECT_0 =>
             if C.winbase.GetExitCodeThread (Handle, Result'Access) =
                C.windef.FALSE
@@ -130,10 +133,9 @@ package body System.Native_Tasks is
          declare
             TBI : aliased struct_THREAD_BASIC_INFORMATION;
             ReturnLength : aliased C.windef.ULONG;
-            Status : C.winternl.NTSTATUS;
-            pragma Unreferenced (Status);
+            Dummy_Status : C.winternl.NTSTATUS;
          begin
-            Status := NtQueryInformationThread (
+            Dummy_Status := NtQueryInformationThread (
                Handle,
                C.winternl.ThreadBasicInformation,
                C.windef.LPVOID (TBI'Address),
@@ -153,7 +155,7 @@ package body System.Native_Tasks is
 
    procedure Uninstall_Abort_Handler is
    begin
-      Installed_Abort_Handler := null;
+      Installed_Abort_Handler := Nop'Access;
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (

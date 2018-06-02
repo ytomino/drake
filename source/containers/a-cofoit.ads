@@ -103,8 +103,9 @@ private
    type State_Type is (First, Next, No_Element);
    pragma Discard_Names (State_Type);
 
-   type Iterator is limited new Finalization.Limited_Controlled
-      and Iterator_Interfaces.Forward_Iterator with
+   type Iterator is
+      limited new Finalization.Limited_Controlled
+         and Iterator_Interfaces.Forward_Iterator with
    record
       Last_Input_Cursor : Input_Cursor;
       Last : Node_Access;

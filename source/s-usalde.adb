@@ -27,8 +27,6 @@ package body System.Unbounded_Stack_Allocators.Debug is
          Last := Last + S'Length;
          Buffer (First .. Last) := S;
       end Put;
-      Header_Size : constant Storage_Elements.Storage_Count :=
-         Block'Size / Standard'Storage_Unit;
    begin
       Termination.Error_Put_Line ("Secondary Stack:");
       declare
@@ -81,9 +79,9 @@ package body System.Unbounded_Stack_Allocators.Debug is
             Put (Buffer, Last, " (");
             declare
                Space : constant Storage_Elements.Storage_Count :=
-                  BA_Conv.To_Pointer (I).Limit - (I + Header_Size);
+                  Size (I);
                Used : constant Storage_Elements.Storage_Count :=
-                  BA_Conv.To_Pointer (I).Used - (I + Header_Size);
+                  Used_Size (I);
                Percentage : constant Storage_Elements.Storage_Count :=
                   (Used * 100 + Space - 1) / Space;
             begin
@@ -92,7 +90,7 @@ package body System.Unbounded_Stack_Allocators.Debug is
                   Buffer (Last + 1 .. Buffer'Last),
                   Last,
                   Width => 3,
-                  Padding => ' ',
+                  Fill => ' ',
                   Error => Error);
             end;
             Put (Buffer, Last, "%)");

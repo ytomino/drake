@@ -12,6 +12,28 @@ package body System.Val_WChar is
 
    subtype Word_Unsigned is Long_Long_Integer_Types.Word_Unsigned;
 
+   procedure Get_Named (
+      S : String;
+      Value : out Wide_Character;
+      Error : out Boolean);
+   procedure Get_Named (
+      S : String;
+      Value : out Wide_Character;
+      Error : out Boolean) is
+   begin
+      if S = Img_WChar.Image_ad then
+         Value := Wide_Character'Val (16#ad#);
+         Error := False;
+      else
+         declare
+            C : Character;
+         begin
+            Val_Char.Get_Named (S, C, Error);
+            Value := Wide_Character'Val (Character'Pos (C));
+         end;
+      end if;
+   end Get_Named;
+
    --  implementation
 
    function Value_Wide_Character (Str : String; EM : WC_Encoding_Method)
@@ -177,23 +199,5 @@ package body System.Val_WChar is
          return Uninitialized;
       end;
    end Value_Wide_Wide_Character;
-
-   procedure Get_Named (
-      S : String;
-      Value : out Wide_Character;
-      Error : out Boolean) is
-   begin
-      if S = Img_WChar.Image_ad then
-         Value := Wide_Character'Val (16#ad#);
-         Error := False;
-      else
-         declare
-            C : Character;
-         begin
-            Val_Char.Get_Named (S, C, Error);
-            Value := Wide_Character'Val (Character'Pos (C));
-         end;
-      end if;
-   end Get_Named;
 
 end System.Val_WChar;

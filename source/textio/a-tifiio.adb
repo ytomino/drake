@@ -6,35 +6,37 @@ package body Ada.Text_IO.Fixed_IO is
 
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field);
    procedure Put_To_Field (
       To : out String;
-      Last : out Natural;
+      Fore_Last, Last : out Natural;
       Item : Num;
       Aft : Field;
       Exp : Field)
    is
+      Triming_Sign_Marks : constant System.Formatting.Sign_Marks :=
+         ('-', System.Formatting.No_Sign, System.Formatting.No_Sign);
       Aft_Width : constant Field := Field'Max (1, Aft);
    begin
       if Exp /= 0 then
          System.Formatting.Float.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width,
-            Exponent_Width => Exp - 1);
+            Exponent_Digits_Width => Exp - 1); -- excluding '.'
       else
          System.Formatting.Fixed.Image (
             Long_Long_Float (Item),
             To,
+            Fore_Last,
             Last,
-            Zero_Sign => System.Formatting.No_Sign,
-            Plus_Sign => System.Formatting.No_Sign,
+            Signs => Triming_Sign_Marks,
             Aft_Width => Aft_Width);
       end if;
    end Put_To_Field;
@@ -125,12 +127,13 @@ package body Ada.Text_IO.Fixed_IO is
       S : String (
          1 ..
          Integer'Max (Num'Width, Long_Long_Float'Width) + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (
          File, -- checking the predicate
-         S (1 .. Last), Fore + Aft + Exp + 1);
+         S (1 .. Last),
+         Last - Fore_Last + Fore);
    end Put;
 
    procedure Put (
@@ -170,9 +173,9 @@ package body Ada.Text_IO.Fixed_IO is
       S : String (
          1 ..
          Integer'Max (Num'Width, Long_Long_Float'Width) + Aft + Exp);
-      Last : Natural;
+      Fore_Last, Last : Natural;
    begin
-      Put_To_Field (S, Last, Item, Aft, Exp);
+      Put_To_Field (S, Fore_Last, Last, Item, Aft, Exp);
       Formatting.Tail (To, S (1 .. Last));
    end Put;
 

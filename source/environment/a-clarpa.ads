@@ -28,7 +28,7 @@ private package Ada.Command_Line.Argument_Parsing is
    type Option_Character is (
       ' ', -- without value
       ':', -- with value by no space or space
-      '?'); -- with value by no space (ex. -M50% --prefix=/usr/local)
+      '?'); -- with value by no space (e.g. -M50% --prefix=/usr/local)
 
    function Is_Option (
       Argument : String;
@@ -103,9 +103,7 @@ private
       Index => 0,
       Option_Index => 0);
 
-   type Argument_Iterator is
-      limited -- new Forward_Iterator with
-   record
+   type Argument_Iterator is limited record -- new Forward_Iterator with
       First : Cursor;
    end record;
    pragma Suppress_Initialization (Argument_Iterator);

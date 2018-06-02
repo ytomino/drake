@@ -173,8 +173,10 @@ package body System.Native_Processes is
                LPWSTR_ptr_Conv.To_Pointer (Wide_Startup.wargv)
                + C.ptrdiff_t (I);
          begin
-            Additional_Length := Additional_Length
-               + C.string.wcslen (P.all) + 3; -- space and a pair of '"'
+            Additional_Length :=
+               Additional_Length
+               + C.string.wcslen (P.all)
+               + 3; -- space and a pair of '"'
          end;
       end loop;
       if Command = null then
@@ -257,7 +259,10 @@ package body System.Native_Processes is
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
-      case C.winbase.WaitForSingleObject (Child.Handle, Milliseconds) is
+      case C.winbase.WaitForSingleObject (
+         C.winnt.HANDLE (Child),
+         Milliseconds)
+      is
          when C.winbase.WAIT_OBJECT_0 =>
             declare
                Max : constant := C.windef.DWORD'Modulus / 2; -- 2 ** 31
@@ -266,14 +271,15 @@ package body System.Native_Processes is
             begin
                Success :=
                   C.winbase.GetExitCodeProcess (
-                     Child.Handle,
+                     C.winnt.HANDLE (Child),
                      Exit_Code'Access);
-               if C.winbase.CloseHandle (Child.Handle) = C.windef.FALSE
+               if C.winbase.CloseHandle (C.winnt.HANDLE (Child)) =
+                     C.windef.FALSE
                   or else Success = C.windef.FALSE
                then
                   Raise_Exception (Use_Error'Identity);
                end if;
-               Child.Handle := C.winbase.INVALID_HANDLE_VALUE;
+               Child := Null_Process;
                --  status code
                if Exit_Code < Max then
                   Status := Ada.Command_Line.Exit_Status (Exit_Code);
@@ -294,7 +300,7 @@ package body System.Native_Processes is
 
    function Is_Open (Child : Process) return Boolean is
    begin
-      return Child.Handle /= C.winbase.INVALID_HANDLE_VALUE;
+      return C.winnt.HANDLE (Child) /= C.winbase.INVALID_HANDLE_VALUE;
    end Is_Open;
 
    procedure Create (
@@ -397,7 +403,7 @@ package body System.Native_Processes is
          if C.winbase.CloseHandle (Process_Info.hThread) = C.windef.FALSE then
             Raise_Exception (Use_Error'Identity);
          end if;
-         Child.Handle := Process_Info.hProcess;
+         Child := Process (Process_Info.hProcess);
       end if;
    end Create;
 
@@ -427,11 +433,11 @@ package body System.Native_Processes is
 
    procedure Close (Child : in out Process) is
    begin
-      if Child.Handle /= C.winbase.INVALID_HANDLE_VALUE then
+      if Is_Open (Child) then
          declare
             Success : C.windef.WINBOOL;
          begin
-            Success := C.winbase.CloseHandle (Child.Handle);
+            Success := C.winbase.CloseHandle (C.winnt.HANDLE (Child));
             pragma Check (Debug,
                Check =>
                   Success /= C.windef.FALSE
@@ -463,10 +469,12 @@ package body System.Native_Processes is
       Wait (Child, 0, Terminated => Terminated, Status => Status);
    end Wait_Immediate;
 
-   procedure Forced_Abort_Process (Child : in out Process) is
+   procedure Forced_Abort_Process (Child : Process) is
       Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
    begin
-      if C.winbase.TerminateProcess (Child.Handle, Code) = C.windef.FALSE then
+      if C.winbase.TerminateProcess (C.winnt.HANDLE (Child), Code) =
+         C.windef.FALSE
+      then
          declare
             Exit_Code : aliased C.windef.DWORD;
          begin
@@ -474,7 +482,7 @@ package body System.Native_Processes is
             if not (
                C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
                and then C.winbase.GetExitCodeProcess (
-                     Child.Handle,
+                     C.winnt.HANDLE (Child),
                      Exit_Code'Access) /=
                   C.windef.FALSE
                and then Exit_Code /= C.winbase.STILL_ACTIVE)
@@ -494,7 +502,7 @@ package body System.Native_Processes is
       --  unimplemented, should use ShellExecute
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (Process, Close);
-      P : aliased Process := (others => <>);
+      P : aliased Process := Null_Process;
    begin
       Holder.Assign (P);
       Create (P, Command,

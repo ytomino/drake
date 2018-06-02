@@ -18,22 +18,34 @@ Such files have inherited their original licenses.
   * ``source/nls/machine-apple-darwin/c-icucore.ads`` \
     (translated from the header files of ICU)
   
-* MT19937_ and SFMT_, distributed under `BSD-like LICENSE.txt`__
+* MT19937_, SFMT_, and dSFMT_, distributed under `BSD-like LICENSE.txt`__
   
+  * ``examples/random_dsfmt.adb`` \
+    (translated from ``test.c`` of dSFMT)
   * ``examples/random_mt19937.adb`` \
     (translated from ``mtTest.c`` of MT19937)
   * ``examples/random_sfmt.adb`` \
     (translated from ``test.c`` of SFMT)
+  * ``source/numerics/a-nuds19.ads`` \
+    (translated from ``dSFMT-params19937.h``)
+  * ``source/numerics/a-nuds21.ads`` \
+    (translated from ``dSFMT-params216091.h``)
+  * ``source/numerics/a-numdsf.ads``, ``source/numerics/a-numdsf.adb``
+    (translated from ``dSFMT.h``, ``dSFMT-params.h``, ``dSFMT.c``)
   * ``source/numerics/a-nummt1.ads``, ``a-nummt1.adb`` \
     (translated from ``mt19937ar.h``, ``mt19937ar.c``)
   * ``source/numerics/a-numsfm.ads``, ``source/numerics/a-numsfm.adb``
-    (translated from ``SFMT.c``)
+    (translated from ``SFMT.h``, ``SFMT.c``)
   * ``source/numerics/a-nusf19.ads`` \
     (translated from ``SFMT-params19937.h``)
   * ``source/numerics/a-nusf21.ads`` \
     (translated from ``SFMT-params216091.h``)
+  * ``source/numerics/generic/a-nudsge.ads``, ``a-nudsge.adb``
+    (translated from ``dSFMT-common.h``)
   * ``source/numerics/generic/a-nusfge.ads``, ``a-nusfge.adb``
     (translated from ``SFMT-common.h``)
+  * ``source/numerics/x86_64/a-nudsge.ads``, ``a-nudsge.adb``
+    (translated from ``dSFMT-common.h``)
   * ``source/numerics/x86_64/a-nusfge.ads``, ``a-nusfge.adb``
     (translated from ``SFMT-sse2.h``)
   
@@ -64,6 +76,7 @@ __ `MT LICENSE.txt`_
 .. _`ICU License`: http://www.unicode.org/copyright.html#License
 .. _MT19937: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
 .. _SFMT: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/
+.. _dSFMT: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/#dSFMT
 .. _`MT LICENSE.txt`: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/LICENSE.txt
 .. _MurmurHash3: https://github.com/aappleby/smhasher
 .. _XNU: https://opensource.apple.com/

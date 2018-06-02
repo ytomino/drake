@@ -107,6 +107,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Re);
+      pragma Inline_Always (Re_Body);
    begin
       return Re_Body (X);
    end Re;
@@ -119,6 +120,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Im);
+      pragma Inline_Always (Im_Body);
    begin
       return Im_Body (X);
    end Im;
@@ -131,6 +133,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Set_Re);
+      pragma Inline_Always (Set_Re_Body);
    begin
       Set_Re_Body (X, Re);
    end Set_Re;
@@ -143,6 +146,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Set_Im);
+      pragma Inline_Always (Set_Im_Body);
    begin
       Set_Im_Body (X, Im);
    end Set_Im;
@@ -155,6 +159,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Compose_From_Cartesian);
+      pragma Inline_Always (Compose_From_Cartesian_Body);
    begin
       return Compose_From_Cartesian_Body (Re);
    end Compose_From_Cartesian;
@@ -171,6 +176,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Compose_From_Cartesian);
+      pragma Inline_Always (Compose_From_Cartesian_Body);
    begin
       return Compose_From_Cartesian_Body (Re, Im);
    end Compose_From_Cartesian;
@@ -183,6 +189,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Modulus);
+      pragma Inline_Always (Modulus_Body);
    begin
       return Modulus_Body (X);
    end Modulus;
@@ -195,6 +202,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Argument);
+      pragma Inline_Always (Argument_Body);
    begin
       return Argument_Body (X);
    end Argument;
@@ -210,6 +218,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Vector,
             Argument);
+      pragma Inline_Always (Argument_Body);
    begin
       return Argument_Body (X, Cycle);
    end Argument;
@@ -226,6 +235,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Compose_From_Polar);
+      pragma Inline_Always (Compose_From_Polar_Body);
    begin
       return Compose_From_Polar_Body (Modulus, Argument);
    end Compose_From_Polar;
@@ -243,6 +253,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Compose_From_Polar);
+      pragma Inline_Always (Compose_From_Polar_Body);
    begin
       return Compose_From_Polar_Body (Modulus, Argument, Cycle);
    end Compose_From_Polar;
@@ -260,6 +271,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "-");
+      pragma Inline_Always (neg_Body);
    begin
       return neg_Body (Right);
    end "-";
@@ -272,6 +284,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Conjugate);
+      pragma Inline_Always (Conjugate_Body);
    begin
       return Conjugate_Body (X);
    end Conjugate;
@@ -286,6 +299,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -300,6 +314,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -313,6 +328,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Vector,
             Complex,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -325,6 +341,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Zero => 0.0,
             Sqrt => Elementary_Functions.Sqrt);
+      pragma Inline_Always (abs_Body);
    begin
       return abs_Body (Right);
    end "abs";
@@ -347,6 +364,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -363,6 +381,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -379,6 +398,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -392,6 +412,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Vector,
             Complex,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -405,6 +426,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real_Vector,
             Complex,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -426,6 +448,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -453,6 +476,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -475,6 +499,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0),
             One => (Re => 1.0, Im => 0.0));
+      pragma Inline_Always (Unit_Vector_Body);
    begin
       return Unit_Vector_Body (Index, Order, First);
    end Unit_Vector;
@@ -487,6 +512,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Re);
+      pragma Inline_Always (Re_Body);
    begin
       return Re_Body (X);
    end Re;
@@ -499,6 +525,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Im);
+      pragma Inline_Always (Im_Body);
    begin
       return Im_Body (X);
    end Im;
@@ -511,6 +538,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Set_Re);
+      pragma Inline_Always (Set_Re_Body);
    begin
       Set_Re_Body (X, Re);
    end Set_Re;
@@ -523,6 +551,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Set_Im);
+      pragma Inline_Always (Set_Im_Body);
    begin
       Set_Im_Body (X, Im);
    end Set_Im;
@@ -535,6 +564,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Compose_From_Cartesian);
+      pragma Inline_Always (Compose_From_Cartesian_Body);
    begin
       return Compose_From_Cartesian_Body (Re);
    end Compose_From_Cartesian;
@@ -551,6 +581,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Compose_From_Cartesian);
+      pragma Inline_Always (Compose_From_Cartesian_Body);
    begin
       return Compose_From_Cartesian_Body (Re, Im);
    end Compose_From_Cartesian;
@@ -563,6 +594,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Modulus);
+      pragma Inline_Always (Modulus_Body);
    begin
       return Modulus_Body (X);
    end Modulus;
@@ -575,6 +607,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Argument);
+      pragma Inline_Always (Argument_Body);
    begin
       return Argument_Body (X);
    end Argument;
@@ -590,6 +623,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real'Base,
             Real_Matrix,
             Argument);
+      pragma Inline_Always (Argument_Body);
    begin
       return Argument_Body (X, Cycle);
    end Argument;
@@ -606,6 +640,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Compose_From_Polar);
+      pragma Inline_Always (Compose_From_Polar_Body);
    begin
       return Compose_From_Polar_Body (Modulus, Argument);
    end Compose_From_Polar;
@@ -623,6 +658,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Compose_From_Polar);
+      pragma Inline_Always (Compose_From_Polar_Body);
    begin
       return Compose_From_Polar_Body (Modulus, Argument, Cycle);
    end Compose_From_Polar;
@@ -640,6 +676,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "-");
+      pragma Inline_Always (neg_Body);
    begin
       return neg_Body (Right);
    end "-";
@@ -652,6 +689,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Conjugate);
+      pragma Inline_Always (Conjugate_Body);
    begin
       return Conjugate_Body (X);
    end Conjugate;
@@ -659,6 +697,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    function Transpose (X : Complex_Matrix) return Complex_Matrix is
       function Transpose_Body is
          new Generic_Arrays.Transpose (Complex, Complex_Matrix);
+      pragma Inline_Always (Transpose_Body);
    begin
       return Transpose_Body (X);
    end Transpose;
@@ -673,6 +712,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -687,6 +727,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -701,6 +742,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -714,6 +756,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Vector,
             Complex,
             Complex_Matrix);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -730,6 +773,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -746,6 +790,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -768,6 +813,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "+");
+      pragma Inline_Always (add_Body);
    begin
       return add_Body (Left, Right);
    end "+";
@@ -784,6 +830,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -800,6 +847,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "-");
+      pragma Inline_Always (sub_Body);
    begin
       return sub_Body (Left, Right);
    end "-";
@@ -816,6 +864,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -832,6 +881,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -847,6 +897,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Vector,
             Complex,
             Complex_Matrix);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -862,6 +913,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Real_Vector,
             Complex,
             Complex_Matrix);
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -878,6 +930,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -894,6 +947,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -910,6 +964,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -926,6 +981,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Vector,
             Zero => (Re => 0.0, Im => 0.0));
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -947,6 +1003,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -974,6 +1031,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             "*");
+      pragma Inline_Always (mul_Body);
    begin
       return mul_Body (Left, Right);
    end "*";
@@ -1001,6 +1059,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex,
             Complex_Matrix,
             One => (Re => 1.0, Im => 0.0));
+      pragma Inline_Always (Inverse_Body);
    begin
       return Inverse_Body (A);
    end Inverse;
@@ -1012,6 +1071,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Matrix,
             Zero => (Re => 0.0, Im => 0.0),
             One => (Re => 1.0, Im => 0.0));
+         --  no inline, Determinant uses recursive calling
    begin
       return Determinant_Body (A);
    end Determinant;
@@ -1052,6 +1112,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Is_Minus => Is_Minus,
             Is_Small => Is_Small,
             To_Real => Re);
+      pragma Inline_Always (Eigensystem_Body);
    begin
       Eigensystem_Body (A, Values, Vectors);
    end Eigensystem;
@@ -1065,6 +1126,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
             Complex_Matrix,
             Zero => (Re => 0.0, Im => 0.0),
             One => (Re => 1.0, Im => 0.0));
+      pragma Inline_Always (Unit_Matrix_Body);
    begin
       return Unit_Matrix_Body (Order, First_1, First_2);
    end Unit_Matrix;

@@ -59,8 +59,17 @@ begin
 			end loop;
 			Ada.Text_IO.New_Line (Output);
 		end loop;
-		if R1 < 1 then
-			Ada.Text_IO.New_Line (Output);
-		end if;
+		Ada.Text_IO.New_Line (Output);
 	end loop;
+	for L in 0 .. 25 loop -- grayscale
+		declare
+			C : constant Ada.Text_IO.Terminal.Colors.Color :=
+				Ada.Text_IO.Terminal.Colors.To_Grayscale_Color (Float (L) / 25.0);
+		begin
+			Ada.Text_IO.Terminal.Colors.Set_Color (Output, Background => +C);
+			Ada.Text_IO.Put (Output, "  ");
+		end;
+	end loop;
+	Ada.Text_IO.Terminal.Colors.Reset_Color (Output);
+	Ada.Text_IO.New_Line;
 end tty_color;

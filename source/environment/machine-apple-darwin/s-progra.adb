@@ -25,7 +25,7 @@ package body System.Program is
             C.mach_o.dyld.NSGetExecutablePath (
                Buffer (0)'Access,
                Buffer_Length'Access);
-         pragma Assert (R = 0);
+         pragma Assert (not (R < 0));
          return Zero_Terminated_Strings.Value (
             Buffer (0)'Access,
             C.size_t (Buffer_Length - 1));

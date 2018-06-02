@@ -31,7 +31,7 @@ package body Ada.Directories is
             Item_First,
             Item_Last,
             Last);
-         Set : declare
+         declare
             Keyword : String
                renames Form (Keyword_First .. Keyword_Last);
             Item : String
@@ -51,7 +51,7 @@ package body Ada.Directories is
                   Overwrite := True; -- overwrite
                end if;
             end if;
-         end Set;
+         end;
       end loop;
       return Overwrite;
    end Pack_For_Copy_File;
@@ -135,14 +135,32 @@ package body Ada.Directories is
 
    --  directory and file operations
 
-   procedure Create_Directory (New_Directory : String; Form : String := "") is
+   procedure Create_Directory (
+      New_Directory : String;
+      Form : String)
+   is
       pragma Unreferenced (Form);
    begin
       System.Native_Directories.Create_Directory (New_Directory);
    end Create_Directory;
 
-   procedure Create_Path (New_Directory : String; Form : String := "") is
+   procedure Create_Directory (
+      New_Directory : String) is
+   begin
+      System.Native_Directories.Create_Directory (New_Directory);
+   end Create_Directory;
+
+   procedure Create_Path (
+      New_Directory : String;
+      Form : String)
+   is
       pragma Unreferenced (Form);
+   begin
+      Create_Path (New_Directory);
+   end Create_Path;
+
+   procedure Create_Path (
+      New_Directory : String) is
    begin
       if not Exists (New_Directory) then
          declare
@@ -295,8 +313,8 @@ package body Ada.Directories is
    is
       pragma Check (Pre,
          Check => not Is_Open (Search) or else raise Status_Error);
-      function Cast is new
-         Unchecked_Conversion (
+      function Cast is
+         new Unchecked_Conversion (
             Filter_Type,
             System.Native_Directories.Searching.Filter_Type);
       NC_Search : Non_Controlled_Search_Type

@@ -10,11 +10,11 @@ package System.Formatting is
    type Type_Set is (Lower_Case, Upper_Case); -- same as Text_IO.Type_Set
    pragma Discard_Names (Type_Set);
 
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Word_Unsigned;
       Base : Number_Base := 10)
       return Positive;
-   function Width (
+   function Digits_Width (
       Value : Long_Long_Integer_Types.Long_Long_Unsigned;
       Base : Number_Base := 10)
       return Positive;
@@ -31,7 +31,7 @@ package System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean);
 
    procedure Image (
@@ -41,7 +41,7 @@ package System.Formatting is
       Base : Number_Base := 10;
       Set : Type_Set := Upper_Case;
       Width : Positive := 1;
-      Padding : Character := '0';
+      Fill : Character := '0';
       Error : out Boolean);
 
    procedure Value (
@@ -65,9 +65,21 @@ package System.Formatting is
       Skip_Underscore : Boolean := False;
       Error : out Boolean);
 
+   --  sign marks, compatible with Ada.Formatting
+
+   type Sign_Marks is record
+      Minus, Zero, Plus : Character;
+   end record;
+   for Sign_Marks'Size use Character'Size * 4;
+   pragma Suppress_Initialization (Sign_Marks);
+
    No_Sign : constant Character := Character'Val (16#ff#);
 
+   --  Note: Literals of array of Character make undesirable static strings.
+   --  Literals of word-size record can be expected to be immediate values.
+
    --  utility
+
    procedure Fill_Padding (Item : out String; Pad : Character);
 
 end System.Formatting;

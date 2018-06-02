@@ -15,6 +15,21 @@ procedure ucd_casefolding is
 	begin
 		return Wide_Wide_Character'Value (Img);
 	end Value;
+	procedure Put_16 (Item : Integer) is
+		S : String (1 .. 8); -- "16#XXXX#"
+	begin
+		Put (S, Item, Base => 16);
+		S (1) := '1';
+		S (2) := '6';
+		S (3) := '#';
+		for I in reverse 4 .. 6 loop
+			if S (I) = '#' then
+				S (4 .. I) := (others => '0');
+				exit;
+			end if;
+		end loop;
+		Put (S);
+	end Put_16;
 	package CF_Maps is
 		new Ada.Containers.Ordered_Maps (
 			Wide_Wide_Character,
@@ -342,11 +357,8 @@ begin
 											Put ("1 => ");
 										end if;
 										Put ("(");
-										Put (
-											Integer'(Wide_Wide_Character'Pos (Key (I))) - Offset,
-											Base => 16,
-											Width => 8, -- 16#XXXX#
-											Padding => '0');
+										Put_16 (
+											Wide_Wide_Character'Pos (Key (I)) - Offset);
 										Put (", ");
 										if Compressed then
 											Put (Item_RLE, Width => 1);
@@ -363,11 +375,10 @@ begin
 												if J > 1 then
 													Put (", ");
 												end if;
-												Put (
-													Integer'(Wide_Wide_Character'Pos (Element (Element (I), J))) - Offset,
-													Base => 16,
-													Width => 8, -- 16#XXXX#
-													Padding => '0');
+												Put_16 (
+													Wide_Wide_Character'Pos (
+														Element (Element (I), J))
+													- Offset);
 											end loop;
 											if L > 1 then
 												Put (")");

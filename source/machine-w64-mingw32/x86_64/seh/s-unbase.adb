@@ -35,8 +35,7 @@ package body Separated is
       Item : aliased out Tracebacks_Array;
       Last : out Natural;
       Exclude_Min : Address;
-      Exclude_Max : Address;
-      Skip_Frames : Natural)
+      Exclude_Max : Address)
    is
       context : aliased C.winnt.CONTEXT;
       history : aliased C.winnt.UNWIND_HISTORY_TABLE := (
@@ -45,7 +44,6 @@ package body Separated is
          LowAddress => <>,
          HighAddress => <>,
          F_Entry => (others => <>));
-      Skip : Natural;
    begin
       pragma Check (Trace, Ada.Debug.Put ("start"));
       --  Get the context.
@@ -56,7 +54,6 @@ package body Separated is
          0,
          C.winnt.UNWIND_HISTORY_TABLE'Size / Standard'Storage_Unit);
       Last := Tracebacks_Array'First - 1;
-      Skip := Skip_Frames;
       loop
          declare
             RuntimeFunction : C.winnt.PRUNTIME_FUNCTION;
@@ -102,13 +99,10 @@ package body Separated is
             end if;
             --  0 means bottom of the stack.
             exit when System'To_Address (context.Rip) = Null_Address;
-            if Skip > 0 then
-               Skip := Skip - 1;
-               pragma Check (Trace, Ada.Debug.Put ("skip"));
-            elsif System'To_Address (context.Rip) >= Exclude_Min
+            if System'To_Address (context.Rip) >= Exclude_Min
                and then System'To_Address (context.Rip) <= Exclude_Max
             then
-               Skip := 0; -- end of skip
+               Last := Tracebacks_Array'First - 1; -- reset
                pragma Check (Trace, Ada.Debug.Put ("exclude"));
             else
                Last := Last + 1;

@@ -27,20 +27,22 @@ procedure random_sfmt is
 	package Unsigned_32_IO is new Ada.Text_IO.Modular_IO (Unsigned_32);
 	package Unsigned_64_IO is new Ada.Text_IO.Modular_IO (Unsigned_64);
 	
-	function Hex_Image is new Ada.Formatting.Modular_Image (
-		Unsigned_32,
-		Form => Ada.Formatting.Simple,
-		Signs => Ada.Formatting.Triming_Unsign_Marks,
-		Base => 16,
-		Set => Ada.Formatting.Lower_Case,
-		Width => 8);
-	function Hex_Image is new Ada.Formatting.Modular_Image (
-		Unsigned_64,
-		Form => Ada.Formatting.Simple,
-		Signs => Ada.Formatting.Triming_Unsign_Marks,
-		Base => 16,
-		Set => Ada.Formatting.Lower_Case,
-		Width => 8);
+	function Hex_Image is
+		new Ada.Formatting.Modular_Image (
+			Unsigned_32,
+			Form => Ada.Formatting.Simple,
+			Signs => Ada.Formatting.Triming_Unsign_Marks,
+			Base => 16,
+			Set => Ada.Formatting.Lower_Case,
+			Digits_Width => 8);
+	function Hex_Image is
+		new Ada.Formatting.Modular_Image (
+			Unsigned_64,
+			Form => Ada.Formatting.Simple,
+			Signs => Ada.Formatting.Triming_Unsign_Marks,
+			Base => 16,
+			Set => Ada.Formatting.Lower_Case,
+			Digits_Width => 8);
 	
 	Gen : aliased Generator;
 	

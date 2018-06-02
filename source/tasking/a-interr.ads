@@ -58,6 +58,11 @@ package Ada.Interrupts is
       Interrupt : Interrupt_Id);
    pragma Inline (Unchecked_Exchange_Handler);
 
+   --  extended
+   --  Unchecked version of Detach_Handler.
+   procedure Unchecked_Detach_Handler (Interrupt : Interrupt_Id);
+   pragma Inline (Unchecked_Detach_Handler);
+
 --  function Reference (Interrupt : Interrupt_Id) return System.Address;
 
 --  function Get_CPU (Interrupt : Interrupt_Id)

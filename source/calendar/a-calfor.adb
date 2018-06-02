@@ -658,7 +658,7 @@ package body Ada.Calendar.Formatting is
          if Error then
             raise Constraint_Error;
          end if;
-         Sub_Second := Duration (Sub_Second_I) / 10 ** (Last - P);
+         Sub_Second := Duration (Sub_Second_I) / Positive'(10 ** (Last - P));
       else
          Sub_Second := 0.0;
       end if;

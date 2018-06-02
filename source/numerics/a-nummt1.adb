@@ -3,23 +3,23 @@ with System.Storage_Elements;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
 package body Ada.Numerics.MT19937 is
+   use type Interfaces.Unsigned_32;
    use type System.Storage_Elements.Storage_Count;
-   use type Cardinal;
 
    subtype Word_Unsigned is System.Long_Long_Integer_Types.Word_Unsigned;
 
-   MATRIX_A : constant Cardinal := 16#9908b0df#;
-   UPPER_MASK : constant Cardinal := 2 ** (Cardinal'Size - 1);
-   LOWER_MASK : constant Cardinal := not UPPER_MASK;
+   MATRIX_A : constant := 16#9908b0df#;
+   UPPER_MASK : constant := 16#80000000#; -- 2 ** (32 - 1)
+   LOWER_MASK : constant := 16#7fffffff#; -- not UPPER_MASK
 
    --  implementation
 
-   function Random_32 (Gen : aliased in out Generator) return Cardinal is
+   function Random_32 (Gen : aliased in out Generator) return Unsigned_32 is
       pragma Suppress (Index_Check);
       pragma Suppress (Range_Check);
-      mag01 : constant array (Cardinal range 0 .. 1) of Cardinal :=
+      mag01 : constant array (Unsigned_32 range 0 .. 1) of Unsigned_32 :=
          (0, MATRIX_A);
-      y : Cardinal;
+      y : Unsigned_32;
       S : State
          renames Gen.State;
    begin
@@ -59,12 +59,12 @@ package body Ada.Numerics.MT19937 is
       return (State => Initialize);
    end Initialize;
 
-   function Initialize (Initiator : Cardinal) return Generator is
+   function Initialize (Initiator : Unsigned_32) return Generator is
    begin
       return (State => Initialize (Initiator));
    end Initialize;
 
-   function Initialize (Initiator : Cardinal_Vector) return Generator is
+   function Initialize (Initiator : Unsigned_32_Array) return Generator is
    begin
       return (State => Initialize (Initiator));
    end Initialize;
@@ -76,11 +76,11 @@ package body Ada.Numerics.MT19937 is
 
    procedure Reset (Gen : in out Generator; Initiator : Integer) is
    begin
-      Gen.State := Initialize (Cardinal'Mod (Initiator));
+      Gen.State := Initialize (Unsigned_32'Mod (Initiator));
    end Reset;
 
    function Initialize return State is
-      Init : Cardinal_Vector (N_Range);
+      Init : Unsigned_32_Array_N;
    begin
       System.Random_Initiators.Get (
          Init'Address,
@@ -88,21 +88,21 @@ package body Ada.Numerics.MT19937 is
       return Initialize (Init);
    end Initialize;
 
-   function Initialize (Initiator : Cardinal) return State is
-      V : Cardinal := Initiator;
+   function Initialize (Initiator : Unsigned_32) return State is
+      V : Unsigned_32 := Initiator;
    begin
       return Result : State do
          Result.Vector (0) := V;
          for I in 1 .. (N - 1) loop
             V := 1812433253 * (V xor Interfaces.Shift_Right (V, 30))
-               + Cardinal (I);
+               + Unsigned_32 (I);
             Result.Vector (I) := V;
          end loop;
          Result.Condition := N;
       end return;
    end Initialize;
 
-   function Initialize (Initiator : Cardinal_Vector) return State is
+   function Initialize (Initiator : Unsigned_32_Array) return State is
       Initiator_Length : constant Natural := Initiator'Length;
       i : Integer := 1;
       j : Integer := 0;
@@ -111,12 +111,12 @@ package body Ada.Numerics.MT19937 is
          if Initiator_Length > 0 then
             for K in reverse 1 .. Integer'Max (N, Initiator_Length) loop
                declare
-                  P : constant Cardinal := Result.Vector (i - 1);
+                  P : constant Unsigned_32 := Result.Vector (i - 1);
                begin
                   Result.Vector (i) :=
                      (Result.Vector (i)
                         xor ((P xor Interfaces.Shift_Right (P, 30)) * 1664525))
-                     + Initiator (Initiator'First + j) + Cardinal (j);
+                     + Initiator (Initiator'First + j) + Unsigned_32 (j);
                end;
                i := i + 1;
                if i >= N then
@@ -127,13 +127,13 @@ package body Ada.Numerics.MT19937 is
             end loop;
             for K in reverse 1 .. (N - 1) loop
                declare
-                  P : constant Cardinal := Result.Vector (i - 1);
+                  P : constant Unsigned_32 := Result.Vector (i - 1);
                begin
                   Result.Vector (i) :=
                      (Result.Vector (i)
                         xor ((P xor Interfaces.Shift_Right (P, 30))
                            * 1566083941))
-                     - Cardinal (i);
+                     - Unsigned_32 (i);
                end;
                i := i + 1;
                if i >= N then
@@ -162,31 +162,29 @@ package body Ada.Numerics.MT19937 is
    end Reset;
 
    function Image (Of_State : State) return String is
-      procedure Hex (Result : in out String; Value : Cardinal);
-      procedure Hex (Result : in out String; Value : Cardinal) is
+      procedure Hex (Result : in out String; Value : Unsigned_32);
+      procedure Hex (Result : in out String; Value : Unsigned_32) is
          Error : Boolean;
          Last : Natural;
       begin
-         pragma Compile_Time_Error (
-            Standard'Word_Size < Cardinal'Size,
-            "word size < 32");
+         pragma Compile_Time_Error (Standard'Word_Size < 32, "word size < 32");
          System.Formatting.Image (
             Word_Unsigned (Value),
             Result,
             Last,
             Base => 16,
-            Width => Cardinal'Size / 4,
+            Width => 32 / 4,
             Error => Error);
          pragma Assert (not Error and then Last = Result'Last);
       end Hex;
       Last : Natural := 0;
    begin
       return Result : String (1 .. Max_Image_Width) do
-         for I in N_Range loop
+         for I in Unsigned_32_Array_N'Range loop
             declare
                Previous_Last : constant Natural := Last;
             begin
-               Last := Last + Cardinal'Size / 4;
+               Last := Last + 32 / 4;
                Hex (Result (Previous_Last + 1 .. Last), Of_State.Vector (I));
                Last := Last + 1;
                Result (Last) := ':';
@@ -197,8 +195,8 @@ package body Ada.Numerics.MT19937 is
    end Image;
 
    function Value (Coded_State : String) return State is
-      procedure Hex (Item : String; Value : out Cardinal);
-      procedure Hex (Item : String; Value : out Cardinal) is
+      procedure Hex (Item : String; Value : out Unsigned_32);
+      procedure Hex (Item : String; Value : out Unsigned_32) is
          Last : Positive;
          Error : Boolean;
       begin
@@ -218,11 +216,11 @@ package body Ada.Numerics.MT19937 is
          raise Constraint_Error;
       end if;
       return Result : State do
-         for I in N_Range loop
+         for I in Unsigned_32_Array_N'Range loop
             declare
                Previous_Last : constant Natural := Last;
             begin
-               Last := Last + Cardinal'Size / 4;
+               Last := Last + 32 / 4;
                Hex (
                   Coded_State (Previous_Last + 1 .. Last), Result.Vector (I));
                Last := Last + 1;
@@ -260,8 +258,8 @@ package body Ada.Numerics.MT19937 is
    function Random_53_0_To_Less_Than_1 (Gen : aliased in out Generator)
       return Uniformly_Distributed
    is
-      A : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 5);
-      B : constant Cardinal := Interfaces.Shift_Right (Random_32 (Gen), 6);
+      A : constant Unsigned_32 := Interfaces.Shift_Right (Random_32 (Gen), 5);
+      B : constant Unsigned_32 := Interfaces.Shift_Right (Random_32 (Gen), 6);
       Float_A : constant Long_Long_Float := Uniformly_Distributed'Base (A);
       Float_B : constant Long_Long_Float := Uniformly_Distributed'Base (B);
    begin

@@ -21,8 +21,4 @@ package notb is
       with Export, -- for weak linking
          Convention => Ada, External_Name => "__drake_backtrace_information";
 
-   procedure Report_Backtrace (X : System.Unwind.Exception_Occurrence) is null
-      with Export, -- for weak linking
-         Convention => Ada, External_Name => "__drake_report_backtrace";
-
 end notb;

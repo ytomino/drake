@@ -113,17 +113,18 @@ package body System.Synchronous_Objects is
       Object : in out Condition_Variable;
       Mutex : in out Synchronous_Objects.Mutex)
    is
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
       atomic_add_fetch (Object.Waiters'Access, 1);
-      R := C.winbase.SignalObjectAndWait (
-         hObjectToSignal => Mutex.Handle,
-         hObjectToWaitOn => Object.Event.Handle,
-         dwMilliseconds => C.winbase.INFINITE,
-         bAlertable => 0);
+      Signaled :=
+         C.winbase.SignalObjectAndWait (
+            hObjectToSignal => Mutex.Handle,
+            hObjectToWaitOn => Object.Event.Handle,
+            dwMilliseconds => C.winbase.INFINITE,
+            bAlertable => 0);
       pragma Check (Debug,
          Check =>
-            R = C.winbase.WAIT_OBJECT_0
+            Signaled = C.winbase.WAIT_OBJECT_0
             or else Debug.Runtime_Error ("SignalObjectAndWait failed"));
       if atomic_sub_fetch (Object.Waiters'Access, 1) = 0 then
          Reset (Object.Event);
@@ -327,15 +328,15 @@ package body System.Synchronous_Objects is
    end Finalize;
 
    function Get (Object : Event) return Boolean is
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
-      R := C.winbase.WaitForSingleObject (Object.Handle, 0);
+      Signaled := C.winbase.WaitForSingleObject (Object.Handle, 0);
       pragma Check (Debug,
          Check =>
-            R = C.winbase.WAIT_OBJECT_0
-            or else R = C.winerror.WAIT_TIMEOUT
+            Signaled = C.winbase.WAIT_OBJECT_0
+            or else Signaled = C.winerror.WAIT_TIMEOUT
             or else Debug.Runtime_Error ("WaitForSingleObject failed"));
-      return R = C.winbase.WAIT_OBJECT_0;
+      return Signaled = C.winbase.WAIT_OBJECT_0;
    end Get;
 
    procedure Set (Object : in out Event) is
@@ -361,12 +362,13 @@ package body System.Synchronous_Objects is
    procedure Wait (
       Object : in out Event)
    is
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
-      R := C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE);
+      Signaled :=
+         C.winbase.WaitForSingleObject (Object.Handle, C.winbase.INFINITE);
       pragma Check (Debug,
          Check =>
-            R = C.winbase.WAIT_OBJECT_0
+            Signaled = C.winbase.WAIT_OBJECT_0
             or else Debug.Runtime_Error ("WaitForSingleObject failed"));
    end Wait;
 
@@ -377,15 +379,15 @@ package body System.Synchronous_Objects is
    is
       Milliseconds : constant C.windef.DWORD :=
          C.windef.DWORD (Duration'Max (0.0, Timeout) * 1_000);
-      R : C.windef.DWORD;
+      Signaled : C.windef.DWORD;
    begin
-      R := C.winbase.WaitForSingleObject (Object.Handle, Milliseconds);
+      Signaled := C.winbase.WaitForSingleObject (Object.Handle, Milliseconds);
       pragma Check (Debug,
          Check =>
-            R = C.winbase.WAIT_OBJECT_0
-            or else R = C.winerror.WAIT_TIMEOUT
+            Signaled = C.winbase.WAIT_OBJECT_0
+            or else Signaled = C.winerror.WAIT_TIMEOUT
             or else Debug.Runtime_Error ("WaitForSingleObject failed"));
-      Value := R = C.winbase.WAIT_OBJECT_0;
+      Value := Signaled = C.winbase.WAIT_OBJECT_0;
    end Wait;
 
    function Handle (Object : Event) return C.winnt.HANDLE is

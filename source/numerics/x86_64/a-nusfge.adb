@@ -93,7 +93,7 @@ package body Ada.Numerics.SFMT.Generating is
          mm_recursion (
             pstate_si (i),
             pstate_si (i),
-            pstate_si (i + POS1 - N),
+            pstate_si (i - (N - POS1)),
             r1,
             r2);
          r1 := r2;
@@ -134,7 +134,7 @@ package body Ada.Numerics.SFMT.Generating is
          mm_recursion (
             array_si (i),
             pstate_si (i),
-            array_si (i + POS1 - N),
+            array_si (i - (N - POS1)),
             r1,
             r2);
          r1 := r2;
@@ -146,7 +146,7 @@ package body Ada.Numerics.SFMT.Generating is
          mm_recursion (
             array_si (i),
             array_si (i - N),
-            array_si (i + POS1 - N),
+            array_si (i - (N - POS1)),
             r1,
             r2);
          r1 := r2;
@@ -154,15 +154,15 @@ package body Ada.Numerics.SFMT.Generating is
          i := i + 1;
       end loop;
       j := 0;
-      while j < 2 * N - size loop
-         pstate_si (j) := array_si (j + size - N);
+      while j < N - (size - N) loop
+         pstate_si (j) := array_si (j + (size - N));
          j := j + 1;
       end loop;
       while i < size loop
          mm_recursion (
             array_si (i),
             array_si (i - N),
-            array_si (i + POS1 - N),
+            array_si (i - (N - POS1)),
             r1,
             r2);
          r1 := r2;

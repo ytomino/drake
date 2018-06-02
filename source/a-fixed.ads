@@ -1,4 +1,5 @@
 pragma License (Unrestricted);
+--  extended unit
 package Ada.Fixed is
    --  Ada.Decimal-like utilities for ordinary fixed types.
    pragma Pure;

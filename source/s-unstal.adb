@@ -1,9 +1,13 @@
 with System.Address_To_Named_Access_Conversions;
+with System.Storage_Map;
 with System.System_Allocators;
 package body System.Unbounded_Stack_Allocators is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Integer_Address;
    use type Storage_Elements.Storage_Offset;
+
+   Down : Boolean
+      renames Storage_Map.Growing_Down_Is_Preferred;
 
    Expanding : constant := 1; -- connecting next page
    pragma Warnings (Off, Expanding);
@@ -27,6 +31,132 @@ package body System.Unbounded_Stack_Allocators is
    function Cast (X : Address) return Block_Access
       renames BA_Conv.To_Pointer;
 
+   function Align_Header_Size (Mask : Storage_Elements.Integer_Address)
+      return Storage_Elements.Storage_Count;
+   function Align_Header_Size (Mask : Storage_Elements.Integer_Address)
+      return Storage_Elements.Storage_Count
+   is
+      Header_Size : constant Storage_Elements.Storage_Count :=
+         Block'Size / Standard'Storage_Unit;
+   begin
+      return Storage_Elements.Storage_Count (
+         (Storage_Elements.Integer_Address (Header_Size) + Mask) and not Mask);
+   end Align_Header_Size;
+
+   --  direction-depended operations
+
+   procedure Commit (
+      Used : in out Address;
+      Storage_Address : out Address;
+      Size_In_Storage_Elements : Storage_Elements.Storage_Count;
+      Mask : Storage_Elements.Integer_Address);
+   procedure Commit (
+      Used : in out Address;
+      Storage_Address : out Address;
+      Size_In_Storage_Elements : Storage_Elements.Storage_Count;
+      Mask : Storage_Elements.Integer_Address) is
+   begin
+      if Down then
+         Storage_Address :=
+            Address (
+               (Storage_Elements.Integer_Address (
+                        Used - Size_In_Storage_Elements)
+                     - Mask)
+                  and not Mask);
+         Used := Storage_Address;
+      else
+         Storage_Address :=
+            Address (
+               (Storage_Elements.Integer_Address (Used) + Mask) and not Mask);
+         Used := Storage_Address + Size_In_Storage_Elements;
+      end if;
+   end Commit;
+
+   function Is_In (New_Used, B : Address) return Boolean;
+   function Is_In (New_Used, B : Address) return Boolean is
+      Header_Size : constant Storage_Elements.Storage_Count :=
+         Block'Size / Standard'Storage_Unit;
+   begin
+      if Down then
+         return New_Used >= B + Header_Size;
+      else
+         return New_Used <= Cast (B).Limit;
+      end if;
+   end Is_In;
+
+   function Bottom (B : Address) return Address;
+   function Bottom (B : Address) return Address is
+      Header_Size : constant Storage_Elements.Storage_Count :=
+         Block'Size / Standard'Storage_Unit;
+   begin
+      if Down then
+         return Cast (B).Limit;
+      else
+         return B + Header_Size;
+      end if;
+   end Bottom;
+
+   function Growing_Address (
+      Current_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count)
+      return Address;
+   function Growing_Address (
+      Current_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count)
+      return Address is
+   begin
+      if Down then
+         return Current_Block - Additional_Block_Size;
+      else
+         return Cast (Current_Block).Limit;
+      end if;
+   end Growing_Address;
+
+   function Is_Growable (
+      Current_Block : Address;
+      Additional_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count;
+      Reverse_Growing : Boolean)
+      return Boolean;
+   function Is_Growable (
+      Current_Block : Address;
+      Additional_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count;
+      Reverse_Growing : Boolean)
+      return Boolean is
+   begin
+      if Down /= Reverse_Growing then
+         return (Additional_Block + Additional_Block_Size) = Current_Block;
+      else
+         return Cast (Current_Block).Limit = Additional_Block;
+      end if;
+   end Is_Growable;
+
+   procedure Grow (
+      Current_Block : in out Address;
+      Additional_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count;
+      Reverse_Growing : Boolean;
+      Top_Is_Unused : Boolean);
+   procedure Grow (
+      Current_Block : in out Address;
+      Additional_Block : Address;
+      Additional_Block_Size : Storage_Elements.Storage_Count;
+      Reverse_Growing : Boolean;
+      Top_Is_Unused : Boolean) is
+   begin
+      if Down /= Reverse_Growing then
+         Cast (Additional_Block).all := Cast (Current_Block).all;
+         if Top_Is_Unused then
+            Cast (Additional_Block).Used := Bottom (Additional_Block);
+         end if;
+         Current_Block := Additional_Block;
+      else
+         Cast (Current_Block).Limit :=
+            Cast (Current_Block).Limit + Additional_Block_Size;
+      end if;
+   end Grow;
+
    --  implementation
 
    procedure Allocate (
@@ -35,60 +165,57 @@ package body System.Unbounded_Stack_Allocators is
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
    is
-      Header_Size : constant Storage_Elements.Storage_Count :=
-         Block'Size / Standard'Storage_Unit;
       Mask : constant Storage_Elements.Integer_Address :=
          Storage_Elements.Integer_Address (Alignment - 1);
       Top : Address := Allocator;
+      Top_Is_Unused : Boolean;
       --  new block:
       New_Block : Address := Null_Address;
       New_Block_Size : Storage_Elements.Storage_Count;
       Aligned_Header_Size : Storage_Elements.Storage_Count;
-      --  top block:
-      Aligned_Top_Used : Address;
-      New_Top_Used : Address;
    begin
       if Top /= Null_Address then
          --  when top block is empty and previous block has enough space
-         if Cast (Top).Used = Top + Header_Size
-            and then Cast (Top).Previous /= Null_Address
-         then
+         Top_Is_Unused := Cast (Top).Used = Bottom (Top);
+         if Top_Is_Unused and then Cast (Top).Previous /= Null_Address then
             declare
                Previous : constant Address := Cast (Top).Previous;
-               Aligned_Previous_Used : constant Address :=
-                  Address (
-                     (Storage_Elements.Integer_Address (Cast (Previous).Used)
-                        + Mask)
-                     and not Mask);
-               New_Previous_Used : constant Address :=
-                  Aligned_Previous_Used + Size_In_Storage_Elements;
+               New_Previous_Used : Address := Cast (Previous).Used;
+               New_Storage_Address : Address;
             begin
-               if New_Previous_Used <= Cast (Previous).Limit then
+               Commit (
+                  Used => New_Previous_Used,
+                  Storage_Address => New_Storage_Address,
+                  Size_In_Storage_Elements => Size_In_Storage_Elements,
+                  Mask => Mask);
+               if Is_In (New_Previous_Used, Previous) then
                   Allocator := Previous;
                   System_Allocators.Unmap (Top, Cast (Top).Limit - Top);
-                  Storage_Address := Aligned_Previous_Used;
+                  Storage_Address := New_Storage_Address;
                   Cast (Previous).Used := New_Previous_Used;
                   return;
                end if;
             end;
          end if;
          --  when top block has enough space
-         Aligned_Top_Used :=
-            Address (
-               (Storage_Elements.Integer_Address (Cast (Top).Used) + Mask)
-                  and not Mask);
-         New_Top_Used := Aligned_Top_Used + Size_In_Storage_Elements;
-         if New_Top_Used <= Cast (Top).Limit then
-            Storage_Address := Aligned_Top_Used;
-            Cast (Top).Used := New_Top_Used;
-            return;
-         end if;
+         declare
+            New_Top_Used : Address := Cast (Top).Used;
+            New_Storage_Address : Address;
+         begin
+            Commit (
+               Used => New_Top_Used,
+               Storage_Address => New_Storage_Address,
+               Size_In_Storage_Elements => Size_In_Storage_Elements,
+               Mask => Mask);
+            if Is_In (New_Top_Used, Top) then
+               Storage_Address := New_Storage_Address;
+               Cast (Top).Used := New_Top_Used;
+               return;
+            end if;
+         end;
          --  try expanding top block
          if Expanding /= 0 then
-            Aligned_Header_Size :=
-               Storage_Elements.Storage_Offset (
-                  (Storage_Elements.Integer_Address (Header_Size) + Mask)
-                     and not Mask);
+            Aligned_Header_Size := Align_Header_Size (Mask);
             declare
                Additional_Block_Size : constant
                      Storage_Elements.Storage_Count :=
@@ -96,45 +223,57 @@ package body System.Unbounded_Stack_Allocators is
                      Size_In_Storage_Elements + Aligned_Header_Size);
                Additional_Block : constant Address :=
                   System_Allocators.Map (
-                     Cast (Top).Limit,
+                     Growing_Address (Top, Additional_Block_Size),
                      Additional_Block_Size);
             begin
-               if Additional_Block = Cast (Top).Limit then
-                  Cast (Top).Limit := Cast (Top).Limit + Additional_Block_Size;
-                  Storage_Address := Aligned_Top_Used;
-                  Cast (Top).Used := New_Top_Used;
+               if Is_Growable (
+                  Current_Block => Top,
+                  Additional_Block => Additional_Block,
+                  Additional_Block_Size => Additional_Block_Size,
+                  Reverse_Growing => False)
+               then
+                  Grow (
+                     Current_Block => Top,
+                     Additional_Block => Additional_Block,
+                     Additional_Block_Size => Additional_Block_Size,
+                     Reverse_Growing => False,
+                     Top_Is_Unused => Top_Is_Unused);
+                  Allocator := Top;
+                  Commit (
+                     Used => Cast (Top).Used,
+                     Storage_Address => Storage_Address,
+                     Size_In_Storage_Elements => Size_In_Storage_Elements,
+                     Mask => Mask);
                   return;
-               elsif Additional_Block + Additional_Block_Size = Top then
+               elsif Is_Growable (
+                  Current_Block => Top,
+                  Additional_Block => Additional_Block,
+                  Additional_Block_Size => Additional_Block_Size,
+                  Reverse_Growing => True) -- reverse
+                  and then Top_Is_Unused
+               then
                   --  The new block is allocated brefore the top block,
                   --    concatenate them.
-                  --  Especially, this often happen in Linux.
-                  declare
-                     Top_Is_Unused : constant Boolean :=
-                        Cast (Top).Used = Top + Header_Size;
-                  begin
-                     Cast (Additional_Block).all := Cast (Top).all;
-                     Allocator := Additional_Block;
-                     Top := Additional_Block;
-                     if Top_Is_Unused then
-                        Storage_Address :=
-                           Address (
-                              (Storage_Elements.Integer_Address (
-                                    Top + Header_Size)
-                                 + Mask)
-                              and not Mask);
-                        Cast (Top).Used :=
-                           Storage_Address + Size_In_Storage_Elements;
-                        return;
-                     end if;
-                  end;
-                  goto Allocating_New_Block;
+                  Grow (
+                     Current_Block => Top,
+                     Additional_Block => Additional_Block,
+                     Additional_Block_Size => Additional_Block_Size,
+                     Reverse_Growing => True,
+                     Top_Is_Unused => True); -- already checked in above
+                  Allocator := Top;
+                  Commit (
+                     Used => Cast (Top).Used,
+                     Storage_Address => Storage_Address,
+                     Size_In_Storage_Elements => Size_In_Storage_Elements,
+                     Mask => Mask);
+                  return;
                end if;
                New_Block := Additional_Block;
                New_Block_Size := Additional_Block_Size;
             end;
          end if;
          --  top block is not enough, then free it if unused
-         if Cast (Top).Used = Top + Header_Size then
+         if Top_Is_Unused then
             declare
                New_Top : constant Address := Cast (Top).Previous;
             begin
@@ -144,16 +283,12 @@ package body System.Unbounded_Stack_Allocators is
             end;
          end if;
       end if;
-   <<Allocating_New_Block>>
       --  new block
       declare
          Default_Block_Size : constant := 10 * 1024;
       begin
          if New_Block = Null_Address then
-            Aligned_Header_Size :=
-               Storage_Elements.Storage_Offset (
-                  (Storage_Elements.Integer_Address (Header_Size) + Mask)
-                     and not Mask);
+            Aligned_Header_Size := Align_Header_Size (Mask);
             New_Block_Size := Size_In_Storage_Elements + Aligned_Header_Size;
             if Top = Null_Address then
                New_Block_Size :=
@@ -170,21 +305,23 @@ package body System.Unbounded_Stack_Allocators is
          Cast (New_Block).Previous := Top;
          Allocator := New_Block;
          Cast (New_Block).Limit := New_Block + New_Block_Size;
-         Storage_Address := New_Block + Aligned_Header_Size;
-         Cast (New_Block).Used := Storage_Address + Size_In_Storage_Elements;
+         Cast (New_Block).Used := Bottom (New_Block);
+         Commit (
+            Used => Cast (New_Block).Used,
+            Storage_Address => Storage_Address,
+            Size_In_Storage_Elements => Size_In_Storage_Elements,
+            Mask => Mask);
       end;
    end Allocate;
 
    function Mark (Allocator : aliased in out Allocator_Type)
       return Marker
    is
-      Header_Size : constant Storage_Elements.Storage_Count :=
-         Block'Size / Standard'Storage_Unit;
       Top : constant Address := Allocator;
    begin
       if Top = Null_Address then
          return Marker (Null_Address);
-      elsif Cast (Top).Used = Top + Header_Size then
+      elsif Cast (Top).Used = Bottom (Top) then
          declare
             Previous : constant Address := Cast (Top).Previous;
          begin
@@ -201,10 +338,7 @@ package body System.Unbounded_Stack_Allocators is
 
    procedure Release (
       Allocator : aliased in out Allocator_Type;
-      Mark : Marker)
-   is
-      Header_Size : constant Storage_Elements.Storage_Count :=
-         Block'Size / Standard'Storage_Unit;
+      Mark : Marker) is
    begin
       if Allocator /= Null_Address then
          loop
@@ -218,7 +352,7 @@ package body System.Unbounded_Stack_Allocators is
                   or else Address (Mark) = Cast (Cast (Top).Previous).Used
                then
                   --  leave one unused block
-                  Cast (Top).Used := Top + Header_Size;
+                  Cast (Top).Used := Bottom (Top);
                   exit;
                end if;
                Allocator := Cast (Top).Previous;
@@ -239,5 +373,21 @@ package body System.Unbounded_Stack_Allocators is
          end;
       end loop;
    end Clear;
+
+   function Size (B : Address) return Storage_Elements.Storage_Count is
+      Header_Size : constant Storage_Elements.Storage_Count :=
+         Block'Size / Standard'Storage_Unit;
+   begin
+      return Cast (B).Limit - (B + Header_Size);
+   end Size;
+
+   function Used_Size (B : Address) return Storage_Elements.Storage_Count is
+   begin
+      if Down then
+         return Bottom (B) - Cast (B).Used;
+      else
+         return Cast (B).Used - Bottom (B);
+      end if;
+   end Used_Size;
 
 end System.Unbounded_Stack_Allocators;

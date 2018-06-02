@@ -59,14 +59,7 @@ package body Ada.Text_IO.Formatting is
    begin
       Last := Last + 1;
       if Last > Buffer'Last then
-         declare
-            New_Buffer : constant String_Access :=
-               new String (1 .. Buffer'Last * 2);
-         begin
-            New_Buffer (Buffer'Range) := Buffer.all;
-            Free (Buffer);
-            Buffer := New_Buffer;
-         end;
+         Reallocate (Buffer, 1, 2 * Buffer'Last); -- Buffer'First = 1
       end if;
       Buffer (Last) := Item;
    end Add;
@@ -105,15 +98,76 @@ package body Ada.Text_IO.Formatting is
       end loop;
    end Get_Num;
 
+   procedure Get_Numeric_Literal_To_Buffer (
+      File : File_Type; -- Input_File_Type
+      Buffer : in out String_Access;
+      Last : in out Natural;
+      Real : Boolean);
+   procedure Get_Numeric_Literal_To_Buffer (
+      File : File_Type; -- Input_File_Type
+      Buffer : in out String_Access;
+      Last : in out Natural;
+      Real : Boolean)
+   is
+      Prev_Last : Natural;
+      Mark : Character;
+      Item : Character;
+      End_Of_Line : Boolean;
+   begin
+      Look_Ahead (File, Item, End_Of_Line);
+      if Item = '+' or else Item = '-' then
+         Add (Buffer, Last, Item);
+         Skip_Ahead (File);
+         Look_Ahead (File, Item, End_Of_Line);
+      end if;
+      Prev_Last := Last;
+      Get_Num (File, Buffer, Last, Based => False);
+      if Last > Prev_Last then
+         Look_Ahead (File, Item, End_Of_Line);
+         if Item = '#' or else Item = ':' then
+            Mark := Item;
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Get_Num (File, Buffer, Last, Based => True);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = '.' and then Real then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Get_Num (File, Buffer, Last, Based => False);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+            if Item = Mark then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+         elsif Item = '.' and then Real then
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Get_Num (File, Buffer, Last, Based => False);
+            Look_Ahead (File, Item, End_Of_Line);
+         end if;
+         if Item = 'E' or else Item = 'e' then
+            Add (Buffer, Last, Item);
+            Skip_Ahead (File);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = '+' or else Item = '-' then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Look_Ahead (File, Item, End_Of_Line);
+            end if;
+            Get_Num (File, Buffer, Last, Based => False);
+         end if;
+      end if;
+   end Get_Numeric_Literal_To_Buffer;
+
    --  implementation
 
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field)
+      Base : Number_Base)
    is
       Unsigned_Item : Word_Unsigned;
    begin
@@ -125,22 +179,14 @@ package body Ada.Text_IO.Formatting is
       else
          Unsigned_Item := Word_Unsigned (Item);
       end if;
-      Modular_Image (
-         To (Last + 1 .. To'Last),
-         Last,
-         Unsigned_Item,
-         Base,
-         Padding,
-         Padding_Width);
+      Modular_Image (To (Last + 1 .. To'Last), Last, Unsigned_Item, Base);
    end Integer_Image;
 
    procedure Integer_Image (
       To : out String;
       Last : out Natural;
       Item : Long_Long_Integer;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field) is
+      Base : Number_Base) is
    begin
       if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
@@ -159,19 +205,11 @@ package body Ada.Text_IO.Formatting is
                To (Last + 1 .. To'Last),
                Last,
                Unsigned_Item,
-               Base,
-               Padding,
-               Padding_Width);
+               Base);
          end;
       else
          --  optimized for 64bit
-         Integer_Image (
-            To,
-            Last,
-            Word_Integer (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Integer_Image (To, Last, Word_Integer (Item), Base);
       end if;
    end Integer_Image;
 
@@ -179,18 +217,10 @@ package body Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Word_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field)
+      Base : Number_Base)
    is
-      Actual_Padding_Width : Field;
       Error : Boolean;
    begin
-      if Padding /= ' ' then
-         Actual_Padding_Width := Padding_Width;
-      else
-         Actual_Padding_Width := 1;
-      end if;
       Last := To'First - 1;
       if Base /= 10 then
          System.Formatting.Image (
@@ -206,17 +236,12 @@ package body Ada.Text_IO.Formatting is
             Raise_Exception (Layout_Error'Identity);
          end if;
          To (Last) := '#';
-         if Padding /= ' ' then
-            Actual_Padding_Width := Padding_Width - (Last - To'First + 2);
-         end if;
       end if;
       System.Formatting.Image (
          Item,
          To (Last + 1 .. To'Last),
          Last,
-         Width => Actual_Padding_Width,
          Base => Base,
-         Padding => Padding,
          Error => Error);
       if Error then
          Raise_Exception (Layout_Error'Identity);
@@ -234,21 +259,13 @@ package body Ada.Text_IO.Formatting is
       To : out String;
       Last : out Natural;
       Item : System.Long_Long_Integer_Types.Long_Long_Unsigned;
-      Base : Number_Base;
-      Padding : Character;
-      Padding_Width : Field) is
+      Base : Number_Base) is
    begin
       if Standard'Word_Size < Long_Long_Unsigned'Size then
          --  optimized for 32bit
          declare
-            Actual_Padding_Width : Field;
             Error : Boolean;
          begin
-            if Padding /= ' ' then
-               Actual_Padding_Width := Padding_Width;
-            else
-               Actual_Padding_Width := 1;
-            end if;
             Last := To'First - 1;
             if Base /= 10 then
                System.Formatting.Image (
@@ -264,18 +281,12 @@ package body Ada.Text_IO.Formatting is
                   Raise_Exception (Layout_Error'Identity);
                end if;
                To (Last) := '#';
-               if Padding /= ' ' then
-                  Actual_Padding_Width :=
-                     Padding_Width - (Last - To'First + 2);
-               end if;
             end if;
             System.Formatting.Image (
                Item,
                To (Last + 1 .. To'Last),
                Last,
-               Width => Actual_Padding_Width,
                Base => Base,
-               Padding => Padding,
                Error => Error);
             if Error then
                Raise_Exception (Layout_Error'Identity);
@@ -290,13 +301,7 @@ package body Ada.Text_IO.Formatting is
          end;
       else
          --  optimized for 64bit
-         Modular_Image (
-            To,
-            Last,
-            Word_Unsigned (Item),
-            Base,
-            Padding,
-            Padding_Width);
+         Modular_Image (To, Last, Word_Unsigned (Item), Base);
       end if;
    end Modular_Image;
 
@@ -313,98 +318,56 @@ package body Ada.Text_IO.Formatting is
             new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
          Holder.Assign (Buffer);
-         declare
-            Prev_Last : Natural;
-            Mark : Character;
-            Item : Character;
-            End_Of_Line : Boolean;
-         begin
-            Look_Ahead (File, Item, End_Of_Line);
-            if Item = '+' or else Item = '-' then
-               Add (Buffer, Last, Item);
-               Skip_Ahead (File);
-               Look_Ahead (File, Item, End_Of_Line);
-            end if;
-            Prev_Last := Last;
-            Get_Num (File, Buffer, Last, Based => False);
-            if Last > Prev_Last then
-               Look_Ahead (File, Item, End_Of_Line);
-               if Item = '#' or else Item = ':' then
-                  Mark := Item;
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Get_Num (File, Buffer, Last, Based => True);
-                  Look_Ahead (File, Item, End_Of_Line);
-                  if Item = '.' and then Real then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Get_Num (File, Buffer, Last, Based => False);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-                  if Item = Mark then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-               elsif Item = '.' and then Real then
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Get_Num (File, Buffer, Last, Based => False);
-                  Look_Ahead (File, Item, End_Of_Line);
-               end if;
-               if Item = 'E' or else Item = 'e' then
-                  Add (Buffer, Last, Item);
-                  Skip_Ahead (File);
-                  Look_Ahead (File, Item, End_Of_Line);
-                  if Item = '+' or else Item = '-' then
-                     Add (Buffer, Last, Item);
-                     Skip_Ahead (File);
-                     Look_Ahead (File, Item, End_Of_Line);
-                  end if;
-                  Get_Num (File, Buffer, Last, Based => False);
-               end if;
-            end if;
-         end;
+         Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => Real);
          return Buffer (1 .. Last);
       end;
    end Get_Numeric_Literal;
 
    function Get_Complex_Literal (
       File : File_Type)
-      return String
-   is
-      Item : Character;
-      End_Of_Line : Boolean;
-      Paren : Boolean;
+      return String is
    begin
       Skip_Spaces (File); -- checking the predicate
-      Look_Ahead (File, Item, End_Of_Line);
-      Paren := Item = '(';
-      if Paren then
-         Skip_Ahead (File);
-      end if;
       declare
-         Re : constant String := Get_Numeric_Literal (File, True);
+         Buffer : aliased String_Access := new String (1 .. 256);
+         Last : Natural := 0;
+         package Holder is
+            new Exceptions.Finally.Scoped_Holder (String_Access, Free);
       begin
-         Skip_Spaces (File);
-         Look_Ahead (File, Item, End_Of_Line);
-         if Item = ',' then
-            Skip_Ahead (File);
-         end if;
+         Holder.Assign (Buffer);
          declare
-            Im : constant String := Get_Numeric_Literal (File, True);
+            Item : Character;
+            End_Of_Line : Boolean;
+            Paren : Boolean;
          begin
+            Look_Ahead (File, Item, End_Of_Line);
+            Paren := Item = '(';
+            if Paren then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Skip_Spaces (File);
+            end if;
+            Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => True);
+            Skip_Spaces (File);
+            Look_Ahead (File, Item, End_Of_Line);
+            if Item = ',' then
+               Add (Buffer, Last, Item);
+               Skip_Ahead (File);
+               Skip_Spaces (File);
+            end if;
+            Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => True);
             if Paren then
                Skip_Spaces (File);
                Look_Ahead (File, Item, End_Of_Line);
                if Item = ')' then
+                  Add (Buffer, Last, Item);
                   Skip_Ahead (File);
                else
                   Raise_Exception (Data_Error'Identity);
                end if;
             end if;
-            return '(' & Re & ',' & Im & ')';
          end;
+         return Buffer (1 .. Last);
       end;
    end Get_Complex_Literal;
 
@@ -567,11 +530,7 @@ package body Ada.Text_IO.Formatting is
       end loop;
    end Get_Tail;
 
-   procedure Head (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ')
-   is
+   procedure Head (Target : out String; Source : String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
@@ -580,14 +539,10 @@ package body Ada.Text_IO.Formatting is
       Target (Target'First .. Target'First + Source_Length - 1) := Source;
       System.Formatting.Fill_Padding (
          Target (Target'First + Source_Length .. Target'Last),
-         Padding);
+         ' ');
    end Head;
 
-   procedure Tail (
-      Target : out String;
-      Source : String;
-      Padding : Character := ' ')
-   is
+   procedure Tail (Target : out String; Source : String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
@@ -596,37 +551,29 @@ package body Ada.Text_IO.Formatting is
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
       System.Formatting.Fill_Padding (
          Target (Target'First .. Target'Last - Source_Length),
-         Padding);
+         ' ');
    end Tail;
 
-   procedure Tail (
-      Target : out Wide_String;
-      Source : Wide_String;
-      Padding : Wide_Character := ' ')
-   is
+   procedure Tail (Target : out Wide_String; Source : Wide_String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source_Length loop
-         Target (I) := Padding;
+         Target (I) := ' ';
       end loop;
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;
 
-   procedure Tail (
-      Target : out Wide_Wide_String;
-      Source : Wide_Wide_String;
-      Padding : Wide_Wide_Character := ' ')
-   is
+   procedure Tail (Target : out Wide_Wide_String; Source : Wide_Wide_String) is
       Source_Length : constant Natural := Source'Length;
    begin
       if Target'Length < Source_Length then
          Raise_Exception (Layout_Error'Identity);
       end if;
       for I in Target'First .. Target'Last - Source_Length loop
-         Target (I) := Padding;
+         Target (I) := ' ';
       end loop;
       Target (Target'Last - Source_Length + 1 .. Target'Last) := Source;
    end Tail;

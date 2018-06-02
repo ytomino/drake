@@ -55,6 +55,16 @@ package body System.Native_Text_IO.Terminal_Colors is
       return Result;
    end RGB_To_Color;
 
+   function Brightness_To_Grayscale_Color (Item : Ada.Colors.Brightness)
+      return Color is
+   begin
+      --  [0.000 .. 0.250) => 0
+      --  [0.250 .. 0.625) => 16#80# = INTENSITY
+      --  [0.625 .. 0.875) => 16#C0# = RED | GREEN | BLUE
+      --  [0.875 .. 1.000] => 16#FF# = RED | GREEN | BLUE | INTENSITY
+      return RGB_To_Color ((Red => Item, Green => Item, Blue => Item));
+   end Brightness_To_Grayscale_Color;
+
    procedure Set (
       Handle : Handle_Type;
       Reset : Boolean;
@@ -103,11 +113,12 @@ package body System.Native_Text_IO.Terminal_Colors is
 --          or Boolean'Pos (Reversed) * C.wincon.COMMON_LVB_REVERSE_VIDEO;
 --    end if;
       if Foreground_Changing then
-         Attributes := (Attributes and not 16#0F#)
-            or C.windef.WORD (Foreground);
+         Attributes :=
+            (Attributes and not 16#0F#) or C.windef.WORD (Foreground);
       end if;
       if Background_Changing then
-         Attributes := (Attributes and not 16#F0#)
+         Attributes :=
+            (Attributes and not 16#F0#)
             or (C.windef.WORD (Background) * 16#10#);
       end if;
       --  setting

@@ -47,14 +47,13 @@ package body System.Unwind.Occurrences is
          Convention => Ada,
          External_Name => "system__exceptions__foreign_exception";
 
-   --  weak reference for System.Unwind.Backtrace
+   --  weak references for System.Unwind.Backtrace
 
    procedure Call_Chain (Current : in out Exception_Occurrence)
       with Import, -- weak linking
          Convention => Ada, External_Name => "ada__exceptions__call_chain";
    pragma Weak_External (Call_Chain);
 
-   --  weak reference for System.Unwind.Backtrace
    procedure Backtrace_Information (
       X : Exception_Occurrence;
       Params : Address;
@@ -64,10 +63,37 @@ package body System.Unwind.Occurrences is
          Convention => Ada, External_Name => "__drake_backtrace_information";
    pragma Weak_External (Backtrace_Information);
 
-   procedure Report_Backtrace (X : Exception_Occurrence)
-      with Import, -- weak linking
-         Convention => Ada, External_Name => "__drake_report_backtrace";
-   pragma Weak_External (Report_Backtrace);
+   --  buffered writing to standard error output
+
+   type Information_Context_Type is record
+      Item : String (
+         1 ..
+         256
+            + Exception_Msg_Max_Length
+            + Max_Tracebacks * (3 + (Standard'Address_Size + 3) / 4));
+      Last : Natural;
+   end record;
+   pragma Suppress_Initialization (Information_Context_Type);
+
+   procedure Put (S : String; Params : Address);
+   procedure New_Line (Params : Address);
+
+   procedure Put (S : String; Params : Address) is
+      Context : Information_Context_Type;
+      for Context'Address use Params;
+      First : constant Positive := Context.Last + 1;
+   begin
+      Context.Last := Context.Last + S'Length;
+      Context.Item (First .. Context.Last) := S;
+   end Put;
+
+   procedure New_Line (Params : Address) is
+      Context : Information_Context_Type;
+      for Context'Address use Params;
+   begin
+      Termination.Error_Put_Line (Context.Item (1 .. Context.Last));
+      Context.Last := 0;
+   end New_Line;
 
    --  (a-elchha.ads)
    procedure Last_Chance_Handler (
@@ -309,51 +335,46 @@ package body System.Unwind.Occurrences is
       Flush_IO_Hook.all;
    end Flush_IO;
 
+   procedure Put_Exception_Information (X : Exception_Occurrence) is
+      Context : aliased Information_Context_Type;
+   begin
+      Context.Last := 0;
+      Exception_Information (
+         X,
+         Context'Address,
+         Put => Put'Access,
+         New_Line => New_Line'Access);
+   end Put_Exception_Information;
+
    procedure Default_Report (X : Exception_Occurrence; Where : String) is
-      subtype Buffer_Type is String (1 .. 256 + Exception_Msg_Max_Length);
-      procedure Put (
-         Buffer : in out Buffer_Type;
-         Last : in out Natural;
-         S : String);
-      procedure Put (
-         Buffer : in out Buffer_Type;
-         Last : in out Natural;
-         S : String)
-      is
-         First : constant Natural := Last + 1;
-      begin
-         Last := Last + S'Length;
-         Buffer (First .. Last) := S;
-      end Put;
       Full_Name_All : String (1 .. 1); -- at least
       for Full_Name_All'Address use X.Id.Full_Name;
       By_Abort : constant Boolean :=
          Full_Name_All (1) = '_'; -- Standard'Abort_Signal
       Backtrace : constant Boolean :=
          X.Num_Tracebacks > 0
-         and then Report_Backtrace'Address /= Null_Address;
-      Buffer : Buffer_Type;
-      Last : Natural;
+         and then Backtrace_Information'Address /= Null_Address;
+      Context : aliased Information_Context_Type;
    begin
       Termination.Error_Put_Line ("");
-      Last := 0;
+      Context.Last := 0;
       if Where'Length > 0 then
-         Put (Buffer, Last, Where);
+         Put (Where, Context'Address);
       elsif By_Abort or else Backtrace then
-         Put (Buffer, Last, "Execution");
+         Put ("Execution", Context'Address);
       end if;
       if By_Abort then
-         Put (Buffer, Last, " terminated by abort");
+         Put (" terminated by abort", Context'Address);
          if Where'Length = 0 then
-            Put (Buffer, Last, " of environment task");
+            Put (" of environment task", Context'Address);
          end if;
-         Termination.Error_Put_Line (Buffer (1 .. Last));
+         New_Line (Context'Address);
       else
-         if Last > 0 then
-            Put (Buffer, Last, " terminated by unhandled exception");
-            Termination.Error_Put_Line (Buffer (1 .. Last));
+         if Context.Last > 0 then
+            Put (" terminated by unhandled exception", Context'Address);
+            New_Line (Context'Address);
          end if;
-         Report_Backtrace (X);
+         Put_Exception_Information (X);
       end if;
    end Default_Report;
 

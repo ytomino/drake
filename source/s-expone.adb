@@ -7,6 +7,11 @@ package body System.Exponentiations is
 
    subtype Long_Long_Unsigned is Long_Long_Integer_Types.Long_Long_Unsigned;
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+   pragma No_Return (unreachable);
+
    --  implementation
 
    function Generic_Exp_Integer (Left : Integer_Type; Right : Natural)
@@ -191,10 +196,11 @@ package body System.Exponentiations is
       Left : Unsigned_Type;
       Modulus : Unsigned_Type;
       Right : Natural)
-      return Unsigned_Type
-   is
-      pragma Suppress (Division_Check); -- Modulus > 0
+      return Unsigned_Type is
    begin
+      if Modulus <= 0 then
+         unreachable; -- T'Modulus > 0
+      end if;
       if Left = 2 and then Right < Unsigned_Type'Size then
          return Shift_Left (1, Right) mod Modulus;
       else

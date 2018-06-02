@@ -5,6 +5,7 @@ with Ada.IO_Modes;
 with Ada.Unchecked_Deallocation;
 private with Ada.Finalization;
 private with Ada.Naked_Text_IO;
+private with Ada.Unchecked_Reallocation;
 package Ada.Text_IO is
 
    type File_Type is limited private;
@@ -625,5 +626,14 @@ private
    end Controlled;
 
    type File_Type is new Controlled.File_Type;
+
+   --  for Get_Line and the child packages.
+
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Character,
+         String,
+         String_Access);
 
 end Ada.Text_IO;

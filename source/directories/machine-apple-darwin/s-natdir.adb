@@ -162,15 +162,14 @@ package body System.Native_Directories is
             C_Target_Name (0)'Access;
       begin
          if C.unistd.symlink (path1, path2) < 0 then
-            if C.errno.errno = C.errno.EEXIST and then Overwrite then
-               --  try to overwrite
-               if C.unistd.unlink (path2) = 0
-                  and then C.unistd.symlink (path1, path2) = 0
-               then
-                  return; -- success
-               end if;
+            if not (
+               C.errno.errno = C.errno.EEXIST
+               and then Overwrite -- try to overwrite
+               and then C.unistd.unlink (path2) = 0
+               and then C.unistd.symlink (path1, path2) = 0)
+            then
+               Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;
-            Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
          end if;
       end;
    end Symbolic_Link;

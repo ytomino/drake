@@ -56,18 +56,18 @@ package body Ada.Strings.Naked_Maps.Canonical_Composites is
       return Character_Set_Access (Base_Set_Data);
    end Base_Set;
 
-   --  Base_Map
+   --  Basic_Map
 
    type Character_Mapping_Access_With_Pool is access Character_Mapping_Data;
 
-   Base_Mapping : Character_Mapping_Access_With_Pool;
-   Base_Mapping_Flag : aliased System.Once.Flag := 0;
+   Basic_Mapping : Character_Mapping_Access_With_Pool;
+   Basic_Mapping_Flag : aliased System.Once.Flag := 0;
 
-   procedure Base_Mapping_Init;
-   procedure Base_Mapping_Init is
+   procedure Basic_Mapping_Init;
+   procedure Basic_Mapping_Init is
    begin
       Strings.Canonical_Composites.Initialize_D;
-      Base_Mapping := new Character_Mapping_Data'(
+      Basic_Mapping := new Character_Mapping_Data'(
          Length => Strings.Canonical_Composites.D_Map_Array'Length,
          Reference_Count => System.Reference_Counting.Static,
          From => <>,
@@ -77,21 +77,21 @@ package body Ada.Strings.Naked_Maps.Canonical_Composites is
             E : Strings.Canonical_Composites.D_Map_Element
                renames Strings.Canonical_Composites.D_Map (I);
          begin
-            Base_Mapping.From (I) := E.From;
-            Base_Mapping.To (I) := E.To (1);
+            Basic_Mapping.From (I) := E.From;
+            Basic_Mapping.To (I) := E.To (1);
          end;
       end loop;
-      pragma Check (Validate, Debug.Valid (Base_Mapping.all));
-   end Base_Mapping_Init;
+      pragma Check (Validate, Debug.Valid (Basic_Mapping.all));
+   end Basic_Mapping_Init;
 
-   --  implementation of Base_Map
+   --  implementation of Basic_Map
 
-   function Base_Map return not null Character_Mapping_Access is
+   function Basic_Map return not null Character_Mapping_Access is
    begin
       System.Once.Initialize (
-         Base_Mapping_Flag'Access,
-         Base_Mapping_Init'Access);
-      return Character_Mapping_Access (Base_Mapping);
-   end Base_Map;
+         Basic_Mapping_Flag'Access,
+         Basic_Mapping_Init'Access);
+      return Character_Mapping_Access (Basic_Mapping);
+   end Basic_Map;
 
 end Ada.Strings.Naked_Maps.Canonical_Composites;

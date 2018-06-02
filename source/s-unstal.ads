@@ -38,4 +38,8 @@ private
 
    type Marker is new Address; -- Used
 
+   --  for Debug
+   function Size (B : Address) return Storage_Elements.Storage_Count;
+   function Used_Size (B : Address) return Storage_Elements.Storage_Count;
+
 end System.Unbounded_Stack_Allocators;

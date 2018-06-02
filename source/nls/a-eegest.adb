@@ -1,6 +1,7 @@
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Reallocation;
 package body Ada.Environment_Encoding.Generic_Strings is
    pragma Check_Policy (Validate => Ignore);
    use type Streams.Stream_Element_Offset;
@@ -27,48 +28,30 @@ package body Ada.Environment_Encoding.Generic_Strings is
    end Current_Id;
 
    type String_Type_Access is access String_Type;
+
    procedure Free is
       new Unchecked_Deallocation (
          String_Type,
          String_Type_Access);
-
-   procedure Expand (
-      Item : in out String_Type_Access;
-      Last : Natural);
-   procedure Expand (
-      Item : in out String_Type_Access;
-      Last : Natural)
-   is
-      New_Item : constant String_Type_Access :=
-         new String_Type (Item'First .. Item'First + 2 * Item'Length - 1);
-   begin
-      New_Item (Item'First .. Last) := Item.all (Item'First .. Last);
-      Free (Item);
-      Item := New_Item;
-   end Expand;
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Positive,
+         Character_Type,
+         String_Type,
+         String_Type_Access);
 
    type Stream_Element_Array_Access is access Streams.Stream_Element_Array;
+
    procedure Free is
       new Unchecked_Deallocation (
          Streams.Stream_Element_Array,
          Stream_Element_Array_Access);
-
-   procedure Expand (
-      Item : in out Stream_Element_Array_Access;
-      Last : Streams.Stream_Element_Offset);
-   procedure Expand (
-      Item : in out Stream_Element_Array_Access;
-      Last : Streams.Stream_Element_Offset)
-   is
-      New_Item : constant Stream_Element_Array_Access :=
-         new Streams.Stream_Element_Array (
-            Item'First ..
-            Item'First + 2 * Item'Length - 1);
-   begin
-      New_Item (Item'First .. Last) := Item.all (Item'First .. Last);
-      Free (Item);
-      Item := New_Item;
-   end Expand;
+   procedure Reallocate is
+      new Unchecked_Reallocation (
+         Streams.Stream_Element_Offset,
+         Streams.Stream_Element,
+         Streams.Stream_Element_Array,
+         Stream_Element_Array_Access);
 
    Minimal_Size : constant := 8;
 
@@ -216,7 +199,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
          new Exceptions.Finally.Scoped_Holder (String_Type_Access, Free);
       CS_In_SE : constant Streams.Stream_Element_Count :=
          Character_Type'Size / Streams.Stream_Element'Size;
-      MS_In_SE : constant Streams.Stream_Element_Count :=
+      MS_In_SE : constant Streams.Stream_Element_Positive_Count :=
          Min_Size_In_From_Stream_Elements (Object);
       I : Streams.Stream_Element_Offset := Item'First;
       Out_Item : aliased String_Type_Access;
@@ -249,7 +232,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
                when Success =>
                   null;
                when Overflow =>
-                  Expand (Out_Item, Out_Last);
+                  Reallocate (Out_Item, 1, 2 * Out_Item'Last);
             end case;
             I := Last + 1;
          end;
@@ -411,7 +394,7 @@ package body Ada.Environment_Encoding.Generic_Strings is
                when Success =>
                   null;
                when Overflow =>
-                  Expand (Out_Item, Out_Last);
+                  Reallocate (Out_Item, 1, 2 * Out_Item'Last);
             end case;
             I := Last + 1;
          end;

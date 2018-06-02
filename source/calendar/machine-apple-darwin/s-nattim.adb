@@ -51,11 +51,6 @@ package body System.Native_Time is
             + Nanosecond_Number (D.tv_nsec));
    end To_Duration;
 
-   function To_Duration (D : C.sys.time.struct_timeval) return Duration is
-   begin
-      return To_Duration (To_timespec (D));
-   end To_Duration;
-
    function To_Duration (D : C.sys.types.time_t) return Duration is
    begin
       return Duration'Fixed_Value (
@@ -64,13 +59,16 @@ package body System.Native_Time is
 
    procedure Simple_Delay_For (D : Duration) is
       Req_T : aliased C.time.struct_timespec := To_timespec (D);
-      Rem_T : aliased C.time.struct_timespec;
-      R : C.signed_int;
    begin
       loop
-         R := C.time.nanosleep (Req_T'Access, Rem_T'Access);
-         exit when R = 0;
-         Req_T := Rem_T;
+         declare
+            Rem_T : aliased C.time.struct_timespec;
+            R : C.signed_int;
+         begin
+            R := C.time.nanosleep (Req_T'Access, Rem_T'Access);
+            exit when not (R < 0);
+            Req_T := Rem_T;
+         end;
       end loop;
    end Simple_Delay_For;
 

@@ -6,11 +6,14 @@ package body System.Img_Real is
       V : Long_Long_Float;
       S : in out String;
       P : out Natural;
-      Aft : Natural) is
+      Aft : Natural)
+   is
+      Fore_Last : Natural;
    begin
       Formatting.Fixed.Image (
          V,
          S,
+         Fore_Last,
          P,
          Aft_Width => Aft);
    end Image_Ordinary_Fixed_Point;
@@ -19,11 +22,14 @@ package body System.Img_Real is
       V : Long_Long_Float;
       S : in out String;
       P : out Natural;
-      Digs : Natural) is
+      Digs : Natural)
+   is
+      Fore_Last : Natural;
    begin
       Formatting.Float.Image (
          V,
          S,
+         Fore_Last,
          P,
          Aft_Width => Digs - 1);
    end Image_Floating_Point;

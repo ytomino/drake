@@ -127,6 +127,11 @@ package body System.Native_Tasks is
       --  write to the pipe
       Synchronous_Objects.Set (Abort_Event);
       --  send SIGTERM
+      Resend_Abort_Signal (Handle, Error => Error);
+   end Send_Abort_Signal;
+
+   procedure Resend_Abort_Signal (Handle : Handle_Type; Error : out Boolean) is
+   begin
       case C.pthread.pthread_kill (Handle, C.signal.SIGTERM) is
          when 0 =>
             Yield;
@@ -136,7 +141,7 @@ package body System.Native_Tasks is
          when others =>
             Error := True;
       end case;
-   end Send_Abort_Signal;
+   end Resend_Abort_Signal;
 
    procedure Block_Abort_Signal (Abort_Event : Synchronous_Objects.Event) is
       pragma Unreferenced (Abort_Event);

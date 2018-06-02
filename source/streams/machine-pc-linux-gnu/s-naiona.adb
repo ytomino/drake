@@ -72,20 +72,21 @@ package body System.Native_IO.Names is
       end;
       loop
          declare
-            R : constant C.sys.types.ssize_t :=
+            S_Length : C.sys.types.ssize_t;
+         begin
+            S_Length :=
                C.unistd.readlink (
                   Link (0)'Access,
                   New_Name,
-                  New_Name_Capacity);
-         begin
-            if R < 0 then
+                  New_Name_Capacity - 1); -- reserving for NUL
+            if S_Length < 0 then
                --  Failed, keep Has_Full_Name and Name.
                if Raise_On_Error then
                   Raise_Exception (Use_Error'Identity);
                end if;
-               return;
+               return; -- error
             end if;
-            New_Name_Length := C.size_t (R);
+            New_Name_Length := C.size_t (S_Length);
          end;
          exit when New_Name_Length < New_Name_Capacity; -- success
          New_Name_Capacity := New_Name_Capacity * 2;
@@ -103,7 +104,7 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             New_Name := New_New_Name;
          end;
@@ -124,22 +125,28 @@ package body System.Native_IO.Names is
                if Raise_On_Error then
                   raise Storage_Error;
                end if;
-               return;
+               return; -- error
             end if;
             New_Name := New_New_Name;
          end;
+         New_Name_Length := New_Name_Length + 1; -- '*'
          declare
-            New_Name_All : C.char_array (
-               0 .. New_Name_Length + 1); -- '*' & NUL
+            New_Name_All : C.char_array (0 .. New_Name_Length); -- NUL
             for New_Name_All'Address use
                Name_Pointer_Conv.To_Address (New_Name);
          begin
-            New_Name_All (1 .. New_Name_Length) :=
-               New_Name_All (0 .. New_Name_Length - 1);
+            New_Name_All (1 .. New_Name_Length - 1) :=
+               New_Name_All (0 .. New_Name_Length - 2);
             New_Name_All (0) := '*';
-            New_Name_All (New_Name_Length + 1) := C.char'Val (0);
          end;
       end if;
+      declare -- append NUL
+         New_Name_All : C.char_array (0 .. New_Name_Length); -- NUL
+         for New_Name_All'Address use
+            Name_Pointer_Conv.To_Address (New_Name);
+      begin
+         New_Name_All (New_Name_Length) := C.char'Val (0);
+      end;
       if not Is_Standard then
          Free (Name); -- External or External_No_Close
       end if;

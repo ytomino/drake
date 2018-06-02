@@ -171,6 +171,7 @@ package System.Native_IO is
       Mapping : out Mapping_Type;
       Handle : Handle_Type;
       Mode : File_Mode; -- masked by Read_Write_Mask
+      Private_Copy : Boolean;
       Offset : Ada.Streams.Stream_Element_Offset; -- 1-origin
       Size : Ada.Streams.Stream_Element_Count);
 
