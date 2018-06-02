@@ -720,19 +720,17 @@ package body System.Tasks is
    procedure Abort_Handler_On_Leave_Master (T : Task_Id);
    procedure Abort_Handler_On_Leave_Master (T : Task_Id) is
       M : constant Master_Access := T.Master_Top;
-      Error : Boolean;
       Top_Child : Task_Id;
+      Error : Boolean; -- ignored
    begin
-      --  Enter (M.Mutex);
+      --  This is called only from Abort_Signal_Handler while Leave_Master is
+      --    waiting a child task.
+      --   So M.Mutex is unlocked and M.List is a waited task.
       Top_Child := M.List;
       Native_Tasks.Send_Abort_Signal (
          Top_Child.Handle,
          Top_Child.Abort_Event,
          Error);
-      if Error then
-         Raise_Exception (Tasking_Error'Identity);
-      end if;
-      --  Leave (M.Mutex);
    end Abort_Handler_On_Leave_Master;
 
    --  activation
@@ -1466,6 +1464,7 @@ package body System.Tasks is
       M : Master_Access := T.Master_Top;
       Free_List : Task_Id := null;
    begin
+      pragma Assert (T.Abort_Handler = null);
       Synchronous_Objects.Enter (M.Mutex);
       while M.List /= null loop
          declare
@@ -1488,22 +1487,30 @@ package body System.Tasks is
                      Aborted => Aborted);
                end if;
             elsif T.Aborted then
+               --  If current task is already aborted, abort a child task.
                --  C9A007A
                Native_Tasks.Send_Abort_Signal (
                   Taken.Handle,
                   Taken.Abort_Event,
                   Error => S_Error);
-            end if;
-            pragma Assert (T.Abort_Handler = null);
-            T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
-            if T.Kind = Sub then
-               Native_Tasks.Unblock_Abort_Signal;
+            else
+               --  If current task is aboted during waiting a child task,
+               --    abort a waited task quickly.
+               T.Abort_Handler := Abort_Handler_On_Leave_Master'Access;
+               if T.Kind = Sub then
+                  --  Normally, T.Abort_Locking = 2.
+                  Native_Tasks.Unblock_Abort_Signal;
+               end if;
             end if;
             Wait (Taken, Free_Task_Id);
-            if T.Kind = Sub then
-               Native_Tasks.Block_Abort_Signal (T.Abort_Event);
+            if T.Abort_Handler /= null then
+               if T.Kind = Sub then
+                  --  In Windows and in this loop, This is only where T.Abort
+                  --    will be updated.
+                  Native_Tasks.Block_Abort_Signal (T.Abort_Event);
+               end if;
+               T.Abort_Handler := null;
             end if;
-            T.Abort_Handler := null;
             if Free_Task_Id /= null then
                Remove_From_Completion_List (Free_Task_Id);
                Free_Task_Id.Next_At_Same_Level := Free_List;
