@@ -31,7 +31,9 @@ package body System.Native_Tasks is
    NtQueryInformationThread_Name : constant C.char_array (0 .. 24) :=
       "NtQueryInformationThread" & C.char'Val (0);
 
-   Installed_Abort_Handler : Abort_Handler := null;
+   procedure Nop is null;
+
+   Installed_Abort_Handler : not null Abort_Handler := Nop'Access;
 
    --  implementation of thread
 
@@ -153,7 +155,7 @@ package body System.Native_Tasks is
 
    procedure Uninstall_Abort_Handler is
    begin
-      Installed_Abort_Handler := null;
+      Installed_Abort_Handler := Nop'Access;
    end Uninstall_Abort_Handler;
 
    procedure Send_Abort_Signal (
