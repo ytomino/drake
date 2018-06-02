@@ -78,8 +78,7 @@ package body System.Synchronous_Objects.Abortable is
                   or else Signaled = C.winbase.WAIT_OBJECT_0 + 1
                   or else Debug.Runtime_Error (
                      "WaitForMultipleObjects failed"));
-            Aborted :=
-               Signaled = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
+            Aborted := Signaled = C.winbase.WAIT_OBJECT_0 + 1;
          end;
       else
          Wait (Object);
@@ -117,8 +116,7 @@ package body System.Synchronous_Objects.Abortable is
                   or else Debug.Runtime_Error (
                      "WaitForMultipleObjects failed"));
             Value := Signaled = C.winbase.WAIT_OBJECT_0 or else Get (Object);
-            Aborted :=
-               Signaled = C.winbase.WAIT_OBJECT_0 + 1 or else Tasks.Is_Aborted;
+            Aborted := Signaled = C.winbase.WAIT_OBJECT_0 + 1;
          end;
       else
          Wait (Object, Timeout, Value);

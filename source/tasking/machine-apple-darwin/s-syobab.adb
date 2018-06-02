@@ -105,12 +105,8 @@ package body System.Synchronous_Objects.Abortable is
                            and C.poll.POLLIN) /= 0;
                      Aborted :=
                         (C.unsigned_short (Polling (1).revents)
-                           and C.poll.POLLIN) /= 0
-                        or else Tasks.Is_Aborted;
+                           and C.poll.POLLIN) /= 0;
                      exit when Value or else Aborted;
-                  else -- timeout
-                     Aborted := Tasks.Is_Aborted;
-                     exit;
                   end if;
                   pragma Check (Debug,
                      Check =>
@@ -173,8 +169,7 @@ package body System.Synchronous_Objects.Abortable is
                            and C.poll.POLLIN) /= 0;
                      Aborted :=
                         (C.unsigned_short (Polling (1).revents)
-                           and C.poll.POLLIN) /= 0
-                        or else Tasks.Is_Aborted;
+                           and C.poll.POLLIN) /= 0;
                      exit when Value or else Aborted;
                   end if;
                   pragma Check (Debug,

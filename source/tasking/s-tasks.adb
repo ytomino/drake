@@ -71,15 +71,10 @@ package body System.Tasks is
             Tasks.Abort_Event;
       begin
          if Abort_Event /= null then
-            declare
-               Value : Boolean;
-            begin
-               Synchronous_Objects.Wait (
-                  Abort_Event.all,
-                  Timeout => D,
-                  Value => Value);
-               Aborted := Value or else Is_Aborted;
-            end;
+            Synchronous_Objects.Wait (
+               Abort_Event.all,
+               Timeout => D,
+               Value => Aborted);
          else
             Native_Time.Simple_Delay_For (D);
             Aborted := Is_Aborted;
@@ -1242,7 +1237,6 @@ package body System.Tasks is
    end Enable_Abort;
 
    procedure Disable_Abort (Aborted : Boolean) is
-      pragma Unreferenced (Aborted); -- dummy parameter for coding check
       T : constant Task_Id := TLS_Current_Task_Id;
    begin
       if T /= null then
@@ -1257,8 +1251,13 @@ package body System.Tasks is
             Native_Tasks.Block_Abort_Signal (T.Abort_Event);
          end if;
          T.Abort_Locking := T.Abort_Locking + 1;
-         if T.Aborted and then T.Abort_Locking = 1 then
-            Raise_Abort_Signal;
+         if Aborted then
+            --  Cover the case that the signal is not arrived yet.
+            T.Aborted := True;
+            --  Trigger.
+            if T.Abort_Locking = 1 then
+               Raise_Abort_Signal;
+            end if;
          end if;
       end if;
    end Disable_Abort;
