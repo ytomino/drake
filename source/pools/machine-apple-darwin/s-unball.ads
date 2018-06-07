@@ -12,16 +12,19 @@ package System.Unbounded_Allocators is
    procedure Finalize (Object : in out Unbounded_Allocator);
 
    procedure Allocate (
-      Allocator : in out Unbounded_Allocator;
+      Allocator : Unbounded_Allocator;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count);
 
    procedure Deallocate (
-      Allocator : in out Unbounded_Allocator;
+      Allocator : Unbounded_Allocator;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count);
+
+   function Allocator_Of (Storage_Address : Address)
+      return Unbounded_Allocator;
 
 private
 

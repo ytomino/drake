@@ -14,7 +14,7 @@ package body System.Unbounded_Allocators is
    end Finalize;
 
    procedure Allocate (
-      Allocator : in out Unbounded_Allocator;
+      Allocator : Unbounded_Allocator;
       Storage_Address : out Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count) is
@@ -33,7 +33,7 @@ package body System.Unbounded_Allocators is
    end Allocate;
 
    procedure Deallocate (
-      Allocator : in out Unbounded_Allocator;
+      Allocator : Unbounded_Allocator;
       Storage_Address : Address;
       Size_In_Storage_Elements : Storage_Elements.Storage_Count;
       Alignment : Storage_Elements.Storage_Count)
@@ -45,5 +45,13 @@ package body System.Unbounded_Allocators is
          C.malloc.malloc.malloc_zone_t_ptr (Allocator),
          C.void_ptr (Storage_Address));
    end Deallocate;
+
+   function Allocator_Of (Storage_Address : Address)
+      return Unbounded_Allocator is
+   begin
+      return Unbounded_Allocator (
+         C.malloc.malloc.malloc_zone_from_ptr (
+            C.void_const_ptr (Storage_Address)));
+   end Allocator_Of;
 
 end System.Unbounded_Allocators;

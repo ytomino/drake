@@ -1,7 +1,9 @@
+with Ada.Unchecked_Deallocate_Subpool;
 with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Reallocation;
 with System.Storage_Elements.Formatting;
 with System.Storage_Pools.Unbounded;
+with System.Storage_Pools.Subpools.Unbounded;
 procedure storagepool is
 	use type System.Address;
 	use type System.Storage_Elements.Storage_Offset;
@@ -143,5 +145,24 @@ begin
 		A (1) := new Integer'(1);
 		A (2) := new Integer'(2);
 	end Local;
+	-- System.Storage_Pools.Subpools.Unbounded
+	declare
+		use System.Storage_Pools.Subpools.Unbounded;
+		Pool : Unbounded_Pool_With_Subpools;
+		type T is access all Integer;
+		for T'Storage_Pool use Pool;
+		procedure Free is new Ada.Unchecked_Deallocation (Integer, T);
+		H : array (1 .. 2) of System.Storage_Pools.Subpools.Subpool_Handle;
+		A : array (1 .. 2, 1 .. 2) of T;
+	begin
+		for I in H'Range loop
+			H (I) := Create_Subpool (Pool);
+			A (I, 1) := new (H (I)) Integer'(I * 10 + 1);
+			A (I, 2) := new (H (I)) Integer'(I * 10 + 2);
+			Free (A (I, 1)); -- explicit free "11" or "21"
+		end loop;
+		Ada.Unchecked_Deallocate_Subpool (H (1)); -- explicit free "12"
+		-- implicit free "22"
+	end;
 	pragma Debug (Ada.Debug.Put ("OK"));
 end storagepool;
