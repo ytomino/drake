@@ -22,13 +22,6 @@ private package Ada.Containers.Binary_Trees is
       Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access));
 
-   procedure Iterate (
-      Container : Node_Access;
-      Params : System.Address;
-      Process : not null access procedure (
-         Position : not null Node_Access;
-         Params : System.Address));
-
    procedure Reverse_Iterate (
       Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access));

@@ -109,21 +109,6 @@ package body Ada.Containers.Binary_Trees is
       end loop;
    end Iterate;
 
-   procedure Iterate (
-      Container : Node_Access;
-      Params : System.Address;
-      Process : not null access procedure (
-         Position : not null Node_Access;
-         Params : System.Address))
-   is
-      I : Node_Access := First (Container);
-   begin
-      while I /= null loop
-         Process (I, Params);
-         I := Next (I);
-      end loop;
-   end Iterate;
-
    procedure Reverse_Iterate (
       Container : Node_Access;
       Process : not null access procedure (Position : not null Node_Access))
