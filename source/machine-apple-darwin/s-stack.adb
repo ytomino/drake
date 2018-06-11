@@ -1,5 +1,5 @@
-with System.Debug;
 with System.Storage_Elements;
+with System.Debug; -- assertions
 with C.sys.syscall;
 with C.unistd;
 package body System.Stack is

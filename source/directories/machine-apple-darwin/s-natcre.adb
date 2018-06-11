@@ -3,8 +3,8 @@ with System.Address_To_Named_Access_Conversions;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
-with C.pwd;
 with C.grp;
+with C.pwd;
 package body System.Native_Credentials is
    use type Storage_Elements.Storage_Offset;
    use type C.pwd.struct_passwd_ptr;

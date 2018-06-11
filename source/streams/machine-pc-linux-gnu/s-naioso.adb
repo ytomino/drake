@@ -3,8 +3,8 @@ with Ada.Exceptions.Finally;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
 with System.Synchronous_Control;
-with C.errno;
 with C.bits.socket;
+with C.errno;
 with C.netinet.in_h;
 with C.unistd;
 package body System.Native_IO.Sockets is

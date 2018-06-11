@@ -1,7 +1,7 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Darwin
-with C.stdint;
 with C.mach.mach_time;
+with C.stdint;
 package System.Native_Real_Time is
    pragma Preelaborate;
 

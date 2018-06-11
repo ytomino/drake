@@ -1,12 +1,12 @@
 with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
-with System.Debug;
 with System.Formatting;
 with System.Long_Long_Integer_Types;
 with System.Once;
 with System.Termination;
 with System.Zero_Terminated_WStrings;
+with System.Debug; -- assertions
 with C.psdk_inc.qwsadata;
 with C.winnt;
 with C.winsock2;

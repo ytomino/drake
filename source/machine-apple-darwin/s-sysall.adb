@@ -1,6 +1,6 @@
 pragma Check_Policy (Trace => Ignore);
-with Ada;
-with System.Debug;
+with Ada; -- assertions
+with System.Debug; -- assertions
 with C.stdlib;
 with C.sys.mman;
 with C.unistd;

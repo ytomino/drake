@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
-with Ada.Task_Identification;
 with Ada.Exceptions;
+with Ada.Task_Identification;
 package Ada.Task_Termination is
    pragma Preelaborate;
 

@@ -1,7 +1,7 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
-with System.Debug;
 with System.Standard_Allocators;
+with System.Debug; -- assertions
 with C.basetsd;
 with C.winbase;
 with C.windef;

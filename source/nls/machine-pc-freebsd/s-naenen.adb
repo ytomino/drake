@@ -1,8 +1,8 @@
 with Ada.Exception_Identification.From_Here;
-with System.Debug;
 with System.Address_To_Constant_Access_Conversions;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
+with System.Debug; -- assertions
 with C.errno;
 package body System.Native_Environment_Encoding is
    use Ada.Exception_Identification.From_Here;

@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace => Ignore);
-with Ada;
+with Ada; -- assertions
 with System.Formatting.Address;
 with System.Storage_Map;
 with System.Unwind.Occurrences;

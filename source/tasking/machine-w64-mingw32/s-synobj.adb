@@ -1,5 +1,5 @@
 with Ada.Exception_Identification.From_Here;
-with System.Debug;
+with System.Debug; -- assertions
 with C.winbase;
 with C.windef;
 with C.winerror;

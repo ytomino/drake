@@ -1,5 +1,5 @@
-with System.Debug;
 with System.Storage_Elements;
+with System.Debug; -- assertions
 with C.pthread_np;
 package body System.Stack is
    pragma Suppress (All_Checks);

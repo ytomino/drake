@@ -1,6 +1,6 @@
 with System.Native_Time;
-with C.windef;
 with C.winbase;
+with C.windef;
 package body System.Native_Execution_Time is
    use type C.windef.WINBOOL;
 

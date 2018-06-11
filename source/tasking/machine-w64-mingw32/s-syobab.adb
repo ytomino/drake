@@ -1,5 +1,5 @@
-with System.Debug;
 with System.Tasks;
+with System.Debug; -- assertions
 with C.winbase;
 with C.windef;
 with C.winerror;

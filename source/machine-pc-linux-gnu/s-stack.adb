@@ -1,5 +1,5 @@
-with System.Debug;
 with System.Storage_Elements;
+with System.Debug; -- assertions
 package body System.Stack is
    pragma Suppress (All_Checks);
    use type Storage_Elements.Storage_Offset;

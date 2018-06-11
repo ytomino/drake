@@ -2,8 +2,8 @@ pragma License (Unrestricted);
 --  implementation unit required by compiler
 with Ada.Real_Time;
 with System.Parameters;
-with System.Tasks;
 with System.Task_Info;
+with System.Tasks;
 package System.Tasking.Stages is
 
    --  required for task by compiler (s-tassta.ads)

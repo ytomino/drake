@@ -1,8 +1,8 @@
 pragma License (Unrestricted);
 --  implementation unit specialized for Windows
+with Ada.Exception_Identification;
 with Ada.IO_Exceptions;
 with Ada.IO_Modes;
-with Ada.Exception_Identification;
 with Ada.Streams;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;

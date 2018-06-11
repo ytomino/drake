@@ -2,12 +2,12 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Streams.Naked_Stream_IO.Standard_Files;
 with System.Address_To_Named_Access_Conversions;
-with System.Debug;
 with System.Native_IO;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Wide_Startup; -- that is also linked by Ada.Command_Line
 with System.Zero_Terminated_WStrings;
+with System.Debug; -- assertions
 with C.string;
 with C.windef;
 with C.winerror;

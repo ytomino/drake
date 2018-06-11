@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace => Ignore);
-with Ada;
+with Ada; -- assertions
 with System.Unwind.Mapping;
 with System.Unwind.Occurrences;
 package body System.Unwind.Handling is

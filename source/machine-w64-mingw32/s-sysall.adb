@@ -1,4 +1,4 @@
-with System.Debug;
+with System.Debug; -- assertions
 with C.basetsd;
 with C.winbase;
 with C.windef;

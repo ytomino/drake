@@ -1,9 +1,9 @@
 with Ada.Exception_Identification.From_Here;
 with System.Address_To_Named_Access_Conversions;
 with System.Zero_Terminated_Strings;
+with C.fcntl;
 with C.stdlib;
 with C.sys.param;
-with C.fcntl;
 package body System.Native_IO.Names is
    use Ada.Exception_Identification.From_Here;
    use type C.char_ptr;

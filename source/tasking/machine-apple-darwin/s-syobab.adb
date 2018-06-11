@@ -1,7 +1,7 @@
 with System.Native_Real_Time;
 with System.Native_Time;
-with System.Debug;
 with System.Tasks;
+with System.Debug; -- assertions
 with C.errno;
 with C.poll;
 package body System.Synchronous_Objects.Abortable is

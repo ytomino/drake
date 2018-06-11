@@ -1,8 +1,8 @@
 with Ada.Exception_Identification.From_Here;
-with System.Debug;
 with System.Native_Real_Time;
 with System.Native_Time;
 with System.Storage_Elements;
+with System.Debug; -- assertions
 with C.errno;
 with C.fcntl;
 with C.poll;

@@ -1,5 +1,5 @@
 pragma Check_Policy (Trace => Ignore);
-with Ada;
+with Ada; -- assertions
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
 with System.Long_Long_Integer_Types;

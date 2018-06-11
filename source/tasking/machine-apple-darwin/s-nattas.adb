@@ -1,4 +1,4 @@
-with System.Debug;
+with System.Debug; -- assertions
 with C.errno;
 with C.sched;
 with C.signal;
