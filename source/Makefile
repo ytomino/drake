@@ -421,7 +421,7 @@ all: $(EXTRA_OBJS) $(LIBS) $(ALL_ALI)
 
 tree: $(TREE)
 
-$(RTSDIR)/adalib/$(LIBGNAT): $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/$(LIBGNAT): $(TREE) $(ALL_OBJS) | $(RTSDIR)/adalib
 	-rm $@ 2> /dev/null
 ifneq ($(ARGLIMIT),)
 	find $(LIBGNAT_BUILDDIR) -name "*.o" | xargs -L $(ARGLIMIT) $(AR) -qS $@
@@ -435,10 +435,10 @@ $(RTSDIR)/adalib/$(LDSCRIPT):
 	echo "GROUP($(LIBGNAT) AS_NEEDED($(LDFLAGS)))" > $@
 endif
 
-$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/nosig.o: $(NOSIG_BUILDDIR)/nosig.o | $(RTSDIR)/adalib
 	install -m 444 $(NOSIG_BUILDDIR)/nosig.o $@
 
-$(RTSDIR)/adalib/notb.o: $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib/
+$(RTSDIR)/adalib/notb.o: $(NOTB_BUILDDIR)/notb.o | $(RTSDIR)/adalib
 	install -m 444 $(NOTB_BUILDDIR)/notb.o $@
 
 $(RTSDIR)/adainclude:
