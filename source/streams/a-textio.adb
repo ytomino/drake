@@ -74,7 +74,7 @@ package body Ada.Text_IO is
             Item (Last + 1 .. Item'Last),
             Last);
          exit when Last < Item'Last;
-         Reallocate (Item, 1, Item'Last * 2);
+         Reallocate (Item, 1, String_Grow (Item'Last));
       end loop;
    end Raw_Get_Line;
 
@@ -95,7 +95,7 @@ package body Ada.Text_IO is
             Item (Last + 1 .. Item'Last),
             Last);
          exit when Last < Item'Last;
-         Reallocate (Item, 1, Item'Last * 2);
+         Reallocate (Item, 1, Wide_String_Grow (Item'Last));
       end loop;
    end Raw_Get_Line;
 
@@ -116,7 +116,7 @@ package body Ada.Text_IO is
             Item (Last + 1 .. Item'Last),
             Last);
          exit when Last < Item'Last;
-         Reallocate (Item, 1, Item'Last * 2);
+         Reallocate (Item, 1, Wide_Wide_String_Grow (Item'Last));
       end loop;
    end Raw_Get_Line;
 

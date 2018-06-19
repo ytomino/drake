@@ -1,13 +1,14 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.sysctl;
+with C.sys.types;
 package body System.Program is
    use type C.signed_int;
-   use type C.size_t;
 
    package char_ptr_Conv is
       new Address_To_Named_Access_Conversions (C.char, C.char_ptr);
@@ -28,7 +29,7 @@ package body System.Program is
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
-      Buffer_Length : C.size_t := 1024;
+      Buffer_Length : C.sys.types.ssize_t := 1024;
       Buffer : aliased C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             Standard_Allocators.Allocate (
@@ -37,7 +38,7 @@ package body System.Program is
       Holder.Assign (Buffer);
       loop
          declare
-            Result_Length : aliased C.size_t := Buffer_Length;
+            Result_Length : aliased C.size_t := C.size_t (Buffer_Length);
          begin
             if C.sys.sysctl.sysctl (
                mib (0)'Unrestricted_Access, -- const is missing until FreeBSD8
@@ -57,7 +58,12 @@ package body System.Program is
                return Zero_Terminated_Strings.Value (Buffer);
             end if;
          end;
-         Buffer_Length := Buffer_Length * 2;
+         --  growth
+         declare
+            function Grow is new Growth.Fast_Grow (C.sys.types.ssize_t);
+         begin
+            Buffer_Length := Grow (Buffer_Length);
+         end;
          Buffer :=
             char_ptr_Conv.To_Pointer (
                Standard_Allocators.Reallocate (

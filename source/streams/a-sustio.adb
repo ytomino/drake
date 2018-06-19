@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.System_Allocators.Allocated_Size;
 package body Ada.Streams.Unbounded_Storage_IO is
@@ -209,13 +210,17 @@ package body Ada.Streams.Unbounded_Storage_IO is
          Failure => Failure);
       if Failure then
          declare
+            function Grow is
+               new System.Growth.Good_Grow (
+                  Stream_Element_Count,
+                  Component_Size => Stream_Element_Array'Component_Size);
             New_Capacity : Stream_Element_Count;
          begin
             if Old_Capacity >= Size then
                New_Capacity := Old_Capacity; -- not shrinking
             else
                New_Capacity :=
-                  Stream_Element_Offset'Max (Old_Capacity * 2, Size);
+                  Stream_Element_Offset'Max (Grow (Old_Capacity), Size);
             end if;
             Reallocate (Buffer, Size, New_Capacity);
          end;

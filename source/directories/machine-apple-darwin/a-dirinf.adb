@@ -3,6 +3,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Native_Credentials;
 with System.Standard_Allocators;
 with System.Storage_Elements;
@@ -347,7 +348,7 @@ package body Ada.Directories.Information is
       C_Name : C.char_array (
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);
-      Buffer_Length : C.size_t := 1024;
+      Buffer_Length : C.sys.types.ssize_t := 1024;
       Buffer : aliased C.char_ptr :=
          char_ptr_Conv.To_Pointer (
             System.Standard_Allocators.Allocate (
@@ -360,17 +361,25 @@ package body Ada.Directories.Information is
             S_Length : C.sys.types.ssize_t;
          begin
             S_Length :=
-               C.unistd.readlink (C_Name (0)'Access, Buffer, Buffer_Length);
+               C.unistd.readlink (
+                  C_Name (0)'Access,
+                  Buffer,
+                  C.size_t (Buffer_Length));
             if S_Length < 0 then
                Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;
-            if C.size_t (S_Length) < Buffer_Length then
+            if S_Length < Buffer_Length then
                return System.Zero_Terminated_Strings.Value (
                   Buffer,
                   C.size_t (S_Length));
             end if;
          end;
-         Buffer_Length := Buffer_Length * 2;
+         --  growth
+         declare
+            function Grow is new System.Growth.Fast_Grow (C.sys.types.ssize_t);
+         begin
+            Buffer_Length := Grow (Buffer_Length);
+         end;
          Buffer :=
             char_ptr_Conv.To_Pointer (
                System.Standard_Allocators.Reallocate (

@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Environment_Block;
+with System.Growth;
 with System.Native_IO;
 with System.Shared_Locking;
 with System.Standard_Allocators;
@@ -188,11 +189,11 @@ package body System.Native_Processes is
       Command_Line : String;
       Command : aliased out Command_Type)
    is
-      Capacity : C.size_t := 256;
+      Capacity : C.ptrdiff_t := 256;
       I : Positive := Command_Line'First;
       Argument_Index : C.ptrdiff_t := 0;
    begin
-      Reallocate (Command, Capacity);
+      Reallocate (Command, C.size_t (Capacity));
       Command.all := null; -- terminator
       loop
          --  skip spaces
@@ -227,9 +228,13 @@ package body System.Native_Processes is
             Insert (Command, Argument_Index, Buffer (Buffer'First .. J));
          end;
          Argument_Index := Argument_Index + 1;
-         if C.size_t (Argument_Index) >= Capacity then
-            Capacity := Capacity * 2;
-            Reallocate (Command, Capacity);
+         if Argument_Index >= Capacity then
+            declare
+               function Grow is new Growth.Fast_Grow (C.ptrdiff_t);
+            begin
+               Capacity := Grow (Capacity);
+            end;
+            Reallocate (Command, C.size_t (Capacity));
          end if;
       end loop;
    end Value;

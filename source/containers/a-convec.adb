@@ -2,6 +2,7 @@ with Ada.Containers.Array_Sorting;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Long_Long_Integer_Types;
 package body Ada.Containers.Vectors is
    pragma Check_Policy (Validate => Ignore);
@@ -332,12 +333,16 @@ package body Ada.Containers.Vectors is
          Max_Length => Max_Length'Access);
       if Failure then
          declare
+            function Grow is
+               new System.Growth.Good_Grow (
+                  Count_Type,
+                  Component_Size => Element_Array'Component_Size);
             New_Capacity : Count_Type;
          begin
             if Old_Capacity >= Length then
                New_Capacity := Old_Capacity; -- not shrinking
             else
-               New_Capacity := Count_Type'Max (Old_Capacity * 2, Length);
+               New_Capacity := Count_Type'Max (Grow (Old_Capacity), Length);
             end if;
             Reallocate (Container, Length, New_Capacity, False);
          end;

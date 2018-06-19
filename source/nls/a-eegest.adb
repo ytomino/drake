@@ -2,6 +2,7 @@ with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Reallocation;
+with System.Growth;
 package body Ada.Environment_Encoding.Generic_Strings is
    pragma Check_Policy (Validate => Ignore);
    use type Streams.Stream_Element_Offset;
@@ -232,7 +233,11 @@ package body Ada.Environment_Encoding.Generic_Strings is
                when Success =>
                   null;
                when Overflow =>
-                  Reallocate (Out_Item, 1, 2 * Out_Item'Last);
+                  declare
+                     function Grow is new System.Growth.Fast_Grow (Natural);
+                  begin
+                     Reallocate (Out_Item, 1, Grow (Out_Item'Last));
+                  end;
             end case;
             I := Last + 1;
          end;
@@ -394,7 +399,13 @@ package body Ada.Environment_Encoding.Generic_Strings is
                when Success =>
                   null;
                when Overflow =>
-                  Reallocate (Out_Item, 1, 2 * Out_Item'Last);
+                  declare
+                     function Grow is
+                        new System.Growth.Fast_Grow (
+                           Streams.Stream_Element_Count);
+                  begin
+                     Reallocate (Out_Item, 1, Grow (Out_Item'Last));
+                  end;
             end case;
             I := Last + 1;
          end;

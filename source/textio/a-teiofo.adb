@@ -59,7 +59,7 @@ package body Ada.Text_IO.Formatting is
    begin
       Last := Last + 1;
       if Last > Buffer'Last then
-         Reallocate (Buffer, 1, 2 * Buffer'Last); -- Buffer'First = 1
+         Reallocate (Buffer, 1, String_Grow (Buffer'Last)); -- Buffer'First = 1
       end if;
       Buffer (Last) := Item;
    end Add;

@@ -2,6 +2,7 @@ with Ada.Exception_Identification.From_Here;
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Formatting;
+with System.Growth;
 with System.Long_Long_Integer_Types;
 with System.Zero_Terminated_Strings;
 with C.stdlib;
@@ -49,11 +50,11 @@ package body System.Native_IO.Names is
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (Name_Pointer, Free);
       Link : aliased C.char_array (0 .. 14 + Handle_Type'Width);
-      New_Name_Capacity : C.size_t := 1024;
+      New_Name_Capacity : C.sys.types.ssize_t := 1024;
       New_Name_Length : C.size_t;
       New_Name : aliased Name_Pointer :=
          Name_Pointer_Conv.To_Pointer (
-            Address (C.stdlib.malloc (New_Name_Capacity)));
+            Address (C.stdlib.malloc (C.size_t (New_Name_Capacity))));
    begin
       Holder.Assign (New_Name);
       Link (0 .. 13) := proc_self_fd;
@@ -78,7 +79,7 @@ package body System.Native_IO.Names is
                C.unistd.readlink (
                   Link (0)'Access,
                   New_Name,
-                  New_Name_Capacity - 1); -- reserving for NUL
+                  C.size_t (New_Name_Capacity - 1)); -- reserving for NUL
             if S_Length < 0 then
                --  Failed, keep Has_Full_Name and Name.
                if Raise_On_Error then
@@ -86,10 +87,17 @@ package body System.Native_IO.Names is
                end if;
                return; -- error
             end if;
-            New_Name_Length := C.size_t (S_Length);
+            if S_Length < New_Name_Capacity then
+               New_Name_Length := C.size_t (S_Length);
+               exit; -- success
+            end if;
          end;
-         exit when New_Name_Length < New_Name_Capacity; -- success
-         New_Name_Capacity := New_Name_Capacity * 2;
+         --  growth
+         declare
+            function Grow is new Growth.Fast_Grow (C.sys.types.ssize_t);
+         begin
+            New_Name_Capacity := Grow (New_Name_Capacity);
+         end;
          declare
             New_New_Name : constant Name_Pointer :=
                Name_Pointer_Conv.To_Pointer (
@@ -97,7 +105,7 @@ package body System.Native_IO.Names is
                      C.stdlib.realloc (
                         C.void_ptr (
                            Name_Pointer_Conv.To_Address (New_Name)),
-                        New_Name_Capacity)));
+                        C.size_t (New_Name_Capacity))));
          begin
             if New_New_Name = null then
                --  Failed, keep Has_Full_Name and Name.

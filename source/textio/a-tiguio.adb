@@ -59,7 +59,30 @@ package body Ada.Text_IO.Generic_Unbounded_IO is
             Unbounded_Strings.Reference (Item).Element (Last + 1 .. Capacity),
             Last);
          exit when Last < Capacity;
-         Capacity := Capacity * 2;
+         --  growth
+         if Unbounded_Strings.String_Type'Component_Size =
+            String'Component_Size
+         then
+            Capacity := String_Grow (Capacity);
+         elsif Unbounded_Strings.String_Type'Component_Size =
+            Wide_String'Component_Size
+         then
+            Capacity := Wide_String_Grow (Capacity);
+         elsif Unbounded_Strings.String_Type'Component_Size =
+            Wide_Wide_String'Component_Size
+         then
+            Capacity := Wide_Wide_String_Grow (Capacity);
+         else
+            declare
+               function Grow is
+                  new System.Growth.Good_Grow (
+                     Natural,
+                     Component_Size =>
+                        Unbounded_Strings.String_Type'Component_Size);
+            begin
+               Capacity := Grow (Capacity);
+            end;
+         end if;
       end loop;
       Unbounded_Strings.Set_Length (Item, Last);
    end Get_Line;

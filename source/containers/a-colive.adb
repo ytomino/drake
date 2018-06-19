@@ -2,6 +2,7 @@ with Ada.Containers.Array_Sorting;
 --  diff (Ada.Unchecked_Conversion)
 with Ada.Unchecked_Deallocation;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Long_Long_Integer_Types;
 package body Ada.Containers.Limited_Vectors is
    pragma Check_Policy (Validate => Ignore);
@@ -332,8 +333,12 @@ package body Ada.Containers.Limited_Vectors is
 --  diff
       if Length > Old_Capacity then
          declare
+            function Grow is
+               new System.Growth.Good_Grow (
+                  Count_Type,
+                  Component_Size => Element_Array'Component_Size);
             New_Capacity : constant Count_Type :=
-               Count_Type'Max (Old_Capacity * 2, Length);
+               Count_Type'Max (Grow (Old_Capacity), Length);
          begin
 --  diff
 --  diff

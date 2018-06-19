@@ -1,5 +1,6 @@
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.System_Allocators.Allocated_Size;
@@ -220,13 +221,17 @@ package body Ada.Strings.Generic_Unbounded is
          Failure => Failure);
       if Failure then
          declare
+            function Grow is
+               new System.Growth.Good_Grow (
+                  Natural,
+                  Component_Size => String_Type'Component_Size);
             New_Capacity : Natural;
          begin
             if Old_Capacity >= Length then
                --  Old_Capacity is possibly a large value by Generic_Constant
                New_Capacity := Length; -- shrinking
             else
-               New_Capacity := Integer'Max (Old_Capacity * 2, Length);
+               New_Capacity := Integer'Max (Grow (Old_Capacity), Length);
             end if;
             Reallocate (Source, Length, New_Capacity);
          end;

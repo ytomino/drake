@@ -1,5 +1,6 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.Debug; -- assertions
 with C.basetsd;
@@ -8,7 +9,7 @@ with C.windef;
 package body System.Unbounded_Allocators is
    use type Storage_Elements.Storage_Offset;
    use type C.size_t;
---   use type C.windef.DWORD;
+   use type C.basetsd.SSIZE_T;
    use type C.windef.WORD;
    use type C.windef.WINBOOL;
    use type C.winnt.HANDLE; -- C.void_ptr
@@ -131,7 +132,7 @@ package body System.Unbounded_Allocators is
          new Ada.Exceptions.Finally.Scoped_Holder (
             C.winnt.HANDLE_ptr,
             Finally);
-      Buffer_Capacity : C.size_t := 64;
+      Buffer_Capacity : C.basetsd.SSIZE_T := 64;
       Buffer_Length : C.size_t;
       Buffer : aliased C.winnt.HANDLE_ptr :=
          HANDLE_ptr_Conv.To_Pointer (
@@ -142,16 +143,28 @@ package body System.Unbounded_Allocators is
    begin
       Holder.Assign (Buffer);
       loop
-         Buffer_Length :=
-            C.size_t (
-               C.winbase.GetProcessHeaps (
-                  C.windef.DWORD (Buffer_Capacity),
-                  Buffer));
-         if Buffer_Length = 0 then
-            raise Program_Error; -- GetProcessHeaps failed
-         end if;
-         exit when Buffer_Length <= Buffer_Capacity;
-         Buffer_Capacity := Buffer_Capacity * 2;
+         declare
+            Length : C.basetsd.SSIZE_T;
+         begin
+            Length :=
+               C.basetsd.SSIZE_T (
+                  C.winbase.GetProcessHeaps (
+                     C.windef.DWORD (Buffer_Capacity),
+                     Buffer));
+            if Length = 0 then
+               raise Program_Error; -- GetProcessHeaps failed
+            end if;
+            if Length <= Buffer_Capacity then
+               Buffer_Length := C.size_t (Length);
+               exit;
+            end if;
+         end;
+         --  growth
+         declare
+            function Grow is new Growth.Fast_Grow (C.basetsd.SSIZE_T);
+         begin
+            Buffer_Capacity := Grow (Buffer_Capacity);
+         end;
          Buffer :=
             HANDLE_ptr_Conv.To_Pointer (
                Standard_Allocators.Reallocate (

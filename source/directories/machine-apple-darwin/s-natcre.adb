@@ -1,5 +1,6 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
@@ -78,7 +79,12 @@ package body System.Native_Credentials is
             loop
                Length := C.unistd.getgroups (Capacity, Groups (0)'Access);
                exit when Length >= 0;
-               Capacity := Capacity * 2;
+               --  growth
+               declare
+                  function Grow is new Growth.Fast_Grow (C.signed_int);
+               begin
+                  Capacity := Grow (Capacity);
+               end;
                Groups := Conv.To_Pointer (
                   Standard_Allocators.Reallocate (
                      Conv.To_Address (Groups),

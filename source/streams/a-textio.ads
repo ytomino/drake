@@ -6,6 +6,7 @@ with Ada.Unchecked_Deallocation;
 private with Ada.Finalization;
 private with Ada.Naked_Text_IO;
 private with Ada.Unchecked_Reallocation;
+private with System.Growth;
 package Ada.Text_IO is
 
    type File_Type is limited private;
@@ -635,5 +636,20 @@ private
          Character,
          String,
          String_Access);
+
+   function String_Grow is
+      new System.Growth.Good_Grow (
+         Natural,
+         Component_Size => String'Component_Size);
+
+   function Wide_String_Grow is
+      new System.Growth.Good_Grow (
+         Natural,
+         Component_Size => Wide_String'Component_Size);
+
+   function Wide_Wide_String_Grow is
+      new System.Growth.Good_Grow (
+         Natural,
+         Component_Size => Wide_Wide_String'Component_Size);
 
 end Ada.Text_IO;

@@ -1,14 +1,16 @@
 with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
+with System.Growth;
 with System.Standard_Allocators;
 with System.Storage_Elements;
 with System.Zero_Terminated_WStrings;
+with C.basetsd;
 with C.winbase;
 with C.windef;
 with C.winnt;
 package body System.Program is
    use type Storage_Elements.Storage_Offset;
-   use type C.windef.DWORD;
+   use type C.basetsd.SSIZE_T;
 
    package LPWSTR_Conv is
       new Address_To_Named_Access_Conversions (C.winnt.WCHAR, C.winnt.LPWSTR);
@@ -23,7 +25,7 @@ package body System.Program is
       end Finally;
       package Holder is
          new Ada.Exceptions.Finally.Scoped_Holder (C.winnt.LPWSTR, Finally);
-      Buffer_Length : C.windef.DWORD := 1024;
+      Buffer_Length : C.basetsd.SSIZE_T := 1024;
       Buffer : aliased C.winnt.LPWSTR :=
          LPWSTR_Conv.To_Pointer (
             Standard_Allocators.Allocate (
@@ -33,17 +35,26 @@ package body System.Program is
       Holder.Assign (Buffer);
       loop
          declare
-            Result_Length : C.windef.DWORD;
+            Result_Length : C.basetsd.SSIZE_T;
          begin
             Result_Length :=
-               C.winbase.GetModuleFileName (null, Buffer, Buffer_Length);
+               C.basetsd.SSIZE_T (
+                  C.winbase.GetModuleFileName (
+                     null,
+                     Buffer,
+                     C.windef.DWORD (Buffer_Length)));
             if Result_Length < Buffer_Length then
                return Zero_Terminated_WStrings.Value (
                   Buffer,
                   C.size_t (Result_Length));
             end if;
          end;
-         Buffer_Length := Buffer_Length * 2;
+         --  growth
+         declare
+            function Grow is new Growth.Fast_Grow (C.basetsd.SSIZE_T);
+         begin
+            Buffer_Length := Grow (Buffer_Length);
+         end;
          Buffer :=
             LPWSTR_Conv.To_Pointer (
                Standard_Allocators.Reallocate (
