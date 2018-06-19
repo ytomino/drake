@@ -1,7 +1,5 @@
-with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Growth;
-with System.Standard_Allocators;
 with System.Debug; -- assertions
 with C.basetsd;
 with C.winbase;
@@ -122,26 +120,13 @@ package body System.Unbounded_Allocators is
    function Allocator_Of (Storage_Address : Address)
       return Unbounded_Allocator
    is
-      procedure Finally (X : in out C.winnt.HANDLE_ptr);
-      procedure Finally (X : in out C.winnt.HANDLE_ptr) is
-         pragma Unmodified (X);
-      begin
-         Standard_Allocators.Free (HANDLE_ptr_Conv.To_Address (X));
-      end Finally;
       package Holder is
-         new Ada.Exceptions.Finally.Scoped_Holder (
-            C.winnt.HANDLE_ptr,
-            Finally);
-      Buffer_Capacity : C.basetsd.SSIZE_T := 64;
+         new Growth.Scoped_Holder (
+            C.basetsd.SSIZE_T,
+            Component_Size => HANDLE_array'Component_Size);
       Buffer_Length : C.size_t;
-      Buffer : aliased C.winnt.HANDLE_ptr :=
-         HANDLE_ptr_Conv.To_Pointer (
-            Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Offset (
-                  C.winnt.HANDLE'Size / Standard'Storage_Unit
-                     * Buffer_Capacity)));
    begin
-      Holder.Assign (Buffer);
+      Holder.Reserve_Capacity (64);
       loop
          declare
             Length : C.basetsd.SSIZE_T;
@@ -149,12 +134,12 @@ package body System.Unbounded_Allocators is
             Length :=
                C.basetsd.SSIZE_T (
                   C.winbase.GetProcessHeaps (
-                     C.windef.DWORD (Buffer_Capacity),
-                     Buffer));
+                     C.windef.DWORD (Holder.Capacity),
+                     HANDLE_ptr_Conv.To_Pointer (Holder.Storage_Address)));
             if Length = 0 then
                raise Program_Error; -- GetProcessHeaps failed
             end if;
-            if Length <= Buffer_Capacity then
+            if Length <= Holder.Capacity then
                Buffer_Length := C.size_t (Length);
                exit;
             end if;
@@ -163,19 +148,12 @@ package body System.Unbounded_Allocators is
          declare
             function Grow is new Growth.Fast_Grow (C.basetsd.SSIZE_T);
          begin
-            Buffer_Capacity := Grow (Buffer_Capacity);
+            Holder.Reserve_Capacity (Grow (Holder.Capacity));
          end;
-         Buffer :=
-            HANDLE_ptr_Conv.To_Pointer (
-               Standard_Allocators.Reallocate (
-                  HANDLE_ptr_Conv.To_Address (Buffer),
-                  Storage_Elements.Storage_Offset (
-                     C.winnt.HANDLE'Size / Standard'Storage_Unit
-                        * Buffer_Capacity)));
       end loop;
       declare
          Heaps : HANDLE_array (0 .. Buffer_Length - 1);
-         for Heaps'Address use HANDLE_ptr_Conv.To_Address (Buffer);
+         for Heaps'Address use Holder.Storage_Address;
       begin
          for I in Heaps'Range loop
             if Is_In (Storage_Address, Heaps (I)) then

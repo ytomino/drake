@@ -1,12 +1,9 @@
 with Ada.Calendar.Naked;
 with Ada.Exception_Identification.From_Here;
-with Ada.Exceptions.Finally;
 with Ada.Unchecked_Conversion;
 with System.Address_To_Named_Access_Conversions;
 with System.Growth;
 with System.Native_Credentials;
-with System.Standard_Allocators;
-with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.stat;
@@ -338,23 +335,15 @@ package body Ada.Directories.Information is
    end Is_Socket;
 
    function Read_Symbolic_Link (Name : String) return String is
-      procedure Finally (X : in out C.char_ptr);
-      procedure Finally (X : in out C.char_ptr) is
-      begin
-         System.Standard_Allocators.Free (char_ptr_Conv.To_Address (X));
-      end Finally;
       package Holder is
-         new Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
+         new System.Growth.Scoped_Holder (
+            C.sys.types.ssize_t,
+            Component_Size => C.char_array'Component_Size);
       C_Name : C.char_array (
          0 ..
          Name'Length * System.Zero_Terminated_Strings.Expanding);
-      Buffer_Length : C.sys.types.ssize_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         char_ptr_Conv.To_Pointer (
-            System.Standard_Allocators.Allocate (
-               System.Storage_Elements.Storage_Offset (Buffer_Length)));
    begin
-      Holder.Assign (Buffer);
+      Holder.Reserve_Capacity (1024);
       System.Zero_Terminated_Strings.To_C (Name, C_Name (0)'Access);
       loop
          declare
@@ -363,14 +352,14 @@ package body Ada.Directories.Information is
             S_Length :=
                C.unistd.readlink (
                   C_Name (0)'Access,
-                  Buffer,
-                  C.size_t (Buffer_Length));
+                  char_ptr_Conv.To_Pointer (Holder.Storage_Address),
+                  C.size_t (Holder.Capacity));
             if S_Length < 0 then
                Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;
-            if S_Length < Buffer_Length then
+            if S_Length < Holder.Capacity then
                return System.Zero_Terminated_Strings.Value (
-                  Buffer,
+                  char_ptr_Conv.To_Pointer (Holder.Storage_Address),
                   C.size_t (S_Length));
             end if;
          end;
@@ -378,13 +367,8 @@ package body Ada.Directories.Information is
          declare
             function Grow is new System.Growth.Fast_Grow (C.sys.types.ssize_t);
          begin
-            Buffer_Length := Grow (Buffer_Length);
+            Holder.Reserve_Capacity (Grow (Holder.Capacity));
          end;
-         Buffer :=
-            char_ptr_Conv.To_Pointer (
-               System.Standard_Allocators.Reallocate (
-                  char_ptr_Conv.To_Address (Buffer),
-                  System.Storage_Elements.Storage_Offset (Buffer_Length)));
       end loop;
    end Read_Symbolic_Link;
 

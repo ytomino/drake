@@ -1,8 +1,5 @@
-with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Growth;
-with System.Standard_Allocators;
-with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.sys.types;
 with C.unistd;
@@ -18,32 +15,27 @@ package body System.Program is
    function Read_Symbolic_Link (Name : not null access constant C.char)
       return String
    is
-      procedure Finally (X : in out C.char_ptr);
-      procedure Finally (X : in out C.char_ptr) is
-      begin
-         Standard_Allocators.Free (char_ptr_Conv.To_Address (X));
-      end Finally;
       package Holder is
-         new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
-      Buffer_Length : C.sys.types.ssize_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         char_ptr_Conv.To_Pointer (
-            Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Offset (Buffer_Length)));
+         new Growth.Scoped_Holder (
+            C.sys.types.ssize_t,
+            Component_Size => C.char_array'Component_Size);
    begin
-      Holder.Assign (Buffer);
+      Holder.Reserve_Capacity (1024);
       loop
          declare
             S_Length : C.sys.types.ssize_t;
          begin
             S_Length :=
-               C.unistd.readlink (Name, Buffer, C.size_t (Buffer_Length));
+               C.unistd.readlink (
+                  Name,
+                  char_ptr_Conv.To_Pointer (Holder.Storage_Address),
+                  C.size_t (Holder.Capacity));
             if S_Length < 0 then
                raise Program_Error;
             end if;
-            if S_Length < Buffer_Length then
+            if S_Length < Holder.Capacity then
                return Zero_Terminated_Strings.Value (
-                  Buffer,
+                  char_ptr_Conv.To_Pointer (Holder.Storage_Address),
                   C.size_t (S_Length));
             end if;
          end;
@@ -51,13 +43,8 @@ package body System.Program is
          declare
             function Grow is new Growth.Fast_Grow (C.sys.types.ssize_t);
          begin
-            Buffer_Length := Grow (Buffer_Length);
+            Holder.Reserve_Capacity (Grow (Holder.Capacity));
          end;
-         Buffer :=
-            char_ptr_Conv.To_Pointer (
-               Standard_Allocators.Reallocate (
-                  char_ptr_Conv.To_Address (Buffer),
-                  Storage_Elements.Storage_Offset (Buffer_Length)));
       end loop;
    end Read_Symbolic_Link;
 

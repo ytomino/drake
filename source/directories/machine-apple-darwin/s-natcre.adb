@@ -1,13 +1,9 @@
-with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Growth;
-with System.Standard_Allocators;
-with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.grp;
 with C.pwd;
 package body System.Native_Credentials is
-   use type Storage_Elements.Storage_Offset;
    use type C.pwd.struct_passwd_ptr;
    use type C.grp.struct_group_ptr;
    use type C.signed_int;
@@ -49,53 +45,45 @@ package body System.Native_Credentials is
          return True;
       else
          declare
-            type Fixed_gid_t_array is
-               array (C.size_t) of aliased C.sys.types.gid_t
+            type gid_t_array is
+               array (C.size_t range <>) of aliased C.sys.types.gid_t
                with Convention => C;
-            type gid_t_array_ptr is access all Fixed_gid_t_array
+            type gid_t_ptr is access all C.sys.types.gid_t
                with Convention => C;
-            package Conv is
+            package gid_t_ptr_Conv is
                new Address_To_Named_Access_Conversions (
-                  Fixed_gid_t_array,
-                  gid_t_array_ptr);
-            procedure Finally (X : in out gid_t_array_ptr);
-            procedure Finally (X : in out gid_t_array_ptr) is
-            begin
-               Standard_Allocators.Free (Conv.To_Address (X));
-            end Finally;
+                  C.sys.types.gid_t,
+                  gid_t_ptr);
             package Holder is
-               new Ada.Exceptions.Finally.Scoped_Holder (
-                  gid_t_array_ptr,
-                  Finally);
-            Capacity : C.signed_int := 16;
-            Groups : aliased gid_t_array_ptr :=
-               Conv.To_Pointer (
-                  Standard_Allocators.Allocate (
-                     Storage_Elements.Storage_Offset (Capacity)
-                        * (C.sys.types.gid_t'Size / Standard'Storage_Unit)));
+               new Growth.Scoped_Holder (
+                  C.signed_int,
+                  Component_Size => gid_t_array'Component_Size);
             Length : C.signed_int;
          begin
-            Holder.Assign (Groups);
+            Holder.Reserve_Capacity (16);
             loop
-               Length := C.unistd.getgroups (Capacity, Groups (0)'Access);
+               Length := C.unistd.getgroups (
+                  Holder.Capacity,
+                  gid_t_ptr_Conv.To_Pointer (Holder.Storage_Address));
                exit when Length >= 0;
                --  growth
                declare
                   function Grow is new Growth.Fast_Grow (C.signed_int);
                begin
-                  Capacity := Grow (Capacity);
+                  Holder.Reserve_Capacity (Grow (Holder.Capacity));
                end;
-               Groups := Conv.To_Pointer (
-                  Standard_Allocators.Reallocate (
-                     Conv.To_Address (Groups),
-                     Storage_Elements.Storage_Offset (Capacity)
-                        * (C.sys.types.gid_t'Size / Standard'Storage_Unit)));
             end loop;
-            for I in 0 .. Length - 1 loop
-               if Id = Groups (C.size_t (I)) then
-                  return True;
-               end if;
-            end loop;
+            declare
+               Groups : gid_t_array (
+                  0 .. C.size_t (C.signed_int'Max (0, Length - 1)));
+               for Groups'Address use Holder.Storage_Address;
+            begin
+               for I in 0 .. Length - 1 loop
+                  if Id = Groups (C.size_t (I)) then
+                     return True;
+                  end if;
+               end loop;
+            end;
             return False;
          end;
       end if;

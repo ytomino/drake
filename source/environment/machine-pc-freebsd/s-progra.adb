@@ -1,8 +1,5 @@
-with Ada.Exceptions.Finally;
 with System.Address_To_Named_Access_Conversions;
 with System.Growth;
-with System.Standard_Allocators;
-with System.Storage_Elements;
 with System.Zero_Terminated_Strings;
 with C.errno;
 with C.sys.sysctl;
@@ -22,28 +19,20 @@ package body System.Program is
    --  implementation
 
    function Full_Name return String is
-      procedure Finally (X : in out C.char_ptr);
-      procedure Finally (X : in out C.char_ptr) is
-      begin
-         Standard_Allocators.Free (char_ptr_Conv.To_Address (X));
-      end Finally;
       package Holder is
-         new Ada.Exceptions.Finally.Scoped_Holder (C.char_ptr, Finally);
-      Buffer_Length : C.sys.types.ssize_t := 1024;
-      Buffer : aliased C.char_ptr :=
-         char_ptr_Conv.To_Pointer (
-            Standard_Allocators.Allocate (
-               Storage_Elements.Storage_Offset (Buffer_Length)));
+         new Growth.Scoped_Holder (
+            C.sys.types.ssize_t,
+            Component_Size => C.char_array'Component_Size);
    begin
-      Holder.Assign (Buffer);
+      Holder.Reserve_Capacity (1024);
       loop
          declare
-            Result_Length : aliased C.size_t := C.size_t (Buffer_Length);
+            Result_Length : aliased C.size_t := C.size_t (Holder.Capacity);
          begin
             if C.sys.sysctl.sysctl (
                mib (0)'Unrestricted_Access, -- const is missing until FreeBSD8
                4,
-               C.void_ptr (char_ptr_Conv.To_Address (Buffer)),
+               C.void_ptr (Holder.Storage_Address),
                Result_Length'Access,
                C.void_const_ptr (Null_Address),
                0) < 0
@@ -55,20 +44,16 @@ package body System.Program is
                      raise Program_Error;
                end case;
             else
-               return Zero_Terminated_Strings.Value (Buffer);
+               return Zero_Terminated_Strings.Value (
+                  char_ptr_Conv.To_Pointer (Holder.Storage_Address));
             end if;
          end;
          --  growth
          declare
             function Grow is new Growth.Fast_Grow (C.sys.types.ssize_t);
          begin
-            Buffer_Length := Grow (Buffer_Length);
+            Holder.Reserve_Capacity (Grow (Holder.Capacity));
          end;
-         Buffer :=
-            char_ptr_Conv.To_Pointer (
-               Standard_Allocators.Reallocate (
-                  char_ptr_Conv.To_Address (Buffer),
-                  Storage_Elements.Storage_Offset (Buffer_Length)));
       end loop;
    end Full_Name;
 
