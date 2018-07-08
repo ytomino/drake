@@ -160,21 +160,50 @@ package body Ada.Directories is
    end Create_Path;
 
    procedure Create_Path (
-      New_Directory : String) is
+      New_Directory : String)
+   is
+      I : Positive := New_Directory'Last + 1;
    begin
-      if not Exists (New_Directory) then
+      while I > New_Directory'First loop
          declare
-            D_First : Positive;
-            D_Last : Natural;
+            P : Positive := I - 1;
          begin
-            Hierarchical_File_Names.Containing_Directory (New_Directory,
-               First => D_First, Last => D_Last);
-            if D_First <= D_Last then
-               Create_Path (New_Directory (D_First .. D_Last)); -- recursive
-            end if;
+            Hierarchical_File_Names.Exclude_Trailing_Path_Delimiter (
+               New_Directory,
+               Last => P);
+            exit when Exists (New_Directory (New_Directory'First .. P));
+            declare
+               S_First : Positive;
+               S_Last : Natural;
+            begin
+               Hierarchical_File_Names.Simple_Name (
+                  New_Directory (New_Directory'First .. P),
+                  First => S_First,
+                  Last => S_Last);
+               I := S_First;
+            end;
          end;
-         Create_Directory (New_Directory);
-      end if;
+      end loop;
+      while I <= New_Directory'Last loop
+         declare
+            R_First : Positive;
+            R_Last : Natural;
+         begin
+            Hierarchical_File_Names.Relative_Name (
+               New_Directory (I .. New_Directory'Last),
+               First => R_First,
+               Last => R_Last);
+            declare
+               P : Natural := R_First - 1;
+            begin
+               Hierarchical_File_Names.Exclude_Trailing_Path_Delimiter (
+                  New_Directory,
+                  Last => P);
+               Create_Directory (New_Directory (New_Directory'First .. P));
+            end;
+            I := R_First;
+         end;
+      end loop;
    end Create_Path;
 
    procedure Delete_Tree (Directory : String) is
