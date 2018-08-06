@@ -3,11 +3,14 @@ with C.winbase;
 with C.winnt;
 package body System.Native_Calendar is
    use type System.Native_Time.Nanosecond_Number;
+   use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
    Diff : constant := 17324755200_000_000_0;
       --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
       --    to 2150-01-01 (0 of Ada time)
+
+   Time_Offset_Value : Time_Offset := 0;
 
    --  implementation
 
@@ -111,6 +114,27 @@ package body System.Native_Calendar is
          Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Seconds;
       end if;
    end Time_Of;
+
+   procedure UTC_Time_Offset (
+      Date : Time;
+      Time_Zone : out Time_Offset;
+      Error : out Boolean)
+   is
+      pragma Unreferenced (Date);
+   begin
+      Time_Zone := Time_Offset_Value;
+      Error := False;
+   end UTC_Time_Offset;
+
+   procedure Initialize_Time_Zones is
+      Info : aliased C.winbase.TIME_ZONE_INFORMATION;
+   begin
+      if C.winbase.GetTimeZoneInformation (Info'Access) /=
+         C.winbase.TIME_ZONE_ID_INVALID
+      then
+         Time_Offset_Value := -Time_Offset (Info.Bias); -- reverse sign
+      end if;
+   end Initialize_Time_Zones;
 
    procedure Delay_Until (T : Native_Time) is
       Timeout_T : constant Duration := System.Native_Time.To_Duration (T);

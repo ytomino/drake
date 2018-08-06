@@ -121,6 +121,27 @@ package body System.Native_Calendar is
       end if;
    end Time_Of;
 
+   procedure UTC_Time_Offset (
+      Date : Time;
+      Time_Zone : out Time_Offset;
+      Error : out Boolean)
+   is
+      use type C.sys.types.time_t;
+      --  FreeBSD does not have timezone variable
+      GMT_Time : aliased constant Native_Time :=
+         To_Native_Time (Duration (Date));
+      Local_TM_Buf : aliased C.time.struct_tm;
+      Local_TM : C.time.struct_tm_ptr;
+      Local_Time : aliased C.sys.types.time_t;
+   begin
+      Local_TM := C.time.localtime_r (
+         GMT_Time.tv_sec'Access,
+         Local_TM_Buf'Access);
+      Local_Time := C.time.timegm (Local_TM);
+      Error := Local_Time = -1; -- to pass negative UNIX time (?)
+      Time_Zone := Time_Offset ((Local_Time - GMT_Time.tv_sec) / 60);
+   end UTC_Time_Offset;
+
    procedure Simple_Delay_Until (T : Native_Time) is
       Timeout_T : constant Duration := System.Native_Time.To_Duration (T);
       Current_T : constant Duration := System.Native_Time.To_Duration (Clock);

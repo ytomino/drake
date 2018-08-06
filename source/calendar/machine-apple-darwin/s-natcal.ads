@@ -60,6 +60,16 @@ package System.Native_Calendar is
       Result : out Time;
       Error : out Boolean);
 
+   --  for Time_Zones
+
+   procedure UTC_Time_Offset (
+      Date : Time;
+      Time_Zone : out Time_Offset;
+      Error : out Boolean);
+
+   procedure Initialize_Time_Zones
+      renames C.time.tzset;
+
    --  for delay until
 
    procedure Simple_Delay_Until (T : Native_Time);
