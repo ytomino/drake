@@ -1,16 +1,15 @@
+--  reference:
+--  https://blogs.msdn.microsoft.com/oldnewthing/20140307-00/?p=1573
 with System.Native_Time;
 with C.winbase;
 with C.winnt;
 package body System.Native_Calendar is
    use type System.Native_Time.Nanosecond_Number;
-   use type C.windef.DWORD;
    use type C.windef.WINBOOL;
 
    Diff : constant := 17324755200_000_000_0;
       --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
       --    to 2150-01-01 (0 of Ada time)
-
-   Time_Offset_Value : Time_Offset := 0;
 
    --  implementation
 
@@ -120,21 +119,48 @@ package body System.Native_Calendar is
       Time_Zone : out Time_Offset;
       Error : out Boolean)
    is
-      pragma Unreferenced (Date);
+      --  Raymond Chen explains:
+      --  SystemTimeToTzSpecificLocalTime uses the time zone in effect at the
+      --    time being converted, whereas the FileTimeToLocalFileTime function
+      --    uses the time zone in effect right now.
+      File_Time : aliased constant C.windef.FILETIME :=
+         To_Native_Time (Duration (Date));
+      System_Time : aliased C.winbase.SYSTEMTIME;
+      Local_System_Time : aliased C.winbase.SYSTEMTIME;
+      Local_File_Time : aliased C.windef.FILETIME;
+      --  Use Backed_File_Time instead of Date (or File_Time) because the
+      --    unit of FILETIME is 100 nano-seconds but the unit of SYSTEMTIME
+      --    is one milli-second.
+      Backed_File_Time : aliased C.windef.FILETIME;
    begin
-      Time_Zone := Time_Offset_Value;
-      Error := False;
-   end UTC_Time_Offset;
-
-   procedure Initialize_Time_Zones is
-      Info : aliased C.winbase.TIME_ZONE_INFORMATION;
-   begin
-      if C.winbase.GetTimeZoneInformation (Info'Access) /=
-         C.winbase.TIME_ZONE_ID_INVALID
-      then
-         Time_Offset_Value := -Time_Offset (Info.Bias); -- reverse sign
+      Error := not (
+         C.winbase.FileTimeToSystemTime (
+               File_Time'Access,
+               System_Time'Access) /=
+            C.windef.FALSE
+         and then C.winbase.SystemTimeToTzSpecificLocalTime (
+               null,
+               System_Time'Access,
+               Local_System_Time'Access) /=
+            C.windef.FALSE
+         and then C.winbase.SystemTimeToFileTime (
+               Local_System_Time'Access,
+               Local_File_Time'Access) /=
+            C.windef.FALSE
+         and then C.winbase.SystemTimeToFileTime (
+               System_Time'Access,
+               Backed_File_Time'Access) /=
+            C.windef.FALSE);
+      if not Error then
+         declare
+            Offset : constant System.Native_Time.Nanosecond_Number :=
+               System.Native_Time.Nanosecond_Number'Integer_Value (
+                  To_Time (Local_File_Time) - To_Time (Backed_File_Time));
+         begin
+            Time_Zone := Time_Offset (Offset / 60_000_000_000);
+         end;
       end if;
-   end Initialize_Time_Zones;
+   end UTC_Time_Offset;
 
    procedure Delay_Until (T : Native_Time) is
       Timeout_T : constant Duration := System.Native_Time.To_Duration (T);

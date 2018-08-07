@@ -67,7 +67,8 @@ package System.Native_Calendar is
       Time_Zone : out Time_Offset;
       Error : out Boolean);
 
-   procedure Initialize_Time_Zones;
+   procedure Initialize_Time_Zones is null;
+      --  [gcc-7] can not skip calling null procedure
 
    --  for delay until
 
