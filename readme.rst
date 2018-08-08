@@ -17,7 +17,7 @@ Environment
 
 - Darwin (from 10.5, x86, 32bit/64bit)
 - FreeBSD (from 8, x86, 32bit/64bit)
-- Linux (from 2.6, x86, 32bit/64bit)
+- GNU/Linux (from kernel 2.6 and glibc 2.24, x86, 32bit/64bit)
 - Windows (from XP, x86, 32bit/64bit) [#experimental]_
 
 Required tools and libraries
