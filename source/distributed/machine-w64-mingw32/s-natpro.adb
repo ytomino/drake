@@ -259,10 +259,7 @@ package body System.Native_Processes is
       Terminated : out Boolean;
       Status : out Ada.Command_Line.Exit_Status) is
    begin
-      case C.winbase.WaitForSingleObject (
-         C.winnt.HANDLE (Child),
-         Milliseconds)
-      is
+      case C.winbase.WaitForSingleObject (Child.Handle, Milliseconds) is
          when C.winbase.WAIT_OBJECT_0 =>
             declare
                Max : constant := C.windef.DWORD'Modulus / 2; -- 2 ** 31
@@ -271,10 +268,9 @@ package body System.Native_Processes is
             begin
                Success :=
                   C.winbase.GetExitCodeProcess (
-                     C.winnt.HANDLE (Child),
+                     Child.Handle,
                      Exit_Code'Access);
-               if C.winbase.CloseHandle (C.winnt.HANDLE (Child)) =
-                     C.windef.FALSE
+               if C.winbase.CloseHandle (Child.Handle) = C.windef.FALSE
                   or else Success = C.windef.FALSE
                then
                   Raise_Exception (Use_Error'Identity);
@@ -300,7 +296,7 @@ package body System.Native_Processes is
 
    function Is_Open (Child : Process) return Boolean is
    begin
-      return C.winnt.HANDLE (Child) /= C.winbase.INVALID_HANDLE_VALUE;
+      return Child.Handle /= C.winbase.INVALID_HANDLE_VALUE;
    end Is_Open;
 
    procedure Create (
@@ -403,7 +399,7 @@ package body System.Native_Processes is
          if C.winbase.CloseHandle (Process_Info.hThread) = C.windef.FALSE then
             Raise_Exception (Use_Error'Identity);
          end if;
-         Child := Process (Process_Info.hProcess);
+         Child.Handle := Process_Info.hProcess;
       end if;
    end Create;
 
@@ -437,7 +433,7 @@ package body System.Native_Processes is
          declare
             Success : C.windef.WINBOOL;
          begin
-            Success := C.winbase.CloseHandle (C.winnt.HANDLE (Child));
+            Success := C.winbase.CloseHandle (Child.Handle);
             pragma Check (Debug,
                Check =>
                   Success /= C.windef.FALSE
@@ -472,9 +468,7 @@ package body System.Native_Processes is
    procedure Forced_Abort_Process (Child : Process) is
       Code : constant C.windef.UINT := -1; -- the MSB should be 1 ???
    begin
-      if C.winbase.TerminateProcess (C.winnt.HANDLE (Child), Code) =
-         C.windef.FALSE
-      then
+      if C.winbase.TerminateProcess (Child.Handle, Code) = C.windef.FALSE then
          declare
             Exit_Code : aliased C.windef.DWORD;
          begin
@@ -482,7 +476,7 @@ package body System.Native_Processes is
             if not (
                C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
                and then C.winbase.GetExitCodeProcess (
-                     C.winnt.HANDLE (Child),
+                     Child.Handle,
                      Exit_Code'Access) /=
                   C.windef.FALSE
                and then Exit_Code /= C.winbase.STILL_ACTIVE)

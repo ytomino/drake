@@ -34,9 +34,14 @@ package System.Native_Processes is
 
    --  Child process type
 
-   type Process is new C.winnt.HANDLE;
+   type Process is record
+      Handle : C.winnt.HANDLE;
+   end record;
+      --  [gcc-7.3] crashes if "type Process is new C.winnt.HANDLE;"
+   pragma Suppress_Initialization (Process);
 
-   Null_Process : constant Process := Process (C.winbase.INVALID_HANDLE_VALUE);
+   Null_Process : constant Process :=
+      (Handle => C.winbase.INVALID_HANDLE_VALUE);
 
    --  Child process management
 
