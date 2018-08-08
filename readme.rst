@@ -15,7 +15,7 @@ Read the wiki_ for more information.
 Environment
 -----------
 
-- Darwin (from 10.5, x86, 32bit/64bit)
+- Darwin (from 10.6, x86, 32bit/64bit)
 - FreeBSD (from 8, x86, 32bit/64bit)
 - GNU/Linux (from kernel 2.6 and glibc 2.24, x86, 32bit/64bit)
 - Windows (from XP, x86, 32bit/64bit) [#experimental]_
