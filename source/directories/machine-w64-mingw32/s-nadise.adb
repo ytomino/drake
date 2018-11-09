@@ -138,10 +138,10 @@ package body System.Native_Directories.Searching is
       Handle := Null_Handle;
       --  INVALID_HANDLE_VALUE means started but empty.
       if Closing_Handle /= C.winbase.INVALID_HANDLE_VALUE then
-         if C.winbase.FindClose (Closing_Handle) = C.windef.FALSE then
-            if Raise_On_Error then
-               Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
-            end if;
+         if C.winbase.FindClose (Closing_Handle) = C.windef.FALSE
+            and then Raise_On_Error
+         then
+            Raise_Exception (IO_Exception_Id (C.winbase.GetLastError));
          end if;
       end if;
    end End_Search;

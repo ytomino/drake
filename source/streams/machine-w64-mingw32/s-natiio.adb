@@ -517,14 +517,14 @@ package body System.Native_IO is
       Mapping : in out Mapping_Type;
       Raise_On_Error : Boolean) is
    begin
-      if C.winbase.UnmapViewOfFile (
-               C.windef.LPCVOID (Mapping.Storage_Address)) =
-            C.windef.FALSE
-         or else C.winbase.CloseHandle (Mapping.File_Mapping) = C.windef.FALSE
+      if (C.winbase.UnmapViewOfFile (
+                  C.windef.LPCVOID (Mapping.Storage_Address)) =
+               C.windef.FALSE
+            or else C.winbase.CloseHandle (Mapping.File_Mapping) =
+               C.windef.FALSE)
+         and then Raise_On_Error
       then
-         if Raise_On_Error then
-            Raise_Exception (Use_Error'Identity);
-         end if;
+         Raise_Exception (Use_Error'Identity);
       end if;
       Mapping.Storage_Address := Null_Address;
       Mapping.Storage_Size := 0;

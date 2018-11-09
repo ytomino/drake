@@ -143,10 +143,8 @@ package body System.Native_Directories.Searching is
       Standard_Allocators.Free (
          char_ptr_Conv.To_Address (Search.Pattern));
       Search.Pattern := null;
-      if C.dirent.closedir (Handle) < 0 then
-         if Raise_On_Error then
-            Raise_Exception (IO_Exception_Id (C.errno.errno));
-         end if;
+      if C.dirent.closedir (Handle) < 0 and then Raise_On_Error then
+         Raise_Exception (IO_Exception_Id (C.errno.errno));
       end if;
    end End_Search;
 

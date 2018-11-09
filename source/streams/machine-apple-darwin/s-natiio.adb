@@ -546,12 +546,11 @@ package body System.Native_IO is
    begin
       if Mapping.Storage_Size > 0 then
          if C.sys.mman.munmap (
-            C.void_ptr (Mapping.Storage_Address),
-            C.size_t (Mapping.Storage_Size)) /= 0
+               C.void_ptr (Mapping.Storage_Address),
+               C.size_t (Mapping.Storage_Size)) /= 0
+            and then Raise_On_Error
          then
-            if Raise_On_Error then
-               Raise_Exception (Use_Error'Identity);
-            end if;
+            Raise_Exception (Use_Error'Identity);
          end if;
       end if;
       Mapping.Storage_Address := Null_Address;

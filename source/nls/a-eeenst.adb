@@ -183,14 +183,15 @@ package body Ada.Environment_Encoding.Encoding_Streams is
                   I := New_Last + 1;
                end;
             end if;
-            if Context.Converted_Last < Context.Converted_First then
-               if Context.Status = Ended and then I <= Item'First then
-                  if I = Stream_Element_Offset'First then
-                     raise Constraint_Error; -- same as above
-                  end if;
-                  Last := I - 1;
-                  exit;
+            if Context.Converted_Last < Context.Converted_First
+               and then Context.Status = Ended
+               and then I <= Item'First
+            then
+               if I = Stream_Element_Offset'First then
+                  raise Constraint_Error; -- same as above
                end if;
+               Last := I - 1;
+               exit;
             end if;
          end loop;
       end if;

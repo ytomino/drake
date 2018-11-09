@@ -74,27 +74,26 @@ package body System.Native_Directories.Copying is
                      Exception_Id := Device_Error'Identity;
                   end if;
                   --  close target
-                  if C.unistd.close (Target) < 0 then
-                     if Exception_Id =
+                  if C.unistd.close (Target) < 0
+                     and then Exception_Id =
                         Ada.Exception_Identification.Null_Id
-                     then
-                        Exception_Id := IO_Exception_Id (C.errno.errno);
-                     end if;
+                  then
+                     Exception_Id := IO_Exception_Id (C.errno.errno);
                   end if;
                end if;
                --  munmap
-               if C.sys.mman.munmap (Map, C.size_t (Data.st_size)) < 0 then
-                  if Exception_Id = Ada.Exception_Identification.Null_Id then
-                     Exception_Id := Use_Error'Identity;
-                  end if;
+               if C.sys.mman.munmap (Map, C.size_t (Data.st_size)) < 0
+                  and then Exception_Id = Ada.Exception_Identification.Null_Id
+               then
+                  Exception_Id := Use_Error'Identity;
                end if;
             end if;
          end if;
          --  close source
-         if C.unistd.close (Source) < 0 then
-            if Exception_Id = Ada.Exception_Identification.Null_Id then
-               Exception_Id := IO_Exception_Id (C.errno.errno);
-            end if;
+         if C.unistd.close (Source) < 0
+            and then Exception_Id = Ada.Exception_Identification.Null_Id
+         then
+            Exception_Id := IO_Exception_Id (C.errno.errno);
          end if;
       end if;
       --  raising

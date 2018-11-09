@@ -25,10 +25,10 @@ package body Ada.Synchronous_Task_Control is
    is
       Aborted : Boolean;
    begin
-      if System.Storage_Barriers.atomic_test_and_set (S.Waiting'Access) then
-         if not Multi then
-            raise Program_Error; -- CXDA002, the waiter is limited to one
-         end if;
+      if System.Storage_Barriers.atomic_test_and_set (S.Waiting'Access)
+         and then not Multi
+      then
+         raise Program_Error; -- CXDA002, the waiter is limited to one
       end if;
       System.Tasks.Enable_Abort;
       System.Synchronous_Objects.Abortable.Wait (

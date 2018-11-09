@@ -351,10 +351,10 @@ package body System.Native_Directories is
             then
                Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
             end if;
-            if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
-               if Exception_Id = Ada.Exception_Identification.Null_Id then
-                  Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
-               end if;
+            if C.winbase.CloseHandle (Handle) = C.windef.FALSE
+               and then Exception_Id = Ada.Exception_Identification.Null_Id
+            then
+               Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
             end if;
          end if;
       end if;

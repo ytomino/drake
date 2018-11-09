@@ -381,10 +381,10 @@ package body Ada.Directories.Information is
          then
             Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
          end if;
-         if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
-            if Exception_Id = Exception_Identification.Null_Id then
-               Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
-            end if;
+         if C.winbase.CloseHandle (Handle) = C.windef.FALSE
+            and then Exception_Id = Exception_Identification.Null_Id
+         then
+            Exception_Id := IO_Exception_Id (C.winbase.GetLastError);
          end if;
       end if;
       if Exception_Id /= Exception_Identification.Null_Id then

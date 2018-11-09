@@ -82,11 +82,9 @@ package body System.System_Allocators is
             0,
             C.windef.LPVOID (Storage_Address),
             Actual_Size));
-      if Result = Null_Address then
-         if Storage_Address = Null_Address then
-            --  Reallocate (null, ...)
-            Result := Address (C.winbase.HeapAlloc (Heap, 0, Actual_Size));
-         end if;
+      if Result = Null_Address and then Storage_Address = Null_Address then
+         --  Reallocate (null, ...)
+         Result := Address (C.winbase.HeapAlloc (Heap, 0, Actual_Size));
       end if;
       return Result;
    end Reallocate;

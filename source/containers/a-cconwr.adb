@@ -259,44 +259,44 @@ package body Ada.Containers.Copy_On_Write is
          if Target.Data.Follower = Target
             and then New_Capacity = Target_Capacity
          then
-            if To_Update then
-               if Target.Next_Follower /= null then -- shared
-                  declare -- target(owner) can access its Max_Length
-                     Max_Length : constant Count_Type :=
-                        Unique.Max_Length (Target.Data).all;
-                     New_Data : Data_Access;
-                     To_Free : Data_Access := null;
-                  begin
-                     Copy (
-                        New_Data,
-                        Target.Data,
-                        Max_Length,
-                        Max_Length,
-                        Target_Capacity); -- not shrinking
-                     --  target uses old data, other followers use new data
-                     System.Shared_Locking.Enter;
-                     if Target.Next_Follower = null then
-                        --  all other containers unfollowed it by another task
-                        To_Free := New_Data;
-                     else
-                        --  reattach next-followers to new copied data
-                        New_Data.Follower := Target.Next_Follower;
-                        declare
-                           I : access Container := Target.Next_Follower;
-                        begin
-                           while I /= null loop
-                              I.Data := New_Data;
-                              I := I.Next_Follower;
-                           end loop;
-                        end;
-                     end if;
-                     Target.Next_Follower := null;
-                     System.Shared_Locking.Leave;
-                     if To_Free /= null then
-                        Free (To_Free);
-                     end if;
-                  end;
-               end if;
+            if To_Update
+               and then Target.Next_Follower /= null -- shared
+            then
+               declare -- target(owner) can access its Max_Length
+                  Max_Length : constant Count_Type :=
+                     Unique.Max_Length (Target.Data).all;
+                  New_Data : Data_Access;
+                  To_Free : Data_Access := null;
+               begin
+                  Copy (
+                     New_Data,
+                     Target.Data,
+                     Max_Length,
+                     Max_Length,
+                     Target_Capacity); -- not shrinking
+                  --  target uses old data, other followers use new data
+                  System.Shared_Locking.Enter;
+                  if Target.Next_Follower = null then
+                     --  all other containers unfollowed it by another task
+                     To_Free := New_Data;
+                  else
+                     --  reattach next-followers to new copied data
+                     New_Data.Follower := Target.Next_Follower;
+                     declare
+                        I : access Container := Target.Next_Follower;
+                     begin
+                        while I /= null loop
+                           I.Data := New_Data;
+                           I := I.Next_Follower;
+                        end loop;
+                     end;
+                  end if;
+                  Target.Next_Follower := null;
+                  System.Shared_Locking.Leave;
+                  if To_Free /= null then
+                     Free (To_Free);
+                  end if;
+               end;
             end if;
          else
             --  reallocation
