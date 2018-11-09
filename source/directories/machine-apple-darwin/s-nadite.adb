@@ -78,7 +78,7 @@ package body System.Native_Directories.Temporary is
       if C.stdlib.setenv (
          Temp_Variable (Temp_Variable'First)'Access,
          C_Name (C_Name'First)'Access,
-         1) /= 0
+         1) < 0
       then
          Raise_Exception (Use_Error'Identity);
       end if;

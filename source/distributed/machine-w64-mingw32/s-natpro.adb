@@ -473,13 +473,12 @@ package body System.Native_Processes is
             Exit_Code : aliased C.windef.DWORD;
          begin
             --  It is not an error if the process is already terminated.
-            if not (
-               C.winbase.GetLastError = C.winerror.ERROR_ACCESS_DENIED
-               and then C.winbase.GetExitCodeProcess (
+            if C.winbase.GetLastError /= C.winerror.ERROR_ACCESS_DENIED
+               or else C.winbase.GetExitCodeProcess (
                      Child.Handle,
-                     Exit_Code'Access) /=
+                     Exit_Code'Access) =
                   C.windef.FALSE
-               and then Exit_Code /= C.winbase.STILL_ACTIVE)
+               or else Exit_Code = C.winbase.STILL_ACTIVE
             then
                Raise_Exception (Use_Error'Identity);
             end if;

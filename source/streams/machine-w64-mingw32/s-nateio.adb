@@ -267,10 +267,9 @@ package body System.Native_Text_IO is
          C.windef.FALSE
       then
          Out_Length := -1; -- error
-      elsif not (
-         Read_Size > 0
-         and then Event.EventType = C.wincon.KEY_EVENT
-         and then Event.Event.KeyEvent.bKeyDown /= C.windef.FALSE)
+      elsif Read_Size = 0
+         or else Event.EventType /= C.wincon.KEY_EVENT
+         or else Event.Event.KeyEvent.bKeyDown = C.windef.FALSE
       then
          Out_Length := 0; -- no data
       else

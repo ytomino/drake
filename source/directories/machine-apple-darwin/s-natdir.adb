@@ -60,7 +60,7 @@ package body System.Native_Directories is
          Directory'Length * Zero_Terminated_Strings.Expanding);
    begin
       Zero_Terminated_Strings.To_C (Directory, C_Directory (0)'Access);
-      if C.unistd.chdir (C_Directory (0)'Access) /= 0 then
+      if C.unistd.chdir (C_Directory (0)'Access) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Set_Directory;
@@ -71,7 +71,7 @@ package body System.Native_Directories is
          New_Directory'Length * Zero_Terminated_Strings.Expanding);
    begin
       Zero_Terminated_Strings.To_C (New_Directory, C_New_Directory (0)'Access);
-      if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) /= 0 then
+      if C.sys.stat.mkdir (C_New_Directory (0)'Access, 8#755#) < 0 then
          Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
       end if;
    end Create_Directory;
@@ -162,11 +162,10 @@ package body System.Native_Directories is
             C_Target_Name (0)'Access;
       begin
          if C.unistd.symlink (path1, path2) < 0 then
-            if not (
-               C.errno.errno = C.errno.EEXIST
-               and then Overwrite -- try to overwrite
-               and then C.unistd.unlink (path2) = 0
-               and then C.unistd.symlink (path1, path2) = 0)
+            if C.errno.errno /= C.errno.EEXIST
+               or else not Overwrite -- try to overwrite
+               or else C.unistd.unlink (path2) < 0
+               or else C.unistd.symlink (path1, path2) < 0
             then
                Raise_Exception (Named_IO_Exception_Id (C.errno.errno));
             end if;

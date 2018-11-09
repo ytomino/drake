@@ -547,7 +547,7 @@ package body System.Native_IO is
       if Mapping.Storage_Size > 0 then
          if C.sys.mman.munmap (
                C.void_ptr (Mapping.Storage_Address),
-               C.size_t (Mapping.Storage_Size)) /= 0
+               C.size_t (Mapping.Storage_Size)) < 0
             and then Raise_On_Error
          then
             Raise_Exception (Use_Error'Identity);

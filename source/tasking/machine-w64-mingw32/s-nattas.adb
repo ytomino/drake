@@ -103,13 +103,13 @@ package body System.Native_Tasks is
       Error : out Boolean) is
    begin
       Error := False;
-      if C.winbase.CloseHandle (Handle) /= C.windef.FALSE then
+      if C.winbase.CloseHandle (Handle) = C.windef.FALSE then
+         Error := True;
+      else
          Handle := C.winbase.GetCurrentThread;
          --  magic value meaning current thread
          pragma Assert (
             Handle = C.winnt.HANDLE (System'To_Address (16#fffffffe#)));
-      else
-         Error := True;
       end if;
    end Detach;
 
