@@ -101,7 +101,7 @@ package body Interfaces.C.Generic_Strings is
          (0 => Element'Val (Character'Pos ('?'))))
       return not null chars_ptr
    is
-      C : constant Element_Array :=
+      C : aliased constant Element_Array :=
          To_C (Str, Append_Nul => True, Substitute => Substitute);
    begin
       return New_Chars_Ptr (

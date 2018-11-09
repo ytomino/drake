@@ -90,7 +90,7 @@ package body System.Native_IO.Sockets is
       C_Host_Name : C.char_array (
          0 ..
          Host_Name'Length * Zero_Terminated_Strings.Expanding);
-      Service : C.char_array (0 .. 5); -- "65535" & NUL
+      Service : aliased C.char_array (0 .. 5); -- "65535" & NUL
       Service_Length : C.size_t;
       Error : Boolean;
    begin
@@ -154,7 +154,7 @@ package body System.Native_IO.Sockets is
          ai_addr => null,
          ai_next => null);
       Data : aliased C.netdb.struct_addrinfo_ptr;
-      Service : C.char_array (0 .. 5); -- "65535" & NUL
+      Service : aliased C.char_array (0 .. 5); -- "65535" & NUL
       Service_Length : C.size_t;
    begin
       declare

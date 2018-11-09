@@ -489,7 +489,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       --  from 8 to 16 : (Item'Length + 1) * 2 = 2 * Item'Length + 2 (max)
       --  from 16 to 16 : (Item'Length / 2 + 1) * 2 = Item'Length + 2
       --  from 32 to 16 : (2 * Item'Length / 4 + 1) * 2 = Item'Length + 2
-      Result : UTF_String (1 .. 2 * Item'Length + 2);
+      Result : aliased UTF_String (1 .. 2 * Item'Length + 2);
       for Result'Alignment use 16 / Standard'Storage_Unit;
       Last : Natural;
    begin
@@ -512,7 +512,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       --  from 8 to 32 : (Item'Length + 1) * 4 = 4 * Item'Length + 4 (max)
       --  from 16 to 32 : (Item'Length / 2 + 1) * 4 = 2 * Item'Length + 4
       --  from 32 to 32 : (Item'Length / 4 + 1) * 4 = Item'Length + 4
-      Result : UTF_String (1 .. 4 * Item'Length + 4);
+      Result : aliased UTF_String (1 .. 4 * Item'Length + 4);
       for Result'Alignment use 32 / Standard'Storage_Unit;
       Last : Natural;
    begin
@@ -531,7 +531,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_16_Wide_String
    is
-      Result : UTF_String (
+      Result : aliased UTF_String (
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_8_To_16 + 1)
             * 2);
@@ -554,7 +554,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Output_BOM : Boolean := False)
       return UTF_32_Wide_Wide_String
    is
-      Result : UTF_String (
+      Result : aliased UTF_String (
          1 ..
          (Item'Length * System.UTF_Conversions.Expanding_From_8_To_32 + 1)
             * 4);
@@ -629,7 +629,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Item_Length : constant Natural := Item'Length;
       Item_As_UTF : UTF_String (1 .. Item_Length * 2);
       for Item_As_UTF'Address use Item'Address;
-      Result : UTF_String (
+      Result : aliased UTF_String (
          1 ..
          (Item_Length * System.UTF_Conversions.Expanding_From_16_To_32 + 1)
             * 4);
@@ -704,7 +704,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       Item_Length : constant Natural := Item'Length;
       Item_As_UTF : UTF_String (1 .. Item_Length * 4);
       for Item_As_UTF'Address use Item'Address;
-      Result : UTF_String (
+      Result : aliased UTF_String (
          1 ..
          (Item_Length * System.UTF_Conversions.Expanding_From_32_To_16 + 1)
             * 2);

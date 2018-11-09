@@ -605,7 +605,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Base.Find (
                Downcast (Container.Super.Data).First,
@@ -626,7 +627,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             (not Is_Empty (Container) and then Position /= No_Element)
             or else (Is_Empty (Container) and then Position = No_Element)
             or else raise Constraint_Error);
-      Context : Context_Type := (Left => Item'Unrestricted_Access);
+      Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
    begin
       return Downcast (Base.Find (
          Upcast (Position),
@@ -644,7 +645,8 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (
                Base.Reverse_Find (
@@ -666,7 +668,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             (not Is_Empty (Container) and then Position /= No_Element)
             or else (Is_Empty (Container) and then Position = No_Element)
             or else raise Constraint_Error);
-      Context : Context_Type := (Left => Item'Unrestricted_Access);
+      Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
    begin
       return Downcast (
          Base.Reverse_Find (

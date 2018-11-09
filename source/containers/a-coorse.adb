@@ -747,7 +747,8 @@ package body Ada.Containers.Ordered_Sets is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Downcast (Container.Super.Data).Root,
@@ -765,7 +766,8 @@ package body Ada.Containers.Ordered_Sets is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Downcast (Container.Super.Data).Root,
@@ -783,7 +785,8 @@ package body Ada.Containers.Ordered_Sets is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Downcast (Container.Super.Data).Root,
@@ -997,7 +1000,8 @@ package body Ada.Containers.Ordered_Sets is
          else
             Unique (Container'Unrestricted_Access.all, False);
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Downcast (Container.Super.Data).Root,
@@ -1015,7 +1019,8 @@ package body Ada.Containers.Ordered_Sets is
          else
             Unique (Container'Unrestricted_Access.all, False);
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Downcast (Container.Super.Data).Root,
@@ -1033,7 +1038,8 @@ package body Ada.Containers.Ordered_Sets is
          else
             Unique (Container'Unrestricted_Access.all, False);
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Downcast (Container.Super.Data).Root,

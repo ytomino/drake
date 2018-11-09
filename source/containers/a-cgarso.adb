@@ -44,7 +44,7 @@ begin
             Context.Container (Left_Index) := Context.Container (Right_Index);
             Context.Container (Right_Index) := Temp;
          end Swap;
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
          Array_Sorting.In_Place_Merge_Sort (
@@ -96,7 +96,8 @@ begin
          end Swap;
          Offset : constant Long_Long_Integer :=
             Index_Type'Pos (Container'First);
-         Context : Context_Type := (Container'Unrestricted_Access, Offset);
+         Context : aliased Context_Type :=
+            (Container'Unrestricted_Access, Offset);
       begin
          Array_Sorting.In_Place_Merge_Sort (
             0,

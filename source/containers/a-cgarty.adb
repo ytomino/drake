@@ -330,7 +330,7 @@ package body Ada.Containers.Generic_Array_Types is
 
       procedure Reverse_Elements (Container : in out Array_Type) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff
@@ -351,7 +351,7 @@ package body Ada.Containers.Generic_Array_Types is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff
@@ -373,7 +373,7 @@ package body Ada.Containers.Generic_Array_Types is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff
@@ -418,7 +418,7 @@ package body Ada.Containers.Generic_Array_Types is
       --  implementation
 
       function Is_Sorted (Container : Array_Type) return Boolean is
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff
@@ -431,7 +431,7 @@ package body Ada.Containers.Generic_Array_Types is
 
       procedure Insertion_Sort (Container : in out Array_Type) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff
@@ -446,7 +446,7 @@ package body Ada.Containers.Generic_Array_Types is
 
       procedure Merge_Sort (Container : in out Array_Type) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container'Unrestricted_Access);
       begin
 --  diff

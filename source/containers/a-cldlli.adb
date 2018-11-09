@@ -614,6 +614,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 --
 --
+--
 
 --  diff (Find)
 --
@@ -635,6 +636,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
 --
 
 --  diff (Reverse_Find)
+--
 --
 --
 --
@@ -864,7 +866,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Params : System.Address)
          return Boolean
       is
-         Context : Context_Type;
+         Context : aliased Context_Type;
          for Context'Address use Params;
       begin
          return Context.Left.all = Downcast (Right).Element.all;
@@ -889,7 +891,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
       function Find (Container : List; Item : Element_Type)
          return Cursor
       is
-         Context : Context_Type := (Left => Item'Unrestricted_Access);
+         Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (Base.Find (
             Container.First,
@@ -905,7 +907,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
                (not Is_Empty (Container) and then Position /= No_Element)
                or else (Is_Empty (Container) and then Position = No_Element)
                or else raise Constraint_Error);
-         Context : Context_Type := (Left => Item'Unrestricted_Access);
+         Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (Base.Find (
             Upcast (Position),
@@ -918,7 +920,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
          Item : Element_Type)
          return Cursor
       is
-         Context : Context_Type := (Left => Item'Unrestricted_Access);
+         Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (
             Base.Reverse_Find (
@@ -938,7 +940,7 @@ package body Ada.Containers.Limited_Doubly_Linked_Lists is
                (not Is_Empty (Container) and then Position /= No_Element)
                or else (Is_Empty (Container) and then Position = No_Element)
                or else raise Constraint_Error);
-         Context : Context_Type := (Left => Item'Unrestricted_Access);
+         Context : aliased Context_Type := (Left => Item'Unrestricted_Access);
       begin
          return Downcast (
             Base.Reverse_Find (

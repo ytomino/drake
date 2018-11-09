@@ -232,7 +232,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Hash_Tables.Find (
                Downcast (Container.Super.Data).Table,
@@ -894,7 +895,8 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
          else
             Unique (Container'Unrestricted_Access.all, False);
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Hash_Tables.Find (
                   Downcast (Container.Super.Data).Table,

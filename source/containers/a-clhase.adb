@@ -232,7 +232,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
       else
 --  diff
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Hash_Tables.Find (
                Container.Table,
@@ -894,7 +895,8 @@ package body Ada.Containers.Limited_Hashed_Sets is
          else
 --  diff
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Hash_Tables.Find (
                   Container.Table,

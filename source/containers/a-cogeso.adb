@@ -80,7 +80,7 @@ begin
             Swap (Left_Index, Right_Index);
          end Swap;
          Offset : constant Long_Long_Integer := Index_Type'Pos (First);
-         Context : Context_Type := (Offset => Offset);
+         Context : aliased Context_Type := (Offset => Offset);
       begin
          Array_Sorting.In_Place_Merge_Sort (
             0,

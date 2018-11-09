@@ -747,7 +747,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Container.Root,
@@ -765,7 +766,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Container.Root,
@@ -783,7 +785,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
          declare
-            Context : Context_Type := (Left => Item'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Item'Unrestricted_Access);
          begin
             return Downcast (Binary_Trees.Find (
                Container.Root,
@@ -997,7 +1000,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Container.Root,
@@ -1015,7 +1019,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Container.Root,
@@ -1033,7 +1038,8 @@ package body Ada.Containers.Limited_Ordered_Sets is
 --  diff
 --  diff
             declare
-               Context : Context_Type := (Left => Key'Unrestricted_Access);
+               Context : aliased Context_Type :=
+                  (Left => Key'Unrestricted_Access);
             begin
                return Downcast (Binary_Trees.Find (
                   Container.Root,

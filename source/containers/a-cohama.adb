@@ -201,7 +201,8 @@ package body Ada.Containers.Hashed_Maps is
       else
          Unique (Container'Unrestricted_Access.all, False);
          declare
-            Context : Context_Type := (Left => Key'Unrestricted_Access);
+            Context : aliased Context_Type :=
+               (Left => Key'Unrestricted_Access);
          begin
             return Downcast (Hash_Tables.Find (
                Downcast (Container.Super.Data).Table,

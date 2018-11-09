@@ -330,7 +330,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
 
       procedure Reverse_Elements (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          if Container /= null then
@@ -351,7 +351,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          if Container /= null then
@@ -373,7 +373,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
                Before in First_Index (Container) .. Last_Index (Container) + 1
                or else raise Constraint_Error);
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          if Container /= null then
@@ -418,7 +418,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
       --  implementation
 
       function Is_Sorted (Container : Array_Access) return Boolean is
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          return Container = null
@@ -431,7 +431,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
 
       procedure Insertion_Sort (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          if Container /= null then
@@ -446,7 +446,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
 
       procedure Merge_Sort (Container : in out Array_Access) is
          pragma Unmodified (Container);
-         Context : Context_Type :=
+         Context : aliased Context_Type :=
             (Container => Container);
       begin
          if Container /= null then
@@ -472,7 +472,7 @@ package body Ada.Containers.Generic_Array_Access_Types is
                Insert (Target, Before, Source);
                Free (Source);
                declare
-                  Context : Context_Type := (Container => Target);
+                  Context : aliased Context_Type := (Container => Target);
                begin
                   Array_Sorting.In_Place_Merge (
                      Index_Type'Pos (Target'First),

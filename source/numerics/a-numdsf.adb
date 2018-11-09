@@ -900,7 +900,7 @@ package body Ada.Numerics.dSFMT is
    end Reset;
 
    function Initialize return State is
-      Init : Unsigned_32_Array (0 .. N32 - 1);
+      Init : aliased Unsigned_32_Array (0 .. N32 - 1);
    begin
       System.Random_Initiators.Get (
          Init'Address,

@@ -80,7 +80,7 @@ package body Ada.Numerics.MT19937 is
    end Reset;
 
    function Initialize return State is
-      Init : Unsigned_32_Array_N;
+      Init : aliased Unsigned_32_Array_N;
    begin
       System.Random_Initiators.Get (
          Init'Address,
