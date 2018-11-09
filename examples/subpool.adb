@@ -140,8 +140,8 @@ procedure subpool is
 			end if;
 			
 			-- Correct the alignment if necessary:
-			Pool.Next_Allocation := Pool.Next_Allocation +
-				((-Pool.Next_Allocation) mod Alignment);
+			Pool.Next_Allocation := Pool.Next_Allocation
+				+ ((-Pool.Next_Allocation) mod Alignment);
 			if Pool.Next_Allocation + Size_In_Storage_Elements >
 				Pool.Pool_Size then
 				raise Storage_Error; -- Out of space.

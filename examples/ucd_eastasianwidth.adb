@@ -237,8 +237,7 @@ begin
 					L := N;
 					N := Next (N);
 					exit when State = In_XXXX
-						and then
-							Wide_Wide_Character'Pos (Key (L))
+						and then Wide_Wide_Character'Pos (Key (L))
 							- Wide_Wide_Character'Pos (Key (I))
 							+ 1 = 2 ** 13 - 1;
 				end loop;

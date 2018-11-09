@@ -38,8 +38,8 @@ procedure ucd_casefolding is
 	function Compressible (I : CF_Maps.Cursor) return Boolean is
 	begin
 		return Length (Element (I)) = 1
-			and then
-				Wide_Wide_Character'Pos (Element (Element (I), 1)) - Wide_Wide_Character'Pos (Key (I))
+			and then Wide_Wide_Character'Pos (Element (Element (I), 1))
+					- Wide_Wide_Character'Pos (Key (I))
 				in -128 .. 127;
 	end Compressible;
 	type Kind_Type is (C, F, S, T); -- common, full, simple, special
