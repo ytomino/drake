@@ -4,7 +4,6 @@ function Ada.Strings.Generic_Hash (Key : String_Type)
 is
    State : Containers.Murmur_Hash_3.State :=
       Containers.Murmur_Hash_3.Initialize (0);
-   Count : Containers.Count_Type := 0;
    Result : Containers.Hash_Type;
    Last : Natural := Key'First - 1;
 begin
@@ -19,14 +18,12 @@ begin
             Last,
             Code,
             Is_Illegal_Sequence);
-         Count := Count + 1;
          --  update
          Containers.Murmur_Hash_3.Update (
             State,
             Containers.Hash_Type'(Wide_Wide_Character'Pos (Code)));
       end;
    end loop;
-   Containers.Murmur_Hash_3.Update (State, Count);
    Containers.Murmur_Hash_3.Finalize (State, Result);
    return Result;
 end Ada.Strings.Generic_Hash;

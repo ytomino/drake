@@ -33,14 +33,16 @@ package Ada.Containers.Murmur_Hash_3 is
 
    --  Finalization
 
-   procedure Update (S : in out State; Item : Count_Type);
-
-   procedure Finalize (S : in out State; Digest : out Hash_Type);
+   procedure Finalize (S : State; Digest : out Hash_Type);
 
 private
 
    pragma Compile_Time_Error (Hash_Type'Size /= 32, "size mismatch");
 
-   type State is new Hash_Type;
+   type State is record
+      h1 : Hash_Type;
+      len : Count_Type;
+   end record;
+   pragma Suppress_Initialization (State);
 
 end Ada.Containers.Murmur_Hash_3;
