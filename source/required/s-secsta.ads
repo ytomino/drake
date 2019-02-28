@@ -8,6 +8,9 @@ package System.Secondary_Stack is
    --  required for secondary stack by compiler (s-secsta.ads)
    SS_Pool : Integer; -- unused, but compiler requires
 
+   --  filled by gnatbind
+   Default_Secondary_Stack_Size : Natural := 0;
+
    procedure SS_Allocate (
       Addr : out Address;
       Storage_Size : Storage_Elements.Storage_Count);
@@ -17,8 +20,5 @@ package System.Secondary_Stack is
    function SS_Mark return Mark_Id;
 
    procedure SS_Release (M : Mark_Id);
-
-   --  required by compiler ??? (s-secsta.ads)
---  Default_Secondary_Stack_Size : Natural;
 
 end System.Secondary_Stack;
