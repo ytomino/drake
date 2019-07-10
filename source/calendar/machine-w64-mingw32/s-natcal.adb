@@ -48,6 +48,52 @@ package body System.Native_Calendar is
       Year : out Year_Number;
       Month : out Month_Number;
       Day : out Day_Number;
+      Seconds : out Day_Duration;
+      Leap_Second : out Boolean;
+      Time_Zone : Time_Offset;
+      Error : out Boolean)
+   is
+      Local_Date : Duration;
+      FileTime : aliased C.windef.FILETIME;
+      SystemTime : aliased C.winbase.SYSTEMTIME;
+   begin
+      --  Leap_Second is always calculated as GMT
+      Leap_Second := False; -- unimplemented
+      --  other units are calculated by Time_Zone
+      Local_Date := Date + Duration (Time_Zone * 60);
+      FileTime := To_Native_Time (Local_Date);
+      Error :=
+         C.winbase.FileTimeToSystemTime (FileTime'Access, SystemTime'Access) =
+         C.windef.FALSE;
+      if not Error then
+         Year := Year_Number (SystemTime.wYear);
+         Month := Month_Number (SystemTime.wMonth);
+         Day := Day_Number (SystemTime.wDay);
+         --  truncate to day
+         SystemTime.wHour := 0;
+         SystemTime.wMinute := 0;
+         SystemTime.wSecond := 0;
+         SystemTime.wMilliseconds := 0;
+         declare
+            Truncated_Time : aliased C.windef.FILETIME;
+         begin
+            Error :=
+               C.winbase.SystemTimeToFileTime (
+                  SystemTime'Access,
+                  Truncated_Time'Access) =
+               C.windef.FALSE;
+            if not Error then
+               Seconds := Local_Date - To_Time (Truncated_Time);
+            end if;
+         end;
+      end if;
+   end Split;
+
+   procedure Split (
+      Date : Time;
+      Year : out Year_Number;
+      Month : out Month_Number;
+      Day : out Day_Number;
       Hour : out Hour_Number;
       Minute : out Minute_Number;
       Second : out Second_Number;
@@ -61,11 +107,14 @@ package body System.Native_Calendar is
       FileTime : aliased C.windef.FILETIME;
       SystemTime : aliased C.winbase.SYSTEMTIME;
    begin
-      Local_Date := Date + Duration (Time_Zone * 60);
+      --  Sub_Second and Leap_Second are always calculated as GMT
+      Leap_Second := False; -- unimplemented
       Sub_Second :=
          Duration'Fixed_Value (
-            System.Native_Time.Nanosecond_Number'Integer_Value (Local_Date)
+            System.Native_Time.Nanosecond_Number'Integer_Value (Date)
                mod 1_000_000_000);
+      --  other units are calculated by Time_Zone
+      Local_Date := Date + Duration (Time_Zone * 60);
       Local_Date := Local_Date - Sub_Second;
       FileTime := To_Native_Time (Local_Date);
       Error :=
@@ -78,9 +127,8 @@ package body System.Native_Calendar is
          Hour := Hour_Number (SystemTime.wHour);
          Minute := Minute_Number (SystemTime.wMinute);
          Second := Second_Number (SystemTime.wSecond);
-         Leap_Second := False;
          Day_of_Week := (Integer (SystemTime.wDayOfWeek) + 6) rem 7;
-         --  Day_Name starts from Monday
+            --  Day_Name starts from Monday
       end if;
    end Split;
 
@@ -111,6 +159,39 @@ package body System.Native_Calendar is
          C.windef.FALSE;
       if not Error then
          Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Seconds;
+      end if;
+   end Time_Of;
+
+   procedure Time_Of (
+      Year : Year_Number;
+      Month : Month_Number;
+      Day : Day_Number;
+      Hour : Hour_Number;
+      Minute : Minute_Number;
+      Second : Second_Number;
+      Sub_Second : Second_Duration;
+      Leap_Second : Boolean;
+      Time_Zone : Time_Offset;
+      Result : out Time;
+      Error : out Boolean)
+   is
+      pragma Unreferenced (Leap_Second);
+      SystemTime : aliased C.winbase.SYSTEMTIME := (
+         wYear => C.windef.WORD (Year),
+         wMonth => C.windef.WORD (Month),
+         wDayOfWeek => 16#ffff#,
+         wDay => C.windef.WORD (Day),
+         wHour => C.windef.WORD (Hour),
+         wMinute => C.windef.WORD (Minute),
+         wSecond => C.windef.WORD (Second),
+         wMilliseconds => 0);
+      FileTime : aliased C.windef.FILETIME;
+   begin
+      Error :=
+         C.winbase.SystemTimeToFileTime (SystemTime'Access, FileTime'Access) =
+         C.windef.FALSE;
+      if not Error then
+         Result := To_Time (FileTime) - Duration (Time_Zone * 60) + Sub_Second;
       end if;
    end Time_Of;
 

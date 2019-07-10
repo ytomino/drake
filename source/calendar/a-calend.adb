@@ -95,10 +95,14 @@ package body Ada.Calendar is
    end Day;
 
    function Seconds (Date : Time) return Day_Duration is
+      Year : Year_Number;
+      Month : Month_Number;
+      Day : Day_Number;
+      Seconds : Day_Duration;
    begin
-      return Duration'Fixed_Value (
-         System.Native_Time.Nanosecond_Number'Integer_Value (Date)
-            mod (24 * 60 * 60 * 1_000_000_000));
+      Split (Date,
+         Year => Year, Month => Month, Day => Day, Seconds => Seconds);
+      return Seconds;
    end Seconds;
 
    procedure Split (
@@ -108,11 +112,6 @@ package body Ada.Calendar is
       Day : out Day_Number;
       Seconds : out Day_Duration)
    is
-      Hour : System.Native_Calendar.Hour_Number;
-      Minute : System.Native_Calendar.Minute_Number;
-      Second : System.Native_Calendar.Second_Number;
-      Sub_Second : System.Native_Calendar.Second_Duration;
-      Day_of_Week : System.Native_Calendar.Day_Name;
       Leap_Second : Boolean;
       Error : Boolean;
    begin
@@ -121,18 +120,13 @@ package body Ada.Calendar is
          Year => Year,
          Month => Month,
          Day => Day,
-         Hour => Hour,
-         Minute => Minute,
-         Second => Second,
-         Sub_Second => Sub_Second,
+         Seconds => Seconds,
          Leap_Second => Leap_Second,
-         Day_of_Week => Day_of_Week,
          Time_Zone => 0, -- GMT
          Error => Error);
       if Error then
          Raise_Exception (Time_Error'Identity);
       end if;
-      Seconds := Duration ((Hour * 60 + Minute) * 60 + Second) + Sub_Second;
    end Split;
 
    function Time_Of (

@@ -70,6 +70,8 @@ package Ada.Calendar.Formatting is
       return Day_Duration;
    pragma Pure_Function (Seconds);
 
+   --  Note: Seconds is inefficient.
+
    function Seconds_Of (
       Hour : Hour_Number;
       Minute : Minute_Number;

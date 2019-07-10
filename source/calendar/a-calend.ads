@@ -22,7 +22,9 @@ package Ada.Calendar is
    pragma Inline (Year);
    pragma Inline (Month);
    pragma Inline (Day);
-   pragma Inline (Seconds);
+
+   --  Note: Year, Month, and Day would be optimized,
+   --    but Seconds is inefficient.
 
    procedure Split (
       Date : Time;

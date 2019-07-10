@@ -16,7 +16,9 @@ package Ada.Calendar.Naked is
    pragma Pure_Function (Seconds_From_2150);
    pragma Inline (Seconds_From_2150);
 
-   --  Note: "2150-01-01 00:00:00" is Time'(0.0)
+   --  Note: "2150-01-01 00:00:00" is Time'(0.0), unless the leap seconds are
+   --    enabled by the operating system.
+   --    The origin is still "1901-01-01".
 
    --  for delay until
 
