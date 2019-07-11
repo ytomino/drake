@@ -16,7 +16,7 @@ package body System.Random_Initiators is
       Size : Storage_Elements.Storage_Count)
    is
       Handle : C.signed_int;
-      Closed : C.signed_int;
+      Error : Boolean;
    begin
       Handle := C.fcntl.open (
          Random_File_Name (0)'Access,
@@ -24,6 +24,7 @@ package body System.Random_Initiators is
       if Handle < 0 then
          Raise_Exception (Use_Error'Identity);
       end if;
+      Error := False;
       declare
          Total_Read_Size : Storage_Elements.Storage_Count := 0;
       begin
@@ -37,7 +38,8 @@ package body System.Random_Initiators is
                      C.void_ptr (Item + Total_Read_Size),
                      C.size_t (Size - Total_Read_Size));
                if Read_Size < 0 then
-                  Raise_Exception (Use_Error'Identity);
+                  Error := True;
+                  exit;
                end if;
                Total_Read_Size :=
                   Total_Read_Size
@@ -45,8 +47,10 @@ package body System.Random_Initiators is
             end;
          end loop;
       end;
-      Closed := C.unistd.close (Handle);
-      if Closed < 0 then
+      if C.unistd.close (Handle) < 0 then
+         Error := True;
+      end if;
+      if Error then
          Raise_Exception (Use_Error'Identity);
       end if;
    end Get;
