@@ -131,7 +131,12 @@ begin
 		pragma Assert (Ada.Directories.Volumes.Is_Assigned (FS));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Size (FS)));
 		Ada.Debug.Put (Ada.Directories.File_Size'Image (Ada.Directories.Volumes.Free_Space (FS)));
-		Ada.Debug.Put (Ada.Directories.Volumes.Owner (FS));
+		begin
+			Ada.Debug.Put (Ada.Directories.Volumes.Owner (FS));
+		exception
+			when Program_Error =>
+				Ada.Debug.Put ("Ada.Directories.Volumes.Owner is unimplemented!");
+		end;
 		Ada.Debug.Put (Ada.Directories.Volumes.Format_Name (FS));
 		Ada.Debug.Put (Ada.Directories.Volumes.Directory (FS));
 		Ada.Debug.Put (Ada.Directories.Volumes.Device (FS));

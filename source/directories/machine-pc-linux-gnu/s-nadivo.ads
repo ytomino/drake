@@ -10,6 +10,13 @@ package System.Native_Directories.Volumes is
    type File_System is record
       Statistics : aliased C.sys.statfs.struct_statfs :=
          (f_type => 0, others => <>);
+      Format_Name_Offset : C.ptrdiff_t;
+      Format_Name_Length : C.size_t;
+      Directory_Offset : C.ptrdiff_t;
+      Directory_Length : C.size_t;
+      Device_Offset : C.ptrdiff_t;
+      Device_Length : C.size_t;
+      Info : C.char_ptr := null; -- the line of /proc/self/mountinfo
    end record;
    pragma Suppress_Initialization (File_System);
 
@@ -20,11 +27,14 @@ package System.Native_Directories.Volumes is
 
    procedure Get (Name : String; FS : aliased out File_System);
 
-   procedure Finalize (FS : in out File_System) is null;
-   pragma Inline (Finalize); -- [gcc-7] can not skip calling null procedure
+   procedure Finalize (FS : in out File_System);
 
    function Size (FS : File_System) return File_Size;
    function Free_Space (FS : File_System) return File_Size;
+
+   function Format_Name (FS : aliased in out File_System) return String;
+   function Directory (FS : aliased in out File_System) return String;
+   function Device (FS : aliased in out File_System) return String;
 
    function Case_Preserving (FS : File_System) return Boolean is (True);
    function Case_Sensitive (FS : File_System) return Boolean is (True);
@@ -37,12 +47,6 @@ package System.Native_Directories.Volumes is
 
    --  unimplemented
    function Owner (FS : File_System) return String
-      with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Format_Name (FS : File_System) return String
-      with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Directory (FS : File_System) return String
-      with Import, Convention => Ada, External_Name => "__drake_program_error";
-   function Device (FS : File_System) return String
       with Import, Convention => Ada, External_Name => "__drake_program_error";
 
 end System.Native_Directories.Volumes;
