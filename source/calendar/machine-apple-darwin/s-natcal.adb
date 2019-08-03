@@ -16,6 +16,16 @@ package body System.Native_Calendar is
       return System.Native_Time.To_Duration (T) - Diff;
    end To_Time;
 
+   function Is_Leap_Second (T : C.sys.types.time_t) return Boolean;
+   function Is_Leap_Second (T : C.sys.types.time_t) return Boolean is
+      Aliased_T : aliased C.sys.types.time_t := T;
+      tm : aliased C.time.struct_tm;
+      tm_r : access C.time.struct_tm;
+   begin
+      tm_r := C.time.gmtime_r (Aliased_T'Access, tm'Access);
+      return tm_r /= null and then Second_Number'Base (tm_r.tm_sec) = 60;
+   end Is_Leap_Second;
+
    --  implementation
 
    function To_Native_Time (T : Duration) return Native_Time is
@@ -184,17 +194,14 @@ package body System.Native_Calendar is
          Result := To_Time (time);
       end if;
       if not Error then
-         declare
-            Offset : constant Duration := Seconds - Duration (Time_Zone * 60);
-         begin
-            Result := Result + Offset;
-            if Leap_Second
-               and then Offset >= 86_399.0
-               and then Offset < 86_400.0
-            then
+         Result := Result - Duration (Time_Zone * 60) + Seconds;
+         if Leap_Second then
+            if Time_Zone <= 0 then
                Result := Result + 1.0;
             end if;
-         end;
+            --  checking
+            Error := not Is_Leap_Second (To_Native_Time (Result).tv_sec);
+         end if;
       end if;
    end Time_Of;
 
@@ -247,6 +254,10 @@ package body System.Native_Calendar is
          end if;
          time := C.time.timegm (tm'Access);
          Error := time = -1;
+         if not Error and Leap_Second then
+            --  checking
+            Error := not Is_Leap_Second (time);
+         end if;
       end if;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
       if Error then -- to pass negative UNIX time (?)
