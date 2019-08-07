@@ -11,6 +11,30 @@ package body System.Native_Calendar is
       --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
       --    to 2150-01-01 (0 of Ada time)
 
+   function "-" (Left : C.windef.FILETIME; Right : Duration)
+      return C.windef.FILETIME
+      with Convention => Intrinsic;
+   pragma Inline_Always ("-");
+   function "-" (Left : C.windef.FILETIME; Right : Duration)
+      return C.windef.FILETIME
+   is
+      use type C.winnt.ULONGLONG;
+      Left_U : constant C.winnt.ULARGE_INTEGER := (
+         Unchecked_Tag => 0,
+         LowPart => Left.dwLowDateTime,
+         HighPart => Left.dwHighDateTime);
+      Result_U : constant C.winnt.ULARGE_INTEGER := (
+         Unchecked_Tag => 255, -- any value in others
+         QuadPart => Left_U.QuadPart
+            - C.winnt.ULONGLONG (
+               System.Native_Time.Nanosecond_Number'Integer_Value (Right)
+                  / 100));
+   begin
+      return (
+         dwLowDateTime => Result_U.LowPart,
+         dwHighDateTime => Result_U.HighPart);
+   end "-";
+
    function Is_Leap_Second (T : C.windef.FILETIME) return Boolean;
    function Is_Leap_Second (T : C.windef.FILETIME) return Boolean is
       Aliased_T : aliased C.windef.FILETIME := T;
@@ -245,8 +269,7 @@ package body System.Native_Calendar is
          if not Error then
             declare
                GMT : aliased C.windef.FILETIME :=
-                  To_Native_Time (
-                     To_Time (FileTime) - Duration (Time_Zone * 60));
+                  FileTime - Duration (Time_Zone * 60);
             begin
                Error :=
                   C.winbase.FileTimeToSystemTime (
@@ -317,7 +340,8 @@ package body System.Native_Calendar is
          declare
             Offset : constant System.Native_Time.Nanosecond_Number :=
                System.Native_Time.Nanosecond_Number'Integer_Value (
-                  To_Time (Local_File_Time) - To_Time (Backed_File_Time));
+                  System.Native_Time.To_Duration (Local_File_Time)
+                     - System.Native_Time.To_Duration (Backed_File_Time));
          begin
             Time_Zone := Time_Offset (Offset / 60_000_000_000);
          end;
