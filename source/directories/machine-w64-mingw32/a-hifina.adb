@@ -609,7 +609,7 @@ package body Ada.Hierarchical_File_Names is
                         First => First,
                         Last => Last);
                      Relative_Name (
-                        Name (R_F_First .. R_F_Last),
+                        From (R_F_First .. R_F_Last),
                         First => R_F_First,
                         Last => R_F_Last);
                   else
