@@ -1,5 +1,10 @@
 with Ada.Calendar.Formatting;
+with System.Long_Long_Integer_Types;
 package body Ada.Calendar.Arithmetic is
+   use type System.Long_Long_Integer_Types.Long_Long_Unsigned;
+
+   subtype Long_Long_Unsigned is
+      System.Long_Long_Integer_Types.Long_Long_Unsigned;
 
    procedure Addition (Left : Time; Right : Day_Count; Result : out Time);
    procedure Addition (Left : Time; Right : Day_Count; Result : out Time) is
@@ -184,11 +189,17 @@ package body Ada.Calendar.Arithmetic is
       end;
       declare
          Truncated_D : constant Duration := Truncated_H - Truncated_L;
+         Quotient, Remainder : Long_Long_Unsigned;
       begin
-         Days := Day_Count (Truncated_D / (24 * 60 * 60.0));
+         System.Long_Long_Integer_Types.Divide (
+            Long_Long_Unsigned'Integer_Value (Truncated_D),
+            Long_Long_Unsigned'Integer_Value (Duration'(24 * 60 * 60.0)),
+            Quotient => Quotient,
+            Remainder => Remainder);
+         Days := Day_Count (Quotient);
          Seconds := H_Seconds - L_Seconds;
-         Leap_Seconds :=
-            Integer (Truncated_D - Duration (Days) * (24 * 60 * 60.0));
+         Leap_Seconds := Integer (Remainder / 1_000_000_000);
+         pragma Assert (Remainder rem 1_000_000_000 = 0);
       end;
       if Minus then
          Days := -Days;

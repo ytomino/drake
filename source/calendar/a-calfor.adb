@@ -182,7 +182,7 @@ package body Ada.Calendar.Formatting is
          Last := Last + 1;
          Item (Last) := '.';
          System.Formatting.Image (
-            Word_Unsigned (Sub_Second * 100.0),
+            Word_Unsigned'Integer_Value (Sub_Second) / 10_000_000,
             Item (Last + 1 .. Item'Last),
             Last,
             Width => 2,
