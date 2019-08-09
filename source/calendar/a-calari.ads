@@ -9,15 +9,18 @@ package Ada.Calendar.Arithmetic is
 
    subtype Leap_Seconds_Count is Integer range -2047 .. 2047;
 
---  procedure Difference (
---    Left, Right : Time;
---    Days : out Day_Count;
---    Seconds : out Duration;
---    Leap_Seconds : out Leap_Seconds_Count);
+   procedure Difference (
+      Left, Right : Time;
+      Days : out Day_Count;
+      Seconds : out Duration;
+      Leap_Seconds : out Leap_Seconds_Count);
 
---  function "+" (Left : Time; Right : Day_Count) return Time;
---  function "+" (Left : Day_Count; Right : Time) return Time;
---  function "-" (Left : Time; Right : Day_Count) return Time;
---  function "-" (Left, Right : Time) return Day_Count;
+   function "+" (Left : Time; Right : Day_Count) return Time;
+   function "+" (Left : Day_Count; Right : Time) return Time;
+   function "-" (Left : Time; Right : Day_Count) return Time;
+   function "-" (Left, Right : Time) return Day_Count;
+
+   pragma Inline ("+");
+   pragma Inline ("-");
 
 end Ada.Calendar.Arithmetic;
