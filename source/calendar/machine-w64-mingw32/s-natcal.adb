@@ -127,10 +127,10 @@ package body System.Native_Calendar is
                      Truncated_Time'Access) =
                   C.windef.FALSE;
                if not Error then
-                  Seconds := Local_Date - To_Time (Truncated_Time);
                   if Leap_Second and then Time_Zone <= 0 then
-                     Seconds := Seconds - 1.0;
+                     Local_Date := Local_Date - 1.0;
                   end if;
+                  Seconds := Local_Date - To_Time (Truncated_Time);
                end if;
             end;
          end if;

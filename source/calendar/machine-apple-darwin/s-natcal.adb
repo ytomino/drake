@@ -92,10 +92,10 @@ package body System.Native_Calendar is
                Error := Truncated_Time = -1;
                if not Error then
                   timespec.tv_sec := timespec.tv_sec - Truncated_Time;
-                  Seconds := System.Native_Time.To_Duration (timespec);
                   if Leap_Second and then Time_Zone <= 0 then
-                     Seconds := Seconds - 1.0;
+                     timespec.tv_sec := timespec.tv_sec - 1;
                   end if;
+                  Seconds := System.Native_Time.To_Duration (timespec);
                end if;
             end;
          end if;
