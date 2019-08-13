@@ -393,6 +393,9 @@ package body Ada.Calendar.Formatting is
       Second : out Second_Number;
       Sub_Second : out Second_Duration) is
    begin
+      if Seconds = Day_Duration'Last then
+         Raise_Exception (Time_Error'Identity); -- RM 9.6.1(70/3)
+      end if;
       Split_Base (
          Seconds,
          Hour => Hour,
