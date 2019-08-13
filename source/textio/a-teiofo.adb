@@ -354,6 +354,8 @@ package body Ada.Text_IO.Formatting is
                Add (Buffer, Last, Item);
                Skip_Ahead (File);
                Skip_Spaces (File);
+            else
+               Add (Buffer, Last, ' ');
             end if;
             Get_Numeric_Literal_To_Buffer (File, Buffer, Last, Real => True);
             if Paren then
