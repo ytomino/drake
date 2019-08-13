@@ -18,14 +18,6 @@ package body System.Native_Interrupts is
 
    --  implementation
 
-   function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
-   begin
-      return Interrupt not in
-            1 .. C.signed_int'Max (C.signal.SIGRTMAX, C.signal.NSIG - 1)
-         or else Interrupt = C.signal.SIGKILL
-         or else Interrupt = C.signal.SIGSTOP;
-   end Is_Reserved;
-
    function Is_Blocked (Interrupt : Interrupt_Id) return Boolean is
       Current_Mask : aliased C.signal.sigset_t;
       R : C.signed_int;

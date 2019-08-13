@@ -1,10 +1,11 @@
 with System.Interrupt_Handlers;
+with System.Interrupt_Numbers;
 with System.Native_Interrupts.Vector;
 package body Ada.Interrupts is
 
    function Is_Reserved (Interrupt : Interrupt_Id) return Boolean is
    begin
-      return System.Native_Interrupts.Is_Reserved (
+      return System.Interrupt_Numbers.Is_Reserved (
          System.Native_Interrupts.Interrupt_Id (Interrupt));
    end Is_Reserved;
 

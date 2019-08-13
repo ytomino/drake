@@ -1,5 +1,6 @@
 pragma License (Unrestricted);
 --  specialized for Linux
+private with System.Interrupt_Numbers;
 private with C.signal;
 package Ada.Interrupts.Names is
    --  This package is system-specific.
@@ -87,8 +88,9 @@ private
    function SIGRTMIN return Interrupt_Id is (Interrupt_Id (C.signal.SIGRTMIN));
    function SIGRTMAX return Interrupt_Id is (Interrupt_Id (C.signal.SIGRTMAX));
 
-   First_Interrupt_Id : constant Interrupt_Id := SIGHUP;
-   Last_Interrupt_Id : constant Interrupt_Id := C.signal.NSIG - 1;
-      --  SIGRTMAX (__libc_current_sigrtmax) = NSIG - 1 = 64
+   First_Interrupt_Id : constant Interrupt_Id :=
+      System.Interrupt_Numbers.First_Interrupt_Id;
+   Last_Interrupt_Id : constant Interrupt_Id :=
+      System.Interrupt_Numbers.Last_Interrupt_Id;
 
 end Ada.Interrupts.Names;

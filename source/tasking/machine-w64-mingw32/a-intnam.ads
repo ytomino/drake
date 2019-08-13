@@ -1,6 +1,6 @@
 pragma License (Unrestricted);
 --  specialized for Windows
-private with C.signal;
+private with System.Interrupt_Numbers;
 package Ada.Interrupts.Names is
    --  This package is system-specific.
 
@@ -28,7 +28,9 @@ private
    SIGBREAK : constant Interrupt_Id := 21;
    SIGABRT : constant Interrupt_Id := 22;
 
-   First_Interrupt_Id : constant Interrupt_Id := 1;
-   Last_Interrupt_Id : constant Interrupt_Id := C.signal.NSIG - 1;
+   First_Interrupt_Id : constant Interrupt_Id :=
+      System.Interrupt_Numbers.First_Interrupt_Id;
+   Last_Interrupt_Id : constant Interrupt_Id :=
+      System.Interrupt_Numbers.Last_Interrupt_Id;
 
 end Ada.Interrupts.Names;

@@ -1,7 +1,7 @@
 with Ada.Exceptions;
-with Ada.Interrupts.Names;
 with Ada.Unchecked_Conversion;
 with System.Formatting;
+with System.Interrupt_Numbers;
 with System.Long_Long_Integer_Types;
 with System.Unwind.Occurrences;
 with C.signal;
@@ -46,8 +46,8 @@ package body System.Native_Interrupts.Vector is
    type Signal_Vec is
       array (
             C.signed_int range
-               C.signed_int (Ada.Interrupts.Names.First_Interrupt_Id) ..
-               C.signed_int (Ada.Interrupts.Names.Last_Interrupt_Id)) of
+               Interrupt_Numbers.First_Interrupt_Id ..
+               Interrupt_Numbers.Last_Interrupt_Id) of
          Signal_Rec;
    pragma Suppress_Initialization (Signal_Vec);
 
