@@ -73,17 +73,17 @@ private
 
    UTF_16_Wide_String_Scheme : constant Encoding_Scheme :=
       Encoding_Scheme'Val (
-         Encoding_Scheme'Pos (UTF_16BE) *
-            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
-         + Encoding_Scheme'Pos (UTF_16LE) *
-            Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
+         Encoding_Scheme'Pos (UTF_16BE)
+            * Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
+         + Encoding_Scheme'Pos (UTF_16LE)
+            * Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
    UTF_32_Wide_Wide_String_Scheme : constant Encoding_Scheme :=
       Encoding_Scheme'Val (
-         Encoding_Scheme'Pos (UTF_32BE) *
-            Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
-         + Encoding_Scheme'Pos (UTF_32LE) *
-            Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
+         Encoding_Scheme'Pos (UTF_32BE)
+            * Boolean'Pos (System.Default_Bit_Order = System.High_Order_First)
+         + Encoding_Scheme'Pos (UTF_32LE)
+            * Boolean'Pos (System.Default_Bit_Order = System.Low_Order_First));
 
    BOM_Table : constant
          array (Encoding_Scheme) of not null access constant UTF_String := (

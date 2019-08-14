@@ -96,8 +96,8 @@ package body Ada.Calendar.Formatting is
       Second : out Second_Number;
       Sub_Second : out Second_Duration)
    is
-      X : System.Native_Time.Nanosecond_Number
-         := System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
+      X : System.Native_Time.Nanosecond_Number :=
+         System.Native_Time.Nanosecond_Number'Integer_Value (Seconds);
       Q, R : System.Native_Time.Nanosecond_Number;
    begin
       System.Long_Long_Integer_Types.Divide (
