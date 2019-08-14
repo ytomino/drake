@@ -1,4 +1,3 @@
-c250002 C on GNAT, it can not use non-ASCII source filename
 c45322a N Float'Machine_Overflows
 c45523a N Float'Machine_Overflows
 c4a012b N Float'Machine_Overflows
@@ -32,6 +31,12 @@ ce3115a N multiple internal files are supported in Text_IO
 ce3304a N -1 not in Text_IO.Count
 ce3413b N Text_IO.Count'Last is too large for test
 cxb4009 C it requites COBOL compiler
+cxc3001 F SIGUSR1 is not handled
+cxc3003 F SIGUSR1 is not handled
+cxc3004 F SIGUSR1 is not handled
+cxc3006 F SIGUSR1 is not handled
+cxc3008 F SIGUSR1 is not handled
+cxc3009 F SIGUSR1 is not handled
 cxd1003 F failed to rendezvous
 cxd1004 F failed to rendezvous
 cxd1005 F failed to rendezvous
@@ -45,6 +50,7 @@ cxd3001 F pragma Locking_Policy is not working
 cxd3002 F pragma Locking_Policy is not working
 cxd6001 F failed to abort (by timing)
 cxd6002 F failed to abort
+cxda004 U deadlock, SIGUSR1 is not handled
 cxdb001 C Asynchronous_Task_Control is not supported
 cxdb002 C Asynchronous_Task_Control is not supported
 cxdb003 C Asynchronous_Task_Control is not supported

@@ -574,6 +574,11 @@ procedure run_acats is
 			or else Ada.Strings.Equal_Case_Insensitive (Name, "ca5006a");
 	end Dynamic_Elaboration;
 	
+	function Need_lm (Name : String) return Boolean is
+	begin
+		return Ada.Strings.Equal_Case_Insensitive (Name, "cxb5004"); -- for Linux
+	end Need_lm;
+	
 	-- test operations for compiler/runtime (error class)
 	
 	procedure Check_Log_In_Error_Class (Name : in String; Result : not null access Test_Result) is
@@ -902,6 +907,12 @@ procedure run_acats is
 					else
 						raise Configuration_Error with "main subprogram is not found.";
 					end if;
+				end if;
+				if Need_lm (Name) then
+					if Link_With /= "" then
+						Ada.Strings.Unbounded.Append (Link_With, " ");
+					end if;
+					Ada.Strings.Unbounded.Append (Link_With, "-lm");
 				end if;
 				Compile (
 					+Main,
