@@ -16,9 +16,31 @@ package body System.Native_Calendar is
       return System.Native_Time.To_Duration (T) - Diff;
    end To_Time;
 
-   function Is_Leap_Second (T : C.sys.types.time_t) return Boolean;
-   function Is_Leap_Second (T : C.sys.types.time_t) return Boolean is
-      Aliased_T : aliased C.sys.types.time_t := T;
+   procedure Fixup (
+      T : in out C.sys.types.time_t;
+      Current : Second_Number'Base;
+      Expected : Second_Number);
+   procedure Fixup (
+      T : in out C.sys.types.time_t;
+      Current : Second_Number'Base;
+      Expected : Second_Number)
+   is
+      use type C.sys.types.time_t;
+   begin
+      if (Current + 59) rem 60 = Expected then
+         --  or else (Current = 60 and Expected = 59)
+         T := T - 1;
+      else
+         pragma Assert (
+            (Current + 1) rem 60 = Expected
+            or else (Current = 60 and then Expected = 0));
+         T := T + 1;
+      end if;
+   end Fixup;
+
+   function Is_Leap_Second (T : Duration) return Boolean;
+   function Is_Leap_Second (T : Duration) return Boolean is
+      Aliased_T : aliased C.sys.types.time_t := To_Native_Time (T).tv_sec;
       tm : aliased C.time.struct_tm;
       tm_r : access C.time.struct_tm;
    begin
@@ -68,15 +90,34 @@ package body System.Native_Calendar is
       tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
       Error := tm = null;
       if not Error then
-         --  Leap_Second is always calculated as GMT
-         Leap_Second := Second_Number'Base (tm.tm_sec) >= 60;
-         --  other units are calculated by Time_Zone
-         if Time_Zone /= 0 then
-            timespec.tv_sec :=
-               timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
-            tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
-            Error := tm = null;
-         end if;
+         declare
+            Second : constant Second_Number'Base :=
+               Second_Number'Base (tm.tm_sec);
+         begin
+            --  Leap_Second is always calculated as GMT
+            Leap_Second := Second >= 60;
+            --  other units are calculated by Time_Zone
+            if Time_Zone /= 0 then
+               timespec.tv_sec :=
+                  timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
+               tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
+               Error := tm = null;
+               if not Error
+                  and then not Leap_Second
+                  and then Second_Number'Base (tm.tm_sec) /= Second
+               then
+                  --  Time_Zone is passed over some leap time
+                  Fixup (timespec.tv_sec,
+                     Current => Second_Number'Base (tm.tm_sec),
+                     Expected => Second);
+                  tm :=
+                     C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
+                  Error := tm = null;
+                  pragma Assert (
+                     Error or else Second_Number'Base (tm.tm_sec) = Second);
+               end if;
+            end if;
+         end;
          if not Error then
             Year := Integer (tm.tm_year) + 1900;
             Month := Integer (tm.tm_mon) + 1;
@@ -144,6 +185,19 @@ package body System.Native_Calendar is
                timespec.tv_sec + C.sys.types.time_t (Time_Zone) * 60;
             tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
             Error := tm = null;
+            if not Error
+               and then not Leap_Second
+               and then Second_Number'Base (tm.tm_sec) /= Second
+            then
+               --  Time_Zone is passed over some leap time
+               Fixup (timespec.tv_sec,
+                  Current => Second_Number'Base (tm.tm_sec),
+                  Expected => Second);
+               tm := C.time.gmtime_r (timespec.tv_sec'Access, Buffer'Access);
+               Error := tm = null;
+               pragma Assert (
+                  Error or else Second_Number'Base (tm.tm_sec) = Second);
+            end if;
          end if;
          if not Error then
             Year := Integer (tm.tm_year) + 1900;
@@ -168,6 +222,8 @@ package body System.Native_Calendar is
       Error : out Boolean)
    is
       use type C.sys.types.time_t;
+      sec : C.sys.types.time_t;
+      Sub_Second : Second_Duration;
       tm : aliased C.time.struct_tm := (
          tm_sec => 0,
          tm_min => 0,
@@ -180,10 +236,41 @@ package body System.Native_Calendar is
          tm_isdst => 0,
          tm_gmtoff => 0,
          tm_zone => null);
-      time : C.sys.types.time_t;
+      time : aliased C.sys.types.time_t;
    begin
       time := C.time.timegm (tm'Access);
       Error := time = -1;
+      if not Error then
+         declare
+            Seconds_timespec : constant C.time.struct_timespec :=
+               System.Native_Time.To_timespec (Seconds);
+         begin
+            sec := Seconds_timespec.tv_sec;
+            Sub_Second := Duration'Fixed_Value (Seconds_timespec.tv_nsec);
+         end;
+         time := time + sec;
+         if Time_Zone /= 0 then
+            time := time - C.sys.types.time_t (Time_Zone * 60);
+            if not Leap_Second then
+               declare
+                  Second : constant Second_Number :=
+                     Second_Number'Base (sec) rem 60;
+                  tm_r : access C.time.struct_tm;
+               begin
+                  tm_r := C.time.gmtime_r (time'Access, tm'Access); -- reuse tm
+                  Error := tm_r = null;
+                  if not Error
+                     and then Second_Number'Base (tm_r.tm_sec) /= Second
+                  then
+                     --  Time_Zone is passed over some leap time
+                     Fixup (time,
+                        Current => Second_Number'Base (tm_r.tm_sec),
+                        Expected => Second);
+                  end if;
+               end;
+            end if;
+         end if;
+      end if;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
       if Error then -- to pass negative UNIX time (?)
          if Year = 1901 and then Month = 1 and then Day = 1 then
@@ -194,13 +281,13 @@ package body System.Native_Calendar is
          Result := To_Time (time);
       end if;
       if not Error then
-         Result := Result - Duration (Time_Zone * 60) + Seconds;
+         Result := Result + Sub_Second;
          if Leap_Second then
             if Time_Zone <= 0 then
                Result := Result + 1.0;
             end if;
             --  checking
-            Error := not Is_Leap_Second (To_Native_Time (Result).tv_sec);
+            Error := not Is_Leap_Second (Result);
          end if;
       end if;
    end Time_Of;
@@ -231,32 +318,27 @@ package body System.Native_Calendar is
          tm_isdst => 0,
          tm_gmtoff => 0,
          tm_zone => null);
-      time : C.sys.types.time_t;
+      time : aliased C.sys.types.time_t;
    begin
-      Error := False;
-      if Time_Zone /= 0 then
-         time := C.time.timegm (tm'Access);
-         Error := time = -1;
-         if not Error then
+      time := C.time.timegm (tm'Access);
+      Error := time = -1;
+      if not Error and then Time_Zone /= 0 then
+         time := time - C.sys.types.time_t (Time_Zone * 60);
+         if not Leap_Second then
             declare
-               GMT : aliased C.sys.types.time_t;
                tm_r : access C.time.struct_tm;
             begin
-               GMT := time - C.sys.types.time_t (Time_Zone * 60);
-               tm_r := C.time.gmtime_r (GMT'Access, tm'Access);
+               tm_r := C.time.gmtime_r (time'Access, tm'Access); -- reuse tm
                Error := tm_r = null;
+               if not Error
+                  and then Second_Number'Base (tm_r.tm_sec) /= Second
+               then
+                  --  Time_Zone is passed over some leap time
+                  Fixup (time,
+                     Current => Second_Number'Base (tm_r.tm_sec),
+                     Expected => Second);
+               end if;
             end;
-         end if;
-      end if;
-      if not Error then
-         if Leap_Second and then Second_Number'Base (tm.tm_sec) = 59 then
-            tm.tm_sec := 60;
-         end if;
-         time := C.time.timegm (tm'Access);
-         Error := time = -1;
-         if not Error and Leap_Second then
-            --  checking
-            Error := not Is_Leap_Second (time);
          end if;
       end if;
       --  UNIX time starts until 1970, Year_Number stats unitl 1901...
@@ -272,6 +354,13 @@ package body System.Native_Calendar is
       end if;
       if not Error then
          Result := Result + Sub_Second;
+         if Leap_Second then
+            if Time_Zone <= 0 then
+               Result := Result + 1.0;
+            end if;
+            --  checking
+            Error := not Is_Leap_Second (Result);
+         end if;
       end if;
    end Time_Of;
 
