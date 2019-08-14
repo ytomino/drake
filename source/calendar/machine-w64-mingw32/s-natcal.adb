@@ -1,12 +1,21 @@
 --  reference:
 --  https://blogs.msdn.microsoft.com/oldnewthing/20140307-00/?p=1573
 with System.Native_Time;
+with System.Storage_Elements;
 with C.winbase;
 with C.winnt;
 package body System.Native_Calendar is
    use type System.Native_Time.Nanosecond_Number;
+   use type Storage_Elements.Storage_Offset;
    use type C.windef.WINBOOL;
    use type C.windef.WORD;
+
+   procedure memset (
+      b : not null access C.winbase.TIME_ZONE_INFORMATION;
+      c : Integer;
+      n : Storage_Elements.Storage_Count)
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_memset";
 
    Diff : constant := 17324755200_000_000_0;
       --  100-nanoseconds from 1601-01-01 (0 of FILETIME)
@@ -63,25 +72,21 @@ package body System.Native_Calendar is
       return Duration'Fixed_Value ((Left_U.QuadPart - Right_U.QuadPart) * 100);
    end "-";
 
-   procedure Fixup (
-      T : in out C.windef.FILETIME;
-      Current : Second_Number'Base;
-      Expected : Second_Number);
-   procedure Fixup (
-      T : in out C.windef.FILETIME;
-      Current : Second_Number'Base;
-      Expected : Second_Number) is
+   procedure Make_TZI (
+      TZI : aliased out C.winbase.TIME_ZONE_INFORMATION;
+      Time_Zone : Time_Offset);
+   procedure Make_TZI (
+      TZI : aliased out C.winbase.TIME_ZONE_INFORMATION;
+      Time_Zone : Time_Offset) is
    begin
-      if (Current + 59) rem 60 = Expected then
-         --  or else (Current = 60 and Expected = 59)
-         T := T - 1.0;
-      else
-         pragma Assert (
-            (Current + 1) rem 60 = Expected
-            or else (Current = 60 and then Expected = 0));
-         T := T + 1.0;
-      end if;
-   end Fixup;
+      memset (
+         TZI'Access,
+         0,
+         C.winbase.TIME_ZONE_INFORMATION'Size / Standard'Storage_Unit);
+      TZI.Bias := C.winnt.LONG (-Time_Zone);
+      TZI.StandardBias := TZI.Bias;
+      TZI.DaylightBias := TZI.Bias;
+   end Make_TZI;
 
    function Is_Leap_Second (T : Duration) return Boolean;
    function Is_Leap_Second (T : Duration) return Boolean is
@@ -144,48 +149,42 @@ package body System.Native_Calendar is
       FileTime : aliased C.windef.FILETIME :=
          To_Native_Time (Date - Sub_Second);
       SystemTime : aliased C.winbase.SYSTEMTIME;
+      SystemTime2 : aliased C.winbase.SYSTEMTIME;
+      Dest : C.winbase.PSYSTEMTIME;
    begin
       Error :=
          C.winbase.FileTimeToSystemTime (FileTime'Access, SystemTime'Access) =
          C.windef.FALSE;
       if not Error then
-         declare
-            Second : constant Second_Number'Base :=
-               Second_Number'Base (SystemTime.wSecond);
-         begin
-            --  Leap_Second is always calculated as GMT
-            Leap_Second := Second >= 60;
-            --  other units are calculated by Time_Zone
-            if Time_Zone /= 0 then
-               FileTime := FileTime + Duration (Time_Zone * 60);
+         --  Leap_Second is always calculated as GMT
+         Leap_Second := Second_Number'Base (SystemTime.wSecond) >= 60;
+         --  other units are calculated by Time_Zone
+         if Time_Zone /= 0 then
+            declare
+               TZI : aliased C.winbase.TIME_ZONE_INFORMATION;
+            begin
+               Make_TZI (TZI, Time_Zone);
                Error :=
-                  C.winbase.FileTimeToSystemTime (
-                     FileTime'Access,
-                     SystemTime'Access) =
+                  C.winbase.SystemTimeToTzSpecificLocalTime (
+                     TZI'Access,
+                     SystemTime'Access,
+                     SystemTime2'Access) =
                   C.windef.FALSE;
-               if not Error
-                  and then not Leap_Second
-                  and then Second_Number'Base (SystemTime.wSecond) /= Second
-               then
-                  --  Time_Zone is passed over some leap time
-                  Fixup (FileTime,
-                     Current => Second_Number'Base (SystemTime.wSecond),
-                     Expected => Second);
-                  Error :=
-                     C.winbase.FileTimeToSystemTime (
-                        FileTime'Access,
-                        SystemTime'Access) =
-                     C.windef.FALSE;
-                  pragma Assert (
-                     Error
-                     or else Second_Number'Base (SystemTime.wSecond) = Second);
+               if not Error then
+                  if Leap_Second then
+                     pragma Assert (SystemTime2.wSecond = 60);
+                     SystemTime2.wSecond := 59;
+                  end if;
+                  Seconds :=
+                     Duration (
+                        Integer (SystemTime2.wHour) * (60 * 60)
+                        + Integer (SystemTime2.wMinute) * 60
+                        + Integer (SystemTime2.wSecond));
                end if;
-            end if;
-         end;
-         if not Error then
-            Year := Year_Number (SystemTime.wYear);
-            Month := Month_Number (SystemTime.wMonth);
-            Day := Day_Number (SystemTime.wDay);
+            end;
+            Dest := SystemTime2'Unchecked_Access;
+         else
+            --  This assumes all leap seconds are at "23:59:60" on GMT.
             --  truncate to day
             SystemTime.wHour := 0;
             SystemTime.wMinute := 0;
@@ -200,12 +199,19 @@ package body System.Native_Calendar is
                      Truncated_Time'Access) =
                   C.windef.FALSE;
                if not Error then
-                  if Leap_Second and then Time_Zone <= 0 then
+                  if Leap_Second then
                      FileTime := FileTime - 1.0;
                   end if;
-                  Seconds := FileTime - Truncated_Time + Sub_Second;
+                  Seconds := FileTime - Truncated_Time;
                end if;
             end;
+            Dest := SystemTime'Unchecked_Access;
+         end if;
+         if not Error then
+            Year := Year_Number (Dest.wYear);
+            Month := Month_Number (Dest.wMonth);
+            Day := Day_Number (Dest.wDay);
+            Seconds := Seconds + Sub_Second;
          end if;
       end if;
    end Split;
@@ -226,6 +232,8 @@ package body System.Native_Calendar is
    is
       FileTime : aliased C.windef.FILETIME := To_Native_Time (Date);
       SystemTime : aliased C.winbase.SYSTEMTIME;
+      SystemTime2 : aliased C.winbase.SYSTEMTIME;
+      Dest : C.winbase.PSYSTEMTIME;
    begin
       Error :=
          C.winbase.FileTimeToSystemTime (FileTime'Access, SystemTime'Access) =
@@ -245,40 +253,28 @@ package body System.Native_Calendar is
                   mod 1_000_000_000);
          --  other units are calculated by Time_Zone
          if Time_Zone /= 0 then
-            if Leap_Second and then Time_Zone < 0 then
-               FileTime := FileTime - 1.0;
-            end if;
-            FileTime := FileTime + Duration (Time_Zone * 60);
-            Error :=
-               C.winbase.FileTimeToSystemTime (
-                  FileTime'Access,
-                  SystemTime'Access) =
-               C.windef.FALSE;
-            if not Error
-               and then not Leap_Second
-               and then Second_Number'Base (SystemTime.wSecond) /= Second
-            then
-               --  Time_Zone is passed over some leap time
-               Fixup (FileTime,
-                  Current => Second_Number'Base (SystemTime.wSecond),
-                  Expected => Second);
+            declare
+               TZI : aliased C.winbase.TIME_ZONE_INFORMATION;
+            begin
+               Make_TZI (TZI, Time_Zone);
                Error :=
-                  C.winbase.FileTimeToSystemTime (
-                     FileTime'Access,
-                     SystemTime'Access) =
+                  C.winbase.SystemTimeToTzSpecificLocalTime (
+                     TZI'Access,
+                     SystemTime'Access,
+                     SystemTime2'Access) =
                   C.windef.FALSE;
-               pragma Assert (
-                  Error
-                  or else Second_Number'Base (SystemTime.wSecond) = Second);
-            end if;
+            end;
+            Dest := SystemTime2'Unchecked_Access;
+         else
+            Dest := SystemTime'Unchecked_Access;
          end if;
          if not Error then
-            Year := Year_Number (SystemTime.wYear);
-            Month := Month_Number (SystemTime.wMonth);
-            Day := Day_Number (SystemTime.wDay);
-            Hour := Hour_Number (SystemTime.wHour);
-            Minute := Minute_Number (SystemTime.wMinute);
-            Day_of_Week := (Integer (SystemTime.wDayOfWeek) + 6) rem 7;
+            Year := Year_Number (Dest.wYear);
+            Month := Month_Number (Dest.wMonth);
+            Day := Day_Number (Dest.wDay);
+            Hour := Hour_Number (Dest.wHour);
+            Minute := Minute_Number (Dest.wMinute);
+            Day_of_Week := (Integer (Dest.wDayOfWeek) + 6) rem 7;
                --  Day_Name starts from Monday
          end if;
       end if;
@@ -294,7 +290,7 @@ package body System.Native_Calendar is
       Result : out Time;
       Error : out Boolean)
    is
-      Sub_Second : Second_Duration;
+      Actual_Seconds : Day_Duration;
       SystemTime : aliased C.winbase.SYSTEMTIME := (
          wYear => C.windef.WORD (Year),
          wMonth => C.windef.WORD (Month),
@@ -304,49 +300,48 @@ package body System.Native_Calendar is
          wMinute => 0,
          wSecond => 0,
          wMilliseconds => 0);
+      SystemTime2 : aliased C.winbase.SYSTEMTIME;
+      Source : C.winbase.PSYSTEMTIME;
       FileTime : aliased C.windef.FILETIME;
    begin
-      Error :=
-         C.winbase.SystemTimeToFileTime (SystemTime'Access, FileTime'Access) =
-         C.windef.FALSE;
-      if not Error then
-         Sub_Second :=
+      if Time_Zone /= 0 then
+         Actual_Seconds :=
             Duration'Fixed_Value (
                System.Native_Time.Nanosecond_Number'Integer_Value (Seconds)
                   mod 1_000_000_000);
-         FileTime := FileTime + (Seconds - Sub_Second);
-         if Time_Zone /= 0 then
-            FileTime := FileTime - Duration (Time_Zone * 60);
-            if not Leap_Second then
-               declare
-                  Second : constant Second_Number :=
-                     Second_Number'Base (Seconds - Sub_Second) rem 60;
-               begin
-                  Error :=
-                     C.winbase.FileTimeToSystemTime (
-                        FileTime'Access,
-                        SystemTime'Access) = -- reuse SystemTime
-                     C.windef.FALSE;
-                  if not Error
-                     and then Second_Number'Base (SystemTime.wSecond) /= Second
-                  then
-                     --  Time_Zone is passed over some leap time
-                     Fixup (FileTime,
-                        Current => Second_Number'Base (SystemTime.wSecond),
-                        Expected => Second);
-                  end if;
-               end;
-            end if;
-         end if;
+         declare
+            S : constant Natural := Integer (Seconds - Actual_Seconds);
+            TZI : aliased C.winbase.TIME_ZONE_INFORMATION;
+         begin
+            SystemTime.wHour := C.windef.WORD (S / (60 * 60));
+            SystemTime.wMinute := C.windef.WORD (S rem (60 * 60) / 60);
+            SystemTime.wSecond := C.windef.WORD (S rem 60);
+            Make_TZI (TZI, Time_Zone);
+            Error :=
+               C.winbase.TzSpecificLocalTimeToSystemTime (
+                  TZI'Access,
+                  SystemTime'Access,
+                  SystemTime2'Access) =
+               C.windef.FALSE;
+         end;
+         Source := SystemTime2'Unchecked_Access;
+      else
+         --  This assumes all leap seconds are at "23:59:60" on GMT.
+         Error := False;
+         Actual_Seconds := Seconds;
+         Source := SystemTime'Unchecked_Access;
       end if;
       if not Error then
-         Result := To_Time (FileTime) + Sub_Second;
-         if Leap_Second then
-            if Time_Zone <= 0 then
+         Error :=
+            C.winbase.SystemTimeToFileTime (Source, FileTime'Access) =
+            C.windef.FALSE;
+         Result := To_Time (FileTime) + Actual_Seconds;
+         if not Error then
+            if Leap_Second then
                Result := Result + 1.0;
+               --  checking
+               Error := not Is_Leap_Second (Result);
             end if;
-            --  checking
-            Error := not Is_Leap_Second (Result);
          end if;
       end if;
    end Time_Of;
@@ -373,37 +368,38 @@ package body System.Native_Calendar is
          wMinute => C.windef.WORD (Minute),
          wSecond => C.windef.WORD (Second),
          wMilliseconds => 0);
+      SystemTime2 : aliased C.winbase.SYSTEMTIME;
+      Source : C.winbase.PSYSTEMTIME;
       FileTime : aliased C.windef.FILETIME;
    begin
-      Error :=
-         C.winbase.SystemTimeToFileTime (SystemTime'Access, FileTime'Access) =
-         C.windef.FALSE;
-      if not Error and then Time_Zone /= 0 then
-         FileTime := FileTime - Duration (Time_Zone * 60);
-         if not Leap_Second then
+      if Time_Zone /= 0 then
+         declare
+            TZI : aliased C.winbase.TIME_ZONE_INFORMATION;
+         begin
+            Make_TZI (TZI, Time_Zone);
             Error :=
-               C.winbase.FileTimeToSystemTime (
-                  FileTime'Access,
-                  SystemTime'Access) = -- reuse SystemTime
+               C.winbase.TzSpecificLocalTimeToSystemTime (
+                  TZI'Access,
+                  SystemTime'Access,
+                  SystemTime2'Access) =
                C.windef.FALSE;
-            if not Error
-               and then Second_Number'Base (SystemTime.wSecond) /= Second
-            then
-               --  Time_Zone is passed over some leap time
-               Fixup (FileTime,
-                  Current => Second_Number'Base (SystemTime.wSecond),
-                  Expected => Second);
-            end if;
-         end if;
+         end;
+         Source := SystemTime2'Unchecked_Access;
+      else
+         Error := False;
+         Source := SystemTime'Unchecked_Access;
       end if;
       if not Error then
-         Result := To_Time (FileTime) + Sub_Second;
-         if Leap_Second then
-            if Time_Zone <= 0 then
+         Error :=
+            C.winbase.SystemTimeToFileTime (Source, FileTime'Access) =
+            C.windef.FALSE;
+         if not Error then
+            Result := To_Time (FileTime) + Sub_Second;
+            if Leap_Second then
                Result := Result + 1.0;
+               --  checking
+               Error := not Is_Leap_Second (Result);
             end if;
-            --  checking
-            Error := not Is_Leap_Second (Result);
          end if;
       end if;
    end Time_Of;
