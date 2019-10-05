@@ -191,11 +191,14 @@ $(BUILDDIR)/nosignal$(EXEEXT): LFLAGS_ALL+=$(abspath $(BUILDDIR)/adalib/nosig.o)
 $(EXAMPLES): %: $(BUILDDIR)/%$(EXEEXT) $(BINLN)
 
 clean:
-	-rm -rf $(BINLN) $(BUILDDIR)/adalib
+	-[ -h "$(BINLN)" ] && rm "$(BINLN)"
+	-rm -rf $(BUILDDIR)/adalib
 	-find $(BUILDDIR) -mindepth 1 -maxdepth 1 -not -name adainclude | xargs rm -r
 
 cleanall:
-	-rm -rf $(BINLN) *.build
+	-[ -h bin ] && rm bin
+	-rm -rf *.build/adalib
+	-rm -r *.build
 
 xfind:
 	$(GCCPREFIX)gnatfind$(GCCSUFFIX) -f -aO$(BUILDDIR) $(X) $(GFLAGS_ALL) $(FFLAGS_ALL) | sed 's|^$(PWD)/||'
