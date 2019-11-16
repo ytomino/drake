@@ -104,9 +104,8 @@ package body System.Native_Directories.Copying is
       Zero_Terminated_Strings.To_C (Target_Name, C_Target_Name (0)'Access);
       --  if the target is already existing,
       --    copy attributes from the target to the source.
-      Error :=
-         C.sys.stat.lstat (C_Target_Name (0)'Access, Target_Info'Access) < 0;
-      if not Error
+      Error := False;
+      if C.sys.stat.lstat (C_Target_Name (0)'Access, Target_Info'Access) = 0
          and then (Target_Info.st_mode and C.sys.stat.S_IFMT) /=
             C.sys.stat.S_IFLNK -- Linux does not have lchmod
       then
