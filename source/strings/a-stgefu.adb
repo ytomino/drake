@@ -750,7 +750,7 @@ package body Ada.Strings.Generic_Functions is
       end case;
       if First = Last and then Source (First) = Blank then
          First := Source'First;
-         Last := Source'Last - 1;
+         Last := First - 1;
       end if;
    end Trim;
 
@@ -1851,7 +1851,7 @@ package body Ada.Strings.Generic_Functions is
       begin
          if Left_Last = Source'Last then
             First := Source'First;
-            Last := Source'Last - 1;
+            Last := First - 1;
          else
             First := Left_Last + 1;
             Last :=
