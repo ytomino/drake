@@ -244,19 +244,20 @@ package body System.UTF_Conversions is
             Last := Result'First;
             if Last <= Result'Last then
                declare
-                  Code_2 : constant UCS_4 := Code - 16#00010000#;
+                  Code_2 : UCS_4 := Code - 16#00010000#;
                begin
+                  if Code_2 >= 2 ** 20 then -- over range of UTF-16
+                     Code_2 := 2 ** 20 - 1; -- dummy
+                     Status := Unmappable;
+                  else
+                     Status := Success;
+                  end if;
                   Result (Last) := Wide_Character'Val (
                      16#d800# or ((Code_2 / (2 ** 10)) and (2 ** 10 - 1)));
                   Last := Last + 1;
                   if Last <= Result'Last then
                      Result (Last) := Wide_Character'Val (
                         16#dc00# or (Code_2 and (2 ** 10 - 1)));
-                     if Code_2 >= 2 ** 20 then -- over range of UTF-16
-                        Status := Unmappable;
-                     else
-                        Status := Success;
-                     end if;
                   else
                      Last := Result'Last;
                      Status := Overflow;
