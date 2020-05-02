@@ -1,6 +1,11 @@
 package body System.UTF_Conversions is
    pragma Suppress (All_Checks);
 
+   procedure unreachable
+      with Import,
+         Convention => Intrinsic, External_Name => "__builtin_unreachable";
+   pragma No_Return (unreachable);
+
    procedure UTF_8_Length (
       Code : UCS_4;
       Leading : out Character;
@@ -67,17 +72,26 @@ package body System.UTF_Conversions is
       begin
          UTF_8_Length (Code, Result (I), Length, Dummy_Sequence_Status);
       end;
-      Last := I + Length - 1;
-      if Last > Result'Last then
+      Code_2 := Code;
+      if I > Result'Last - (Length - 1) then
+         declare
+            Shortage : constant Positive := Length - 1 - (Result'Last - I);
+            Offset : constant Positive := 6 * Shortage;
+         begin
+            if Offset not in 6 .. 30 then
+               unreachable;
+            end if;
+            Code_2 := Code_2 / (2 ** Offset);
+         end;
+         Length := Result'Last - I + 1;
          Last := Result'Last;
-         Length := Result'Last + 1 - I;
          Status := Overflow;
       else
+         Last := I + (Length - 1);
          Status := Success;
       end if;
-      Code_2 := Code;
-      for J in reverse 2 .. Length loop
-         Result (I + J - 1) :=
+      for J in reverse 1 .. Length - 1 loop
+         Result (I + J) :=
             Character'Val (2#10000000# or (Code_2 and (2 ** 6 - 1)));
          Code_2 := Code_2 / (2 ** 6);
       end loop;
@@ -254,12 +268,11 @@ package body System.UTF_Conversions is
                   end if;
                   Result (Last) := Wide_Character'Val (
                      16#d800# or ((Code_2 / (2 ** 10)) and (2 ** 10 - 1)));
-                  Last := Last + 1;
-                  if Last <= Result'Last then
+                  if Last <= Result'Last - 1 then
+                     Last := Last + 1;
                      Result (Last) := Wide_Character'Val (
                         16#dc00# or (Code_2 and (2 ** 10 - 1)));
                   else
-                     Last := Result'Last;
                      Status := Overflow;
                   end if;
                end;
